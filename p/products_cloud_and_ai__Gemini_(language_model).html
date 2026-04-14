@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gemini (language model)</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link active" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Gemini (language model)</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Gemini_(language_model)<br>
+Category: products_cloud_and_ai<br>
+Depth: 1</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Gemini is a family of multimodal large language models (LLMs) developed by Google DeepMind, and the successor to LaMDA and PaLM 2. Comprising Gemini Pro, Gemini Deep Think, Gemini Flash, and Gemini Flash Lite, it was announced on December 6, 2023. It powers the chatbot of the same name.</p>
+<h2>Images</h2>
+<p><img alt="250px-ChaoticHarmony_explosion_in_post-painter_abstraction__28Nano_Banana_2_29.webp" src="../images/250px-ChaoticHarmony_explosion_in_post-painter_abstraction__28Nano_Banana_2_29.webp.png"></p>
+<h2>Full Article</h2>
+<p>Large language model developed by Google</p>
+<p><strong>Gemini</strong> is a family of <a href="./Multimodal_learning" title="Multimodal learning">multimodal</a> <a href="./Large_language_model" title="Large language model">large language models</a> (LLMs) developed by <a href="./Google_DeepMind" title="Google DeepMind">Google DeepMind</a>, and the successor to <a href="./LaMDA" title="LaMDA">LaMDA</a> and <a href="./PaLM" title="PaLM">PaLM 2</a>. Comprising Gemini Pro, Gemini Deep Think, Gemini Flash, and Gemini Flash Lite, it was announced on December 6, 2023. It powers the <a href="./Chatbot" title="Chatbot">chatbot</a> <a href="./Gemini_(chatbot)" title="Gemini (chatbot)">of the same name</a>.</p>
+<h2>History</h2>
+<h3>Development</h3>
+<p><a href="./Google" title="Google">Google</a> announced Gemini, a <a href="./Large_language_model" title="Large language model">large language model</a> (LLM) developed by subsidiary <a href="./Google_DeepMind" title="Google DeepMind">Google DeepMind</a>, during the <a href="./Google_I/O" title="Google I/O">Google I/O</a> keynote on May 10, 2023. It was positioned as a more powerful successor to <a href="./PaLM_2" title="PaLM 2">PaLM 2</a>, which was also unveiled at the event, with Google <a href="./Chief_executive_officer" title="Chief executive officer">CEO</a> <a href="./Sundar_Pichai" title="Sundar Pichai">Sundar Pichai</a> stating that Gemini was still in its early developmental stages. Unlike other LLMs, Gemini was said to be unique in that it was not trained on a <a href="./Text_corpus" title="Text corpus">text corpus</a> alone and was designed to be <a href="./Multimodal_learning" title="Multimodal learning">multimodal</a>, meaning it could process multiple types of data simultaneously, including text, images, audio, video, and <a href="./Source_code" title="Source code">computer code</a>. It had been developed as a collaboration between DeepMind and <a href="./Google_Brain" title="Google Brain">Google Brain</a>, two branches of Google that had been merged as Google DeepMind. In an interview with <em><a href="./Wired_(magazine)" title="Wired (magazine)">Wired</a></em>, DeepMind CEO <a href="./Demis_Hassabis" title="Demis Hassabis">Demis Hassabis</a> touted Gemini's advanced capabilities, which he believed would allow the algorithm to trump <a href="./OpenAI" title="OpenAI">OpenAI</a>'s <a href="./ChatGPT" title="ChatGPT">ChatGPT</a>, which runs on <a href="./GPT-4" title="GPT-4">GPT-4</a> and whose growing popularity had been aggressively challenged by Google with <a href="./LaMDA" title="LaMDA">LaMDA</a> and <a href="./Bard_(chatbot)" title="Bard (chatbot)">Bard</a>. Hassabis highlighted the strengths of DeepMind's <a href="./AlphaGo" title="AlphaGo">AlphaGo</a> program, which gained worldwide attention in 2016 when it defeated <a href="./Go_(game)" title="Go (game)">Go</a> champion <a href="./Lee_Sedol" title="Lee Sedol">Lee Sedol</a>, saying that Gemini would combine the power of AlphaGo and other Google–DeepMind LLMs.</p>
+<p>In August 2023, <em><a href="./The_Information_(website)" title="The Information (website)">The Information</a></em> published a report outlining Google's roadmap for Gemini, revealing that the company was targeting a launch date of late 2023. According to the report, Google hoped to surpass OpenAI and other competitors by combining conversational text capabilities present in most LLMs with <a href="./Artificial_intelligence" title="Artificial intelligence">artificial intelligence</a>–powered image generation, allowing it to create contextual images and be adapted for a wider range of <a href="./Use_cases" title="Use cases">use cases</a>. Like Bard, Google co-founder <a href="./Sergey_Brin" title="Sergey Brin">Sergey Brin</a> was summoned out of retirement to assist in the development of Gemini, along with hundreds of other engineers from Google Brain and DeepMind; he was later credited as a "core contributor" to Gemini. Because Gemini was being trained on transcripts of <a href="./YouTube" title="YouTube">YouTube</a> videos, lawyers were brought in to filter out any potentially copyrighted materials.</p>
+<p>With news of Gemini's impending launch, OpenAI hastened its work on integrating GPT-4 with multimodal features similar to those of Gemini. <em>The Information</em> reported in September that several companies had been granted early access to "an early version" of the LLM, which Google intended to make available to clients through <a href="./Google_Cloud_Platform" title="Google Cloud Platform">Google Cloud</a>'s Vertex AI service. The publication also stated that Google was arming Gemini to compete with both GPT-4 and <a href="./Microsoft" title="Microsoft">Microsoft</a>'s <a href="./GitHub_Copilot" title="GitHub Copilot">GitHub Copilot</a>.</p>
+<h3>Launch</h3>
+<p>On December 6, 2023, Pichai and Hassabis announced "Gemini 1.0" at a virtual press conference. It contains three models: Gemini Ultra, designed for "highly complex tasks"; Gemini Pro, designed for "a wide range of tasks"; and Gemini Nano, designed for "on-device tasks". At launch, Gemini Pro and Nano were integrated into Bard and the <a href="./Pixel_8_Pro" title="Pixel 8 Pro">Pixel 8 Pro</a> smartphone, respectively, while Gemini Ultra was set to power "Bard Advanced" and become available to software developers in early 2024. Other products that Google intended to incorporate Gemini into included <a href="./Google_Search" title="Google Search">Search</a>, <a href="./Google_Ads" title="Google Ads">Ads</a>, <a href="./Google_Chrome" title="Google Chrome">Chrome</a>, Duet AI on <a href="./Google_Workspace" title="Google Workspace">Google Workspace</a>, and <a href="./AlphaCode_2" title="AlphaCode 2">AlphaCode 2</a>. It was made available only in English. Touted as Google's "largest and most capable AI model" and designed to emulate human behavior, the company stated that Gemini would not be made widely available until the following year due to the need for "extensive safety testing". Gemini was trained on and powered by Google's <a href="./Tensor_Processing_Unit" title="Tensor Processing Unit">Tensor Processing Units</a> (TPUs), and the name is in reference to the DeepMind–Google Brain merger as well as <a href="./NASA" title="NASA">NASA</a>'s <a href="./Project_Gemini" title="Project Gemini">Project Gemini</a>.</p>
+<p>Gemini Ultra was said to have outperformed GPT-4, <a href="./Anthropic" title="Anthropic">Anthropic</a>'s <a href="./Claude_2" title="Claude 2">Claude 2</a>, <a href="./Inflection_AI" title="Inflection AI">Inflection AI</a>'s Inflection-2, <a href="./Meta_Platforms" title="Meta Platforms">Meta</a>'s <a href="./LLaMA_2" title="LLaMA 2">LLaMA 2</a>, and <a href="./XAI_(company)" title="XAI (company)">xAI</a>'s <a href="./Grok_1" title="Grok 1">Grok 1</a> on a variety of industry benchmarks, while Gemini Pro was said to have outperformed <a href="./GPT-3.5" title="GPT-3.5">GPT-3.5</a>. Gemini Ultra was also the first language model to outperform human experts on the 57-subject <a href="./Massive_Multitask_Language_Understanding" title="Massive Multitask Language Understanding">Massive Multitask Language Understanding</a> (MMLU) test, obtaining a score of 90%. Gemini Pro was made available to Google Cloud customers on AI Studio and Vertex AI on December 13, while Gemini Nano will be made available to <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> developers as well. Hassabis further revealed that DeepMind was exploring how Gemini could be "combined with robotics to physically interact with the world". In accordance with <a href="./Executive_Order_14110" title="Executive Order 14110">an executive order</a> signed by U.S. President <a href="./Joe_Biden" title="Joe Biden">Joe Biden</a> in October, Google stated that it would share testing results of Gemini Ultra with the <a href="./Federal_government_of_the_United_States" title="Federal government of the United States">federal government of the United States</a>. Similarly, the company was engaged in discussions with the <a href="./Government_of_the_United_Kingdom" title="Government of the United Kingdom">government of the United Kingdom</a> to comply with the principles laid out at the <a href="./AI_Safety_Summit_2023" title="AI Safety Summit 2023">AI Safety Summit</a> at <a href="./Bletchley_Park" title="Bletchley Park">Bletchley Park</a> in November.</p>
+<p>In June 2025, Google introduced Gemini CLI, an open-source AI agent that brings the capabilities of Gemini directly to the terminal, offering advanced coding, automation, and problem-solving features with generous free usage limits for individual developers.</p>
+<h3>Updates</h3>
+<p>In January 2024, Google partnered with <a href="./Samsung_Electronics" title="Samsung Electronics">Samsung</a> to integrate Gemini Nano and Gemini Pro into its <a href="./Galaxy_S24" title="Galaxy S24">Galaxy S24</a> smartphone lineup. The following month, Bard and Duet AI were unified under the Gemini brand, with "Gemini Advanced with Ultra 1.0" releasing via a new "AI Premium" tier of the <a href="./Google_One" title="Google One">Google One</a> subscription service. Gemini Pro also received a global launch.</p>
+<p>In February 2024, Google launched Gemini 1.5, describing it as a more powerful and capable model than 1.0 Ultra. Changes include a new architecture, a <a href="./Mixture-of-experts" title="Mixture-of-experts">mixture-of-experts</a> approach, and a larger one-million-token <a href="./Context_window" title="Context window">context window</a>. The same month, Google debuted Gemma, a smaller, <a href="./Free_and_open-source" title="Free and open-source">free and open-source</a> range of Gemini models. Multiple publications described this as a response to Meta and others open-sourcing their AI models, and a reversal from Google's prior practice of keeping its AI proprietary. Google announced an additional model, Gemini 1.5 Flash, on May 14 at the 2024 I/O keynote.</p>
+<p>Two updated Gemini models, Gemini-1.5-Pro-002 and Gemini-1.5-Flash-002, were released on September 24, 2024.[<em><a href="./Wikipedia:No_original_research#Primary,_secondary_and_tertiary_sources" title="Wikipedia:No original research">non-primary source needed</a></em>]</p>
+<p>On December 11, 2024, Google announced the new Gemini 2.0 Flash Experimental model. Features include a Multimodal Live API for real-time audio and video interactions, native image and controllable text-to-speech generation (with watermarking), and integrated Google Search. It also introduces improved agentic capabilities, a new Google Gen AI SDK, and "Jules", an experimental AI coding agent for GitHub.[<em><a href="./Wikipedia:No_original_research#Primary,_secondary_and_tertiary_sources" title="Wikipedia:No original research">non-primary source needed</a></em>]</p>
+<p>On January 30, 2025, Google released Gemini 2.0 Flash as the new default model, with Gemini 1.5 Flash still available for usage. This was followed by the release of Gemini 2.0 Pro on February 5, 2025. Additionally, Google released Gemini 2.0 Flash Thinking Experimental, which generates a summary of the language model's thinking process when responding to prompts.[<em><a href="./Wikipedia:No_original_research#Primary,_secondary_and_tertiary_sources" title="Wikipedia:No original research">non-primary source needed</a></em>]</p>
+<p>On March 12, 2025, Google also announced <a href="./Gemini_Robotics" title="Gemini Robotics">Gemini Robotics</a>, a <a href="./Vision-language-action_model" title="Vision-language-action model">vision-language-action model</a> based on the Gemini 2.0 family of models.[<em><a href="./Wikipedia:No_original_research#Primary,_secondary_and_tertiary_sources" title="Wikipedia:No original research">non-primary source needed</a></em>] The next day, Google announced that Gemini in <a href="./Android_Studio" title="Android Studio">Android Studio</a> would be able to understand simple UI <a href="./Mockup" title="Mockup">mockups</a> and transform them into working <a href="./Jetpack_Compose" title="Jetpack Compose">Jetpack Compose</a> code.</p>
+<p>Gemini 2.5 Pro Experimental was released on March 25, 2025. This model offers <a href="./Chain-of-thought_prompting" title="Chain-of-thought prompting">chain-of-thought prompting</a> whilst maintaining native <a href="./Multimodal_interaction" title="Multimodal interaction">multimodality</a>.</p>
+<p>At Google I/O 2025, Google announced that Gemini 2.5 Flash would become the default model. Gemini 2.5 Pro was introduced as the most advanced Gemini model, featuring better coding capabilities and other improvements. Both 2.5 Pro and Flash support native audio output.</p>
+<p>On June 17, 2025, Google announced general availability for 2.5 Pro and Flash. They also introduced Gemini 2.5 Flash-Lite that same day, a model optimized for speed and cost-efficiency.[<em><a href="./Wikipedia:No_original_research#Primary,_secondary_and_tertiary_sources" title="Wikipedia:No original research">non-primary source needed</a></em>]</p>
+<p>On November 18, 2025, Google announced the release of 3 Pro and 3 Deep Think. These new models replace 2.5 Pro and Flash. This release prompted OpenAI to hasten the release of the competing model GPT-5.2, which was released on December 11.</p>
+<p>On December 4, 2025, Google announced that 3 Deep Think would start rolling out to Ultra subscribers.[<em><a href="./Wikipedia:No_original_research#Primary,_secondary_and_tertiary_sources" title="Wikipedia:No original research">non-primary source needed</a></em>]</p>
+<p>On December 17, 2025, Google announced the release of 3 Flash replacing the current version of 2.5 Flash.[<em><a href="./Wikipedia:No_original_research#Primary,_secondary_and_tertiary_sources" title="Wikipedia:No original research">non-primary source needed</a></em>]</p>
+<p>On January 12, 2026, Apple announced plans to use the Gemini AI model in the upcoming version of Siri.</p>
+<p>On February 19, 2026, Google released Gemini 3.1 Pro.[<em><a href="./Wikipedia:No_original_research#Primary,_secondary_and_tertiary_sources" title="Wikipedia:No original research">non-primary source needed</a></em>]</p>
+<p>On February 26, 2026, Nano Banana 2 was released. It is an updated version built on the Gemini 3.1 Flash Image platform.</p>
+<p>On March 3, 2026, Google released Gemini 3.1 Flash Lite to Developers in the Google API.</p>
+<h3>Model versions</h3>
+<p>See also: <a href="./Gemma_(language_model)" title="Gemma (language model)">Gemma (language model)</a></p>
+<p>The following table lists the main model versions of Gemini, describing the significant changes included with each version:</p>
+<table>
+<thead>
+<tr>
+<th>Version</th>
+<th>Release date</th>
+<th>Status</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bard</td>
+<td>21 March 2023</td>
+<td>Unsupported: Discontinued</td>
+<td>Google's first experimental chatbot service based on LaMDA.</td>
+</tr>
+<tr>
+<td>1.0 Nano</td>
+<td>6 December 2023</td>
+<td>Unsupported: Discontinued</td>
+<td>Designed for on-device tasks and first available in Google's <a href="./Pixel_8_Pro" title="Pixel 8 Pro">Pixel 8 Pro</a>.</td>
+</tr>
+<tr>
+<td>1.0 Pro</td>
+<td>13 December 2023</td>
+<td>Unsupported: Discontinued</td>
+<td>Designed for a diverse range of tasks.</td>
+</tr>
+<tr>
+<td>1.0 Ultra</td>
+<td>8 February 2024</td>
+<td>Unsupported: Discontinued</td>
+<td>Google's most powerful offering in the Gemini 1.0 family.</td>
+</tr>
+<tr>
+<td>1.5 Pro</td>
+<td>15 February 2024</td>
+<td>Unsupported: Discontinued</td>
+<td>As a successor to the 1.0 series of models, 1.5 Pro offers significantly increased context size (up to 1 million tokens). It is designed to be the most capable model in the Gemini 1.5 family.</td>
+</tr>
+<tr>
+<td>1.5 Flash</td>
+<td>14 May 2024</td>
+<td>Unsupported: Discontinued</td>
+<td>This version got renamed from 'Nano' to 'Flash'. It is also Gemini's free model.</td>
+</tr>
+<tr>
+<td>2.0 Flash</td>
+<td>30 January 2025</td>
+<td>Supported: GA</td>
+<td>Developed by Google with a focus on multimodality, agentic capabilities, and speed.</td>
+</tr>
+<tr>
+<td>2.0 Flash-Lite</td>
+<td>1 February 2025</td>
+<td>Supported: GA</td>
+<td>First-ever Gemini Flash-Lite model designed for cost-efficiency and speed.</td>
+</tr>
+<tr>
+<td>2.0 Pro</td>
+<td>5 February 2025</td>
+<td>Supported: GA</td>
+<td></td>
+</tr>
+<tr>
+<td>2.5 Pro</td>
+<td>25 March 2025</td>
+<td>Latest version: GA</td>
+<td></td>
+</tr>
+<tr>
+<td>2.5 Flash</td>
+<td>17 April 2025</td>
+<td>Latest version: GA</td>
+<td>An incremental improvement from Gemini 2.5.</td>
+</tr>
+<tr>
+<td>2.5 Flash-Lite</td>
+<td>17 June 2025</td>
+<td>Latest version: GA</td>
+<td></td>
+</tr>
+<tr>
+<td>2.5 Flash Image (<a href="./Nano_Banana" title="Nano Banana">Nano Banana</a>)</td>
+<td>26 August 2025</td>
+<td>Latest version: GA</td>
+<td></td>
+</tr>
+<tr>
+<td>3 Pro</td>
+<td>18 November 2025</td>
+<td>Unsupported: Discontinued preview</td>
+<td><a href="./Sparse_MoE" title="Sparse MoE">Sparse mixture-of-experts</a>. Outputs up to 64K tokens.</td>
+</tr>
+<tr>
+<td>3 Deep Think</td>
+<td>3 December 2025</td>
+<td>Future version: preview</td>
+<td>based on the 2.5 Pro "Deep Think" mode that achieved high ratings in IOI</td>
+</tr>
+<tr>
+<td>3 Pro Image (Nano Banana Pro)</td>
+<td>20 November 2025</td>
+<td>Future version: preview</td>
+<td>An improved version of Nano Banana which includes better text rendering and better real world knowledge.</td>
+</tr>
+<tr>
+<td>3 Flash</td>
+<td>17 December 2025</td>
+<td>Future version: preview</td>
+<td></td>
+</tr>
+<tr>
+<td>3.1 Pro</td>
+<td>19 February 2026</td>
+<td>Future version: preview</td>
+<td></td>
+</tr>
+<tr>
+<td>3.1 Flash Image (Nano Banana 2)</td>
+<td>26 February 2026</td>
+<td>Future version: preview</td>
+<td></td>
+</tr>
+<tr>
+<td>3.1 Flash Lite</td>
+<td>3 March 2026</td>
+<td>Future version: preview</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2>Nano Banana</h2>
+<p><strong>Nano Banana</strong> (officially <strong>Gemini 2.5 Flash Image</strong>), <strong>Nano Banana Pro</strong> (officially <strong>Gemini 3 Pro Image</strong>) and <strong>Nano Banana 2</strong> (officially <strong>Gemini 3.1 Flash Image</strong>) are <a href="./Artificial_intelligence_visual_art" title="Artificial intelligence visual art">image generation</a> and <a href="./Image_editing" title="Image editing">editing</a> models.</p>
+<p>"Nano Banana" was the codename used for the model while it was undergoing secret public testing on <a href="./Arena_(AI_platform)" title="Arena (AI platform)">Arena</a>. It first appeared publicly as an anonymous model on the crowd-sourced AI evaluation platform Arena on August 12, 2025. It was released publicly on August 26, 2025 through the Gemini app and related <a href="./Google_AI" title="Google AI">Google AI</a> services. The nickname "Nano Banana" originated from nicknames given to Naina Raisinghani, Product Manager at Google DeepMind. Google later confirmed its identity as <em>Gemini 2.5 Flash Image</em> in an official announcement upon public release. On November 20, 2025, DeepMind released Nano Banana Pro (Gemini 3 Pro Image) with improved text rendering and world knowledge.</p>
+<p>Upon release, Nano Banana became a <a href="./Viral_phenomenon" title="Viral phenomenon">viral Internet sensation</a> on social media, particularly for its <a href="./Photorealistic" title="Photorealistic">photorealistic</a> "<a href="./3D_figurine" title="3D figurine">3D figurine</a>" images. Following its release, Nano Banana was made available in the Gemini app, Google AI Studio, and through Vertex AI. According to Google, it helped attract over 10 million new users to the Gemini app and facilitated more than 200 million image edits within weeks of launch.</p>
+<p>The model lets users change hairstyles, backdrops, and mix photos with natural language cues. Subject consistency allows the same person or item to be recognized across revisions of an image. Multi-image fusion joins photographs into one seamless output, and world knowledge allows context-aware changes. It also provides SynthID <a href="./Digital_watermarking" title="Digital watermarking">watermarking</a>, which is an invisible digital signature in outputs to identify AI-generated information. Multi-image fusion joins photographs into one seamless output, and world knowledge allows context-aware changes. People started to connect Nano Banana with a viral craze in which people turned their selfies into 3D figurines that looked like toys. The event circulated quickly on sites like <a href="./Instagram" title="Instagram">Instagram</a> and <a href="./Twitter" title="Twitter">X (previously Twitter)</a>. By adding the model to X, users could tag Nano Banana directly in posts to make photos from prompts, which made it even more popular.</p>
+<p>A September 2025 review in <em><a href="./TechRadar" title="TechRadar">TechRadar</a></em> reported that Nano Banana was more realistic and consistent across multiple prompts than <a href="./GPT_Image" title="GPT Image">ChatGPT's image generation</a>. A review in <em><a href="./Tom's_Guide" title="Tom's Guide">Tom's Guide</a></em> praised its ability to handle creative and lively image edits. Another review in <em><a href="./PC_Gamer" title="PC Gamer">PC Gamer</a></em> mentioned that the model did not have some basic editing tools like <a href="./Cropping_(image)" title="Cropping (image)">cropping</a>, and that the product sometimes did not apply changes, but reverted back to the original image instead. Nano Banana showed good performance in <a href="./Architectural_visualization" title="Architectural visualization">architectural visualization</a>, for producing imagery at the correct scale even with complex geometry.</p>
+<p>On 26 February 2026, Nano Banana 2 was rolled out and integrated into the Gemini chatbot, Search AI Mode, and Lens. It is a faster version built on Gemini 3.1 Flash Image, with better instruction following and text rendering.</p>
+<h2>Technical specifications</h2>
+<p>As Gemini is multimodal, each context window can contain multiple forms of input. The different modes can be interleaved and do not have to be presented in a fixed order, allowing for a multimodal conversation. For example, the user might open the conversation with a mix of text, picture, video, and audio, presented in any order, and Gemini might reply with the same free ordering. Input images may be of different <a href="./Image_resolution" title="Image resolution">resolutions</a>, while video is inputted as a sequence of images. Audio is sampled at 16 <a href="./KHz" title="KHz">kHz</a> and then converted into a sequence of tokens by the Universal Speech Model. Gemini's dataset is multimodal and multilingual, consisting of "web documents, books, and code, and includ[ing] image, audio, and video data".</p>
+<p>Gemini and <a href="./Gemma_(language_model)" title="Gemma (language model)">Gemma</a> models are decoder-only <a href="./Transformer_(deep_learning_architecture)" title="Transformer (deep learning architecture)">transformers</a>, with modifications to allow efficient training and inference on TPUs. The 1.0 generation uses <a href="./Transformer_(deep_learning_architecture)#Multi-Query_Attention" title="Transformer (deep learning architecture)">multi-query attention</a>.</p>
+<p>Technical specifications of Gemini models</p>
+<table>
+<thead>
+<tr>
+<th>Generation</th>
+<th>Variant</th>
+<th>Release date</th>
+<th>Parameters</th>
+<th>Context length</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.0</td>
+<td>Nano-1</td>
+<td>6 December 2023</td>
+<td>1.8B</td>
+<td>32,768</td>
+<td><a href="./Knowledge_distillation" title="Knowledge distillation">Distilled</a> from "larger Gemini models", 4-bit quantized</td>
+</tr>
+<tr>
+<td>Nano-2</td>
+<td>6 December 2023</td>
+<td>3.25B</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Pro</td>
+<td>13 December 2023</td>
+<td>?</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Ultra</td>
+<td>8 February 2024</td>
+<td>?</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>1.5</td>
+<td>Pro</td>
+<td>15 February 2024</td>
+<td>?</td>
+<td>10,000,000</td>
+<td>1 million tokens in production API</td>
+</tr>
+<tr>
+<td>Mini</td>
+<td>14 May 2024</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>No whitepapers were published for Gemini 2.0, 2.5, and 3.</p>
+<h2>Reception</h2>
+<p>See also: <a href="./Google_Gemini#Reception" title="Google Gemini">Google Gemini § Reception</a></p>
+<p><em><a href="./MIT_Technology_Review" title="MIT Technology Review">MIT Technology Review</a></em> described speculation about Gemini's launch as "peak AI hype". Hugh Langley of <em><a href="./Business_Insider" title="Business Insider">Business Insider</a></em> described Gemini as a make-or-break moment for Google, writing: "If Gemini dazzles, it will help Google change the narrative that it was blindsided by Microsoft and OpenAI. If it disappoints, it will embolden critics who say Google has fallen behind."</p>
+<p>Reacting to its unveiling in December 2023, computer scientist <a href="./Oren_Etzioni" title="Oren Etzioni">Oren Etzioni</a> predicted an <a href="./Arms_race" title="Arms race">arms race</a> between Google and <a href="./OpenAI" title="OpenAI">OpenAI</a>. Computer scientist <a href="./Alexei_A._Efros" title="Alexei A. Efros">Alexei Efros</a> praised the potential of Gemini's multimodal approach. Professors <a href="./Percy_Liang" title="Percy Liang">Percy Liang</a>, <a href="./Emily_Bender" title="Emily Bender">Emily Bender</a> and Michael Madden cautioned that it was difficult to interpret benchmark scores without insight into the training data used. Writing for <em><a href="./Fast_Company" title="Fast Company">Fast Company</a></em>, Mark Sullivan opined that Google had the opportunity to challenge the iPhone's dominant market share, believing that Apple was unlikely to have the capacity to develop functionality similar to Gemini with its <a href="./Siri" title="Siri">Siri</a> <a href="./Virtual_assistant" title="Virtual assistant">virtual assistant</a>. Google shares increased by 5.3 percent the day after Gemini's launch.</p>
+<p>Google faced criticism for a demonstrative video of Gemini, which was not conducted in real time.[<em><a href="./Wikipedia:Vagueness" title="Wikipedia:Vagueness">vague</a></em>]</p>
+<p>Gemini 2.5 Pro Experimental debuted at the top position on the <a href="./LMArena" title="LMArena">LMArena</a> leaderboard, a benchmark measuring human preference. The model achieved high results across various AI benchmarks, including <a href="./Humanity's_Last_Exam" title="Humanity's Last Exam">Humanity's Last Exam</a>. Initial reviews mention its improved reasoning capabilities and performance gains compared to previous versions. Published benchmarks also showed areas where contemporary models from competitors like <a href="./Anthropic" title="Anthropic">Anthropic</a>, <a href="./XAI_(company)" title="XAI (company)">xAI</a>, or <a href="./OpenAI" title="OpenAI">OpenAI</a> held advantages.</p>
+<h2>See also</h2>
+<ul>
+<li><a href="./Gato_(DeepMind)" title="Gato (DeepMind)">Gato</a>, a multimodal neural network developed by DeepMind</li>
+<li><a href="./Gemini_Robotics" title="Gemini Robotics">Gemini Robotics</a></li>
+<li><a href="./Reasoning_model" title="Reasoning model">Reasoning model</a></li>
+<li><a href="./List_of_large_language_models" title="List of large language models">List of large language models</a></li>
+</ul>
+<h2>References</h2>
+<h2>Further reading</h2>
+<ul>
+<li>Honan, Mat (December 6, 2023). <a href="https://www.technologyreview.com/2023/12/06/1084539/google-ceo-sundar-pichai-on-gemini-and-the-coming-age-of-ai/">"Google CEO Sundar Pichai on Gemini and the Coming Age of AI"</a>. <em><a href="./MIT_Technology_Review" title="MIT Technology Review">MIT Technology Review</a></em>. <a href="https://web.archive.org/web/20231206233355/https://www.technologyreview.com/2023/12/06/1084539/google-ceo-sundar-pichai-on-gemini-and-the-coming-age-of-ai/">Archived</a> from the original on December 6, 2023. Retrieved December 6, 2023.</li>
+<li>Ji, Ju-yeong; Kumar, Ravin. <a href="https://developers.googleblog.com/en/gemma-explained-overview-gemma-model-family-architectures/">"Gemma Explained: An Overview of Gemma Model Family Architectures"</a>. <em>Google Developers Blog</em>. Retrieved August 15, 2024.</li>
+</ul>
+<h2>External links</h2>
+<ul>
+<li><a href="https://deepmind.google/technologies/gemini/">Official website</a> <a href="https://www.wikidata.org/wiki/Q123688361#P856" title="Edit this at Wikidata"><img alt="Edit this at Wikidata" src="//upload.wikimedia.org/wikipedia/en/thumb/8/8a/OOjs_UI_icon_edit-ltr-progressive.svg/20px-OOjs_UI_icon_edit-ltr-progressive.svg.png"></a></li>
+<li><a href="https://blog.google/technology/ai/google-gemini-ai/">Press release</a> via <em><a href="./The_Keyword" title="The Keyword">The Keyword</a></em></li>
+<li>White paper for <a href="https://storage.googleapis.com/deepmind-media/gemini/gemini_1_report.pdf">1.0</a> and <a href="https://storage.googleapis.com/deepmind-media/gemini/gemini_v1_5_report.pdf">1.5</a></li>
+<li><a href="https://storage.googleapis.com/deepmind-media/Model-Cards/Gemini-3-Pro-Model-Card.pdf">White paper for Gemini 3 Pro</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_AI" title="Template:Google AI">v</a> - <a href="./Template_talk:Google_AI" title="Template talk:Google AI">t</a> - <a href="./Special:EditPage/Template:Google_AI" title="Special:EditPage/Template:Google AI">e</a>  <a href="./Google_AI" title="Google AI">Google AI</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>- <a href="./Google" title="Google">Google</a> - <a href="./Google_Brain" title="Google Brain">Google Brain</a> - <a href="./Google_DeepMind" title="Google DeepMind">Google DeepMind</a></td>
+<td></td>
+</tr>
+<tr>
+<td>Computer  programs</td>
+<td></td>
+</tr>
+<tr>
+<td>Machine  learning</td>
+<td></td>
+</tr>
+<tr>
+<td>Generative  AI</td>
+<td></td>
+</tr>
+<tr>
+<td>See also</td>
+<td>- "<a href="./Attention_Is_All_You_Need" title="Attention Is All You Need">Attention Is All You Need</a>" - <a href="./Future_of_Go_Summit" title="Future of Go Summit">Future of Go Summit</a> - <a href="./Generative_pre-trained_transformer" title="Generative pre-trained transformer">Generative pre-trained transformer</a> - <a href="./Google_Labs" title="Google Labs">Google Labs</a> - <a href="./Google_Pixel" title="Google Pixel">Google Pixel</a> - <a href="./Google_Workspace" title="Google Workspace">Google Workspace</a> - <a href="./Robot_Constitution" title="Robot Constitution">Robot Constitution</a></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Google_DeepMind" title="Category:Google DeepMind">Category</a> - <a href="https://commons.wikimedia.org/wiki/Category:DeepMind" title="commons:Category:DeepMind">Commons</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products" title="List of Google products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Generative_AI" title="Template:Generative AI">v</a> - <a href="./Template_talk:Generative_AI" title="Template talk:Generative AI">t</a> - <a href="./Special:EditPage/Template:Generative_AI" title="Special:EditPage/Template:Generative AI">e</a>  <a href="./Generative_AI" title="Generative AI">Generative AI</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Concepts</td>
+<td>- <a href="./Autoencoder" title="Autoencoder">Autoencoder</a> - <a href="./Deep_learning" title="Deep learning">Deep learning</a> - <a href="./Fine-tuning_(deep_learning)" title="Fine-tuning (deep learning)">Fine-tuning</a> - <a href="./Foundation_model" title="Foundation model">Foundation model</a> - <a href="./Generative_adversarial_network" title="Generative adversarial network">Generative adversarial network</a> - <a href="./Generative_pre-trained_transformer" title="Generative pre-trained transformer">Generative pre-trained transformer</a> - <a href="./Large_language_model" title="Large language model">Large language model</a> - <a href="./Model_Context_Protocol" title="Model Context Protocol">Model Context Protocol</a> - <a href="./Neural_network_(machine_learning)" title="Neural network (machine learning)">Neural network</a> - <a href="./Prompt_engineering" title="Prompt engineering">Prompt engineering</a> - <a href="./Reinforcement_learning_from_human_feedback" title="Reinforcement learning from human feedback">Reinforcement learning from human feedback</a> - <a href="./Retrieval-augmented_generation" title="Retrieval-augmented generation">Retrieval-augmented generation</a> - <a href="./Self-supervised_learning" title="Self-supervised learning">Self-supervised learning</a> - <a href="./AI_slop" title="AI slop">Slop</a> - <a href="./Stochastic_parrot" title="Stochastic parrot">Stochastic parrot</a> - <a href="./Synthetic_data" title="Synthetic data">Synthetic data</a> - <a href="./Top-p_sampling" title="Top-p sampling">Top-p sampling</a> - <a href="./Transformer_(deep_learning_architecture)" title="Transformer (deep learning architecture)">Transformer</a> - <a href="./Variational_autoencoder" title="Variational autoencoder">Variational autoencoder</a> - <a href="./Vibe_coding" title="Vibe coding">Vibe coding</a> - <a href="./Vision_transformer" title="Vision transformer">Vision transformer</a> - <a href="./Word_embedding" title="Word embedding">Word embedding</a></td>
+</tr>
+<tr>
+<td>Models</td>
+<td></td>
+</tr>
+<tr>
+<td>Products</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./List_of_artificial_intelligence_companies" title="List of artificial intelligence companies">Companies</a></td>
+<td>- <a href="./Adobe_Inc." title="Adobe Inc.">Adobe</a> - <a href="./Aleph_Alpha" title="Aleph Alpha">Aleph Alpha</a> - <a href="./Anthropic" title="Anthropic">Anthropic</a> - <a href="./Anysphere" title="Anysphere">Anysphere</a> - <a href="./Baichuan" title="Baichuan">Baichuan</a> - <a href="./Canva" title="Canva">Canva</a> - <a href="./Cognition_AI" title="Cognition AI">Cognition AI</a> - <a href="./Cohere" title="Cohere">Cohere</a> - <a href="./Contextual_AI" title="Contextual AI">Contextual AI</a> - <a href="./DeepSeek" title="DeepSeek">DeepSeek</a> - <a href="./DeepL_Translator" title="DeepL Translator">DeepL</a> - <a href="./EleutherAI" title="EleutherAI">EleutherAI</a> - <a href="./ElevenLabs" title="ElevenLabs">ElevenLabs</a> - <a href="./Google_DeepMind" title="Google DeepMind">Google DeepMind</a> - <a href="./HeyGen" title="HeyGen">HeyGen</a> - <a href="./Hugging_Face" title="Hugging Face">Hugging Face</a> - <a href="./Inflection_AI" title="Inflection AI">Inflection AI</a> - <a href="./Kuaishou" title="Kuaishou">Kuaishou</a> - <a href="./Lightricks" title="Lightricks">Lightricks</a> - <a href="./Lovable_(company)" title="Lovable (company)">Lovable</a> - <a href="./Luma_Labs" title="Luma Labs">Luma Labs</a> - <a href="./Meta_AI" title="Meta AI">Meta AI</a> - <a href="./MiniMax_(company)" title="MiniMax (company)">MiniMax</a> - <a href="./Mistral_AI" title="Mistral AI">Mistral AI</a> - <a href="./Moonshot_AI" title="Moonshot AI">Moonshot AI</a> - <a href="./OpenAI" title="OpenAI">OpenAI</a> - <a href="./Perplexity_AI" title="Perplexity AI">Perplexity AI</a> - <a href="./Runway_(company)" title="Runway (company)">Runway</a> - <a href="./Safe_Superintelligence_Inc." title="Safe Superintelligence Inc.">Safe Superintelligence</a> - <a href="./Sakana_AI" title="Sakana AI">Sakana AI</a> - <a href="./Salesforce" title="Salesforce">Salesforce</a> - <a href="./Scale_AI" title="Scale AI">Scale AI</a> - <a href="./ServiceNow" title="ServiceNow">ServiceNow</a> - <a href="./SoundHound" title="SoundHound">SoundHound</a> - <a href="./Stability_AI" title="Stability AI">Stability AI</a> - <a href="./StepFun" title="StepFun">StepFun</a> - <a href="./Synthesia_(company)" title="Synthesia (company)">Synthesia</a> - <a href="./Thinking_Machines_Lab" title="Thinking Machines Lab">Thinking Machines Lab</a> - <a href="./Upstage_(company)" title="Upstage (company)">Upstage</a> - <a href="./XAI_(company)" title="XAI (company)">xAI</a> - <a href="./Xiaomi" title="Xiaomi">Xiaomi</a> - <a href="./Z.ai" title="Z.ai">Z.ai</a></td>
+</tr>
+<tr>
+<td><a href="./Artificial_intelligence_controversies" title="Artificial intelligence controversies">Controversies</a></td>
+<td>- <a href="./Generative_AI_pornography" title="Generative AI pornography">Generative AI pornography</a>   - <a href="./Deepfake_pornography" title="Deepfake pornography">Deepfake pornography</a>     - <a href="./Grok_sexual_deepfake_scandal" title="Grok sexual deepfake scandal">on Grok</a>     - <a href="./Taylor_Swift_deepfake_pornography_controversy" title="Taylor Swift deepfake pornography controversy">of Taylor Swift</a> - <a href="./Google_Gemini_image_generation_controversy" title="Google Gemini image generation controversy">Google Gemini image generation</a> - <a href="./Pause_Giant_AI_Experiments:_An_Open_Letter" title="Pause Giant AI Experiments: An Open Letter">Pause Giant AI Experiments</a> - <a href="./Removal_of_Sam_Altman_from_OpenAI" title="Removal of Sam Altman from OpenAI">Removal of Sam Altman from OpenAI</a> - <a href="./Statement_on_AI_Risk" title="Statement on AI Risk">Statement on AI Risk</a> - <a href="./Tay_(chatbot)" title="Tay (chatbot)">Tay (chatbot)</a> - <em><a href="./Théâtre_D'opéra_Spatial" title="Théâtre D'opéra Spatial">Théâtre D'opéra Spatial</a></em> - <a href="./Voiceverse_NFT_plagiarism_scandal" title="Voiceverse NFT plagiarism scandal">Voiceverse NFT plagiarism</a></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Generative_AI" title="Category:Generative AI">Category</a> - <a href="https://commons.wikimedia.org/wiki/Category:Generative%20artificial%20intelligence" title="commons:Category:Generative artificial intelligence">Commons</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Artificial_intelligence_navbox" title="Template:Artificial intelligence navbox">v</a> - <a href="./Template_talk:Artificial_intelligence_navbox" title="Template talk:Artificial intelligence navbox">t</a> - <a href="./Special:EditPage/Template:Artificial_intelligence_navbox" title="Special:EditPage/Template:Artificial intelligence navbox">e</a>  <a href="./Artificial_intelligence" title="Artificial intelligence">Artificial intelligence</a> (AI)</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>- <a href="./History_of_artificial_intelligence" title="History of artificial intelligence">History</a>   - <a href="./Timeline_of_artificial_intelligence" title="Timeline of artificial intelligence">timeline</a> - <a href="./Glossary_of_artificial_intelligence" title="Glossary of artificial intelligence">Glossary</a> - <a href="./List_of_artificial_intelligence_companies" title="List of artificial intelligence companies">Companies</a> - <a href="./List_of_artificial_intelligence_projects" title="List of artificial intelligence projects">Projects</a></td>
+<td></td>
+</tr>
+<tr>
+<td>Concepts</td>
+<td>- <a href="./Automated_reasoning" title="Automated reasoning">Automated reasoning</a> - <a href="./Parameter" title="Parameter">Parameter</a>   - <a href="./Hyperparameter_(machine_learning)" title="Hyperparameter (machine learning)">Hyperparameter</a> - <a href="./Loss_functions_for_classification" title="Loss functions for classification">Loss functions</a> - <a href="./Regression_analysis" title="Regression analysis">Regression</a>   - <a href="./Bias–variance_tradeoff" title="Bias–variance tradeoff">Bias–variance tradeoff</a>   - <a href="./Double_descent" title="Double descent">Double descent</a>   - <a href="./Overfitting" title="Overfitting">Overfitting</a> - <a href="./Cluster_analysis" title="Cluster analysis">Clustering</a> - <a href="./Gradient_descent" title="Gradient descent">Gradient descent</a>   - <a href="./Stochastic_gradient_descent" title="Stochastic gradient descent">SGD</a>   - <a href="./Quasi-Newton_method" title="Quasi-Newton method">Quasi-Newton method</a>   - <a href="./Conjugate_gradient_method" title="Conjugate gradient method">Conjugate gradient method</a> - <a href="./Backpropagation" title="Backpropagation">Backpropagation</a> - <a href="./Attention_(machine_learning)" title="Attention (machine learning)">Attention</a> - <a href="./Convolution" title="Convolution">Convolution</a> - <a href="./Normalization_(machine_learning)" title="Normalization (machine learning)">Normalization</a>   - <a href="./Batch_normalization" title="Batch normalization">Batchnorm</a> - <a href="./Activation_function" title="Activation function">Activation</a>   - <a href="./Softmax_function" title="Softmax function">Softmax</a>   - <a href="./Sigmoid_function" title="Sigmoid function">Sigmoid</a>   - <a href="./Rectifier_(neural_networks)" title="Rectifier (neural networks)">Rectifier</a> - <a href="./Gating_mechanism" title="Gating mechanism">Gating</a> - <a href="./Weight_initialization" title="Weight initialization">Weight initialization</a> - <a href="./Regularization_(mathematics)" title="Regularization (mathematics)">Regularization</a> - <a href="./Training,_validation,_and_test_data_sets" title="Training, validation, and test data sets">Datasets</a>   - <a href="./Data_augmentation" title="Data augmentation">Augmentation</a> - <a href="./Prompt_engineering" title="Prompt engineering">Prompt engineering</a> - <a href="./Reinforcement_learning" title="Reinforcement learning">Reinforcement learning</a>   - <a href="./Q-learning" title="Q-learning">Q-learning</a>   - <a href="./State–action–reward–state–action" title="State–action–reward–state–action">SARSA</a>   - <a href="./Imitation_learning" title="Imitation learning">Imitation</a>   - <a href="./Policy_gradient_method" title="Policy gradient method">Policy gradient</a> - <a href="./Diffusion_process" title="Diffusion process">Diffusion</a> - <a href="./Latent_diffusion_model" title="Latent diffusion model">Latent diffusion model</a> - <a href="./Autoregressive_model" title="Autoregressive model">Autoregression</a> - <a href="./Adversarial_machine_learning" title="Adversarial machine learning">Adversary</a> - <a href="./Retrieval-augmented_generation" title="Retrieval-augmented generation">RAG</a> - <a href="./Uncanny_valley" title="Uncanny valley">Uncanny valley</a> - <a href="./Reinforcement_learning_from_human_feedback" title="Reinforcement learning from human feedback">RLHF</a> - <a href="./Self-supervised_learning" title="Self-supervised learning">Self-supervised learning</a> - <a href="./Reflection_(artificial_intelligence)" title="Reflection (artificial intelligence)">Reflection</a> - <a href="./Recursive_self-improvement" title="Recursive self-improvement">Recursive self-improvement</a> - <a href="./Hallucination_(artificial_intelligence)" title="Hallucination (artificial intelligence)">Hallucination</a> - <a href="./Word_embedding" title="Word embedding">Word embedding</a> - <a href="./Vibe_coding" title="Vibe coding">Vibe coding</a> - <a href="./Symbolic_artificial_intelligence" title="Symbolic artificial intelligence">Symbolic AI</a></td>
+</tr>
+<tr>
+<td><a href="./Applications_of_artificial_intelligence" title="Applications of artificial intelligence">Applications</a></td>
+<td>- <a href="./Automated_theorem_proving" title="Automated theorem proving">Automated theorem proving</a> - <a href="./Machine_learning" title="Machine learning">Machine learning</a>   - <a href="./Prompt_engineering#In-context_learning" title="Prompt engineering">In-context learning</a> - <a href="./Neural_network_(machine_learning)" title="Neural network (machine learning)">Artificial neural network</a>   - <a href="./Deep_learning" title="Deep learning">Deep learning</a> - <a href="./Language_model" title="Language model">Language model</a>   - <a href="./Large_language_model" title="Large language model">Large</a>   - <a href="./Neural_machine_translation" title="Neural machine translation">NMT</a>   - <a href="./Reasoning_model" title="Reasoning model">Reasoning</a> - <a href="./Model_Context_Protocol" title="Model Context Protocol">Model Context Protocol</a> - <a href="./Intelligent_agent" title="Intelligent agent">Intelligent agent</a>   - <a href="./AI_agent" title="AI agent">AI agent</a> - <a href="./Artificial_human_companion" title="Artificial human companion">Artificial human companion</a> - <a href="./Humanity's_Last_Exam" title="Humanity's Last Exam">Humanity's Last Exam</a> - <a href="./Lethal_autonomous_weapon" title="Lethal autonomous weapon">Lethal autonomous weapons (LAWs)</a> - <a href="./Generative_artificial_intelligence" title="Generative artificial intelligence">Generative artificial intelligence (GenAI)</a> - <a href="./Weak_artificial_intelligence" title="Weak artificial intelligence">Weak AI</a> - (Hypothetical: <a href="./Artificial_general_intelligence" title="Artificial general intelligence">Artificial general intelligence (AGI)</a>) - (Hypothetical: <a href="./Artificial_superintelligence" title="Artificial superintelligence">Artificial superintelligence (ASI)</a>) - <a href="./Agent2Agent" title="Agent2Agent">Agent2Agent protocol</a></td>
+</tr>
+<tr>
+<td>Implementations</td>
+<td></td>
+</tr>
+<tr>
+<td>People</td>
+<td>- <a href="./Alan_Turing" title="Alan Turing">Alan Turing</a> - <a href="./Warren_Sturgis_McCulloch" title="Warren Sturgis McCulloch">Warren Sturgis McCulloch</a> - <a href="./Walter_Pitts" title="Walter Pitts">Walter Pitts</a> - <a href="./John_von_Neumann" title="John von Neumann">John von Neumann</a> - <a href="./Christopher_D._Manning" title="Christopher D. Manning">Christopher D. Manning</a> - <a href="./Claude_Shannon" title="Claude Shannon">Claude Shannon</a> - <a href="./Shun'ichi_Amari" title="Shun'ichi Amari">Shun'ichi Amari</a> - <a href="./Kunihiko_Fukushima" title="Kunihiko Fukushima">Kunihiko Fukushima</a> - <a href="./Takeo_Kanade" title="Takeo Kanade">Takeo Kanade</a> - <a href="./Marvin_Minsky" title="Marvin Minsky">Marvin Minsky</a> - <a href="./John_McCarthy_(computer_scientist)" title="John McCarthy (computer scientist)">John McCarthy</a> - <a href="./Nathaniel_Rochester_(computer_scientist)" title="Nathaniel Rochester (computer scientist)">Nathaniel Rochester</a> - <a href="./Allen_Newell" title="Allen Newell">Allen Newell</a> - <a href="./Cliff_Shaw" title="Cliff Shaw">Cliff Shaw</a> - <a href="./Herbert_A._Simon" title="Herbert A. Simon">Herbert A. Simon</a> - <a href="./Oliver_Selfridge" title="Oliver Selfridge">Oliver Selfridge</a> - <a href="./Frank_Rosenblatt" title="Frank Rosenblatt">Frank Rosenblatt</a> - <a href="./Bernard_Widrow" title="Bernard Widrow">Bernard Widrow</a> - <a href="./Joseph_Weizenbaum" title="Joseph Weizenbaum">Joseph Weizenbaum</a> - <a href="./Seymour_Papert" title="Seymour Papert">Seymour Papert</a> - <a href="./Seppo_Linnainmaa" title="Seppo Linnainmaa">Seppo Linnainmaa</a> - <a href="./Paul_Werbos" title="Paul Werbos">Paul Werbos</a> - <a href="./Geoffrey_Hinton" title="Geoffrey Hinton">Geoffrey Hinton</a> - <a href="./John_Hopfield" title="John Hopfield">John Hopfield</a> - <a href="./Jürgen_Schmidhuber" title="Jürgen Schmidhuber">Jürgen Schmidhuber</a> - <a href="./Yann_LeCun" title="Yann LeCun">Yann LeCun</a> - <a href="./Yoshua_Bengio" title="Yoshua Bengio">Yoshua Bengio</a> - <a href="./Lotfi_A._Zadeh" title="Lotfi A. Zadeh">Lotfi A. Zadeh</a> - <a href="./Stephen_Grossberg" title="Stephen Grossberg">Stephen Grossberg</a> - <a href="./Alex_Graves_(computer_scientist)" title="Alex Graves (computer scientist)">Alex Graves</a> - <a href="./James_Goodnight" title="James Goodnight">James Goodnight</a> - <a href="./Andrew_Ng" title="Andrew Ng">Andrew Ng</a> - <a href="./Fei-Fei_Li" title="Fei-Fei Li">Fei-Fei Li</a> - <a href="./Alex_Krizhevsky" title="Alex Krizhevsky">Alex Krizhevsky</a> - <a href="./Ilya_Sutskever" title="Ilya Sutskever">Ilya Sutskever</a> - <a href="./Oriol_Vinyals" title="Oriol Vinyals">Oriol Vinyals</a> - <a href="./Quoc_V._Le" title="Quoc V. Le">Quoc V. Le</a> - <a href="./Ian_Goodfellow" title="Ian Goodfellow">Ian Goodfellow</a> - <a href="./Demis_Hassabis" title="Demis Hassabis">Demis Hassabis</a> - <a href="./David_Silver_(computer_scientist)" title="David Silver (computer scientist)">David Silver</a> - <a href="./Andrej_Karpathy" title="Andrej Karpathy">Andrej Karpathy</a> - <a href="./Ashish_Vaswani" title="Ashish Vaswani">Ashish Vaswani</a> - <a href="./Noam_Shazeer" title="Noam Shazeer">Noam Shazeer</a> - <a href="./Aidan_Gomez" title="Aidan Gomez">Aidan Gomez</a> - <a href="./John_Schulman" title="John Schulman">John Schulman</a> - <a href="./Mustafa_Suleyman" title="Mustafa Suleyman">Mustafa Suleyman</a> - <a href="./Jan_Leike" title="Jan Leike">Jan Leike</a> - <a href="./Daniel_Kokotajlo_(researcher)" title="Daniel Kokotajlo (researcher)">Daniel Kokotajlo</a> - <a href="./François_Chollet" title="François Chollet">François Chollet</a></td>
+</tr>
+<tr>
+<td>Architectures</td>
+<td>- <a href="./Neural_Turing_machine" title="Neural Turing machine">Neural Turing machine</a> - <a href="./Differentiable_neural_computer" title="Differentiable neural computer">Differentiable neural computer</a> - <a href="./Transformer_(deep_learning_architecture)" title="Transformer (deep learning architecture)">Transformer</a>   - <a href="./Vision_transformer" title="Vision transformer">Vision transformer (ViT)</a> - <a href="./Recurrent_neural_network" title="Recurrent neural network">Recurrent neural network (RNN)</a> - <a href="./Long_short-term_memory" title="Long short-term memory">Long short-term memory (LSTM)</a> - <a href="./Gated_recurrent_unit" title="Gated recurrent unit">Gated recurrent unit (GRU)</a> - <a href="./Echo_state_network" title="Echo state network">Echo state network</a> - <a href="./Multilayer_perceptron" title="Multilayer perceptron">Multilayer perceptron (MLP)</a> - <a href="./Convolutional_neural_network" title="Convolutional neural network">Convolutional neural network (CNN)</a> - <a href="./Residual_neural_network" title="Residual neural network">Residual neural network (RNN)</a> - <a href="./Highway_network" title="Highway network">Highway network</a> - <a href="./Mamba_(deep_learning_architecture)" title="Mamba (deep learning architecture)">Mamba</a> - <a href="./Autoencoder" title="Autoencoder">Autoencoder</a> - <a href="./Variational_autoencoder" title="Variational autoencoder">Variational autoencoder (VAE)</a> - <a href="./Generative_adversarial_network" title="Generative adversarial network">Generative adversarial network (GAN)</a> - <a href="./Graph_neural_network" title="Graph neural network">Graph neural network (GNN)</a></td>
+</tr>
+<tr>
+<td>Political</td>
+<td>- <a href="./Artificial_Intelligence_Cold_War" title="Artificial Intelligence Cold War">AI Cold War</a> - <a href="./AI_safety" title="AI safety">AI safety</a> (<a href="./AI_alignment" title="AI alignment">Alignment</a>) - <a href="./AI_takeover" title="AI takeover">AI takeover</a> - <a href="./Artificial_intelligence_and_elections" title="Artificial intelligence and elections">Elections</a> - <a href="./Ethics_of_artificial_intelligence" title="Ethics of artificial intelligence">Ethics of AI</a> - EU <a href="./Artificial_Intelligence_Act" title="Artificial Intelligence Act">AI Act</a> - <a href="./AI_nationalism" title="AI nationalism">Nationalism</a> - <a href="./Precautionary_principle" title="Precautionary principle">Precautionary principle</a> - <a href="./Regulation_of_artificial_intelligence" title="Regulation of artificial intelligence">Regulation of AI</a>   - <a href="./Regulation_of_artificial_intelligence_in_the_United_States" title="Regulation of artificial intelligence in the United States">US</a> - <a href="./Virtual_politician" title="Virtual politician">Virtual politician</a></td>
+</tr>
+<tr>
+<td>Social and economic</td>
+<td>- <a href="./AI_boom" title="AI boom">AI boom</a> - <a href="./AI_bubble" title="AI bubble">AI bubble</a> - <a href="./AI_data_center" title="AI data center">AI data center</a> - <a href="./AI_effect" title="AI effect">AI effect</a> - <a href="./AI_literacy" title="AI literacy">AI literacy</a> - <a href="./AI_slop" title="AI slop">AI slop</a> - <a href="./AI_veganism" title="AI veganism">AI veganism</a> - <a href="./AI_winter" title="AI winter">AI winter</a> - <a href="./AI_anthropomorphism" title="AI anthropomorphism">Anthropomorphism</a> - <a href="./Artificial_intelligence_arms_race" title="Artificial intelligence arms race">Arms race</a> - <a href="./Competition_in_artificial_intelligence" title="Competition in artificial intelligence">Competition</a> - <a href="./Environmental_impact_of_artificial_intelligence" title="Environmental impact of artificial intelligence">Environmental impact</a> - <a href="./Generative_engine_optimization" title="Generative engine optimization">Generative engine optimization</a> - <a href="./Artificial_intelligence_in_architecture" title="Artificial intelligence in architecture">In architecture</a> - <a href="./Artificial_intelligence_in_education" title="Artificial intelligence in education">In education</a> - <a href="./Artificial_intelligence_in_fiction" title="Artificial intelligence in fiction">In fiction</a> - <a href="./Artificial_intelligence_in_healthcare" title="Artificial intelligence in healthcare">In healthcare</a>   - <a href="./Chatbot_psychosis" title="Chatbot psychosis">Chatbot psychosis</a>   - <a href="./Artificial_intelligence_in_mental_health" title="Artificial intelligence in mental health">Mental health</a> - <a href="./Artificial_intelligence_in_video_games" title="Artificial intelligence in video games">In video games</a> - <a href="./Artificial_intelligence_visual_art" title="Artificial intelligence visual art">In visual art</a> - <a href="./Workplace_impact_of_artificial_intelligence" title="Workplace impact of artificial intelligence">Workplace impact</a></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Artificial_intelligence" title="Category:Artificial intelligence">Category</a></td>
+<td></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

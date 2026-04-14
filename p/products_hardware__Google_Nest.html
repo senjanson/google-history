@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Google Nest</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link active" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Google Nest</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Google_Nest<br>
+Category: products_hardware<br>
+Depth: 1</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Google Nest, formerly branded Google Home, is a line of smart home products including smart speakers, smart displays, streaming devices, thermostats, smoke detectors, routers and security systems including smart doorbells, cameras and smart locks.</p>
+<h2>Images</h2>
+<p><img alt="GoogleNestRetailStand" src="../images/GoogleNestRetailStand.jpg"><br>
+<img alt="330px-GoogleNestRetailStand" src="../images/330px-GoogleNestRetailStand.jpg"><br>
+<img alt="250px-Google_Nest_logo.svg" src="../images/250px-Google_Nest_logo.svg.png"><br>
+<img alt="250px-GoogleNestRetailStand" src="../images/250px-GoogleNestRetailStand.jpg"><br>
+<img alt="250px-Nest_logo" src="../images/250px-Nest_logo.png"><br>
+<img alt="250px-Nest_front_official" src="../images/250px-Nest_front_official.png"><br>
+<img alt="250px-NestLearningThermostat2" src="../images/250px-NestLearningThermostat2.JPG"><br>
+<img alt="250px-NestProtect" src="../images/250px-NestProtect.JPG"><br>
+<img alt="250px-Nest_Hello" src="../images/250px-Nest_Hello.jpg"><br>
+<img alt="250px-Nest_Yale" src="../images/250px-Nest_Yale.jpg"><br>
+<img alt="250px-Google_nest_guard_microphone_discovery_timeline" src="../images/250px-Google_nest_guard_microphone_discovery_timeline.png"><br>
+<img alt="250px-Patch_Panel" src="../images/250px-Patch_Panel.jpg"></p>
+<h2>Full Article</h2>
+<p>Brand of smart home products by Google</p>
+<p>This article is about the smart device manufacturer formerly called Nest Labs. For the line of smart speakers, see <a href="./Google_Nest_(smart_speakers)" title="Google Nest (smart speakers)">Google Nest (smart speakers)</a>.</p>
+<p><strong>Google Nest</strong>, formerly branded <strong>Google Home</strong>, is a line of <a href="./Home_automation" title="Home automation">smart home</a> products including <a href="./Smart_speaker" title="Smart speaker">smart speakers</a>, <a href="./Smart_display" title="Smart display">smart displays</a>, <a href="./Streaming_device" title="Streaming device">streaming devices</a>, <a href="./Smart_thermostat" title="Smart thermostat">thermostats</a>, <a href="./Smoke_detector" title="Smoke detector">smoke detectors</a>, <a href="./Router_(computing)" title="Router (computing)">routers</a> and <a href="./Security_alarms" title="Security alarms">security systems</a> including <a href="./Smart_doorbell" title="Smart doorbell">smart doorbells</a>, <a href="./Smart_camera" title="Smart camera">cameras</a> and <a href="./Smart_lock" title="Smart lock">smart locks</a>.</p>
+<p>The Nest brand name was originally owned by <strong>Nest Labs</strong>, co-founded by former <a href="./Apple_Inc." title="Apple Inc.">Apple</a> engineers <a href="./Tony_Fadell" title="Tony Fadell">Tony Fadell</a> and Matt Rogers in 2010. Its flagship product, which was the company's first offering, is the Nest Learning Thermostat, introduced in 2011. The product is programmable, self-learning, sensor-driven, and <a href="./Wi-Fi" title="Wi-Fi">Wi-Fi</a>-enabled: features that are often found in other Nest products. It was followed by the Nest Protect <a href="./Smoke_detector" title="Smoke detector">smoke</a> and <a href="./Carbon_monoxide_detector" title="Carbon monoxide detector">carbon monoxide detectors</a> in October 2013. After its acquisition of <a href="./Dropcam" title="Dropcam">Dropcam</a> in 2014, the company introduced its Nest Cam branding of security cameras beginning in June 2015.</p>
+<p>The company quickly expanded to more than 130 employees by the end of 2012. Google acquired Nest Labs for <a href="./United_States_dollar" title="United States dollar">US$</a>3.2 billion in January 2014, when the company employed 280. As of late 2015, Nest employs more than 1,100 and added a primary engineering center in <a href="./Seattle" title="Seattle">Seattle</a>.</p>
+<p>After Google reorganized itself under the holding company <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc.</a>, Nest operated independently of Google from 2015 to 2018. However, in 2018, Nest was merged into Google's home-devices unit led by Rishi Chandra, effectively ceasing to exist as a separate business. In July 2018, it was announced that all <a href="./Google_Home_(smart_speakers)" title="Google Home (smart speakers)">Google Home</a> electronics products will henceforth be marketed under the brand Google Nest.</p>
+<h2>History</h2>
+<h3>Nest Labs before acquisition by Google</h3>
+<p>Nest Labs was founded in 2010 by former <a href="./Apple_Inc." title="Apple Inc.">Apple</a> engineers Tony Fadell and Matt Rogers. The idea came when Fadell was building a vacation home and found all of the available thermostats on the market to be inadequate, motivated to bring something better on the market. Early investors in Nest Labs included <a href="./Shasta_Ventures" title="Shasta Ventures">Shasta Ventures</a> and <a href="./Kleiner_Perkins" title="Kleiner Perkins">Kleiner Perkins</a>.</p>
+<h3>Acquisition by Google of Nest Labs, Dropcam, and Revolv</h3>
+<p>On January 13, 2014, Google announced plans to acquire Nest Labs for $3.2 billion in cash. Google completed the acquisition the next day, on January 14, 2014. The company would operate independently from Google's other businesses.</p>
+<p>In June 2014, it was announced that Nest would buy camera startup <a href="./Dropcam" title="Dropcam">Dropcam</a> for $555 million. With the purchase, Dropcam became integrated with other Nest products; if the Protect alarm is triggered, the Dropcam can automatically start recording, and the Thermostat can use Dropcam to sense for motion.</p>
+<p>In September 2014, the Nest Thermostat and Nest Protect (a smoke alarm) became available in Belgium, France, Ireland, and <a href="./Netherlands" title="Netherlands">the Netherlands</a>. Initially, they were sold in approximately 400 stores across Europe, with another 150 stores to be added by the end of the year[<em><a href="./Wikipedia:Manual_of_Style/Dates_and_numbers#Chronological_items" title="Wikipedia:Manual of Style/Dates and numbers">needs update</a></em>]. In June 2015, the new Nest Cam, replacing the Dropcam, was announced, together with the second generation of the Nest Protect; there were internal reports that sales of the rebranded camera fell.</p>
+<p>On October 24, 2014, Nest both acquired the hub service Revolv, and discontinued its product line, gaining the expertise of Revolv's staff.</p>
+<h3>Nest as a subsidiary of Alphabet Inc.</h3>
+<p>In August 2015, Google announced that it would restructure its operations under a new parent company, <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc.</a>, with Nest being separated from Google as a subsidiary of the new holding company.</p>
+<p>In January 2016, some Nest thermostats stopped working, a fault attributed to a software update from two weeks earlier. There were no lawsuits, individual or <a href="./Class-action_lawsuit" title="Class-action lawsuit">class-action</a>, due to an <a href="./Arbitration_clause" title="Arbitration clause">arbitration clause</a> in the contract.</p>
+<p>All Revolv smart hubs, costing several hundred dollars, were deliberately remotely <a href="./Bricking" title="Bricking">bricked</a> on May 15, 2016; notice was posted on the company's website in February. The story became news on April 4. The "lifetime subscription" to Revolv's online service, which had been sold with the hub, was defined by Nest to be the lifetime of the device, which ended May 15.</p>
+<p>Nest's decision to brick the hubs, and its "acerbic" corporate culture, faced substantial criticism from within Google/Alphabet and in press coverage. Many of Nest's staffers came from Dropcam and Revolv, and by November 2015, about 70 of about 1000 staffers had quit, causing management concern. Some countermeasures had been taken in takeover deals, to financially discourage senior people from leaving before set dates. Of the ~100 Dropcam staffers, about half had left by March 2016, when former Dropcam CEO Greg Duffy (who left 8 months after the takeover) wrote a post openly regretting selling his company to Nest. He stated that about 500 people had left (of a 1200-person staff).</p>
+<p>On June 6, 2016, Tony Fadell, the Nest CEO, announced in a blog post that he was leaving the company he founded with Matt Rogers and stepping into an "advisory" role. At this point the Nest acquisition was described by some press as a "disaster" for Google. As of mid-June 2016, Nest's problems were considered symptomatic of the limited market for home automation. According to Frank Gillet of <a href="./Forrester_Research" title="Forrester Research">Forrester Research</a>, only 6% of American households possessed internet-connected devices such as appliances, home-monitoring systems, speakers, or lighting. He also predicted this percentage would grow to only 15% by 2021. Furthermore, 72% of respondents in a 2016 British survey conducted by <a href="./PricewaterhouseCoopers" title="PricewaterhouseCoopers">Pricewaterhouse Coopers</a> did not foresee adopting smart-home technology over the next two to five years.</p>
+<h3>Nest as a part of Google hardware division</h3>
+<p>On February 7, 2018, it was announced by hardware head <a href="./Rick_Osterloh" title="Rick Osterloh">Rick Osterloh</a> that Nest had been merged into Google's hardware division, directly alongside units such as <a href="./Google_Nest">Google Home</a> and <a href="./Chromecast" title="Chromecast">Chromecast</a>. It would retain its separate Palo Alto headquarters, but Nest CEO Marwan Fawaz would now report to Osterloh, and there were plans for tighter integration with Google platforms and software such as <a href="./Google_Assistant" title="Google Assistant">Google Assistant</a> in future products. Shortly after the announcement, co-founder and chief product officer Matt Rogers announced his plans to leave the company.</p>
+<p>On July 18, 2018, Nest CEO Marwan Fawaz stepped down. Nest was merged with Google's home devices team, led by Rishi Chandra. During the <a href="./Google_I/O" title="Google I/O">Google I/O</a> keynote on May 7, 2019, it was announced that Google Nest will now serve as the blanket branding for all of Google's home products. The <a href="./Google_Home_Hub" title="Google Home Hub">Google Home Hub</a> was retroactively renamed Google Nest Hub, while a new and larger version of the product is now available called the Nest Hub Max with both a larger screen and an amplified speaker, for a greater low-end audio experience. Also, product lines such as Chromecast, Google Home, and <a href="./Google_Nest_Wifi" title="Google Nest Wifi">Google Wifi</a> will now be marketed under the Google Nest brand. In addition, Nest began to deprecate its own internal platforms, announcing the discontinuation of the existing "Works with Nest" program in favor of Google Assistant going forward, and pushing users to migrate themselves from Nest's account system to <a href="./Google_account" title="Google account">Google accounts</a>. Google published Nest-specific privacy information outlining a commitment to transparency, not selling personal information, and giving users control of their data.</p>
+<p>In February 2019, a <a href="./Digital_privacy" title="Digital privacy">privacy</a> incident affecting the Google Nest Guard system came about. The controversy stemmed from the fact that Nest Guard, a security device that was part of the Nest Secure system, contained a hidden microphone that was not disclosed in any product specifications. It resulted in a <a href="./Public_relations" title="Public relations">public relations</a> failure.</p>
+<h3>Partnership with ADT</h3>
+<p>In August 2020 Google announced intent to invest $450 million in <a href="./ADT_Inc." title="ADT Inc.">ADT Inc.</a> for a 6.6% stake in the company. The companies intend to integrate Nest devices with ADT's security monitoring services and eventually make them the “cornerstone of ADT’s smart home offering”, according to Nest. Upon the announcement, the shares of ADT doubled in value and hit all-time high of $17.21.</p>
+<h3>Use with Amazon Alexa</h3>
+<p>As of mid-2022, Google's newer Nest cameras will now work with <a href="./Amazon_Alexa" title="Amazon Alexa">Amazon Alexa</a> devices such as <a href="./Amazon_Echo_Show" title="Amazon Echo Show">Amazon Echo Show</a>, <a href="./Amazon_Fire_TV" title="Amazon Fire TV">Fire TV</a>, and <a href="./Amazon_Fire" title="Amazon Fire">Fire Tablet</a> to view captured security camera footage.</p>
+<h3>End of support policies</h3>
+<p>On October 25, 2025, software support was ended for the 1st and 2nd generation Nest Learning Thermostats. In addition, most of the smart functionality including the Home Away features, notifications, and carbon monoxide sensor became inoperative as they were dependent on connection with Google servers. By mid-November, third-party software solutions became available to restore functionality to affected thermostats.</p>
+<h2>Products</h2>
+<h3>Nest Learning Thermostat</h3>
+<p>Main article: <a href="./Nest_Learning_Thermostat" title="Nest Learning Thermostat">Nest Learning Thermostat</a></p>
+<p>The Nest Learning Thermostat is an electronic, programmable, and self-learning Wi-Fi-enabled thermostat that optimizes heating and cooling of homes and businesses to conserve energy. It is based on a machine-learning algorithm: for the first weeks users have to regulate the thermostat in order to provide the reference data set. Nest can then learn people's schedules, at which temperature they are used to and when. Using built-in sensors and phones' locations it can shift into energy-saving mode when it realizes nobody is at home.</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Release Date</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nest Learning Thermostat 1st Generation</td>
+<td>October 25, 2011</td>
+</tr>
+<tr>
+<td>Nest Learning Thermostat 2nd Generation</td>
+<td>October 2, 2012</td>
+</tr>
+<tr>
+<td>Nest Learning Thermostat 3rd Generation</td>
+<td>September 1, 2015</td>
+</tr>
+<tr>
+<td>Nest Learning Thermostat 4th Generation</td>
+<td>August 20, 2024</td>
+</tr>
+<tr>
+<td>Nest Thermostat E</td>
+<td>August 31, 2017</td>
+</tr>
+<tr>
+<td>Nest Thermostat</td>
+<td>October 12, 2020</td>
+</tr>
+</tbody>
+</table>
+<p>The Nest Thermostat is built around an operating system that allows interaction with the thermostat via spinning and clicking of its control wheel (or swiping and tapping on the 2020 Nest Thermostat), which brings up option menus for switching from heating to cooling, access to device settings, energy history, and scheduling. Users can control Nest without a <a href="./Touch_screen" title="Touch screen">touch screen</a> or other input devices. As the thermostat is connected to the Internet, the company can push updates to fix bugs, improve performance and add additional features. For updates to occur automatically, the thermostat must be connected to Wi‑Fi and the battery must have at least a 3.7 V charge to give enough power to complete the download and installation of the update.</p>
+<p>The operating system itself is based on <a href="./Linux" title="Linux">Linux</a> 2.6.37 and many other <a href="./Free_software" title="Free software">free software</a> components.</p>
+<p>Nest is currently available for sale in the United States, Canada, Mexico, the United Kingdom, Belgium, France, Ireland, the Netherlands, Germany, Austria, Italy, and Spain. It is, however, compatible with many heating and cooling automation systems in other countries.</p>
+<p>In September 2017, Nest released the Thermostat E, a lower-priced version of the original Nest Thermostat. It is similar in functionality to the standard model, except with a plastic, ceramic-like bezel ring (instead of metal) and a "frosted" overlay for its display. Unlike the original, the screen only activates when the device is being used; these design changes are intended to make the device appear more natural within a home. The Thermostat E also does not feature as many wiring connectors as the higher-end model; Nest stated that this would make it support at least 85% of homes (as opposed to 95% for the standard model).</p>
+<p>In October 2020 Google released the "Nest Thermostat" for the North American market. Pricing was made more accessible and features a mirror-like face, among other significant physical changes. The rotating ring found on other Nest models was replaced with a touch-sensitive strip on the right side of the thermostat body, with swiping and tapping of the touch-sensitive strip being the input method for this model. Learning features have been removed along with support for remote sensors. HVAC compatibility is the same as the Nest Thermostat E, although the bases of the 2020 Nest Thermostat and Nest Thermostat E are not interchangeable.</p>
+<p>In August 2024, Google launched the fourth-generation Nest Learning Thermostat. It introduces a borderless design and adds outdoor temperature sensing along with <a href="./Matter_(standard)" title="Matter (standard)">Matter</a> support. The traditional proximity and motion sensors have been replaced by a Soli sensor for more advanced presence sensing. Additionally, the backplate now includes 12 terminals, allowing for connections to ventilation systems and the simultaneous use of a humidifier and dehumidifier.</p>
+<h3>Nest Protect</h3>
+<p>In October 2013, Nest announced its second product, the Nest Protect smoke and carbon monoxide detector. The Nest Protect is available in both black and white (the black is exclusively sold through Nest directly) and also comes in battery or AC-powered models. The Nest Protect features a multicolored light ring which is color-coded to indicate different operations, such as yellow to indicate an early warning or red if an alarm is sounding. The ring also has a motion detector which turns it white briefly when someone passes under to provide illumination. The Nest Protect warns of an alarm sounding briefly before it does. It is also able to communicate with the Nest Thermostat to provide the Auto-Away feature information that someone is present in the house, as well as to shut off the furnace in the event of a fire or carbon monoxide. It is available for sale in the United States, Canada, the United Kingdom, Belgium, France, Ireland, and the Netherlands.</p>
+<p>On April 3, 2014, sales of the Nest Protect were suspended, due to the potential for the alarm feature to be accidentally disabled.<br>
+440,000 existing Nest Protect units were recalled because of this problem on May 21, 2014, and a software update was distributed to disable this functionality.</p>
+<p>On June 17, 2015, Nest launched a new version of the Nest Protect (officially termed the "second generation"). The differences from the first generation Nest Protect includes an improved sensor, which uses two wavelengths of light, allowing it to detect both smoldering and flaming fires. The carbon monoxide sensor lasts longer, resulting in the new Nest Protect lasting 10 years, whereas the original Nest Protect lasts seven years. The new Nest Protect can be silenced using a <a href="./Smart_device" title="Smart device">smart device</a>, if not in the US or Canada. When not home, the new Nest Protect will test itself using a built-in microphone. Safety Rewards allows Nest Protect users that have their insurance through <a href="./American_Family_Insurance" title="American Family Insurance">American Family</a> and <a href="./Liberty_Mutual" title="Liberty Mutual">Liberty Mutual</a> to get savings off their bill.</p>
+<h3>Nest Cam Indoor</h3>
+<p>In June 2014, Nest acquired Dropcam, maker of the Dropcam security camera. In June 2015, Nest announced the Nest Cam, an upgraded and rebranded security camera based on the Dropcam. Features are a 1080p video resolution, a rotating, magnetic stand, night vision, two-way talk, sound and motion alerts, and optional Nest Aware cloud services for an additional fee. It was renamed Nest Cam Indoor following the announcement of the Nest Cam Outdoor in July 2016. In 2021, Google announced the second-generation Nest Cam Indoor, which is either battery-powered or wired.</p>
+<p>Several security flaws with Nest Cam products were reported in March 2017, allowing a burglar to hack the camera's always-on <a href="./Bluetooth" title="Bluetooth">Bluetooth</a> signal and stop recording. Nest released a security update later that month that fixed the vulnerabilities.</p>
+<h3>Nest Cam Outdoor</h3>
+<p>Nest Cam Outdoor was announced in July 2016 and is a version of the Nest Cam adapted for outdoor monitoring. The main differences from the Nest Cam Indoor is in its design which is built to withstand outdoor conditions. In 2021, Google announced the second-generation, battery-powered Nest Cam Outdoor.</p>
+<h3>Nest Cam IQ</h3>
+<p>Nest Cam IQ was announced in June 2017 and is a more premium model of their Nest Cam Indoor. It features a 4K camera sensor with HDR. It also comes with the ability to recognize and distinguish between different faces when using the Nest Aware service. It also has several minor upgrades, such as better Wi-Fi connectivity, brighter infrared LEDs, a more powerful speaker in addition to added microphones, and a close-up tracking view, which zooms in on action occurring within view of the camera.</p>
+<p>A weatherproof outdoor model was announced in September 2017. The indoor version of the Cam IQ also received an update to add <a href="./Google_Assistant" title="Google Assistant">Google Assistant</a> functionality to the device in 2018.</p>
+<p>In 2021, the Nest Cam IQ Indoor and Outdoor were both discontinued ahead of Google's planned launch of a new line of security cameras.</p>
+<h3>Nest Secure</h3>
+<p>Nest Secure was a <a href="./Home_security" title="Home security">home security system</a> announced in September 2017. The system consisted of Nest Guard (an alarm, keypad, and motion sensor with embedded microphone), Nest Detect (a door/window and motion sensor), and Nest Tag (a key chain fob). The product was released in November 2017. Nest also had a partnership with <a href="./Brinks_Home_Security" title="Brinks Home Security">Brinks Home Security</a> for a monthly plan so that the Nest Protect system could be professionally monitored.</p>
+<p>In February 2019, the Nest Guard received an update to add Google Assistant, allowing it to effectively double as a <a href="./Smart_speaker" title="Smart speaker">smart speaker</a> similar to <a href="./Google_Home_(smart_speaker)" title="Google Home (smart speaker)">Google Home</a> for general voice commands. This addition has faced criticism, as the presence of a microphone inside the device was not adequately disclosed in product specifications. Google stated that the inclusion of a microphone was accidentally not included in the listed specifications and was originally intended to enable future sensor functionality.</p>
+<p>On 19 October 2020, Google confirmed that the production of Nest Secure was officially discontinued. Google did not explain the reason behind the discontinuation of Nest Secure but did confirm the continuation of the service for the existing users. However, on 7 April 2023, Google announced that the service would be shut down on 8 April 2024.</p>
+<h3>Nest Doorbell</h3>
+<p>The Nest Doorbell (originally launched as Nest Hello) is a series of <a href="./Smart_doorbell" title="Smart doorbell">smart video doorbells</a> with facial recognition. It was originally slated to launch in February 2018 but was delayed until March in the United States and Canada, and was launched in the UK in May 2018. In 2021, Google announced the battery-powered Nest Doorbell, while the original Nest Hello was rebranded as the Nest Doorbell (wired). In October 2022, the 2nd generation Nest Doorbell (wired) was launched in the US, adding back a number of features that were missing from the Nest Doorbell (battery) even when wired, including 24/7 recording with Nest Aware Plus.</p>
+<h3>Nest × Yale</h3>
+<p>Nest × Yale is a <a href="./Smart_lock" title="Smart lock">smart lock</a> produced in collaboration with <a href="./Yale_(company)" title="Yale (company)">Yale</a>, released March 2018. It is connected to Nest Connect or Nest Guard. Powered by four AA batteries, the lock includes a terminal at bottom where a 9V battery can be connected for emergency access.</p>
+<h3>Nest Wifi</h3>
+<p>Main article: <a href="./Google_Nest_Wifi" title="Google Nest Wifi">Google Nest Wifi</a></p>
+<h3>Nest Cam with Floodlight</h3>
+<p>In 2021, Google announced the Nest Cam with Floodlight, a version of the <a href="./Google_Nest#Nest_Cam_Outdoor">Nest Cam Outdoor</a> equipped with two <a href="./Floodlights" title="Floodlights">floodlights</a>, one on each side of the camera.</p>
+<h2>Works with Nest</h2>
+<p>Works with Nest was a program that allowed third party devices to communicate with Nest products, such as virtual assistants, along with many third-party home automation platforms. Additionally, many smart device manufacturers have direct integration with the Nest platform, including <a href="./Whirlpool_Corporation" title="Whirlpool Corporation">Whirlpool</a>, <a href="./GE_Appliances" title="GE Appliances">GE Appliances</a>, and <a href="./Myfox" title="Myfox">Myfox</a>.</p>
+<p>On May 7, 2019, it was announced that Works with Nest would be discontinued effective August 31, 2019. Users are being directed to migrate to <a href="./Google_account" title="Google account">Google accounts</a> and <a href="./Google_Assistant" title="Google Assistant">Google Assistant</a> integration instead; doing so will remove the ability to use Works with Nest. Google stated that this change was for security and privacy reasons; as third-party devices may only integrate with the Nest ecosystem via Google Assistant, they will be heavily restricted in the amount of personal data and access to devices they will have access to. Google stated that it would give "a small number of thoroughly vetted partners" access to additional data.</p>
+<p>The change faced criticism for potentially resulting in a loss of functionality: vendors such as Lutron and <a href="./SimpliSafe" title="SimpliSafe">SimpliSafe</a> announced that their products' integration with the Nest platform (which allow them to be tied to the thermostat's home and away modes) would be affected by this change, while Google explicitly named <a href="./IFTTT" title="IFTTT">IFTTT</a> as a service that could not be integrated due to the amount of access it would need to operate. <em><a href="./The_Verge" title="The Verge">The Verge</a></em> estimated that affected devices would also include <a href="./Philips_Hue" title="Philips Hue">Philips Hue</a>, <a href="./Logitech_Harmony" title="Logitech Harmony">Logitech Harmony</a>, Lutron lights, <a href="./August_Home" title="August Home">August Home</a>, and <a href="./Belkin_Wemo" title="Belkin Wemo">Belkin Wemo</a> switches. Furthermore, <em>The Verge</em> argued that this change created a <a href="./Closed_platform" title="Closed platform">closed platform</a>, and would lead to <a href="./Market_fragmentation" title="Market fragmentation">fragmentation</a> of the smart home market by potentially blocking integration with products that directly compete with those of Google.</p>
+<p>On May 16, 2019, Google clarified its deprecation plans for Works with Nest: existing integrations will not be disabled after August 31, but users will no longer be able to add new ones, and the service will only receive maintenance updates going forward. Google also stated that it was working on replicating Nest platform functions as part of Assistant, such as integraking Nest's Home/Away triggers into the "Routines" system, and maintaining integration between Nest and Amazon Alexa.</p>
+<h2>Litigation</h2>
+<p>In February 2012, <a href="./Honeywell" title="Honeywell">Honeywell</a> filed a lawsuit claiming that some of its patents had been infringed by Nest.</p>
+<p>In April 2012, Nest stated they believe that none of the allegedly infringed patents were actually violated. Honeywell claimed that Nest infringed on patents pertaining to remotely controlling a thermostat, power-stealing thermostats, and thermostats designed around a circular, interactive design, similar to the <a href="./Honeywell_T87" title="Honeywell T87">Honeywell T87</a>. However, Honeywell held patents that were almost identical to those that expired in 2004. Nest has taken the stance that they will see this through to <a href="./Patent_court" title="Patent court">patent court</a> as they suspect Honeywell is trying to harass them, litigiously and financially, out of business.</p>
+<p>On May 14, 2013, Allure Energy also filed a lawsuit, alleging infringement of a patent on an "Auto-adaptable energy management apparatus". <a href="./First_Alert" title="First Alert">First Alert</a> sued Nest in 2014 in regards to voice alert functionality and a design trait of the Nest Protect, despite the fact that the world's first talking smoke and carbon monoxide alarm was actually released by <a href="./Kidde" title="Kidde">Kidde</a>.<br>
+In 2016, Nest announced that the devices of Revolv customers would be <a href="./Bricked" title="Bricked">bricked</a> on May 15, as they were shutting down the necessary cloud software. Karl Bode and Emmanuel Malberg of <em><a href="./Vice_News" title="Vice News">Vice News</a></em> compared the move to a remote deletion of purchased <a href="./Xbox_Fitness" title="Xbox Fitness">Xbox Fitness</a> content by Microsoft. The <a href="./Federal_Trade_Commission" title="Federal Trade Commission">Federal Trade Commission</a> entered into an investigation of the matter.</p>
+<p>In May 2016, an employee filed an unfair labor practice charge with the <a href="./National_Labor_Relations_Board" title="National Labor Relations Board">National Labor Relations Board</a> against Nest and Google. In the charge, the employee alleged that he was terminated for posting information about Tony Fadell's poor leadership to a private Facebook page consisting of current and former employees. The charge also alleged that Nest and Google had engaged in unlawful surveillance and unlawful interrogation of employees in order to prevent them from discussing the work environment at Nest.</p>
+<h3>Parody after Google acquisition</h3>
+<p>On May 7, 2014, German activist group <a href="./Peng_Collective" title="Peng Collective">Peng Collective</a> released a parody website named <em>Google Nest</em>, satirizing Google's privacy policies and practices with fake products imitating Google art style, supposedly created as a result of "an intensive period of studying user behavior" in response to the "<a href="./Global_surveillance_disclosures_(2013–present)" title="Global surveillance disclosures (2013–present)">public debate around privacy</a> and <a href="./Global_surveillance" title="Global surveillance">government surveillance</a>". The site described four purported new services lampooning Google's data gathering tendencies made possible with Nest's technology: <em>Google Trust, Google Hug, Google Bee</em>, and <em>Google Bye</em>, respectively a "data insurance" paid with personal data, a <a href="./Location-based_service" title="Location-based service">location service</a> encouraging in-person emotional interactions, a "personal <a href="./Unmanned_aerial_vehicle" title="Unmanned aerial vehicle">drone</a>", and a memorial website created from automatically collected information.</p>
+<p>The next day, Google trademark lawyers issued a <a href="./Cease-and-desist" title="Cease-and-desist">cease-and-desist</a> letter to Peng, asking them to change the site and to transfer the <a href="./Domain_name" title="Domain name">domain name</a> to Google. The site replaced its content with a note explaining the situation, and the <a href="./Electronic_Frontier_Foundation" title="Electronic Frontier Foundation">Electronic Frontier Foundation</a> responded on behalf of Peng with a public letter saying that noncommercial political commentary is not prohibited under <a href="./Trademark_law" title="Trademark law">trademark law</a>, and that the site would not likely be confused after the ample press coverage received.</p>
+<h2>Controversies</h2>
+<h3>Hidden Nest microphone incident</h3>
+<p>Google Nest Guard contained a microphone that was not disclosed in any of the product specifications. The microphone was discovered by the public in February 2019, after Google announced a new feature that would use that microphone for voice commands. Users and reviewers were shocked, as the product's <a href="./Tech_specs" title="Tech specs">tech specs</a> had never listed a microphone. <a href="./Google" title="Google">Google</a> claimed that it was an error when writing the product specifications. US Senators wrote an open letter to Google's CEO demanding answers and an in-person briefing. They framed the incident as a major breach of <a href="./Public_relations" title="Public relations">consumer trust</a> and raised specific <a href="./Computer_security" title="Computer security">security</a> concerns.</p>
+<h4>History</h4>
+<p>The Nest Secure system, featuring the Nest Guard as its hub, launched in September 2017. The system included the Nest Guard hub with a keypad and <a href="./Motion_sensor" title="Motion sensor">motion sensor</a>, Nest Detect door/window sensors, and Nest Tag key fobs for arming and disarming the alarm.</p>
+<p>One year and a half later, in February, 2019, Google announced a software update that enabled <a href="./Google_Assistant" title="Google Assistant">Google Assistant</a> on the device, thus revealing an undisclosed microphone in the Nest Guard that lead to the hidden microphone controversy.</p>
+<p>After the public backlash, Google acknowledged this as an "error" and claimed the microphone was never activated without user permission. Google responded that "the on-device microphone was never intended to be a secret and should have been listed in the tech specs". However, the omission raised serious privacy concerns, as critics argued that if a microphone was not disclosed in the specs, the same could also happen for other components or features.</p>
+<h6>The public's reaction</h6>
+<p>The announcement caused immediate concern and anger. Users and tech blogs such as <a href="./Daring_Fireball" title="Daring Fireball">Daring Fireball</a>, highlighted the issue, and it was widely reported across major news outlets starting around February 20, 2019. Silkie Carlo, director of the privacy-focused campaign group <a href="./Big_Brother_Watch" title="Big Brother Watch">Big Brother Watch</a>, reported "Many of our worries about smart home devices appear to be proving true... Google should be held to account for wrongly advertising this product".</p>
+<p>After the revelations that Google did not let consumers know of the microphone in its Nest security devices, the <a href="./Electronic_Privacy_Information_Center" title="Electronic Privacy Information Center">Electronic Privacy Information Center</a>, a major advocacy group, sent a letter to the <a href="./Federal_Trade_Commission" title="Federal Trade Commission">Federal Trade Commission</a> alerting that the situation constituted a consumer risk and it demanded it to take enforcement action against Google. EPIC argued that the FTC should have done a more rigorous review before allowing Google to acquire Nest and demanded that it should force it to <a href="./Divestment" title="Divestment">divest</a> its Nest business.</p>
+<h6>US Senators open letter</h6>
+<p>At the end of February 2019, US Senators demanded more details about revelations that a hidden microphone had been built into its Nest devices without listing it in the specifications. In their formal letter to <a href="./Sundar_Pichai" title="Sundar Pichai">Sundar Pichai</a>, they referred to the consumers' concern about the "ability of <a href="./Big_Tech" title="Big Tech">large technology companies</a> to collect and use personal data about them without their knowledge" and they demanded that these corporations be transparent with customers and provide full disclosure of all technical specifications that they sell. They stated Google's failure "raises serious questions about its commitment to consumer transparency".</p>
+<p>In addition, they demanded answers regarding:</p>
+<ul>
+<li>Timeline and awareness: when and how Google realized the microphone was not listed in the tech specs.</li>
+<li>Component history: whether a microphone was always a part of the Nest Secure device</li>
+<li>Consumer notification: what steps Google took to inform customers who had already purchased the device.</li>
+<li>Internal process: a description of Google's process for developing technical specs, where the error occurred, and what fixes were in place.</li>
+<li>Security and unauthorized use: if Google was aware of any third party (like <a href="./Hacker" title="Hacker">hackers</a>) using the microphone without authorization. The letter highlighted that even if Google never activated the microphone, the hardware's existence created a <a href="./Vulnerability_(computer_security)" title="Vulnerability (computer security)">security risk</a> that hackers or outside entities could exploit to illicitly record information.</li>
+</ul>
+<h3>Other</h3>
+<p>Per the terms of service, Google will provide law enforcement with Nest data "If we reasonably believe that we can prevent someone from dying or from suffering serious physical harm. For example, in the case of bomb threats, school shootings, kidnappings, suicide prevention, and missing person cases." In certain situations, this may be done without a warrant.</p>
+<h2>See also</h2>
+<ul>
+<li><a href="./File:Crystal_Clear_app_linneighborhood.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Crystal_Clear_app_linneighborhood.svg/40px-Crystal_Clear_app_linneighborhood.svg.png"></a><a href="./Portal:Internet" title="Portal:Internet">Internet portal</a></li>
+<li><a href="./File:Nuvola_apps_ksim.png"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Nuvola_apps_ksim.png/40px-Nuvola_apps_ksim.png"></a><a href="./Portal:Electronics" title="Portal:Electronics">Electronics portal</a></li>
+<li>
+<p><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/a/af/Big_single-family_home_2.jpg/40px-Big_single-family_home_2.jpg"><a href="./Portal:Housing" title="Portal:Housing">Housing portal</a></p>
+</li>
+<li>
+<p><a href="./Android_Things" title="Android Things">Android Things</a></p>
+</li>
+<li><a href="./Ecobee" title="Ecobee">ecobee</a></li>
+<li><a href="./Internet_of_things" title="Internet of things">Internet of things</a></li>
+<li><a href="./Machine_learning" title="Machine learning">Machine learning</a></li>
+<li><a href="./X10_(industry_standard)" title="X10 (industry standard)">X10</a></li>
+</ul>
+<h2>References</h2>
+<h2>Further reading</h2>
+<ul>
+<li>Huitt, Robert; <a href="./Gordon_Eubanks" title="Gordon Eubanks">Eubanks, Gordon</a>; <a href="./Thomas_Alan_Rolander" title="Thomas Alan Rolander">Rolander, Thomas "Tom" Alan</a>; Laws, David; Michel, Howard E.; Halla, Brian; <a href="./John_Harrison_Wharton" title="John Harrison Wharton">Wharton, John Harrison</a>; Berg, Brian; Su, Weilian; <a href="./Scott_Kildall" title="Scott Kildall">Kildall, Scott</a>; Kampe, Bill (April 25, 2014). Laws, David (ed.). <a href="https://archive.computerhistory.org/resources/access/text/2014/06/102746909-05-01-acc.pdf">"Legacy of Gary Kildall: The CP/M IEEE Milestone Dedication"</a> (PDF) (video transcription). Pacific Grove, California, USA: <a href="./Computer_History_Museum" title="Computer History Museum">Computer History Museum</a>. CHM Reference number: X7170.2014. Retrieved January 19, 2020. "[...] <a href="./Thomas_Alan_Rolander" title="Thomas Alan Rolander">Rolander</a>: [...] <a href="./Gary_Arlen_Kildall" title="Gary Arlen Kildall">Gary</a> then started a company, <a href="./Prometheus_Light_and_Sound" title="Prometheus Light and Sound">Prometheus Light and Sound</a>, and he was into connected devices within the home. Which is of course what <a href="./Google" title="Google">Google</a> and Nest is about at this point, I think the reason for their acquisition. So he was consistently 10, maybe 20 years ahead, of, in many cases, the commercial viability of a lot of those technologies." <a href="https://ethw.org/Milestones:The_CP/M_Microcomputer_Operating_System,_1974">Milestones:The CP/M Microcomputer Operating System, 1974 - Engineering and Technology History Wiki</a> <a href="https://www.youtube.com/watch?v=HO6IPpL0y8g">Legacy of Gary Kildall: The CP/M IEEE Milestone Dedication</a> (33 pages)</li>
+</ul>
+<h2>External links</h2>
+<p><a href="./File:Commons-logo.svg"><img alt="Wikimedia Commons logo" src="//upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/40px-Commons-logo.svg.png"></a></p>
+<p>Wikimedia Commons has media related to <a href="https://commons.wikimedia.org/wiki/Category:Google%20Nest" title="commons:Category:Google Nest">Google Nest</a>.</p>
+<ul>
+<li><a href="http://www.nest.com/">Official website</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products" title="List of Google products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Home_automation" title="Template:Home automation">v</a> - <a href="./Template_talk:Home_automation" title="Template talk:Home automation">t</a> - <a href="./Special:EditPage/Template:Home_automation" title="Special:EditPage/Template:Home automation">e</a>  <a href="./Home_automation" title="Home automation">Home automation</a></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Home_automation#System" title="Home automation">System</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Home_automation#Tasks" title="Home automation">Tasks</a></td>
+<td>- <a href="./Home_automation#Audio_and_video" title="Home automation">Audio and video</a> - <a href="./Heating,_ventilation,_and_air_conditioning" title="Heating, ventilation, and air conditioning">Heating, ventilation, and air conditioning</a> - <a href="./Lighting_control_system" title="Lighting control system">Lighting control system</a> - <a href="./Home_automation#Other_systems" title="Home automation">Other systems</a> - <a href="./Home_automation#Robotics" title="Home automation">Robotics</a> - <a href="./Home_automation#Security" title="Home automation">Security</a> - <a href="./Programmable_communicating_thermostat" title="Programmable communicating thermostat">Thermostat automation</a> - <a href="./Residential_gateway" title="Residential gateway">Gateway</a> - <a href="./Smart_home_hub" title="Smart home hub">Smart home hub</a></td>
+<td></td>
+</tr>
+<tr>
+<td>Other</td>
+<td>- <a href="./Home_automation#Costs" title="Home automation">Costs</a> - <a href="./Mesh_networking" title="Mesh networking">Mesh networking</a> - <a href="./Home_automation#Organizations" title="Home automation">Organizations</a> - <a href="./Smart_grid" title="Smart grid">Smart grid</a></td>
+<td></td>
+</tr>
+<tr>
+<td>See also  <a href="./Home_of_the_future" title="Home of the future">Home of the future</a>  <a href="./Building_automation" title="Building automation">Building automation</a>  <a href="./Floor_plan" title="Floor plan">Floor plan</a>  <a href="./Home_automation" title="Home automation">Home automation</a>  <a href="./Home_energy_monitor" title="Home energy monitor">Home energy monitor</a>  <a href="./Home_network" title="Home network">Home network</a>  <a href="./Home_server" title="Home server">Home server</a>  <a href="./Robotic_mapping" title="Robotic mapping">House navigation system</a>  <a href="./INTEGER_Millennium_House" title="INTEGER Millennium House">INTEGER Millennium House</a>  <a href="./House_for_the_Future,_Cardiff" title="House for the Future, Cardiff">The House for the Future</a>  <a href="./Ubiquitous_computing" title="Ubiquitous computing">Ubiquitous computing</a>  <a href="./Xanadu_Houses" title="Xanadu Houses">Xanadu Houses</a></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

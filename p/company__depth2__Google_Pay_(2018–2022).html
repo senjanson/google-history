@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Google Pay (2018–2022)</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link active" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Google Pay (2018–2022)</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Google_Wallet<br>
+Category: company__depth2<br>
+Depth: 2</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Google Wallet is a digital wallet platform developed by Google. It is available for the Android, Wear OS, and Fitbit OS operating systems, and was announced on May 11, 2022, at the 2022 Google I/O keynote. It began rolling out on Android smartphones on July 18, 2022.</p>
+<h2>Images</h2>
+<p><img alt="120px-Google_Wallet_-_Home_Screen" src="../images/120px-Google_Wallet_-_Home_Screen.png"><br>
+<img alt="250px-Android_Pay_logo.svg" src="../images/250px-Android_Pay_logo.svg.png"><br>
+<img alt="250px-Google_Pay_Acceptance_Mark.svg" src="../images/250px-Google_Pay_Acceptance_Mark.svg.png"></p>
+<h2>Full Article</h2>
+<p>Digital wallet platform by Google</p>
+<p>This article is about the mobile app introduced in 2022. For the discontinued service of the same name, see <a href="./Google_Wallet_(2011–2018)" title="Google Wallet (2011–2018)">Google Wallet (2011–2018)</a>.</p>
+<p>"Google Pay (2018–2022)" redirects here. For the 2020 app, see <a href="./Google_Pay_(mobile_app)" title="Google Pay (mobile app)">Google Pay (mobile app)</a>.</p>
+<p>Not to be confused with <a href="./Google_Pay_(payment_method)" title="Google Pay (payment method)">Google Pay (payment method)</a>.</p>
+<p><strong>Google Wallet</strong> (or simply <strong>Wallet</strong>) is a <a href="./Digital_wallet" title="Digital wallet">digital wallet</a> platform developed by <a href="./Google" title="Google">Google</a>. It is available for the <a href="./Android_(operating_system)" title="Android (operating system)">Android</a>, <a href="./Wear_OS" title="Wear OS">Wear OS</a>, and <a href="./Fitbit" title="Fitbit">Fitbit</a> OS operating systems, and was announced on May 11, 2022, at the 2022 <a href="./Google_I/O" title="Google I/O">Google I/O</a> keynote. It began rolling out on Android smartphones on July 18, 2022.</p>
+<h2>History</h2>
+<table>
+<thead>
+<tr>
+<th><a href="./Google_Pay" title="Google Pay">Google payment apps</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>- <a href="./Template:Google_payment_apps" title="Template:Google payment apps">v</a> - <a href="./Template_talk:Google_payment_apps" title="Template talk:Google payment apps">t</a> - <a href="./Special:EditPage/Template:Google_payment_apps" title="Special:EditPage/Template:Google payment apps">e</a></td>
+</tr>
+</tbody>
+</table>
+<p>The "Google Wallet" <a href="./Brand_name" title="Brand name">brand name</a> was first used for the company's <a href="./Mobile_payment" title="Mobile payment">mobile payment</a> system <a href="./Google_Wallet_(2011–2018)" title="Google Wallet (2011–2018)">of the same name</a>, which was introduced in 2011 before being merged with <a href="./Android_Pay" title="Android Pay">Android Pay</a> into a new app called Google Pay in 2018. The old Wallet app, with its functionality reduced to a <a href="./Peer-to-peer_banking" title="Peer-to-peer banking">peer-to-peer payments service</a>, was rebranded <a href="./Google_Pay_Send" title="Google Pay Send">Google Pay Send</a> before it was discontinued as well in 2020. In 2020, the Google Pay app underwent an extensive redesign based on Google's India-focused <a href="./Tez_(software)" title="Tez (software)">Tez</a> app, expanding into an all-encompassing personal finance app. This replaced the Tez app on the Play Store, while the 2018 Google Pay app continued to co-exist as a separate, pre-installed app on Android smartphones.</p>
+<h3>Google Wallet (2011) launches</h3>
+<p>Google demonstrated the original version of the original Google Wallet app at a press conference on May 26, 2011. The first app was released in the US only on September 19, 2011. Initially, the app only supported <a href="./Mastercard" title="Mastercard">Mastercard</a> cards issued by <a href="./Citibank" title="Citibank">Citibank</a>.</p>
+<p>On May 15, 2013, Google announced the integration of Google Wallet and <a href="./Gmail" title="Gmail">Gmail</a>, allowing users to send money through Gmail attachments. While Google Wallet was available only in the United States, the Gmail integration was made available in the U.S. and the United Kingdom.</p>
+<p>In 2015, a physical Google Wallet card was launched as an optional addition to the app, which allowed users to make purchases at point-of-sale (in stores or online) drawing from funds in their Google Wallet account, attached debit card account, or bank account. The card could also be used to withdraw cash at ATMs with no Google-associated fee, and could be used like a debit card for virtually any purpose, including such things as renting a car. The Wallet Card was discontinued on June 30, 2016, and replaced with <a href="./Android_Pay" title="Android Pay">Android Pay</a>.</p>
+<h3>Android Pay launches</h3>
+<p>Originally launched as Android Pay, the service was released at <a href="./Google_I/O" title="Google I/O">Google I/O</a> 2015. Android Pay was a successor to and built on the base established by <a href="./Google_Wallet_(2011-2018)" title="Google Wallet (2011-2018)">Google Wallet</a> which was released in 2011. It also used technology from the carrier-backed <a href="./Softcard" title="Softcard">Softcard</a>—Google had acquired its intellectual property in February 2015. At launch, the service was compatible with 70% of Android devices and was accepted at over 700,000 merchants. The old Google Wallet still powered web-based Play Store purchases and some app-based peer-to-peer payments.</p>
+<p>In 2016, Google began a public trial in <a href="./Silicon_Valley" title="Silicon Valley">Silicon Valley</a> of a related <a href="./Mobile_app" title="Mobile app">mobile app</a> called Hands Free. In this system, the customer does not need to present a phone or card. Instead, a customer announces that they wish to "pay with Google" and give their initials to the cashier, who verifies their identity with a photo previously uploaded to the system. The customer's phone will only authorize payment if its geographic location system indicates that it is near a participating store.</p>
+<p>On September 18, 2017, Google launched a payments app in India known as <a href="./Tez_(software)" title="Tez (software)">Tez</a>, utilizing the <a href="./Unified_Payments_Interface" title="Unified Payments Interface">Unified Payments Interface</a> (UPI). On August 28, 2018, Google rebranded Tez to <a href="./Google_Pay_(mobile_app)" title="Google Pay (mobile app)">Google Pay</a>.</p>
+<h3>Android Pay and Google Wallet become Google Pay</h3>
+<p>On January 8, 2018, Google announced that Google Wallet would be merged into Android Pay, with the service as a whole rebranded as Google Pay. This merger extends the platform into web-based payments integrated into other Google and third-party services. It also took over the branding of <a href="./Google_Chrome" title="Google Chrome">Google Chrome</a>'s <a href="./Autofill" title="Autofill">autofill</a> feature. Google Pay adopts the features of both Android Pay and Google Wallet through its in-store, peer-to-peer, and <a href="./Online_payment" title="Online payment">online payments</a> services.</p>
+<p>The rebranding began to roll out as an update to the Android Pay app on February 20, 2018; the app was given an updated design and now displays a personalized list of nearby stores that support Google Pay. The rebranded service provided a new <a href="./API" title="API">API</a> that allows merchants to add the payment service to websites, apps, <a href="./Stripe_(company)" title="Stripe (company)">Stripe</a>, <a href="./Braintree_(company)" title="Braintree (company)">Braintree</a>, and <a href="./Google_Assistant" title="Google Assistant">Google Assistant</a>. The service allows users to use the payment cards they have on file in their Google Account.</p>
+<h3>Google Pay becomes Google Wallet (2022)</h3>
+<p>In January 2022, <em><a href="./Bloomberg_News" title="Bloomberg News">Bloomberg News</a></em> reported that the company was planning to transform Google Pay into a "comprehensive digital wallet", following the app's reported slow growth and the shutdown of <a href="./Plex_(Google)" title="Plex (Google)">Plex</a>. In April, it was reported that Google was planning to revive the "Google Wallet" branding in a new app or interface, and integrated with Google Pay. Google officially announced Google Wallet on May 11, 2022, at the 2022 <a href="./Google_I/O" title="Google I/O">Google I/O</a> keynote. The app began rolling out on Android smartphones on July 18, replacing the 2018 app and co-existing with the 2020 Google Pay app in the U.S. While the app name itself was changed from Google Pay to Google Wallet, the service name of actually paying for things online or in-store remains as "Google Pay."</p>
+<h3>International deployment</h3>
+<p>In its <a href="./United_Kingdom" title="United Kingdom">UK</a> launch,[<em><a href="./Wikipedia:Manual_of_Style/Dates_and_numbers#Chronological_items" title="Wikipedia:Manual of Style/Dates and numbers">when?</a></em>] Android Pay supported <a href="./Mastercard" title="Mastercard">Mastercard</a>, <a href="./Visa_Inc." title="Visa Inc.">Visa</a>, and debit cards from many of the UK's major financial institutions –  including <a href="./Bank_of_Scotland" title="Bank of Scotland">Bank of Scotland</a>, <a href="./First_Direct" title="First Direct">First Direct</a>, Halifax, <a href="./HSBC" title="HSBC">HSBC</a>, <a href="./Lloyds_Bank" title="Lloyds Bank">Lloyds Bank</a>, <a href="./M&amp;S_Bank" title="M&amp;S Bank">M&amp;S Bank</a>, <a href="./MBNA" title="MBNA">MBNA</a> and <a href="./Nationwide_Building_Society" title="Nationwide Building Society">Nationwide Building Society</a> –  "with new banks being added all the time", according to Google.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>] <a href="./NatWest" title="NatWest">NatWest</a>, <a href="./RBS_International" title="RBS International">RBS</a> and <a href="./Ulster_Bank" title="Ulster Bank">Ulster Bank</a> launched on September 14, 2016. On September 8, 2016, it was reported that UK banks <a href="./TSB_Bank_(United_Kingdom)" title="TSB Bank (United Kingdom)">TSB</a> and <a href="./Santander_UK" title="Santander UK">Santander</a> would be participating in the following weeks. Android Pay was launched in Singapore on June 28, 2016 and in Australia on July 14, 2016.</p>
+<p>Android Pay launched in <a href="./Republic_of_Ireland" title="Republic of Ireland">Ireland</a> on December 7, 2016, and was initially available to customers of <a href="./Allied_Irish_Banks" title="Allied Irish Banks">AIB</a> and <a href="./KBC_Bank_Ireland" title="KBC Bank Ireland">KBC</a>, having since been extended to <a href="./Bank_of_Ireland" title="Bank of Ireland">Bank of Ireland</a> and <a href="./Ulster_Bank" title="Ulster Bank">Ulster Bank</a>. The service works with both credit and debit cards.</p>
+<p>On December 21, 2018, Google Payment obtained an e-money license in <a href="./Lithuania" title="Lithuania">Lithuania</a> –  the license will enable Google to process payments, issue e-money, and handle electronic money wallets in the EU.</p>
+<p>On November 17, 2020, Google Pay was enabled by Mastercard in ten new European countries: <a href="./Austria" title="Austria">Austria</a>, <a href="./Bulgaria" title="Bulgaria">Bulgaria</a>, <a href="./Estonia" title="Estonia">Estonia</a>, <a href="./Greece" title="Greece">Greece</a>, <a href="./Hungary" title="Hungary">Hungary</a>, <a href="./Latvia" title="Latvia">Latvia</a>, Lithuania, <a href="./Netherlands" title="Netherlands">Netherlands</a>, <a href="./Portugal" title="Portugal">Portugal</a>, and <a href="./Romania" title="Romania">Romania</a>. Cardholders of participating Mastercard partner banks for these countries will be able to use the Google Pay service through their respective mobile banking apps.</p>
+<p>On June 30, 2022, it was announced at the Google for <a href="./Mexico" title="Mexico">Mexico</a> event that payment method <a href="./Google_Pay_(payment_method)" title="Google Pay (payment method)">Google Pay</a> &amp; the Google Wallet app would soon be available in Mexico. Google Wallet was introduced in <a href="./India" title="India">India</a> on 8 May 2024, albeit it will function in tandem with <a href="./Google_Pay_(mobile_app)" title="Google Pay (mobile app)">Google Pay</a> mobile app, the main payment solution in the market.</p>
+<h2>Features</h2>
+<p>Google Wallet allows users to store items such as <a href="./Payment_card" title="Payment card">payment cards</a> for use via Google Pay, as well as passes such as <a href="./Loyalty_program" title="Loyalty program">loyalty cards</a>, <a href="./List_of_digital_keys_in_mobile_wallets" title="List of digital keys in mobile wallets">digital keys</a>, digital <a href="./Identity_document" title="Identity document">identification cards</a>, <a href="./Transit_pass" title="Transit pass">transit passes</a>, event tickets, and health passes.</p>
+<p>Digital car keys in Google Wallet can still be utilized when the screen is off or the battery is depleted.</p>
+<p>Although the Wear OS and Android versions of Wallet are currently fragmented, Google has stated that its "long-term goal is for feature parity on your watch and phone," though as of 2024, new features continue to be launched without parity on all platforms. At <a href="./Google_I/O" title="Google I/O">Google I/O</a> 2024, Google announced that "expanded support for passes of all types" would be coming to Wear OS and Fitbit OS.</p>
+<h3>Comparison between phone and wearable versions</h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Android</th>
+<th>Wear OS</th>
+<th>Fitbit OS</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pay with EMV payment cards via Google Pay</td>
+<td>Yes</td>
+<td>Partial</td>
+<td>Partial</td>
+<td>Some payment cards are not supported on Wear OS or Fitbit OS.</td>
+</tr>
+<tr>
+<td>Pay with FeliCa payment cards via Google Pay</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>No</td>
+<td>For Wear OS: Only for <a href="./Pixel_Watch" title="Pixel Watch">Pixel Watches</a>, <a href="./Samsung_Galaxy_Watch_series" title="Samsung Galaxy Watch series">Galaxy Watch Ultra</a>, and <a href="./Samsung_Galaxy_Watch_6" title="Samsung Galaxy Watch 6">Galaxy Watch6</a> or later devices purchased in Japan.</td>
+</tr>
+<tr>
+<td>Pay via QR code</td>
+<td>Yes</td>
+<td>No</td>
+<td>No</td>
+<td>For Android: Only available in Brazil.</td>
+</tr>
+<tr>
+<td>Store passes</td>
+<td>Yes</td>
+<td>Partial</td>
+<td>Coming soon</td>
+<td>For Wear OS: Private passes are not supported. Smart Tap (NFC) passes only show their fallback QR code/barcode/number.</td>
+</tr>
+<tr>
+<td>Store campus identifications</td>
+<td>Yes</td>
+<td>Coming soon</td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td>Store corporate badges</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Coming soon</td>
+<td></td>
+</tr>
+<tr>
+<td>Store government-issued identifications</td>
+<td>Yes</td>
+<td>No</td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td>Store hotel keys</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td>Store digital car keys</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>No</td>
+<td>For Android: Only for select devices, most notably Pixel Fold, Pixel 6, &amp; Pixel 6a or later devices.  For Wear OS:  Only for Pixel Watch 3 or later.</td>
+</tr>
+<tr>
+<td>Store MIFARE/ITSO/EMV transit cards</td>
+<td>Yes</td>
+<td>Partial</td>
+<td>Partial</td>
+<td>For Android: <a href="./IPASS_(Taiwan)" title="IPASS (Taiwan)">iPASS</a> can only be stored on   - Xiaomi 14T/14T Pro - POCO F7 Ultra/POCO F7 Pro - POCO X7 Pro   For Wear OS:  Only SmarTrip, Clipper, ORCA, PRESTO, and Myki are supported.  For Fitbit OS:  <a href="./IPASS_(Taiwan)" title="IPASS (Taiwan)">iPASS</a> can only be stored on   - Sense Series - Versa Series (excluding Lite version) - Charge 3 Series and above</td>
+</tr>
+<tr>
+<td>Store FeliCa transit cards</td>
+<td>Yes</td>
+<td>Partial</td>
+<td>Partial</td>
+<td>For Android: Only for supported devices purchased in Japan.  For Wear OS:  Only for <a href="./Pixel_Watch" title="Pixel Watch">Pixel Watches</a>, <a href="./Galaxy_Watch6" title="Galaxy Watch6">Galaxy Watch6</a> or later, and Galaxy Watch Ultra devices purchased in Japan.  For Fitbit OS:  Suica cards can be stored through <a href="./Fitbit_Pay" title="Fitbit Pay">Fitbit Wallet</a> instead (Fitbit account region must be set to Japan.)</td>
+</tr>
+<tr>
+<td>Store FeliCa e-money cards</td>
+<td>Yes</td>
+<td>No</td>
+<td>No</td>
+<td>For Android: Only for supported devices purchased in Japan.</td>
+</tr>
+<tr>
+<td>Store transit loyalty cards</td>
+<td>Yes</td>
+<td>No</td>
+<td>No</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3>Skip device unlock &amp; battery depletion</h3>
+<p>Most NFC passes can be transmitted when the Android device is locked, but the screen must be lit (Always On Display does not count.) This includes most compatible transit cards, loyalty passes, tickets, and campus IDs. However, government IDs can only be used when the device is unlocked.</p>
+<p>Only one class of NFC passes allows usage when the screen is unlit or the battery is depleted: car keys.</p>
+<h3>Usage</h3>
+<p>Passes and cards stored in Wallet require varying levels of authentication in order to convey to a reader.</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Android</th>
+<th>Wear OS</th>
+<th>Fitbit OS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pay with EMV payment cards via Google Pay</td>
+<td>Phone on, phone unlocked. To pay with non-default, Wallet app must be open to desired card.</td>
+<td>Watch on, watch unlocked. To pay with non-default, Wallet app must be open to desired card. (Pixel Watch 2 or later). For other devices, Wallet app must be open for any card.</td>
+<td>Watch on, watch unlocked, Wallet app open.</td>
+</tr>
+<tr>
+<td>Pay with FeliCa payment cards via Google Pay</td>
+<td>Phone on, phone unlocked to pay with default iD/QUICPay card. To pay with non-default, Wallet app must be open to the desired card.</td>
+<td>Watch on, watch unlocked to pay with default iD/QUICPay card. To pay with non-default, Wallet app must be open to desired card.</td>
+<td>—N/a</td>
+</tr>
+<tr>
+<td>Pay via QR code</td>
+<td>Phone on, phone unlocked, Wallet app open &amp; ready to scan QR.</td>
+<td>—N/a</td>
+<td>—N/a</td>
+</tr>
+<tr>
+<td>Use code-based or visual passes (excluding visual transit passes)</td>
+<td>Phone on, phone unlocked, Wallet app open &amp; viewing desired pass.</td>
+<td>Watch on, watch unlocked, Wallet app open &amp; viewing desired pass.</td>
+<td>—N/a</td>
+</tr>
+<tr>
+<td>Use general NFC (Smart Tap) passes</td>
+<td>Phone on, phone screen lit. Some Pixel devices will wake their own screen when presented to an NFC reader.</td>
+<td>—N/a</td>
+<td>—N/a</td>
+</tr>
+<tr>
+<td>Use private passes</td>
+<td>Phone on, phone unlocked, Wallet app open, authenticate additional time.</td>
+<td>—N/a</td>
+<td>—N/a</td>
+</tr>
+<tr>
+<td>Use government-issued identifications</td>
+<td>Phone on, phone unlocked, verify shared info. Additional step of opening the Wallet app is required if scanning 2D code instead of NFC.</td>
+<td>—N/a</td>
+<td>—N/a</td>
+</tr>
+<tr>
+<td>Use digital car keys</td>
+<td>Phone can be on or off for use via NFC. For UWB, phone must be on.</td>
+<td>Watch can be on and unlocked or manually powered off after having been unlocked for use via NFC. For UWB, watch must be on and unlocked.</td>
+<td>—N/a</td>
+</tr>
+<tr>
+<td>Pay with EMV payment cards on transit</td>
+<td>Phone on. To pay with non-default, phone must be unlocked and Wallet app must be open to desired card.</td>
+<td>Watch on, watch unlocked. To pay with non-default, Wallet app must be open to desired card.</td>
+<td></td>
+</tr>
+<tr>
+<td>Use MIFARE/ITSO/EMV transit cards</td>
+<td>Phone on, phone screen lit. Some Pixel devices will wake their own screen when presented to an NFC reader.**</td>
+<td>Watch on, watch unlocked.*</td>
+<td>Watch can be on or off, depending on device.^</td>
+</tr>
+<tr>
+<td>Use FeliCa transit cards</td>
+<td>Phone can be on or off.</td>
+<td>Watch on, watch unlocked.</td>
+<td>—N/a</td>
+</tr>
+<tr>
+<td>Use transit loyalty cards</td>
+<td>Phone on, phone screen lit. Some Pixel devices will wake their own screen when presented to an NFC reader.</td>
+<td>—N/a</td>
+<td>—N/a</td>
+</tr>
+</tbody>
+</table>
+<p>* = except Clipper &amp; myki; Wallet app must be open in those cases</p>
+<p>** = except iPASS; phone can be off in that case</p>
+<p>^ = iPASS only</p>
+<h3>Pass transfers</h3>
+<p>When switching devices or factory resetting, passes that are limited to one device have the potential to be lost, as Android/Wear OS does not automatically remove data from Wallet when the aforementioned processes are initiated. The user must remember to clear device-specific passes, such as transit cards, IDs, and keys from their current devices.</p>
+<h2>Ecosystem</h2>
+<p>Google Wallet has a passes feature, which exists in a larger ecosystem. They are presented below the user's payment cards and can be sorted manually. Developers must first be granted access to the Google Wallet API before they can author such items. Passes can be shared to other users via a link, so long as the issuer of said pass does not restrict its addition to more than one user's Wallet.</p>
+<p>In its simplest form, an interaction (or transaction) between a pass and a system is facilitated by a 1D or 2D code, although it requires the customer to initiate the activity. Passes can also contain nothing but plain text or an image.</p>
+<p>In addition to retailer-specific passes, Google Wallet also supports contactless student IDs that can be added through the Transact eAccounts and CBORD GET Mobile applications. Government-issued IDs are also supported in ten American states.</p>
+<h3>Smart Tap</h3>
+<p>Google Wallet offers Smart Tap technology for use by developers and merchants that enables NFC passes to be stored within a customer's Google Wallet for use at a compatible terminal. Google offers the technology free of charge through the Google Pay &amp; Wallet Console. Each pass issuer is given a Collector ID to use to configure their compatible terminals. If multiple passes within a user's Wallet match a terminal's Collector ID, a carousel will appear when tapping, allowing the user to tap their device, swipe to the next pass, and then repeat the process until all desired passes are transmitted.</p>
+<p>This technology is currently used by a variety of businesses worldwide for a wide range of uses. <a href="./Walt_Disney_World" title="Walt Disney World">Walt Disney World Resort</a> (USA), <a href="./Ticketmaster" title="Ticketmaster">Ticketmaster</a> (USA &amp; UK), and <a href="./Pathé_Cinémas" title="Pathé Cinémas">Pathé Cinémas</a> (France) use it for ticketing. <a href="./Redbox" title="Redbox">Redbox</a> (USA), <a href="./Nando's" title="Nando's">Nando's</a> (UK &amp; Ireland), and <a href="./Woolworths_Group_(Australia)" title="Woolworths Group (Australia)">Woolworth's</a> (Australia) use it for loyalty programs. And <a href="./Anytime_Fitness" title="Anytime Fitness">Anytime Fitness</a> (Globally), <a href="./Keepcool?action=edit&amp;redlink=1" title="Keepcool">Keepcool</a> (France), <a href="./Club_Lime?action=edit&amp;redlink=1" title="Club Lime">Club Lime</a> (Australia), &amp; <a href="./David_Lloyd_Leisure" title="David Lloyd Leisure">David Lloyd Clubs</a> (UK) use it for memberships.</p>
+<h2>Financial services</h2>
+<h3>Google Pay</h3>
+<p>Main article: <a href="./Google_Pay_(payment_method)" title="Google Pay (payment method)">Google Pay (payment method)</a></p>
+<p>Google Pay is a service within Wallet that allows for payments with select banks and card networks. Currently available in a subset of the countries that support Google Wallet.</p>
+<h3>QR Payments</h3>
+<p>Not to be confused with QR payments via <a href="./Google_Pay_(mobile_app)" title="Google Pay (mobile app)">GPay app</a>.</p>
+<p>Wallet allows for QR payments in Brazil. This service supports the Visa, Mastercard, and Elo networks, as well as via <a href="./Pix_(payment_system)" title="Pix (payment system)">Pix</a>, and is primarily intended for users that do not have NFC functionality in their Android-powered devices.</p>
+<h2>Availability</h2>
+<h3>Unsupported countries</h3>
+<p>As of November 2025<a href="https://en.wikipedia.org/w/index.php?title=Google_Wallet&amp;action=edit">[update]</a>, Google Wallet is available nearly globally, with the exceptions of:</p>
+<ul>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/7/77/Flag_of_Algeria.svg/40px-Flag_of_Algeria.svg.png"> <a href="./Algeria" title="Algeria">Algeria</a></li>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Flag_of_Angola.svg/40px-Flag_of_Angola.svg.png"> <a href="./Angola" title="Angola">Angola</a></li>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/8/85/Flag_of_Belarus.svg/40px-Flag_of_Belarus.svg.png"> <a href="./Belarus" title="Belarus">Belarus</a></li>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Flag_of_the_People%27s_Republic_of_China.svg/40px-Flag_of_the_People%27s_Republic_of_China.svg.png"> <a href="./China" title="China">China</a></li>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Flag_of_Cuba.svg/40px-Flag_of_Cuba.svg.png"> <a href="./Cuba" title="Cuba">Cuba</a></li>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Flag_of_Iran.svg/40px-Flag_of_Iran.svg.png"> <a href="./Iran" title="Iran">Iran</a></li>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/4/49/Flag_of_Kenya.svg/40px-Flag_of_Kenya.svg.png"> <a href="./Kenya" title="Kenya">Kenya</a></li>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/0/05/Flag_of_Libya.svg/40px-Flag_of_Libya.svg.png"> <a href="./Libya" title="Libya">Libya</a></li>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Flag_of_Myanmar.svg/40px-Flag_of_Myanmar.svg.png"> <a href="./Myanmar" title="Myanmar">Myanmar</a></li>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/5/51/Flag_of_North_Korea.svg/40px-Flag_of_North_Korea.svg.png"> <a href="./North_Korea" title="North Korea">North Korea</a></li>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/en/thumb/f/f3/Flag_of_Russia.svg/40px-Flag_of_Russia.svg.png"> <a href="./Russia" title="Russia">Russia</a></li>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/0/09/Flag_of_South_Korea.svg/40px-Flag_of_South_Korea.svg.png"> <a href="./South_Korea" title="South Korea">South Korea</a></li>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Flag_of_South_Sudan.svg/40px-Flag_of_South_Sudan.svg.png"> <a href="./South_Sudan" title="South Sudan">South Sudan</a></li>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/0/01/Flag_of_Sudan.svg/40px-Flag_of_Sudan.svg.png"> <a href="./Sudan" title="Sudan">Sudan</a></li>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/5/54/Flag_of_Syria_%282025-%29.svg/40px-Flag_of_Syria_%282025-%29.svg.png"> <a href="./Syria" title="Syria">Syria</a></li>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Flag_of_Turkey.svg/40px-Flag_of_Turkey.svg.png"> <a href="./Turkey" title="Turkey">Turkey</a></li>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/8/84/Flag_of_Uzbekistan.svg/40px-Flag_of_Uzbekistan.svg.png"> <a href="./Uzbekistan" title="Uzbekistan">Uzbekistan</a></li>
+</ul>
+<h4>Region locking</h4>
+<p>Google Wallet prohibits <a href="./FeliCa" title="FeliCa">FeliCa</a>-based payment, transit, and loyalty functionality (e.g. Suica, PASMO, WAON, etc.) from being accessed on non-Japanese devices by restricting the initialization of the required third-party Osaifu-Keitai middleware apps on both Android &amp; Wear OS. However, users have discovered ways to enable the functionality on non-Japanese models of <a href="./Google_Pixel" title="Google Pixel">Pixels</a> via <a href="./Rooting_(Android)" title="Rooting (Android)">rooting</a>. This behavior is in contrast to other wallets such as Apple Wallet, which allow users with any regional device model (iPhone 7 or later) to add FeliCa-based cards.</p>
+<p>In turn, users with Japanese devices cannot access North American &amp; European transit cards such as <a href="./SmarTrip" title="SmarTrip">SmarTrip</a> and <a href="./Pop_card?action=edit&amp;redlink=1" title="Pop card">Pop</a>, though there is a workaround via previewing a route in Google Maps that uses the desired fare payment method, and selecting the banner that offers to add said card to Wallet.</p>
+<p>Campus IDs are also locked to devices bought in the United States of America, Canada, and Australia. Google claims support for international devices is "coming soon," though this has been promised for several years as of 2024.</p>
+<p>In addition, UWB functionality for car keys and home keys is limited to regions that allow the frequency to be broadcast in personal mobile devices by law.</p>
+<h3>Supported loyalty programs</h3>
+<p>These programs are conveyed through NFC through Google Wallet's Smart Tap feature. Some of these can be added through the Google Wallet app directly, while others must be added through the respective retailer's app or website. Programs that support One Tap are conveyed at the same time as a payment card stored in Google Wallet. Conversely, Two Tap programs are redeemed in a sequential manner, where a loyalty pass is scanned first, and then payment can be presented.</p>
+<table>
+<thead>
+<tr>
+<th>Country</th>
+<th>Retailer</th>
+<th>One Tap/Two Tap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Australia" title="Australia">Australia</a></td>
+<td><a href="./Dan_Murphy's" title="Dan Murphy's">Dan Murphy's</a> My Dan's</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Woolworths_Group_(Australia)" title="Woolworths Group (Australia)">Woolworths'</a> <a href="./Everyday_Rewards" title="Everyday Rewards">Everyday Rewards</a></td>
+<td>Two Tap</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Republic_of_Ireland" title="Republic of Ireland">Ireland</a></td>
+<td><a href="./Nando's" title="Nando's">Nando's</a> Nando Card</td>
+<td>Two Tap</td>
+</tr>
+<tr>
+<td><a href="./Japan" title="Japan">Japan</a></td>
+<td>d Point</td>
+<td>Two Tap</td>
+</tr>
+<tr>
+<td><a href="https://ja.wikipedia.org/wiki/楽天ポイント" title="ja:楽天ポイント">Rakuten Point Card</a></td>
+<td>Two Tap</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./New_Zealand" title="New Zealand">New Zealand</a></td>
+<td><a href="./Woolworths_Group_(Australia)" title="Woolworths Group (Australia)">Woolworths'</a> <a href="./Everyday_Rewards" title="Everyday Rewards">Everyday Rewards</a></td>
+<td>Two Tap</td>
+</tr>
+<tr>
+<td><a href="./Taiwan" title="Taiwan">Taiwan</a></td>
+<td>OPEN POINT</td>
+<td>One Tap</td>
+</tr>
+<tr>
+<td><a href="./United_Kingdom" title="United Kingdom">United Kingdom</a></td>
+<td><a href="./Nando's" title="Nando's">Nando's</a> Nando Card</td>
+<td>Two Tap</td>
+</tr>
+<tr>
+<td><a href="./Texaco" title="Texaco">Texaco's</a> Star Rewards</td>
+<td>Two Tap</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Valero_Energy" title="Valero Energy">Valero's</a> SaveUP Rewards</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./United_States" title="United States">United States</a></td>
+<td><a href="./The_Coca-Cola_Company" title="The Coca-Cola Company">Coca-Cola's</a> Vending Pass</td>
+<td>One Tap</td>
+</tr>
+<tr>
+<td><a href="./Dave_&amp;_Buster's" title="Dave &amp; Buster's">Dave &amp; Buster's</a> Power Card</td>
+<td>One Tap</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Jimmy_John's" title="Jimmy John's">Jimmy John's</a> Freaky Fast Rewards</td>
+<td>One Tap</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Walgreens" title="Walgreens">Walgreens'</a> myWalgreens</td>
+<td>Two Tap</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Yogurtland" title="Yogurtland">Yogurtland's</a> Real Rewards</td>
+<td>One Tap</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3>Supported public transport systems</h3>
+<p>Due to the open nature of the Android platform, some transit cards are only available through other Android-based mobile wallets or via their own apps (e.g. <a href="./Navigo_card" title="Navigo card">Navigo</a> for Samsung Wallet or <a href="./TAP_card" title="TAP card">TAP</a> for Android). Transit cards that support direct provisioning can be issued within the Google Wallet app itself, without needing to download a separate third party application. Some public transport systems listed here support skipping verification with Google Pay on Android and Wear OS, wherein the only requirement for transmitting a payment or transit card is for the device to be on (for phones), or further have the device unlocked (for watches.) This is not supported on Google Wallet for Fitbit OS, however. Users with Fitbit watches must open the Wallet app time each time they scan their fare payment method (except FeliCa-based fare methods).</p>
+<p>All FeliCa-based cards require separate apps to be used and managed by Wallet. Suica and PASMO require the Osaifu-Keitai app, and Octopus requires the Octopus app. All these cards are region-locked and cannot be added by foreign tourists.</p>
+<p>Transit Insight cards are passes that can be linked to one payment card in a user's Wallet. Similarly to a transit card, it will keep track of rides made on the system and offer fare caps. However, there is no standalone balance. All funds are pulled directly from the linked payment card.</p>
+<table>
+<thead>
+<tr>
+<th>Country</th>
+<th>Area</th>
+<th>Skip verification</th>
+<th>Direct provisioning</th>
+<th>Wear OS support</th>
+<th>Stored via</th>
+<th>Fare Payment Method(s)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Australia" title="Australia">Australia</a></td>
+<td><a href="./Queensland" title="Queensland">Queensland</a></td>
+<td></td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>Payment cards</td>
+</tr>
+<tr>
+<td><a href="./Sydney" title="Sydney">Sydney</a></td>
+<td>Yes</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>Payment cards</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Victoria_(state)" title="Victoria (state)">Victoria</a></td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td><a href="./Host_card_emulation" title="Host card emulation">Host Card Emulation</a></td>
+<td><a href="./Myki" title="Myki">Myki</a>*</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Brazil" title="Brazil">Brazil</a></td>
+<td><a href="./Rio_de_Janeiro" title="Rio de Janeiro">Rio de Janeiro</a> (only <a href="./Rio_de_Janeiro_Metro" title="Rio de Janeiro Metro">MetrôRio</a>)</td>
+<td></td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>Payment cards</td>
+</tr>
+<tr>
+<td><a href="./São_Paulo" title="São Paulo">São Paulo</a> (only <a href="./SPTrans" title="SPTrans">SPTrans</a>)</td>
+<td></td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>Payment cards</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Canada" title="Canada">Canada</a></td>
+<td><a href="./Ontario" title="Ontario">Ontario</a> (<a href="./Toronto_Transit_Commission" title="Toronto Transit Commission">TTC</a>, <a href="./GO_Transit" title="GO Transit">GO Transit</a>, <a href="./Brampton_Transit" title="Brampton Transit">Brampton Transit</a>, <a href="./MiWay" title="MiWay">MiWay</a>, <a href="./Oakville_Transit" title="Oakville Transit">Oakville Transit</a> and <a href="./UP_Express" title="UP Express">UP Express</a>.)</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Host Card Emulation</td>
+<td><a href="./Presto_card" title="Presto card">PRESTO</a></td>
+</tr>
+<tr>
+<td></td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>Payment cards- <a href="./VISA" title="VISA">VISA</a>, <a href="./Mastercard" title="Mastercard">Mastercard</a> and <a href="./American_Express" title="American Express">American Express</a> accepted. UP Express also accepts <a href="./Interac" title="Interac">Interac</a> debit cards.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Vancouver" title="Vancouver">Vancouver</a></td>
+<td></td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>Payment cards</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Greece" title="Greece">Greece</a></td>
+<td><a href="./Athens" title="Athens">Athens</a></td>
+<td>Yes</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>Payment cards- <a href="./VISA" title="VISA">VISA</a> and <a href="./Mastercard" title="Mastercard">Mastercard</a> accepted.</td>
+</tr>
+<tr>
+<td><a href="./Hong_Kong" title="Hong Kong">Hong Kong</a></td>
+<td><em>Countrywide</em></td>
+<td>Yes</td>
+<td>No</td>
+<td>No</td>
+<td>Secure Element via Octopus app</td>
+<td><a href="./Octopus_card" title="Octopus card">Octopus</a></td>
+</tr>
+<tr>
+<td><a href="./Japan" title="Japan">Japan</a></td>
+<td><em>Countrywide</em></td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td><a href="./Secure_element" title="Secure element">Secure Element</a> via Osaifu-Keitai app</td>
+<td><a href="./Suica" title="Suica">Suica</a></td>
+</tr>
+<tr>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Secure Element via Osaifu-Keitai app</td>
+<td><a href="./Pasmo" title="Pasmo">PASMO</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Mexico" title="Mexico">Mexico</a></td>
+<td><a href="./Mexico_City" title="Mexico City">CDMX</a> (only <a href="./Mexico_City_Metrobús" title="Mexico City Metrobús">Mexico City Metrobús</a> and <a href="./Mexico_City_Metro" title="Mexico City Metro">Mexico City Metro</a>)</td>
+<td></td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>Payment cards</td>
+</tr>
+<tr>
+<td><a href="./Singapore" title="Singapore">Singapore</a></td>
+<td><em>Countrywide</em></td>
+<td>Yes</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>Payment cards</td>
+</tr>
+<tr>
+<td><a href="./Slovakia" title="Slovakia">Slovakia</a></td>
+<td><em>Countrywide</em></td>
+<td>Yes</td>
+<td>No</td>
+<td>No</td>
+<td>Host Card Emulation</td>
+<td>Ubian</td>
+</tr>
+<tr>
+<td><a href="./Spain" title="Spain">Spain</a></td>
+<td><a href="./Community_of_Madrid" title="Community of Madrid">Madrid</a></td>
+<td>Yes</td>
+<td>No</td>
+<td>No</td>
+<td>Host Card Emulation</td>
+<td><a href="./Tarjeta_Transporte_Público" title="Tarjeta Transporte Público">Tarjeta Transporte Público</a></td>
+</tr>
+<tr>
+<td><a href="./Taiwan" title="Taiwan">Taiwan</a></td>
+<td><em>Countrywide</em></td>
+<td>Yes</td>
+<td>Yes</td>
+<td>No</td>
+<td>Secure Element</td>
+<td><a href="./IPASS_(Taiwan)" title="IPASS (Taiwan)">iPASS</a></td>
+</tr>
+<tr>
+<td><a href="./Kaohsiung" title="Kaohsiung">Kaohsiung</a></td>
+<td>No</td>
+<td>—N/a</td>
+<td>Yes</td>
+<td>—N/a</td>
+<td>Payment cards- <a href="./VISA" title="VISA">VISA</a> and <a href="./Mastercard" title="Mastercard">Mastercard</a> accepted.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./New_Taipei_Metro" title="New Taipei Metro">New Taipei Metro</a></td>
+<td>No</td>
+<td>—N/a</td>
+<td>Yes</td>
+<td>—N/a</td>
+<td>Payment cards- <a href="./Mastercard" title="Mastercard">Mastercard</a> are accepted by <a href="./Ankeng_light_rail" title="Ankeng light rail">Ankeng</a> and <a href="./Danhai_light_rail" title="Danhai light rail">Danhai</a> light rail.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Taichung_MRT" title="Taichung MRT">Taichung MRT</a></td>
+<td>No</td>
+<td>—N/a</td>
+<td>Yes</td>
+<td>—N/a</td>
+<td>Payment cards- <a href="./VISA" title="VISA">VISA</a> accepted.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Taoyuan_Airport_MRT" title="Taoyuan Airport MRT">Taoyuan Airport MRT</a></td>
+<td>No</td>
+<td>—N/a</td>
+<td>Yes</td>
+<td>—N/a</td>
+<td>Payment cards- <a href="./VISA" title="VISA">VISA</a> and <a href="./Mastercard" title="Mastercard">Mastercard</a> accepted.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Ukraine" title="Ukraine">Ukraine</a></td>
+<td><a href="./Kyiv" title="Kyiv">Kyiv</a></td>
+<td></td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>Payment cards</td>
+</tr>
+<tr>
+<td><a href="./United_Kingdom" title="United Kingdom">United Kingdom</a></td>
+<td><a href="./Brighton_and_Hove" title="Brighton and Hove">Brighton and Hove</a></td>
+<td>Yes</td>
+<td></td>
+<td>No</td>
+<td></td>
+<td>Transit loyalty card connected to payment card</td>
+</tr>
+<tr>
+<td><a href="./Edinburgh" title="Edinburgh">Edinburgh</a></td>
+<td>Yes</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>Payment cards</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./London" title="London">London</a></td>
+<td>Yes</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>Payment cards</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Manchester" title="Manchester">Manchester</a></td>
+<td>Yes</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>Payment cards</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Tyne_and_Wear" title="Tyne and Wear">Tyne and Wear</a></td>
+<td>Yes</td>
+<td>Yes</td>
+<td>No</td>
+<td>Host Card Emulation</td>
+<td>Pop</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./West_Midlands_(county)" title="West Midlands (county)">West Midlands</a></td>
+<td>Yes</td>
+<td>No</td>
+<td>No</td>
+<td>Host Card Emulation</td>
+<td><a href="./Swift_card" title="Swift card">Swift</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./United_States" title="United States">United States</a></td>
+<td><a href="./Chicago" title="Chicago">Chicago</a></td>
+<td>Yes</td>
+<td>No</td>
+<td>No</td>
+<td>Host Card Emulation</td>
+<td><a href="./Ventra" title="Ventra">Ventra</a></td>
+</tr>
+<tr>
+<td>Yes</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>Payment cards</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Dallas" title="Dallas">Dallas</a></td>
+<td>Yes</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>Payment cards</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Las_Vegas" title="Las Vegas">Las Vegas</a></td>
+<td>Yes</td>
+<td>No</td>
+<td>No</td>
+<td>Host Card Emulation</td>
+<td>Contactless ticket</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Miami" title="Miami">Miami</a></td>
+<td>Yes</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>Payment cards</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Monterey,_California" title="Monterey, California">Monterey</a></td>
+<td>Yes</td>
+<td></td>
+<td>No</td>
+<td></td>
+<td>Transit loyalty card connected to payment card</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./New_York_City" title="New York City">New York City</a></td>
+<td>Yes</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>Payment cards</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Portland,_Oregon" title="Portland, Oregon">Portland, Oregon</a></td>
+<td>Yes</td>
+<td>No</td>
+<td>No</td>
+<td>Host Card Emulation</td>
+<td><a href="./Hop_Fastpass" title="Hop Fastpass">Hop Fastpass</a></td>
+<td></td>
+</tr>
+<tr>
+<td>Yes</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>—N/a</td>
+<td>Payment cards</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./San_Francisco" title="San Francisco">San Francisco</a></td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Host Card Emulation</td>
+<td><a href="./Clipper_card" title="Clipper card">Clipper</a>*, payment cards (BART only)</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Seattle" title="Seattle">Seattle</a></td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Host Card Emulation</td>
+<td><a href="./ORCA_card" title="ORCA card">ORCA</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Washington,_D.C." title="Washington, D.C.">Washington, D.C.</a></td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Host Card Emulation</td>
+<td><a href="./SmarTrip" title="SmarTrip">SmarTrip</a>, payment cards (Metrorail only)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>* = Card cannot be used without opening Wallet beforehand on Wear OS.</p>
+<h4>Upcoming</h4>
+<table>
+<thead>
+<tr>
+<th>Country</th>
+<th>Area</th>
+<th>Wear OS support</th>
+<th>Stored via</th>
+<th>Fare Payment Method(s)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./France" title="France">France</a></td>
+<td><a href="./Paris" title="Paris">Paris</a></td>
+<td>Unknown</td>
+<td>Unknown</td>
+<td><a href="./Navigo" title="Navigo">Navigo</a></td>
+</tr>
+<tr>
+<td><a href="./Mexico" title="Mexico">Mexico</a></td>
+<td><a href="./Jalisco" title="Jalisco">Jalisco</a></td>
+<td>Unknown</td>
+<td>Unknown</td>
+<td>Mi Movilidad</td>
+</tr>
+<tr>
+<td><a href="./Philippines" title="Philippines">Philippines</a></td>
+<td><a href="./Metro_Manila" title="Metro Manila">Metro Manila</a></td>
+<td>Unknown</td>
+<td>Unknown</td>
+<td><a href="./Beep_(smart_card)" title="Beep (smart card)">Beep</a></td>
+</tr>
+<tr>
+<td><a href="./United_Arab_Emirates" title="United Arab Emirates">United Arab Emirates</a></td>
+<td><a href="./Dubai" title="Dubai">Dubai</a></td>
+<td>Unknown</td>
+<td>Unknown</td>
+<td><a href="./Nol_Card" title="Nol Card">nol</a></td>
+</tr>
+<tr>
+<td><a href="./United_States" title="United States">United States</a></td>
+<td><a href="./Boston" title="Boston">Boston</a></td>
+<td>Unknown</td>
+<td>Unknown</td>
+<td><a href="./CharlieCard" title="CharlieCard">Charlie Card</a></td>
+</tr>
+<tr>
+<td><a href="./Los_Angeles" title="Los Angeles">Los Angeles</a></td>
+<td>Unknown</td>
+<td>Unknown</td>
+<td><a href="./TAP_card" title="TAP card">TAP</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Philadelphia" title="Philadelphia">Philadelphia</a></td>
+<td>Unknown</td>
+<td>Unknown</td>
+<td><a href="./SEPTA_Key" title="SEPTA Key">SEPTA Key</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Washington,_D.C." title="Washington, D.C.">Washington, D.C.</a></td>
+<td>Unknown</td>
+<td>Host Card Emulation</td>
+<td>Kids Ride Free <a href="./SmarTrip" title="SmarTrip">SmarTrip</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3>Supported digital keys</h3>
+<p>Main article: <a href="./List_of_digital_keys_in_mobile_wallets" title="List of digital keys in mobile wallets">List of digital keys in mobile wallets</a></p>
+<p>These home locks, vehicle models, hotel rooms, and more can be unlocked via NFC. Car keys in particular require select devices running <a href="./Android_12" title="Android 12">Android 12</a>/<a href="./Wear_OS" title="Wear OS">Wear OS 5</a> or later, most notably the <a href="./Pixel_6" title="Pixel 6">Pixel 6</a> or later. In addition, certain locks and car models that support operation via UWB (AKA "passive entry") require an <a href="./List_of_UWB-enabled_mobile_devices" title="List of UWB-enabled mobile devices">UWB compatible device</a>, such as the <a href="./Pixel_Fold" title="Pixel Fold">Pixel Fold</a>, Pro models of Pixel 6 and later devices, or <a href="./Pixel_Watch_3" title="Pixel Watch 3">Pixel Watch 3</a> and later, for enhanced functionality.</p>
+<h3>Supported government-issued identifications</h3>
+<p>These territories permit their residents to save their government-issued identification credentials in Google Wallet. Mobile IDs in Google Wallet support three personal identification standards: ISO 18013-5, ISO 23220-4, and NIST 800-63. Users have a choice whether to present their ID via NFC or QR. Once the credential is read, the ID holder must confirm the personal information they wish to share (full name, age, etc.) The transmission to the reader device will be completed over <a href="./Bluetooth_Low_Energy" title="Bluetooth Low Energy">BLE</a> after the presentation is fully verified. Credentials can also be utilized in apps or on the web. All IDs are free except those issued by North Dakota, which costs $5 per ID renewal. Available for devices running <a href="./Android_Pie" title="Android Pie">Android 9</a> or later.</p>
+<table>
+<thead>
+<tr>
+<th>Country</th>
+<th>Type</th>
+<th>State/Territory</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./United_States" title="United States">United States</a></td>
+<td>ID</td>
+<td><a href="./Arizona" title="Arizona">Arizona</a></td>
+</tr>
+<tr>
+<td>ID</td>
+<td><a href="./Arkansas" title="Arkansas">Arkansas</a></td>
+<td></td>
+</tr>
+<tr>
+<td>ID</td>
+<td><a href="./California" title="California">California</a></td>
+<td></td>
+</tr>
+<tr>
+<td>ID</td>
+<td><a href="./Colorado" title="Colorado">Colorado</a></td>
+<td></td>
+</tr>
+<tr>
+<td>ID</td>
+<td><a href="./Georgia_(U.S._state)" title="Georgia (U.S. state)">Georgia</a></td>
+<td></td>
+</tr>
+<tr>
+<td>ID</td>
+<td><a href="./Iowa" title="Iowa">Iowa</a></td>
+<td></td>
+</tr>
+<tr>
+<td>ID</td>
+<td><a href="./Maryland" title="Maryland">Maryland</a></td>
+<td></td>
+</tr>
+<tr>
+<td>ID</td>
+<td><a href="./Montana" title="Montana">Montana</a></td>
+<td></td>
+</tr>
+<tr>
+<td>ID</td>
+<td><a href="./New_Mexico" title="New Mexico">New Mexico</a></td>
+<td></td>
+</tr>
+<tr>
+<td>ID</td>
+<td><a href="./North_Dakota" title="North Dakota">North Dakota</a></td>
+<td></td>
+</tr>
+<tr>
+<td>ID</td>
+<td><a href="./Puerto_Rico" title="Puerto Rico">Puerto Rico</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4>Upcoming</h4>
+<table>
+<thead>
+<tr>
+<th>Country</th>
+<th>Type</th>
+<th>State/Territory</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Japan" title="Japan">Japan</a></td>
+<td>ID</td>
+<td><em>Countrywide</em></td>
+</tr>
+<tr>
+<td><a href="./United_States" title="United States">United States</a></td>
+<td>ID</td>
+<td><a href="./Illinois" title="Illinois">Illinois</a></td>
+</tr>
+<tr>
+<td>ID</td>
+<td><a href="./Ohio" title="Ohio">Ohio</a></td>
+<td></td>
+</tr>
+<tr>
+<td>ID</td>
+<td><a href="./Virginia" title="Virginia">Virginia</a></td>
+<td></td>
+</tr>
+<tr>
+<td>ID</td>
+<td><a href="./West_Virginia" title="West Virginia">West Virginia</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4>Other non-government issued identifications</h4>
+<p>These are ID passes issued by Google that utilize information from an individual's government-issued ID, but the digitized pass itself is not considered to be "government-issued."</p>
+<table>
+<thead>
+<tr>
+<th>Country</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./United_States" title="United States">United States</a></td>
+<td><a href="./Passport" title="Passport">Passport</a></td>
+</tr>
+<tr>
+<td><a href="./United_Kingdom" title="United Kingdom">United Kingdom</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3>Device-specific &amp; region-locked features</h3>
+<p>Some features in Wallet are locked to certain devices that have additional hardware or software that aren't included in other Android/Wear OS devices, such as secure elements or licenses for certain region-specific middleware.</p>
+<h4>Car keys</h4>
+<p>Some devices may need Android OS or Play System updates before being compatible. Compatible Pixel Watches must be paired with a compatible Pixel phone to use digital keys.</p>
+<table>
+<thead>
+<tr>
+<th>Brand</th>
+<th>Model</th>
+<th>UWB availability</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Google" title="Google">Google</a></td>
+<td><a href="./Pixel_6a" title="Pixel 6a">Pixel 6a</a></td>
+<td>No</td>
+</tr>
+<tr>
+<td><a href="./Pixel_6" title="Pixel 6">Pixel 6</a></td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_6_Pro" title="Pixel 6 Pro">Pixel 6 Pro</a></td>
+<td>Yes</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_7a" title="Pixel 7a">Pixel 7a</a></td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_7" title="Pixel 7">Pixel 7</a></td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_7_Pro" title="Pixel 7 Pro">Pixel 7 Pro</a></td>
+<td>Yes</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_8a" title="Pixel 8a">Pixel 8a</a></td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_8" title="Pixel 8">Pixel 8</a></td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_8_Pro" title="Pixel 8 Pro">Pixel 8 Pro</a></td>
+<td>Yes</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_Fold" title="Pixel Fold">Pixel Fold</a></td>
+<td>Yes</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_9a" title="Pixel 9a">Pixel 9a</a></td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_9" title="Pixel 9">Pixel 9</a></td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_9_Pro" title="Pixel 9 Pro">Pixel 9 Pro</a></td>
+<td>Yes</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_9_Pro_Fold" title="Pixel 9 Pro Fold">Pixel 9 Pro Fold</a></td>
+<td>Yes</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_10" title="Pixel 10">Pixel 10</a></td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_10_Pro" title="Pixel 10 Pro">Pixel 10 Pro</a></td>
+<td>Yes</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_10_Pro_Fold" title="Pixel 10 Pro Fold">Pixel 10 Pro Fold</a></td>
+<td>Yes</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_Watch_3" title="Pixel Watch 3">Pixel Watch 3</a></td>
+<td>Yes</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_Watch_4" title="Pixel Watch 4">Pixel Watch 4</a></td>
+<td>Yes</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Motorola_Mobility" title="Motorola Mobility">Motorola</a></td>
+<td><a href="./Moto_Edge" title="Moto Edge">Edge 50 Ultra</a></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><a href="./Motorola_Razr_50" title="Motorola Razr 50">Razr 50 Ultra</a></td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td>Razr 60 Ultra</td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Motorola_Razr" title="Motorola Razr">Razr Plus 2024</a></td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td>Razr Ultra 2025</td>
+<td>Yes</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./OnePlus" title="OnePlus">OnePlus</a></td>
+<td><a href="./OnePlus_11" title="OnePlus 11">11</a></td>
+<td>No</td>
+</tr>
+<tr>
+<td><a href="./OnePlus_Open" title="OnePlus Open">Open</a></td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./OnePlus_12" title="OnePlus 12">12</a></td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./OnePlus_13" title="OnePlus 13">13</a></td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Oppo" title="Oppo">Oppo</a></td>
+<td><a href="./OnePlus_Open" title="OnePlus Open">Find N3</a></td>
+<td>No</td>
+</tr>
+<tr>
+<td>Find N3 Flip</td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td>Find N5</td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td>Find X8</td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td>Find X8 Pro</td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Xiaomi" title="Xiaomi">Xiaomi</a></td>
+<td><a href="./Xiaomi_12" title="Xiaomi 12">12</a></td>
+<td>No</td>
+</tr>
+<tr>
+<td>12 Pro</td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Xiaomi_13" title="Xiaomi 13">13</a></td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td>13 Pro</td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td>13 Ultra</td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td>13T</td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td>13T Pro</td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Xiaomi_14" title="Xiaomi 14">14</a></td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td>14 Ultra</td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td>14T</td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td>14T Pro</td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Xiaomi_15" title="Xiaomi 15">15</a></td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td>15 Ultra</td>
+<td>No</td>
+<td></td>
+</tr>
+<tr>
+<td>MIX Flip</td>
+<td>Yes</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4>Transit cards</h4>
+<table>
+<thead>
+<tr>
+<th>Transit card</th>
+<th>Requirement(s)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./IPASS_(Taiwan)" title="IPASS (Taiwan)">iPASS</a></td>
+<td>Phones: Xiaomi 14, Xiaomi 14 Ultra, Xiaomi 14T, Xiaomi 14T Pro, Xiaomi MIX Flip  POCO F7 Ultra, POCO F7 Pro, POCO X7 Pro  Wearables:  Fitbit Sense or later, Fitbit Versa or later (except Lite), Fitbit Charge 3 or later  Google Account region must be set to Taiwan</td>
+</tr>
+<tr>
+<td><a href="./Octopus_card" title="Octopus card">Octopus</a></td>
+<td>Phones: Android 12 or later with NFC Must install Octopus Wallet app (which requires a Hong Kong phone number to sign up for)</td>
+</tr>
+<tr>
+<td><a href="./Pasmo" title="Pasmo">PASMO</a></td>
+<td>Phones: Japanese models of select phones Must install <a href="./Osaifu-Keitai" title="Osaifu-Keitai">Osaifu-Keitai</a> app  Wearables:  Japanese models of Google Pixel Watch or later  Japanese models of Samsung Galaxy Watch6 or later, Galaxy Watch Ultra  Google Account region must be set to Japan</td>
+</tr>
+<tr>
+<td><a href="./Suica" title="Suica">Suica</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4>e-Money cards</h4>
+<table>
+<thead>
+<tr>
+<th>e-Money card</th>
+<th>Requirement(s)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Edy" title="Edy">Edy</a></td>
+<td>Phones: Japanese models of select phones Must install <a href="./Osaifu-Keitai" title="Osaifu-Keitai">Osaifu-Keitai</a> app</td>
+</tr>
+<tr>
+<td><a href="./Nanaco" title="Nanaco">nanaco</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Waon" title="Waon">WAON</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2>See also</h2>
+<ul>
+<li><a href="./Apple_Wallet" title="Apple Wallet">Apple Wallet</a></li>
+<li><a href="./Samsung_Wallet" title="Samsung Wallet">Samsung Wallet</a></li>
+<li><a href="./Campus_card" title="Campus card">Campus card</a></li>
+</ul>
+<h2>References</h2>
+<h2>External links</h2>
+<ul>
+<li><a href="https://wallet.google.com">Official website</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products" title="List of Google products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Android_(operating_system)" title="Template:Android (operating system)">v</a> - <a href="./Template_talk:Android_(operating_system)" title="Template talk:Android (operating system)">t</a> - <a href="./Special:EditPage/Template:Android_(operating_system)" title="Special:EditPage/Template:Android (operating system)">e</a>  <a href="./Android_(operating_system)" title="Android (operating system)">Android</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>- <a href="./Android_Go" title="Android Go">Android Go</a>   - <a href="./Comparison_of_Android_Go_products" title="Comparison of Android Go products">Comparison of products</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Android_software_development" title="Android software development">Software development</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Android_version_history" title="Android version history">Releases</a></td>
+<td>- <a href="./Android_Cupcake" title="Android Cupcake">Cupcake (1.5)</a> - <a href="./Android_Donut" title="Android Donut">Donut (1.6)</a> - <a href="./Android_Eclair" title="Android Eclair">Eclair (2.0–2.1)</a> - <a href="./Android_Froyo" title="Android Froyo">Froyo (2.2)</a> - <a href="./Android_Gingerbread" title="Android Gingerbread">Gingerbread (2.3)</a> - <a href="./Android_Honeycomb" title="Android Honeycomb">Honeycomb (3.x)</a> - <a href="./Android_Ice_Cream_Sandwich" title="Android Ice Cream Sandwich">Ice Cream Sandwich (4.0)</a> - <a href="./Android_Jelly_Bean" title="Android Jelly Bean">Jelly Bean (4.1–4.3)</a> - <a href="./Android_KitKat" title="Android KitKat">KitKat (4.4)</a> - <a href="./Android_Lollipop" title="Android Lollipop">Lollipop (5.x)</a> - <a href="./Android_Marshmallow" title="Android Marshmallow">Marshmallow (6.x)</a> - <a href="./Android_Nougat" title="Android Nougat">Nougat (7.x)</a> - <a href="./Android_Oreo" title="Android Oreo">Oreo (8.x)</a> - <a href="./Android_Pie" title="Android Pie">Pie (9)</a> - <a href="./Android_10" title="Android 10">10</a> - <a href="./Android_11" title="Android 11">11</a> - <a href="./Android_12" title="Android 12">12</a> - <a href="./Android_13" title="Android 13">13</a> - <a href="./Android_14" title="Android 14">14</a> - <a href="./Android_15" title="Android 15">15</a> - <a href="./Android_16" title="Android 16">16</a></td>
+</tr>
+<tr>
+<td>Derivatives</td>
+<td>- <a href="./Android_Automotive" title="Android Automotive">Android Automotive</a> - <a href="./Android_Things" title="Android Things">Android Things</a> - <a href="./Android_TV" title="Android TV">TV</a>   - <a href="./List_of_Android_TV_devices" title="List of Android TV devices">devices</a> - <a href="./Android_XR" title="Android XR">Android XR</a> - <a href="./Wear_OS" title="Wear OS">Wear OS</a></td>
+</tr>
+<tr>
+<td>Devices</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./List_of_custom_Android_distributions" title="List of custom Android distributions">Custom distributions</a></td>
+<td>- <a href="./AliOS" title="AliOS">AliOS</a> - <a href="./Android-x86" title="Android-x86">Android-x86</a>   - <a href="./Remix_OS" title="Remix OS">Remix OS</a> - <a href="./AOKP" title="AOKP">AOKP</a> - <a href="./Baidu_Yi" title="Baidu Yi">Baidu Yi</a> - <a href="./Barnes_&amp;_Noble_Nook" title="Barnes &amp; Noble Nook">Barnes &amp; Noble Nook</a> - <a href="./CalyxOS" title="CalyxOS">CalyxOS</a> - <a href="./ColorOS" title="ColorOS">ColorOS</a>   - <a href="./OxygenOS" title="OxygenOS">OxygenOS</a>   - <a href="./Realme" title="Realme">realme UI</a> - <a href="./CopperheadOS" title="CopperheadOS">CopperheadOS</a> - <a href="./EMUI" title="EMUI">EMUI</a>   - <a href="./Honor_(brand)" title="Honor (brand)">MagicOS</a> - <a href="./Fire_OS" title="Fire OS">Fire OS</a> - <a href="./Meizu#Flyme" title="Meizu">Flyme OS</a> - <a href="./GrapheneOS" title="GrapheneOS">GrapheneOS</a> - <a href="./LeWa_OS" title="LeWa OS">LeWa OS</a> - <a href="./LineageOS" title="LineageOS">LineageOS</a>   - <a href=".//e/_(operating_system)" title="/e/ (operating system)">/e/</a>   - <a href="./CrDroid" title="CrDroid">CrDroid</a>   - <a href="./CyanogenMod" title="CyanogenMod">CyanogenMod</a>   - <a href="./DivestOS" title="DivestOS">DivestOS</a>   - <a href="./IodéOS" title="IodéOS">iodéOS</a>   - <a href="./Kali_NetHunter" title="Kali NetHunter">Kali NetHunter</a> - <a href="./LiteOS" title="LiteOS">LiteOS</a> - <a href="./Meta_Horizon_OS" title="Meta Horizon OS">Meta Horizon OS</a> - <a href="./MicroG" title="MicroG">MicroG</a> - <a href="./Nokia_X_family#Nokia_X_software_platform" title="Nokia X family">Nokia X software platform</a> - <a href="./OmniROM" title="OmniROM">OmniROM</a> - <a href="./OPhone" title="OPhone">OPhone</a> - <a href="./PixelExperience" title="PixelExperience">PixelExperience</a> - <a href="./Google_Pixel#Pixel_UI_(Pixel_Launcher)" title="Google Pixel">Pixel UI</a> - <a href="./Replicant_(operating_system)" title="Replicant (operating system)">Replicant</a> - <a href="./Resurrection_Remix_OS" title="Resurrection Remix OS">Resurrection Remix OS</a> - <a href="./SlimRoms" title="SlimRoms">SlimRoms</a> - <a href="./TCL_Technology" title="TCL Technology">TCL UI</a> - <a href="./Ubuntu_Touch#Ubuntu_for_Android" title="Ubuntu Touch">Ubuntu for Android</a> - <a href="./Xiaomi_HyperOS" title="Xiaomi HyperOS">Xiaomi HyperOS</a>   - <a href="./MIUI" title="MIUI">MIUI</a> - <a href="./XobotOS" title="XobotOS">XobotOS</a> - <a href="./Lenovo_smartphones" title="Lenovo smartphones">ZUI</a></td>
+</tr>
+<tr>
+<td>Booting and recovery</td>
+<td>- <a href="./Booting_process_of_Android_devices" title="Booting process of Android devices">Booting process</a> - <a href="./Android_recovery_mode" title="Android recovery mode">Recovery mode</a>   - <a href="./TWRP_(software)" title="TWRP (software)">TWRP</a>   - <a href="./ClockworkMod" title="ClockworkMod">ClockworkMod</a> - <a href="./Fastboot" title="Fastboot">Fastboot</a></td>
+</tr>
+<tr>
+<td><a href="./API" title="API">APIs</a></td>
+<td>- <a href="./Google_Maps" title="Google Maps">Google Maps</a> - <a href="./Google_Play_Services" title="Google Play Services">Google Play Services</a>   - <a href="./SafetyNet" title="SafetyNet">SafetyNet/Play Integrity API</a> - <a href="./Google_Search" title="Google Search">Google Search</a></td>
+</tr>
+<tr>
+<td>Alternative <a href="./User_interface" title="User interface">UIs</a></td>
+<td>- <a href="./Cherry_OS_(operating_system)" title="Cherry OS (operating system)">Cherry OS</a> - <a href="./ColorOS" title="ColorOS">ColorOS</a> - <a href="./EMUI" title="EMUI">EMUI</a> - <a href="./Funtouch_OS" title="Funtouch OS">Funtouch OS</a> - <a href="./Meizu#Flyme" title="Meizu">Flyme OS</a> - <a href="./HiOS" title="HiOS">HiOS</a> - <a href="./Hive_UI" title="Hive UI">Hive UI (XOLO Hive)</a> - <a href="./HTC_Sense" title="HTC Sense">HTC Sense</a> - <a href="./LG_UX" title="LG UX">LG UX</a>   - <a href="./Optimus_UI" title="Optimus UI">Optimus UI</a> - <a href="./Motoblur" title="Motoblur">Motoblur</a> - <a href="./Nothing_OS" title="Nothing OS">Nothing OS</a> - <a href="./One_UI" title="One UI">One UI</a>   - <a href="./Samsung_Experience" title="Samsung Experience">Experience</a>   - <a href="./TouchWiz" title="TouchWiz">TouchWiz</a> - <a href="./Origin_OS" title="Origin OS">Origin OS</a> - <a href="./OxygenOS" title="OxygenOS">OxygenOS</a> - <a href="./Google_Pixel#Pixel_UI_(Pixel_Launcher)" title="Google Pixel">Pixel UI</a> - <a href="./XOS_(operating_system)" title="XOS (operating system)">XOS</a> - Xperia UI - <a href="./Asus_ZenFone#ZenUI_interface" title="Asus ZenFone">ZenUI</a></td>
+</tr>
+<tr>
+<td><a href="./Rooting_(Android)" title="Rooting (Android)">Rooting</a></td>
+<td>- <a href="./SuperSU" title="SuperSU">SuperSU</a> - <a href="./Magisk_(software)" title="Magisk (software)">Magisk</a> - <a href="./Kingo_Root" title="Kingo Root">Kingo Root</a> - <a href="./Kernel_Assisted_Superuser" title="Kernel Assisted Superuser">Kernel Assisted Superuser</a></td>
+</tr>
+<tr>
+<td>Lists</td>
+<td>- <a href="./List_of_custom_Android_distributions" title="List of custom Android distributions">Custom distributions</a> - <a href="./List_of_features_in_Android" title="List of features in Android">Features</a> - <a href="./List_of_free_and_open-source_Android_applications" title="List of free and open-source Android applications">Free and open-source applications</a> - <a href="./List_of_Android_apps_by_Google" title="List of Android apps by Google">Google apps</a> - <a href="./List_of_Android_launchers" title="List of Android launchers">Launchers</a></td>
+</tr>
+<tr>
+<td>Related topics</td>
+<td>- <a href="./Index_of_Android_OS_articles" title="Index of Android OS articles">Index of articles</a> - <a href="./Androidland" title="Androidland">Androidland</a> - <a href="./Chromecast" title="Chromecast">Chromecast</a> - <a href="./Google" title="Google">Google</a> - <a href="./Comparison_of_Java_and_Android_API" title="Comparison of Java and Android API">Java vs. Android API</a> - <a href="./Android_lawn_statues" title="Android lawn statues">Lawn statues</a> - <a href="./BlueStacks" title="BlueStacks">BlueStacks</a> - Legal issues   - <em><a href="./Google_LLC_v._Oracle_America,_Inc." title="Google LLC v. Oracle America, Inc.">Google v. Oracle</a></em>   - <a href="./Smartphone_patent_wars" title="Smartphone patent wars">smartphone patent wars</a> - <a href="./Google_App_Runtime_for_Chrome" title="Google App Runtime for Chrome">Android Runtime for Chrome</a></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Android_(operating_system)_development_software" title="Category:Android (operating system) development software">Category:Android development</a> - <a href="./Category:Mobile_telecommunications" title="Category:Mobile telecommunications">Category:Mobile telecommunications</a> - <a href="./Portal:Software" title="Portal:Software">Software portal</a> - <a href="./Portal:Telecommunication" title="Portal:Telecommunication">Telecommunication portal</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Digital_payment_providers" title="Template:Digital payment providers">v</a> - <a href="./Template_talk:Digital_payment_providers" title="Template talk:Digital payment providers">t</a> - <a href="./Special:EditPage/Template:Digital_payment_providers" title="Special:EditPage/Template:Digital payment providers">e</a>  Digital payment providers</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Active</td>
+<td>- <a href="./2C2P" title="2C2P">2C2P</a> - <a href="./Adyen" title="Adyen">Adyen</a> - <a href="./Airtel_Payments_Bank" title="Airtel Payments Bank">Airtel Payments Bank</a> - <a href="./Alipay" title="Alipay">Alipay</a> - <a href="./Amazon_Pay" title="Amazon Pay">Amazon Pay</a> - <a href="./Ant_Group" title="Ant Group">Ant Group</a> - Apple   - <a href="./Apple_Card" title="Apple Card">Card</a>   - <a href="./Apple_Pay" title="Apple Pay">Pay</a>   - <a href="./Apple_Wallet" title="Apple Wallet">Wallet</a> - <a href="./Atlantic_Money" title="Atlantic Money">Atlantic Money</a> - <a href="./Bancomat_(interbank_network)" title="Bancomat (interbank network)">Bancomat Pay</a> - <a href="./BKash" title="BKash">bKash</a> - <a href="./BillDesk" title="BillDesk">BillDesk</a> - <a href="./Bit_(payment_application)" title="Bit (payment application)">bit</a> - <a href="./Bizum" title="Bizum">Bizum</a> - <a href="./Blik" title="Blik">Blik</a> - <a href="./Block,_Inc." title="Block, Inc.">Block</a>   - <a href="./Afterpay" title="Afterpay">Afterpay</a>   - <a href="./Square_(financial_services)" title="Square (financial services)">Square</a> - <a href="./Boku,_Inc." title="Boku, Inc.">Boku, Inc.</a> - <a href="./BPAY" title="BPAY">BPAY</a> - <a href="./Bunq" title="Bunq">Bunq</a> - <a href="./Carta_Worldwide" title="Carta Worldwide">Carta Worldwide</a> - <a href="./Cash_App" title="Cash App">Cash App</a> - <a href="./CDS_Global" title="CDS Global">CDS Global</a> - <a href="./Chase_Paymentech" title="Chase Paymentech">Chase Paymentech</a>   - <a href="./WePay" title="WePay">WePay</a> - <a href="./Circle_Internet_Group" title="Circle Internet Group">Circle</a> - <a href="./Cred_(company)" title="Cred (company)">Cred</a> - <a href="./Dwolla" title="Dwolla">Dwolla</a> - <a href="./Easypaisa" title="Easypaisa">Easypaisa</a> - <a href="./Elavon" title="Elavon">Elavon</a> - <a href="./EnStream" title="EnStream">EnStream</a> - <a href="./Ensygnia" title="Ensygnia">Ensygnia</a> - <a href="./EServGlobal" title="EServGlobal">EServGlobal</a> - <a href="./Freecharge" title="Freecharge">Freecharge</a> - <a href="./GCash" title="GCash">GCash</a> - <a href="./Global_Payments" title="Global Payments">Global Payments</a> - <a href="./Google_Pay_(payment_method)" title="Google Pay (payment method)">Google Pay</a>   - <a href="./Google_Pay_(mobile_app)" title="Google Pay (mobile app)">Google Pay app</a> - <a href="./Google_Wallet">Google Wallet</a> - <a href="./IDEAL" title="IDEAL">iDEAL</a> - <a href="./Ingenico" title="Ingenico">Ingenico</a> - <a href="./Interac_e-Transfer" title="Interac e-Transfer">Interac e-Transfer</a> - <a href="./JazzCash" title="JazzCash">JazzCash</a> - <a href="./Jumio" title="Jumio">Jumio</a> - <a href="./KakaoPay" title="KakaoPay">KakaoPay</a> - <a href="./Klarna" title="Klarna">Klarna</a> - <a href="./Line_Pay" title="Line Pay">Line Pay</a> - <a href="./Maya_(mobile_payments)" title="Maya (mobile payments)">Maya</a> - <a href="./Mir_(payment_system)" title="Mir (payment system)">Mir</a>   - <a href="./Mir_Pay" title="Mir Pay">Mir Pay</a> - <a href="./MobiKwik" title="MobiKwik">MobiKwik</a> - <a href="./NTT_Data_Payment_Services" title="NTT Data Payment Services">NTT Data Payment Services</a> - <a href="./Suica" title="Suica">Mobile Suica</a> - <a href="./MobilePay" title="MobilePay">MobilePay</a> - <a href="./M-Pesa" title="M-Pesa">M-Pesa</a> - <a href="./Mi-Pay" title="Mi-Pay">Mi-Pay</a> - <a href="./MintChip" title="MintChip">MintChip</a> - <a href="./MMQR" title="MMQR">MMQR</a> - <a href="./Nagad" title="Nagad">Nagad</a> - <a href="./National_Payments_Corporation_of_India" title="National Payments Corporation of India">NPCI</a>   - <a href="./Immediate_Payment_Service" title="Immediate Payment Service">IMPS</a>   - <a href="./Unified_Payments_Interface" title="Unified Payments Interface">UPI</a>     - <a href="./BHIM" title="BHIM">BHIM</a> - <a href="./Naver_Pay" title="Naver Pay">Naver Pay</a> - <a href="./National_Electronic_Funds_Transfer" title="National Electronic Funds Transfer">NEFT</a> - <a href="./Nexi" title="Nexi">Nexi</a> - <a href="./Nexgo" title="Nexgo">Nexgo</a> - <a href="./Novalnet" title="Novalnet">Novalnet</a> - <a href="./Nuvei" title="Nuvei">Nuvei</a> - <a href="./Orange_Money" title="Orange Money">Orange Money</a> - <a href="./Osaifu-Keitai" title="Osaifu-Keitai">Osaifu-Keitai</a> - <a href="./Passport_(company)" title="Passport (company)">Passport</a> - <a href="./PAX_Technology" title="PAX Technology">PAX Technology</a> - <a href="./Paya,_Inc." title="Paya, Inc.">Paya</a> - <a href="./Payanywhere" title="Payanywhere">Payanywhere</a> - <a href="./PayBox" title="PayBox">PayBox</a> - <a href="./PayMate" title="PayMate">PayMate</a> - <a href="./PayMe" title="PayMe">PayMe</a> - <a href="./Paymentwall" title="Paymentwall">Paymentwall</a> - <a href="./PayNow" title="PayNow">PayNow</a> - <a href="./Payoneer" title="Payoneer">Payoneer</a> - <a href="./PayPal" title="PayPal">PayPal</a>   - <a href="./Braintree_(company)" title="Braintree (company)">Braintree</a>   - <a href="./Zettle" title="Zettle">Zettle</a>   - <a href="./Venmo" title="Venmo">Venmo</a>   - <a href="./Xoom_Corporation" title="Xoom Corporation">Xoom</a> - <a href="./PayPay" title="PayPay">PayPay</a> - <a href="./PayPoint" title="PayPoint">PayPoint</a> - <a href="./Paysafe" title="Paysafe">Paysafe</a>   - <a href="./Neteller" title="Neteller">Neteller</a>   - <a href="./Openbucks" title="Openbucks">Openbucks</a>   - <a href="./PaysafeCard" title="PaysafeCard">PaysafeCard</a>   - <a href="./Skrill" title="Skrill">Skrill</a> - <a href="./Payzone_(Ireland)" title="Payzone (Ireland)">Payzone</a> - <a href="./Paytm" title="Paytm">Paytm</a> - <a href="./PayU" title="PayU">PayU</a> - <a href="./Paze" title="Paze">Paze</a> - <a href="./Pepper_(payment_application)" title="Pepper (payment application)">Pepper</a> - <a href="./PhonePe" title="PhonePe">PhonePe</a> - <a href="./Pine_Labs" title="Pine Labs">Pine Labs</a> - <a href="./Pix_(payment_system)" title="Pix (payment system)">Pix</a> - <a href="./POLi_Payments" title="POLi Payments">POLi Payments</a> - <a href="./QRIS" title="QRIS">QRIS</a> - <a href="./Red_Dot_Payment" title="Red Dot Payment">Red Dot Payment</a> - <a href="./Remita" title="Remita">Remita</a> - <a href="./Revolut" title="Revolut">Revolut</a> - <a href="./Samsung_Pay" title="Samsung Pay">Samsung Pay</a>   - <a href="./Samsung_Wallet" title="Samsung Wallet">Samsung Wallet</a> - <a href="./Sarvatra_Technologies" title="Sarvatra Technologies">Sarvatra Technologies</a> - <a href="./SberPay" title="SberPay">SberPay</a> - <a href="./SBPay" title="SBPay">SBPay</a> - <a href="./Sezzle" title="Sezzle">Sezzle</a> - <a href="./Shift4" title="Shift4">Shift4</a> - <a href="./Shop_Pay" title="Shop Pay">Shop Pay</a> - <a href="./Skaleet" title="Skaleet">Skaleet</a> - <a href="./Spice_Money" title="Spice Money">Spice Money</a> - <a href="./Stripe,_Inc." title="Stripe, Inc.">Stripe</a> - <a href="./Swish_(payment)" title="Swish (payment)">Swish</a> - <a href="./Tata_Neu" title="Tata Neu">Tata Neu</a> - <a href="./Tencent" title="Tencent">Tencent</a> - <a href="./Touch_'n_Go_eWallet" title="Touch 'n Go eWallet">Touch 'n Go eWallet</a> - <a href="./TWINT" title="TWINT">TWINT</a> - <a href="./UnionPay_(application)" title="UnionPay (application)">UnionPay app</a> - <a href="./Veem" title="Veem">Veem</a> - <a href="./Verifi" title="Verifi">Verifi</a> - <a href="./Verifone" title="Verifone">Verifone</a> - <a href="./Versapay" title="Versapay">Versapay</a> - <a href="./Vipps" title="Vipps">Vipps</a> - <a href="./VugaPay" title="VugaPay">VugaPay</a> - <a href="./Wave_Money" title="Wave Money">Wave Money</a> - <a href="./WebMoney" title="WebMoney">WebMoney</a> - <a href="./WeChat_Pay" title="WeChat Pay">WeChat Pay</a> - <a href="./Wero_(payment)" title="Wero (payment)">Wero</a> - <a href="./WiPay" title="WiPay">WiPay</a> - <a href="./Wizzit" title="Wizzit">Wizzit</a> - <a href="./Worldline_SA" title="Worldline SA">Worldline SA</a> - <a href="./Worldpay,_Inc." title="Worldpay, Inc.">Worldpay, Inc.</a> - <a href="./Yandex_Pay" title="Yandex Pay">Yandex Pay</a> - <a href="./Yape_(payment)" title="Yape (payment)">Yape</a> - <a href="./YooMoney" title="YooMoney">YooMoney</a> - <a href="./Zelle" title="Zelle">Zelle</a> - <a href="./Zeta_(company)" title="Zeta (company)">Zeta</a> - <a href="./Ziina" title="Ziina">Ziina</a></td>
+</tr>
+<tr>
+<td>Defunct</td>
+<td>- <a href="./AirTag_(company)" title="AirTag (company)">AirTag</a> - <a href="./Bell_ID" title="Bell ID">Bell ID</a> - <a href="./Billpoint" title="Billpoint">Billpoint</a> - <a href="./C2it" title="C2it">C2it</a> - <a href="./Clinkle" title="Clinkle">Clinkle</a> - <a href="./Flattr" title="Flattr">Flattr</a> - <a href="./Fortumo" title="Fortumo">Fortumo</a> - <a href="./Google_Pay_Send" title="Google Pay Send">Google Wallet (2011–2018)</a> - <a href="./Kuapay" title="Kuapay">Kuapay</a> - <a href="./Lemon_Wallet" title="Lemon Wallet">Lemon Wallet</a> - <a href="./LG_Pay" title="LG Pay">LG Pay</a> - <a href="./Merchant_Customer_Exchange" title="Merchant Customer Exchange">Merchant Customer Exchange</a> - <a href="./Microsoft_Pay" title="Microsoft Pay">Microsoft Pay</a> - <a href="./Mozido" title="Mozido">Mozido</a> - <a href="./PayDirect" title="PayDirect">PayDirect</a> - <a href="./Paym" title="Paym">Paym</a> - <a href="./Pingit" title="Pingit">Pingit</a> - <a href="./Powa_Technologies" title="Powa Technologies">Powa Technologies</a> - <a href="./Qiwi" title="Qiwi">Qiwi</a> - <a href="./Quahl" title="Quahl">Quahl</a> - <a href="./Sage_Pay" title="Sage Pay">Sage Pay</a> - <a href="./Simpay" title="Simpay">Simpay</a> - <a href="./Softcard" title="Softcard">Softcard</a> - <a href="./Tez_(software)" title="Tez (software)">Tez</a> - <a href="./Vcash" title="Vcash">vcash</a>   - <a href="./Paydiant" title="Paydiant">Paydiant</a> - <a href="./Ukash" title="Ukash">Ukash</a> - <a href="./Wirecard" title="Wirecard">Wirecard</a> - <a href="./Worldpay_Group" title="Worldpay Group">Worldpay Group</a> - <a href="./Zong_(payments_provider)" title="Zong (payments provider)">Zong</a></td>
+</tr>
+<tr>
+<td><a href="./Remittance" title="Remittance">Remittance</a></td>
+<td>- <a href="./CurrencyFair" title="CurrencyFair">CurrencyFair</a> - <a href="./MoneyGram" title="MoneyGram">MoneyGram</a> - <a href="./Nium" title="Nium">Nium</a> - <a href="./OFX_(company)" title="OFX (company)">OFX</a> - <a href="./Remitly" title="Remitly">Remitly</a>   - <a href="./Rewire_(company)" title="Rewire (company)">Rewire</a> - <a href="./Ria_Money_Transfer" title="Ria Money Transfer">Ria Money Transfer</a> - <a href="./Transfast" title="Transfast">Transfast</a> - <a href="./TransferMate" title="TransferMate">TransferMate</a> - <a href="./Travelex" title="Travelex">Travelex</a> - <a href="./Western_Union" title="Western Union">Western Union</a> - <a href="./Wise_(company)" title="Wise (company)">Wise</a> - <a href="./WorldRemit" title="WorldRemit">WorldRemit</a> - <a href="./XE.com" title="XE.com">XE</a></td>
+</tr>
+<tr>
+<td>Related</td>
+<td>- <a href="./Digital_currency" title="Digital currency">Digital currency</a> - <a href="./Digital_wallet" title="Digital wallet">Digital wallet</a> - <a href="./Mobile_payment" title="Mobile payment">Mobile payment</a> - <a href="./Payment_service_provider" title="Payment service provider">Payment service provider</a> - <a href="./List_of_online_payment_service_providers" title="List of online payment service providers">List of online payment service providers</a> - <a href="./European_Mobile_Payment_Systems_Association" title="European Mobile Payment Systems Association">European Mobile Payment Systems Association</a> - <a href="./European_Payments_Initiative" title="European Payments Initiative">European Payments Initiative</a></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Mobile_payments" title="Category:Mobile payments">Category</a></td>
+<td></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Waymo</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link active" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Waymo</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Waymo<br>
+Category: products_hardware<br>
+Depth: 1</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Waymo LLC is an American autonomous driving technology company headquartered in Mountain View, California. It is a subsidiary of Alphabet Inc., Google's parent company. As of March 2026, Waymo operates public commercial robotaxi services in 10 US metropolitan areas, has 3,000 robotaxis in service, provides 500,000 paid rides per week and had logged 200 million fully autonomous miles.</p>
+<h2>Images</h2>
+<p><img alt="1280px-Waymo_logo.svg" src="../images/1280px-Waymo_logo.svg.png"><br>
+<img alt="330px-Waymo_logo.svg" src="../images/330px-Waymo_logo.svg.png"><br>
+<img alt="250px-Waymo_logo.svg" src="../images/250px-Waymo_logo.svg.png"><br>
+<img alt="250px-Waymo_Chrysler_Pacifica_in_Los_Altos_2C_2017" src="../images/250px-Waymo_Chrysler_Pacifica_in_Los_Altos_2C_2017.jpg"><br>
+<img alt="250px-Jurvetson_Google_driverless_car_trimmed" src="../images/250px-Jurvetson_Google_driverless_car_trimmed.jpg"><br>
+<img alt="250px-Waymo_self-driving_car_front_view.gk" src="../images/250px-Waymo_self-driving_car_front_view.gk.jpg"><br>
+<img alt="250px-Google_driverless_car_at_intersection.gk" src="../images/250px-Google_driverless_car_at_intersection.gk.jpg"><br>
+<img alt="250px-Waymo_Jaguar_I-Pace_in_San_Francisco_2023_dllu" src="../images/250px-Waymo_Jaguar_I-Pace_in_San_Francisco_2023_dllu.jpg"><br>
+<img alt="250px-Waymo_Zeekr_Vehicle_at_Bayshore_Depot_oblique_view_dllu" src="../images/250px-Waymo_Zeekr_Vehicle_at_Bayshore_Depot_oblique_view_dllu.jpg"><br>
+<img alt="250px-Waymo_Jaguar_I-Pace_Interior_In_Motion" src="../images/250px-Waymo_Jaguar_I-Pace_Interior_In_Motion.jpg"></p>
+<h2>Full Article</h2>
+<p>Autonomous car technology company</p>
+<p><strong>Waymo LLC</strong> (<a href="./Help:IPA/English" title="Help:IPA/English">/weɪmoʊ/</a> <a href="./Help:Pronunciation_respelling_key" title="Help:Pronunciation respelling key"><em>WAY-moh</em></a>) is an American <a href="./Autonomous_driving" title="Autonomous driving">autonomous driving</a> technology company headquartered in <a href="./Mountain_View,_California" title="Mountain View, California">Mountain View, California</a>. It is a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc.</a>, <a href="./Google" title="Google">Google</a>'s parent company. As of March 2026<a href="https://en.wikipedia.org/w/index.php?title=Waymo&amp;action=edit">[update]</a>, Waymo operates public commercial <a href="./Robotaxi" title="Robotaxi">robotaxi</a> services in 10 US metropolitan areas, has 3,000 robotaxis in service, provides 500,000 paid rides per week and had logged 200 million fully autonomous miles.</p>
+<p>The company traces its origins to the Stanford Racing Team, which <a href="./Stanley_(vehicle)" title="Stanley (vehicle)">competed in the 2005</a> and 2007 <a href="./Defense_Advanced_Research_Projects_Agency" title="Defense Advanced Research Projects Agency">Defense Advanced Research Projects Agency</a> (DARPA) <a href="./DARPA_Grand_Challenge" title="DARPA Grand Challenge">Grand Challenges</a>. Google's development of self-driving technology began in January 2009 and the project was revealed in October 2010. In December 2016, the project was renamed Waymo and spun out of Google as part of Alphabet. In October 2020, Waymo became the first company to offer service to the public without safety drivers.</p>
+<p>Waymo is run by co-CEOs <a href="./Tekedra_Mawakana" title="Tekedra Mawakana">Tekedra Mawakana</a> and <a href="./Dmitri_Dolgov" title="Dmitri Dolgov">Dmitri Dolgov</a> since April 2021. The company raised $11 billion in multiple outside funding rounds by 2024. In February 2026, Waymo raised $16 billion, which valued the company at $126 billion.</p>
+<p>In January 2026, The <a href="./National_Transportation_Safety_Board" title="National Transportation Safety Board">National Transportation Safety Board</a> and <a href="./National_Highway_Traffic_Safety_Administration" title="National Highway Traffic Safety Administration">National Highway Traffic Safety Administration</a> opened investigations into Waymo's robotaxis for recurring incidents of illegally passing stopped school buses, and one incident where a robotaxi hit a child who ran out from behind a parked <a href="./SUV" title="SUV">SUV</a> in a school zone.</p>
+<h2>History</h2>
+<h3>Ground work</h3>
+<p>Google's development of self-driving technology began on January 17, 2009, at <a href="./Google_X" title="Google X">Google X</a> lab, run by co-founder <a href="./Sergey_Brin" title="Sergey Brin">Sergey Brin</a>. The project was launched at Google by <a href="./Sebastian_Thrun" title="Sebastian Thrun">Sebastian Thrun</a>, the former director of the <a href="./Stanford_Artificial_Intelligence_Laboratory" title="Stanford Artificial Intelligence Laboratory">Stanford Artificial Intelligence Laboratory</a> (SAIL) and <a href="./Anthony_Levandowski" title="Anthony Levandowski">Anthony Levandowski</a>, founder of 510 Systems and Anthony's Robots.</p>
+<p>The initial software code and <a href="./Artificial_intelligence" title="Artificial intelligence">artificial intelligence</a> (AI) design of the effort started before the team worked at Google, when Thrun and 15 engineers, including <a href="./Dmitri_Dolgov" title="Dmitri Dolgov">Dmitri Dolgov</a>, Mike Montemerlo, Hendrik Dahlkamp, Sven Strohband, and <a href="./David_Stavens" title="David Stavens">David Stavens</a>, built Stanley and Junior, Stanford's entries in the 2005 and 2007 <a href="./DARPA_Grand_Challenge" title="DARPA Grand Challenge">DARPA Challenges</a>. Later, aspects of this technology were used in a digital mapping project for SAIL called VuTool. In 2007, Google <a href="./Acqui-hiring" title="Acqui-hiring">acqui-hired</a> the entire VuTool team to help advance Google's <a href="./Google_Street_View" title="Google Street View">Street View</a> technology.</p>
+<p>As part of Street View development, 100 <a href="./Toyota_Prius" title="Toyota Prius">Toyota Priuses</a> were outfitted with <a href="./Topcon" title="Topcon">Topcon</a> digital mapping hardware developed by 510 Systems.</p>
+<p>In 2008, the Street View team launched project Ground Truth, to create accurate road maps by extracting data from satellites and street views.</p>
+<h3>Pribot</h3>
+<p>In February 2008, a <a href="./Discovery_Channel" title="Discovery Channel">Discovery Channel</a> producer for the documentary series <em><a href="./Prototype_This!" title="Prototype This!">Prototype This!</a></em> phoned Levandowski. The producer requested to borrow Levandowski's Ghost Rider, the autonomous two-wheeled motorcycle Levandowski's <a href="./University_of_California,_Berkeley" title="University of California, Berkeley">Berkeley</a> team had built for the <a href="./2004_DARPA_Grand_Challenge" title="2004 DARPA Grand Challenge">2004 DARPA Grand Challenge</a> that Levandowski had later donated to the <a href="./Smithsonian_American_Art_Museum" title="Smithsonian American Art Museum">Smithsonian</a>. Since the motorcycle was not available, Levandowski offered to retrofit a Toyota Prius as a self-driving <a href="./Pizza_delivery" title="Pizza delivery">pizza delivery</a> car for the show.</p>
+<p>As a Google employee, Levandowski asked <a href="./Larry_Page" title="Larry Page">Larry Page</a> and Thrun whether Google was interested in participating in the show. Both declined, citing liability issues. However, they authorized Levandowski to move forward with the project, as long as it was not associated with Google. Within weeks Levandowski founded Anthony's Robots to do so. He retrofitted the car with <a href="./Light_detection_and_ranging" title="Light detection and ranging">light detection and ranging</a> technology (lidar), sensors, and cameras. The Stanford team behind the <a href="./Stanley_(vehicle)" title="Stanley (vehicle)">Stanley</a> car provided its code base to the project. The ensuing episode depicting Pribot delivering pizza across the <a href="./San_Francisco_Bay_Bridge" title="San Francisco Bay Bridge">San Francisco Bay Bridge</a> under police escort aired in December 2008.</p>
+<p>The project success led Google to <a href="./Greenlight" title="Greenlight">greenlight</a> Google's self-driving car program in January 2009. In 2011, Google acquired 510 Systems (co-founded by Levandowski, Pierre-Yves Droz and Andrew Schultz), and Anthony's Robots for an estimated US$20 million. Levandowski's vehicle and hardware, and Stanford's AI technology and software, became the nucleus of the project.</p>
+<h3>Project Chauffeur</h3>
+<p>After almost two years of road testing with seven vehicles, the <em>New York Times</em> revealed the existence of Google's project on October 9, 2010. Google announced its initiative later the same day.</p>
+<p>Starting in 2010, lawmakers in various states expressed concerns over how to regulate autonomous vehicles. A related <a href="./Nevada" title="Nevada">Nevada</a> law went into effect on March 1, 2012. Google had been lobbying for such laws. A modified Prius was licensed by the <a href="./Nevada_Department_of_Motor_Vehicles" title="Nevada Department of Motor Vehicles">Nevada Department of Motor Vehicles</a> (DMV) in May 2012. The car was "driven" by <a href="./Chris_Urmson" title="Chris Urmson">Chris Urmson</a> with Levandowski in the passenger seat. This was the first US license for a self-driven car.</p>
+<p>In January 2014 Google was granted a patent for a transportation service funded by advertising that included autonomous vehicles as a transport method. In late May, Google revealed an autonomous <a href="./Prototype" title="Prototype">prototype</a>, which had no steering wheel, gas pedal, or brake pedal. In December, Google unveiled a Firefly prototype that was planned to be tested on <a href="./San_Francisco_Bay_Area" title="San Francisco Bay Area">San Francisco Bay Area</a> roads beginning in early 2015.</p>
+<p>In 2015, Levandowski left the project. In August 2015, Google hired former <a href="./Hyundai_Motor_Company" title="Hyundai Motor Company">Hyundai Motor</a> executive, <a href="./John_Krafcik" title="John Krafcik">John Krafcik</a>, as CEO. In fall 2015, Google for the first time to non-employees provided a ride in a fully autonomous vehicle in <a href="./Austin,_Texas" title="Austin, Texas">Austin, Texas</a>. The passenger was a blind man. It was the first entirely autonomous trip on a public road. It was not accompanied by a test driver or police escort. The car had no steering wheel or floor pedals. By the end of 2015, Project Chauffeur had covered more than a million miles.</p>
+<p>Google spent $1.1 billion on the project between 2009 and 2015. For comparison, the acquisition of <a href="./Cruise_Automation" title="Cruise Automation">Cruise Automation</a> by <a href="./General_Motors" title="General Motors">General Motors</a> in March 2016 was for $500 million, and Uber's acquisition of <a href="./Otto_(company)" title="Otto (company)">Otto</a> in August 2016 was for $680 million.</p>
+<h3>Waymo</h3>
+<p>In May 2016, Google and <a href="./Stellantis" title="Stellantis">Stellantis</a> announced an order of 100 <a href="./Chrysler_Pacifica_(minivan)" title="Chrysler Pacifica (minivan)">Chrysler Pacifica</a> <a href="./Hybrid_vehicle" title="Hybrid vehicle">hybrid</a> minivans to test the self-driving technology. In December 2016, the project changed its name to Waymo and spun out of Google as part of Alphabet. The name was derived from "a new way forward in mobility". In May 2016, the company opened a 53,000-square-foot (4,900 m2) technology center in <a href="./Novi,_Michigan" title="Novi, Michigan">Novi, Michigan</a>.</p>
+<p>In February 2017, Waymo sued <a href="./Uber" title="Uber">Uber</a> and its subsidiary self-driving trucking company, <a href="./Otto_(company)" title="Otto (company)">Otto</a>, alleging <a href="./Trade_secrets" title="Trade secrets">trade secret</a> theft and patent infringement. The company claimed that three ex-Google employees, including <a href="./Anthony_Levandowski" title="Anthony Levandowski">Anthony Levandowski</a>, had stolen trade secrets, including thousands of files, from Google before joining Uber. The alleged infringement was related to Waymo's proprietary lidar technology, Google accused Uber of colluding with Levandowski. Levandowski allegedly downloaded 9 gigabytes of data that included over a hundred trade secrets; eight of which were at stake during the trial. An ensuing settlement gave Waymo 0.34% of Uber stock, the equivalent of $245 million. Uber agreed not to infringe Waymo's intellectual property. Part of the agreement included a guarantee that "Waymo confidential information is not being incorporated in Uber Advanced Technologies Group hardware and software." In statements released after the settlement, Uber maintained that it received no trade secrets. In May, according to an Uber spokesman, Uber had fired Levandowski, which resulted in the loss of roughly $250 million of his equity in Uber, which almost exactly equaled the settlement. Uber announced that it was halting production of self-driving trucks through Otto in July 2018, and the subsidiary company was shuttered. In 2020, Levandowski pled guilty to one of 33 charges, and was sentenced to 18 months in prison.</p>
+<p>Waymo began testing minivans without a safety driver on public roads in <a href="./Chandler,_Arizona" title="Chandler, Arizona">Chandler, Arizona</a>, in October 2017. In 2017, Waymo unveiled new sensors and chips that are less expensive to manufacture, cameras that improve visibility, and wipers to clear the <a href="./Lidar" title="Lidar">lidar</a> system. At the beginning of the self-driving car program, they used a $75,000 lidar system from <a href="./Velodyne_LiDAR" title="Velodyne LiDAR">Velodyne</a>. In 2017, the cost decreased approximately 90 percent, as Waymo converted to in-house built lidar. Waymo has applied its technology to various cars including the Prius, <a href="./Audi_TT" title="Audi TT">Audi TT</a>, <a href="./Chrysler_Pacifica_(RU)" title="Chrysler Pacifica (RU)">Chrysler Pacifica</a>, and <a href="./Lexus_RX450h" title="Lexus RX450h">Lexus RX450h</a>. Waymo partners with <a href="./Lyft" title="Lyft">Lyft</a> on pilot projects and product development.</p>
+<p>Waymo started testing in Phoenix without safety drivers in November 2017.</p>
+<p>In March 2018, Jaguar Land Rover announced that Waymo had ordered up to 20,000 of its <a href="./Jaguar_I-Pace" title="Jaguar I-Pace">I-Pace</a> electric SUVs at an estimated cost of more than $1 billion. In late May 2018, Alphabet announced plans to add up to 62,000 Pacifica Hybrid minivans to the fleet. Also in May 2018, Waymo established Huimo Business Consulting subsidiary in Shanghai.</p>
+<p>In October 2018, the <a href="./California_Department_of_Motor_Vehicles" title="California Department of Motor Vehicles">California Department of Motor Vehicles</a> issued a permit for Waymo to operate cars without safety drivers. Waymo was the first company to receive a permit for day and night testing on public roads and highways. Waymo announced that its service would include Mountain View, Sunnyvale, Los Altos, and Palo Alto. In July 2019, Waymo received permission to transport passengers.</p>
+<p>In December 2018, Waymo launched Waymo One in Phoenix, transporting passengers. The service used safety drivers to monitor some rides, with others provided in select areas without them. In November 2019, Waymo One became the first autonomous service worldwide to operate without safety drivers. Waymo One launched in San Francisco, beginning with a "trusted tester" rollout. In March 2022, Waymo began offering rides for Waymo staff in San Francisco without a safety driver.</p>
+<p>In April 2019, Waymo announced plans for vehicle assembly in Detroit at the former American Axle &amp; Manufacturing plant, bringing between 100 and 400 jobs to the area. Waymo used vehicle assembler <a href="./Magna_Steyr" title="Magna Steyr">Magna</a> to turn <a href="./Jaguar_I-PACE" title="Jaguar I-PACE">Jaguar I-PACE</a> electric SUVs and <a href="./Chrysler_Pacifica_(minivan)" title="Chrysler Pacifica (minivan)">Chrysler Pacifica</a> Hybrid minivans into Waymo <a href="./Vehicular_automation#Autonomy_levels" title="Vehicular automation">Level 4</a> autonomous vehicles. Waymo subsequently reverted to retrofitting existing models rather than a custom design.</p>
+<h3>2020s</h3>
+<p>In March 2020, Waymo Via was launched after the company's announcement that it had raised $2.25 billion from investors. In May 2020, Waymo raised an additional $750 million. In July 2020, the company announced an exclusive partnership with auto manufacturer <a href="./Volvo_Cars" title="Volvo Cars">Volvo</a> to integrate Waymo technology.</p>
+<p>In April 2021, Krafcik was replaced by two co-CEOs: Waymo's <a href="./Chief_operating_officer" title="Chief operating officer">COO</a> Tekedra Mawakana and <a href="./Chief_technology_officer" title="Chief technology officer">CTO</a> Dmitri Dolgov. Mawakana is responsible for business operations, and Dolgov is responsible for the company's technology. Waymo raised $2.5 billion in another funding round in June 2021, with total funding of $5.5 billion. Waymo launched a consumer testing program in San Francisco in August 2021.</p>
+<p>In May 2022, Waymo started a pilot program seeking riders in downtown <a href="./Phoenix,_Arizona" title="Phoenix, Arizona">Phoenix, Arizona</a>. In May 2022, Waymo announced that it would expand the program to more areas of Phoenix. In 2023, coverage of the Waymo One area was increased by 45 square miles (120 km2), expanding to include downtown Mesa, uptown Phoenix, and South Mountain Village.</p>
+<p>In June 2022, Waymo announced a partnership with Uber, under which Waymo will integrate its autonomous technology into Uber's freight truck service. Plans to expand the program to Los Angeles were announced in late 2022. On December 13, 2022, Waymo applied for the final permit necessary to operate fully autonomous taxis, without a backup driver present, within the state of California.</p>
+<p>In January 2023, <a href="./The_Information_(website)" title="The Information (website)"><em>The Information</em></a> reported that Waymo staff were among those affected by Google's layoffs of around 12,000 workers. <em><a href="./TechCrunch" title="TechCrunch">TechCrunch</a></em> reported that Waymo was set to kill its trucking program.</p>
+<p>In July 2024, Waymo began testing its sixth-generation robotaxis which are based on electric vehicles by Chinese automobile company <a href="./Zeekr" title="Zeekr">Zeekr</a>, developed in a partnership first announced in 2021. They were anticipated to reduce costs, at a time when Waymo was operating at a loss.</p>
+<p>In October 2024, Waymo closed a $5.6 billion funding round led by Alphabet, aimed at expanding its robotaxi services, bringing its total capital to over $11 billion. Around that time, the New York Times described Waymo as being "far ahead of the competition", in particular after <a href="./Cruise_(autonomous_vehicle)" title="Cruise (autonomous vehicle)">Cruise</a> had to suspend its operations after an accident in 2023.</p>
+<p>Also in November 2025, the permit area in Northern California was expanded to include <a href="./Santa_Rosa,_California" title="Santa Rosa, California">Santa Rosa</a> and Sacramento. The Southern California permit area was expanded to stretch from the Mexican border to <a href="./Ventura_County" title="Ventura County">Ventura County</a>. These new permit areas were approved by the <a href="./California_Department_of_Motor_Vehicles" title="California Department of Motor Vehicles">California Department of Motor Vehicles</a> (DMV). The permit area of the DMV is larger than the operating area. The operating area is slated to get expanded to cover San Diego in mid-2026.</p>
+<p>In February 2026, Waymo raised a $16 billion funding round that valued the company at $126 billion, to fund further expansion into new markets. Bloomberg reported that $13 billion of that came from Alphabet.</p>
+<h4>Lobbying</h4>
+<p>Waymo regularly lobbies public officials and regulators throughout US cities and states, to encourage updates to laws so self-driving vehicles can operate in those locations. In 2024, Waymo spent $1.7 million on lobbying in the US. In the state of New York, Waymo has spent $1.8 million since 2019 on lobbying efforts, as of January 2026<a href="https://en.wikipedia.org/w/index.php?title=Waymo&amp;action=edit">[update]</a>.</p>
+<p>In February 2026, Waymo company representatives spoke to the <a href="./United_States_Senate_Committee_on_Commerce,_Science,_and_Transportation" title="United States Senate Committee on Commerce, Science, and Transportation">United States Senate Committee on Commerce, Science, and Transportation</a> and requested that the federal government create uniform nationwide standards for autonomous vehicle deployment. The company stated that unless the US reduces regulations that hamper innovation, US companies will lose the trillion dollar global <a href="./Autonomous_vehicle" title="Autonomous vehicle">autonomous vehicle</a> market to Chinese companies.</p>
+<h2>Services</h2>
+<p>In 2017, Waymo highlighted four business uses for its autonomous technology: robotaxis; trucking and logistics; urban public transportation; and passenger cars. As of 2023, trucking is no longer a focus.</p>
+<h3>Robotaxis</h3>
+<p>Waymo currently serves select cities in the <a href="./United_States" title="United States">United States</a>, and has announced expansion into <a href="./Japan" title="Japan">Japan</a> and the <a href="./United_Kingdom" title="United Kingdom">United Kingdom</a>.</p>
+<p>The service is accessed in most locations by using the Waymo <a href="./IOS_app" title="IOS app">iOS app</a> or <a href="./Android_app" title="Android app">Android app</a>; Waymo service in Austin and Atlanta is available by using the <a href="./Uber" title="Uber">Uber</a> app. Once a Waymo vehicle arrives, riders push a button to "start ride", and have optional "help", "lock", and "pull over" buttons. Rides usually complete without riders pressing any optional buttons. The car's steering wheel turns as the car makes turns, and a passenger may sit in the right-front passenger seat, but not in the driver's seat. Some information gathered by the car's sensors is displayed on a screen.</p>
+<p>As of March 2026<a href="https://en.wikipedia.org/w/index.php?title=Waymo&amp;action=edit">[update]</a>, Waymo has 3,000 robotaxis in service, provides 500,000 paid rides per week, and drives 4 million rider-only miles per week.</p>
+<h4>United States</h4>
+<p>Service areas in the United States</p>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Metro area</th>
+<th>Status</th>
+<th>Launch date</th>
+<th>Area served</th>
+<th>Ref.</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Arizona" title="Arizona">Arizona</a></td>
+<td><a href="./Phoenix_metropolitan_area" title="Phoenix metropolitan area">Phoenix</a></td>
+<td>Full commercial service</td>
+<td>October 8, 2020</td>
+<td>List   - <a href="./Chandler,_Arizona" title="Chandler, Arizona">Chandler</a> - <a href="./Gilbert,_Arizona" title="Gilbert, Arizona">Gilbert</a> - <a href="./Guadalupe,_Arizona" title="Guadalupe, Arizona">Guadalupe</a> - <a href="./Mesa,_Arizona" title="Mesa, Arizona">Mesa</a> - <a href="./Paradise_Valley,_Arizona" title="Paradise Valley, Arizona">Paradise Valley</a> - <a href="./Phoenix,_Arizona" title="Phoenix, Arizona">Phoenix</a> - <a href="./Scottsdale,_Arizona" title="Scottsdale, Arizona">Scottsdale</a> - <a href="./Tempe,_Arizona" title="Tempe, Arizona">Tempe</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./California" title="California">California</a></td>
+<td><a href="./Greater_Los_Angeles" title="Greater Los Angeles">Los Angeles</a></td>
+<td>Full commercial service</td>
+<td>November 12, 2024</td>
+<td>List   - <a href="./Beverly_Hills,_California" title="Beverly Hills, California">Beverly Hills</a> - <a href="./Culver_City,_California" title="Culver City, California">Culver City</a> - <a href="./Inglewood,_California" title="Inglewood, California">Inglewood</a> - <a href="./Ladera_Heights,_California" title="Ladera Heights, California">Ladera Heights</a> - <a href="./Lennox,_California" title="Lennox, California">Lennox</a> - <a href="./Los_Angeles" title="Los Angeles">Los Angeles</a> - <a href="./Marina_del_Rey,_California" title="Marina del Rey, California">Marina del Rey</a> - <a href="./Santa_Monica,_California" title="Santa Monica, California">Santa Monica</a> - <a href="./View_Park–Windsor_Hills,_California" title="View Park–Windsor Hills, California">View Park–Windsor Hills</a> - <a href="./West_Hollywood,_California" title="West Hollywood, California">West Hollywood</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Sacramento_metropolitan_area" title="Sacramento metropolitan area">Sacramento</a></td>
+<td>Service announced</td>
+<td>(No timeframe given)</td>
+<td>—</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./San_Diego_County,_California" title="San Diego County, California">San Diego</a></td>
+<td>Service timeframe announced</td>
+<td>Mid-2026</td>
+<td>—</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./San_Francisco_Bay_Area" title="San Francisco Bay Area">San Francisco Bay Area</a></td>
+<td>Full commercial service</td>
+<td>June 25, 2024</td>
+<td>List   - <a href="./Atherton,_California" title="Atherton, California">Atherton</a> - <a href="./Baywood_Park,_San_Mateo_County,_California" title="Baywood Park, San Mateo County, California">Baywood Park</a> - <a href="./Belmont,_California" title="Belmont, California">Belmont</a> - <a href="./Brisbane,_California" title="Brisbane, California">Brisbane</a> - <a href="./Broadmoor,_California" title="Broadmoor, California">Broadmoor</a> - <a href="./Burbank,_Santa_Clara_County,_California" title="Burbank, Santa Clara County, California">Burbank</a> - <a href="./Burlingame,_California" title="Burlingame, California">Burlingame</a> - <a href="./Colma,_California" title="Colma, California">Colma</a> - <a href="./Cupertino,_California" title="Cupertino, California">Cupertino</a> - <a href="./Daly_City,_California" title="Daly City, California">Daly City</a> - <a href="./East_Palo_Alto,_California" title="East Palo Alto, California">East Palo Alto</a> - <a href="./Emerald_Lake_Hills,_California" title="Emerald Lake Hills, California">Emerald Lake Hills</a> - <a href="./Foster_City,_California" title="Foster City, California">Foster City</a> - <a href="./Fruitdale,_California" title="Fruitdale, California">Fruitdale</a> - <a href="./Highlands,_California" title="Highlands, California">Highlands</a> - <a href="./Hillsborough,_California" title="Hillsborough, California">Hillsborough</a> - <a href="./Ladera,_California" title="Ladera, California">Ladera</a> - <a href="./Los_Altos,_California" title="Los Altos, California">Los Altos</a> - <a href="./Los_Altos_Hills,_California" title="Los Altos Hills, California">Los Altos Hills</a> - <a href="./Loyola,_California" title="Loyola, California">Loyola</a> - <a href="./Menlo_Park,_California" title="Menlo Park, California">Menlo Park</a> - <a href="./Millbrae,_California" title="Millbrae, California">Millbrae</a> - <a href="./Mountain_View,_California" title="Mountain View, California">Mountain View</a> - <a href="./North_Fair_Oaks,_California" title="North Fair Oaks, California">North Fair Oaks</a> - <a href="./Palo_Alto,_California" title="Palo Alto, California">Palo Alto</a> - <a href="./Portola_Valley,_California" title="Portola Valley, California">Portola Valley</a> - <a href="./Redwood_City,_California" title="Redwood City, California">Redwood City</a> - <a href="./San_Bruno,_California" title="San Bruno, California">San Bruno</a> - <a href="./San_Carlos,_California" title="San Carlos, California">San Carlos</a> - <a href="./San_Francisco" title="San Francisco">San Francisco</a> - <a href="./San_Jose,_California" title="San Jose, California">San Jose</a> - <a href="./San_Mateo,_California" title="San Mateo, California">San Mateo</a> - <a href="./Santa_Clara,_California" title="Santa Clara, California">Santa Clara</a> - <a href="./South_San_Francisco,_California" title="South San Francisco, California">South San Francisco</a> - <a href="./Stanford,_California" title="Stanford, California">Stanford</a> - <a href="./Sunnyvale,_California" title="Sunnyvale, California">Sunnyvale</a> - <a href="./West_Menlo_Park,_California" title="West Menlo Park, California">West Menlo Park</a> - <a href="./Woodside,_California" title="Woodside, California">Woodside</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Colorado" title="Colorado">Colorado</a></td>
+<td><a href="./Denver_metropolitan_area" title="Denver metropolitan area">Denver</a></td>
+<td>Service announced</td>
+<td>(No timeframe given)</td>
+<td>—</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Florida" title="Florida">Florida</a></td>
+<td><a href="./Miami_metropolitan_area" title="Miami metropolitan area">Miami</a></td>
+<td>Waitlist service</td>
+<td>January 22, 2026</td>
+<td>List   - <a href="./Bal_Harbour,_Florida" title="Bal Harbour, Florida">Bal Harbour</a> - <a href="./Bay_Harbor_Islands,_Florida" title="Bay Harbor Islands, Florida">Bay Harbor Islands</a> - <a href="./Brownsville,_Florida" title="Brownsville, Florida">Brownsville</a> - <a href="./Coral_Gables,_Florida" title="Coral Gables, Florida">Coral Gables</a> - <a href="./Coral_Terrace,_Florida" title="Coral Terrace, Florida">Coral Terrace</a> - <a href="./Glenvar_Heights,_Florida" title="Glenvar Heights, Florida">Glenvar Heights</a> - <a href="./Hialeah,_Florida" title="Hialeah, Florida">Hialeah</a> - <a href="./Indian_Creek,_Florida" title="Indian Creek, Florida">Indian Creek</a> - <a href="./Miami" title="Miami">Miami</a> - <a href="./Miami_Beach,_Florida" title="Miami Beach, Florida">Miami Beach</a> - <a href="./Miami_Shores,_Florida" title="Miami Shores, Florida">Miami Shores</a> - <a href="./Miami_Springs,_Florida" title="Miami Springs, Florida">Miami Springs</a> - <a href="./North_Bay_Village,_Florida" title="North Bay Village, Florida">North Bay Village</a> - <a href="./North_Miami,_Florida" title="North Miami, Florida">North Miami</a> - <a href="./North_Miami_Beach,_Florida" title="North Miami Beach, Florida">North Miami Beach</a> - <a href="./South_Miami,_Florida" title="South Miami, Florida">South Miami</a> - <a href="./Sunny_Isles_Beach,_Florida" title="Sunny Isles Beach, Florida">Sunny Isles Beach</a> - <a href="./Surfside,_Florida" title="Surfside, Florida">Surfside</a> - <a href="./West_Miami,_Florida" title="West Miami, Florida">West Miami</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Greater_Orlando" title="Greater Orlando">Orlando</a></td>
+<td>Waitlist service</td>
+<td>February 24, 2026</td>
+<td>List   - <a href="./Meadow_Woods,_Florida" title="Meadow Woods, Florida">Meadow Woods</a> - <a href="./Oak_Ridge,_Florida" title="Oak Ridge, Florida">Oak Ridge</a> - <a href="./Orlando,_Florida" title="Orlando, Florida">Orlando</a> - <a href="./Southchase,_Florida" title="Southchase, Florida">Southchase</a> - <a href="./Tangelo_Park,_Florida" title="Tangelo Park, Florida">Tangelo Park</a> - <a href="./Williamsburg,_Florida" title="Williamsburg, Florida">Williamsburg</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Tampa_Bay_area" title="Tampa Bay area">Tampa</a></td>
+<td>Testing</td>
+<td>2026</td>
+<td>—</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Georgia_(U.S._state)" title="Georgia (U.S. state)">Georgia</a></td>
+<td><a href="./Metro_Atlanta" title="Metro Atlanta">Atlanta</a></td>
+<td>Full commercial service with <a href="./Uber" title="Uber">Uber</a></td>
+<td>June 24, 2025</td>
+<td>List   - <a href="./Atlanta" title="Atlanta">Atlanta</a> - <a href="./Brookhaven,_Georgia" title="Brookhaven, Georgia">Brookhaven</a> - <a href="./Decatur,_Georgia" title="Decatur, Georgia">Decatur</a> - <a href="./Druid_Hills,_Georgia" title="Druid Hills, Georgia">Druid Hills</a> - <a href="./East_Point,_Georgia" title="East Point, Georgia">East Point</a> - <a href="./North_Decatur,_Georgia" title="North Decatur, Georgia">North Decatur</a> - <a href="./North_Druid_Hills,_Georgia" title="North Druid Hills, Georgia">North Druid Hills</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Illinois" title="Illinois">Illinois</a></td>
+<td><a href="./Chicago_metropolitan_area" title="Chicago metropolitan area">Chicago</a></td>
+<td>Service announced</td>
+<td>(No timeframe given)</td>
+<td>—</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Louisiana" title="Louisiana">Louisiana</a></td>
+<td><a href="./New_Orleans_metropolitan_area" title="New Orleans metropolitan area">New Orleans</a></td>
+<td>Testing</td>
+<td>2026</td>
+<td>—</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Maryland" title="Maryland">Maryland</a></td>
+<td><a href="./Baltimore_metropolitan_area" title="Baltimore metropolitan area">Baltimore</a></td>
+<td>Testing</td>
+<td>(No timeframe given)</td>
+<td>—</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Massachusetts" title="Massachusetts">Massachusetts</a></td>
+<td><a href="./Greater_Boston" title="Greater Boston">Boston</a></td>
+<td>Service announced</td>
+<td>(No timeframe given)</td>
+<td>—</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Michigan" title="Michigan">Michigan</a></td>
+<td><a href="./Metro_Detroit" title="Metro Detroit">Detroit</a></td>
+<td>Service timeframe announced</td>
+<td>2026</td>
+<td>—</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Minnesota" title="Minnesota">Minnesota</a></td>
+<td><a href="./Minneapolis–Saint_Paul" title="Minneapolis–Saint Paul">Minneapolis</a></td>
+<td>Testing</td>
+<td>2026</td>
+<td>—</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Missouri" title="Missouri">Missouri</a></td>
+<td><a href="./Greater_St._Louis" title="Greater St. Louis">St. Louis</a></td>
+<td>Testing</td>
+<td>(No timeframe given)</td>
+<td>—</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Nevada" title="Nevada">Nevada</a></td>
+<td><a href="./Las_Vegas_Valley" title="Las Vegas Valley">Las Vegas</a></td>
+<td>Service timeframe announced</td>
+<td>Summer 2026</td>
+<td>—</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./New_Jersey" title="New Jersey">New Jersey</a></td>
+<td><a href="./New_York_metropolitan_area" title="New York metropolitan area">New York</a></td>
+<td>Testing</td>
+<td>(No timeframe given)</td>
+<td>—</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./New_York_(state)" title="New York (state)">New York</a></td>
+<td><a href="./Buffalo–Niagara_Falls_metropolitan_area" title="Buffalo–Niagara Falls metropolitan area">Buffalo</a></td>
+<td>Testing</td>
+<td>(No timeframe given)</td>
+<td>—</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./New_York_metropolitan_area" title="New York metropolitan area">New York</a></td>
+<td>Testing</td>
+<td>(No timeframe given)</td>
+<td>—</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./North_Carolina" title="North Carolina">North Carolina</a></td>
+<td><a href="./Charlotte_metropolitan_area" title="Charlotte metropolitan area">Charlotte</a></td>
+<td>Service announced</td>
+<td>(No timeframe given)</td>
+<td>—</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pennsylvania" title="Pennsylvania">Pennsylvania</a></td>
+<td><a href="./Philadelphia_metropolitan_area" title="Philadelphia metropolitan area">Philadelphia</a></td>
+<td>Testing</td>
+<td>(No timeframe given)</td>
+<td>—</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Greater_Pittsburgh" title="Greater Pittsburgh">Pittsburgh</a></td>
+<td>Testing</td>
+<td>(No timeframe given)</td>
+<td>—</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Tennessee" title="Tennessee">Tennessee</a></td>
+<td><a href="./Nashville_metropolitan_area" title="Nashville metropolitan area">Nashville</a></td>
+<td>Waitlist service</td>
+<td>April 7, 2026</td>
+<td>List   - <a href="./Berry_Hill,_Tennessee" title="Berry Hill, Tennessee">Berry Hill</a> - <a href="./Nashville" title="Nashville">Nashville</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Texas" title="Texas">Texas</a></td>
+<td><a href="./Greater_Austin" title="Greater Austin">Austin</a></td>
+<td>Full commercial service with <a href="./Uber" title="Uber">Uber</a></td>
+<td>March 4, 2025</td>
+<td>List   - <a href="./Austin,_Texas" title="Austin, Texas">Austin</a> - <a href="./Manchaca,_Texas" title="Manchaca, Texas">Manchaca</a> - <a href="./Rollingwood,_Texas" title="Rollingwood, Texas">Rollingwood</a> - <a href="./San_Leanna,_Texas" title="San Leanna, Texas">San Leanna</a> - <a href="./Shady_Hollow,_Texas" title="Shady Hollow, Texas">Shady Hollow</a> - <a href="./Sunset_Valley,_Texas" title="Sunset Valley, Texas">Sunset Valley</a> - <a href="./West_Lake_Hills,_Texas" title="West Lake Hills, Texas">West Lake Hills</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Dallas–Fort_Worth_metroplex" title="Dallas–Fort Worth metroplex">Dallas</a></td>
+<td>Waitlist service</td>
+<td>February 24, 2026</td>
+<td>List   - <a href="./Dallas" title="Dallas">Dallas</a> - <a href="./Highland_Park,_Texas" title="Highland Park, Texas">Highland Park</a> - <a href="./University_Park,_Texas" title="University Park, Texas">University Park</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Greater_Houston" title="Greater Houston">Houston</a></td>
+<td>Waitlist service</td>
+<td>February 24, 2026</td>
+<td>List   - <a href="./Houston" title="Houston">Houston</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Greater_San_Antonio" title="Greater San Antonio">San Antonio</a></td>
+<td>Waitlist service</td>
+<td>February 24, 2026</td>
+<td>List   - <a href="./Alamo_Heights,_Texas" title="Alamo Heights, Texas">Alamo Heights</a> - <a href="./Balcones_Heights,_Texas" title="Balcones Heights, Texas">Balcones Heights</a> - <a href="./Castle_Hills,_Texas" title="Castle Hills, Texas">Castle Hills</a> - <a href="./Olmos_Park,_Texas" title="Olmos Park, Texas">Olmos Park</a> - <a href="./San_Antonio" title="San Antonio">San Antonio</a> - <a href="./Terrell_Hills,_Texas" title="Terrell Hills, Texas">Terrell Hills</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Washington_(state)" title="Washington (state)">Washington</a></td>
+<td><a href="./Seattle_metropolitan_area" title="Seattle metropolitan area">Seattle</a></td>
+<td>Testing</td>
+<td>(No timeframe given)</td>
+<td>—</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Washington,_D.C." title="Washington, D.C.">Washington, D.C.</a></td>
+<td></td>
+<td>Service timeframe announced</td>
+<td>2026</td>
+<td>—</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Airport service in the United States</p>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Airport</th>
+<th>Status</th>
+<th>Launch date</th>
+<th>Ref.</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Arizona" title="Arizona">Arizona</a></td>
+<td><a href="./Phoenix_Sky_Harbor_International_Airport" title="Phoenix Sky Harbor International Airport">Phoenix Sky Harbor International Airport</a></td>
+<td>Full commercial service</td>
+<td>November 1, 2022</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./California" title="California">California</a></td>
+<td><a href="./San_Francisco_International_Airport" title="San Francisco International Airport">San Francisco International Airport</a></td>
+<td>Waitlist service</td>
+<td>January 29, 2026</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./San_Jose_International_Airport" title="San Jose International Airport">San Jose International Airport</a></td>
+<td>Full commercial service</td>
+<td>December 1, 2025</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Florida" title="Florida">Florida</a></td>
+<td><a href="./Miami_International_Airport" title="Miami International Airport">Miami International Airport</a></td>
+<td>Testing</td>
+<td>(No timeframe given)</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./New_Jersey" title="New Jersey">New Jersey</a></td>
+<td><a href="./Newark_Liberty_International_Airport" title="Newark Liberty International Airport">Newark Liberty International Airport</a></td>
+<td>Testing</td>
+<td>(No timeframe given)</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Tennessee" title="Tennessee">Tennessee</a></td>
+<td><a href="./Nashville_International_Airport" title="Nashville International Airport">Nashville International Airport</a></td>
+<td>Testing</td>
+<td>(No timeframe given)</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Texas" title="Texas">Texas</a></td>
+<td><a href="./Austin–Bergstrom_International_Airport" title="Austin–Bergstrom International Airport">Austin–Bergstrom International Airport</a></td>
+<td>Testing</td>
+<td>(No timeframe given)</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Dallas_Love_Field" title="Dallas Love Field">Dallas Love Field</a></td>
+<td>Testing</td>
+<td>(No timeframe given)</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./San_Antonio_International_Airport" title="San Antonio International Airport">San Antonio International Airport</a></td>
+<td>Waitlist service</td>
+<td>March 31, 2026</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Other potential expansion:</p>
+<ul>
+<li><a href="./California" title="California">California</a>:</li>
+<li>Waymo communicated with officials from the city of <a href="./Oakland,_California" title="Oakland, California">Oakland</a> and <a href="./Oakland_San_Francisco_Bay_Airport" title="Oakland San Francisco Bay Airport">Oakland San Francisco Bay Airport</a> in September 2025.</li>
+<li>As of November 2025<a href="https://en.wikipedia.org/w/index.php?title=Waymo&amp;action=edit">[update]</a>, Waymo has <a href="./California_Department_of_Motor_Vehicles" title="California Department of Motor Vehicles">DMV</a> permission to drive autonomously in the entire nine-county <a href="./San_Francisco_Bay_Area" title="San Francisco Bay Area">San Francisco Bay Area</a> plus the counties of <a href="./Sacramento_County,_California" title="Sacramento County, California">Sacramento</a> and <a href="./Yolo_County,_California" title="Yolo County, California">Yolo</a>, and in <a href="./Southern_California" title="Southern California">Southern California</a> from <a href="./Thousand_Oaks,_California" title="Thousand Oaks, California">Thousand Oaks</a> to the Mexican border and east to <a href="./Interstate_15_in_California" title="Interstate 15 in California">I-15</a>.</li>
+<li><a href="./North_Carolina" title="North Carolina">North Carolina</a>: Waymo had a "very preliminary" conversation with the city of <a href="./Raleigh,_North_Carolina" title="Raleigh, North Carolina">Raleigh</a> c. 2023.</li>
+<li><a href="./Oregon" title="Oregon">Oregon</a>: Waymo has lobbied heavily to legalize robotaxis, as they are illegal as of February 2026<a href="https://en.wikipedia.org/w/index.php?title=Waymo&amp;action=edit">[update]</a>; state legislators including House Transportation Committee chair <a href="./Susan_McLain" title="Susan McLain">Susan McLain</a> and <a href="./Shelly_Boshart_Davis" title="Shelly Boshart Davis">Shelly Boshart Davis</a> have expressed their support for legalization.</li>
+<li><a href="./Utah" title="Utah">Utah</a>: Waymo communicated with state <a href="./Utah_State_Senate" title="Utah State Senate">Senate</a> Majority Leader <a href="./Kirk_Cullimore_Jr." title="Kirk Cullimore Jr.">Kirk Cullimore Jr.</a> in 2026.</li>
+</ul>
+<h4>Japan</h4>
+<p>Service areas in Japan</p>
+<table>
+<thead>
+<tr>
+<th>City</th>
+<th>Status</th>
+<th>Launch date</th>
+<th>Ref.</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Tokyo" title="Tokyo">Tokyo</a></td>
+<td>Testing</td>
+<td>2026</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4>United Kingdom</h4>
+<p>Service areas in the United Kingdom</p>
+<table>
+<thead>
+<tr>
+<th>Country</th>
+<th>City</th>
+<th>Status</th>
+<th>Launch date</th>
+<th>Ref.</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./England" title="England">England</a></td>
+<td><a href="./London" title="London">London</a></td>
+<td>Testing</td>
+<td><em>September 2026</em></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4>Potential expansion to other countries</h4>
+<ul>
+<li><a href="./Australia" title="Australia">Australia</a>: Waymo has contacted <a href="./Transport_for_NSW" title="Transport for NSW">Transport for NSW</a> and the federal <a href="./Department_of_Infrastructure,_Transport,_Regional_Development,_Communications,_Sport_and_the_Arts" title="Department of Infrastructure, Transport, Regional Development, Communications, Sport and the Arts">Department of Infrastructure, Transport, Regional Development, Communications, Sport and the Arts</a>.</li>
+<li><a href="./Canada" title="Canada">Canada</a>: Waymo has lobbied the federal government, the provincial governments of <a href="./British_Columbia" title="British Columbia">British Columbia</a> and <a href="./Ontario" title="Ontario">Ontario</a>, and the city of <a href="./Toronto" title="Toronto">Toronto</a>.</li>
+<li><a href="./Singapore" title="Singapore">Singapore</a>: Waymo joined the <a href="./Ministry_of_Transport_(Singapore)" title="Ministry of Transport (Singapore)">Ministry of Transport</a>'s Steering Committee on Autonomous Vehicles in August 2025.</li>
+<li><a href="./South_Korea" title="South Korea">South Korea</a>: As of March 2026<a href="https://en.wikipedia.org/w/index.php?title=Waymo&amp;action=edit">[update]</a>, Waymo is in contact with the <a href="./Ministry_of_Land,_Infrastructure_and_Transport" title="Ministry of Land, Infrastructure and Transport">Ministry of Land, Infrastructure and Transport</a>.</li>
+</ul>
+<h3>Public transit</h3>
+<p>In September 2025, Waymo and the city of <a href="./Chandler,_Arizona" title="Chandler, Arizona">Chandler, Arizona</a> announced that Waymo would be integrated into Chandler's public <a href="./Microtransit" title="Microtransit">microtransit</a> service.</p>
+<h3>Trucking</h3>
+<p>In 2020 Waymo launched a self-driving truck development division designated as <em>Waymo Via</em>, to work with <a href="./OEMs" title="OEMs">OEMs</a> to integrate its technology into commercial vehicles. The company began testing <a href="./Truck_classification" title="Truck classification">Class 8</a> tractor-trailers in 2018 in Atlanta, expanding in 2019 to southwest shipping routes across Arizona, California, New Mexico and Texas. The company opened a trucking hub in <a href="./Dallas" title="Dallas">Dallas</a>, Texas in 2021. It partnered with <a href="./Daimler_Company" title="Daimler Company">Daimler</a> to integrate autonomous technology into a fleet of <a href="./Freightliner_Cascadia" title="Freightliner Cascadia">Freightliner Cascadia</a> trucks. Waymo operated 48 Class 8 autonomous trucks with safety drivers.</p>
+<p>Waymo tested its technology in commercial delivery vehicles with <a href="./United_Parcel_Service" title="United Parcel Service">United Parcel Service</a>. In July 2020 Waymo and <a href="./Stellantis" title="Stellantis">Stellantis</a> expanded their partnership, including the development of <a href="./Ram_ProMaster" title="Ram ProMaster">Ram ProMaster</a> delivery vehicles.</p>
+<p>In July 2023, Waymo announced that it was moving away from commercial development of self-driving trucks to focus on the ride-hailing Waymo business, and shuttered the Waymo Via trucking program. The vast majority of employees who were on Waymo's trucking team moved to other roles within the company.</p>
+<h3>Delivery</h3>
+<p>Waymo has partnered with <a href="./Uber_Eats" title="Uber Eats">Uber Eats</a> and <a href="./DoorDash" title="DoorDash">DoorDash</a> to deliver food.</p>
+<h3>Road maintenance</h3>
+<p>Waymo data is used by local governments for <a href="./Pothole" title="Pothole">pothole</a> detection.</p>
+<h2>Technology</h2>
+<h3>Hardware</h3>
+<p>Google has invested heavily in <a href="./Matrix_multiplication" title="Matrix multiplication">matrix multiplication</a> and <a href="./Video_processing" title="Video processing">video processing</a> hardware such as the <a href="./Tensor_Processing_Unit" title="Tensor Processing Unit">Tensor Processing Unit</a> (TPU) to augment <a href="./Nvidia" title="Nvidia">Nvidia</a>'s <a href="./Graphics_processing_unit" title="Graphics processing unit">graphics processing units</a> (GPUs) and <a href="./Intel" title="Intel">Intel</a>'s <a href="./Central_processing_unit" title="Central processing unit">central processing units</a> (CPUs) used in Waymo vehicles.</p>
+<p>Waymo manufactures a suite of self-driving hardware developed in-house. This includes sensors and hardware-enhanced vision system, <a href="./Lidar" title="Lidar">lidar</a>, and <a href="./Radar" title="Radar">radar</a>. Sensors give 360-degree views while lidar detects objects up to 300 metres (980 ft) away. Short-range lidar images objects near the vehicle, and radar is used to see around other vehicles and track objects in motion.</p>
+<h3>Software</h3>
+<p>Waymo uses a <a href="./Deep-learning" title="Deep-learning">deep-learning</a> architecture called VectorNet to predict vehicle trajectories in complex traffic scenarios. It uses a <a href="./Graph_neural_network" title="Graph neural network">graph neural network</a> to model the interactions between vehicles and has demonstrated state-of-the-art performance on several benchmark datasets for trajectory prediction.</p>
+<p>Waymo Carcraft is a virtual world in which Waymo simulates driving conditions. The simulator was named after the video game <em><a href="./World_of_Warcraft" title="World of Warcraft">World of Warcraft</a></em>. With Carcraft, 25,000 virtual self-driving cars navigate through models of Austin, Texas; <a href="./Mountain_View,_California" title="Mountain View, California">Mountain View, California</a>; Phoenix, Arizona; and other cities.</p>
+<h3>Vehicles</h3>
+<table>
+<thead>
+<tr>
+<th>Manufacturer and Model</th>
+<th>Driver version</th>
+<th>Announcement Date</th>
+<th>Introduction in Fleet</th>
+<th>Current Status and Remarks.</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Chrysler_Pacifica_(minivan)" title="Chrysler Pacifica (minivan)">Chrysler Pacifica (minivan)</a> Plug-in hybrid</td>
+<td></td>
+<td></td>
+<td>November 2017 in Phoenix: testing with safety driver. October 2020 in Phoenix: Waymo's first publicly offered Robotaxi service.</td>
+<td>All vehicles retired since March 2023. This was the first vehicle that offered public Robotaxi service in the USA. It was also used in mapping and testing in many locations where Waymo later started service with other vehicles.</td>
+</tr>
+<tr>
+<td><a href="./Jaguar_I-Pace" title="Jaguar I-Pace">Jaguar I-Pace</a></td>
+<td>Fifth gen</td>
+<td>March 2018 (with a goal of getting 20,000 units on the road)</td>
+<td>August 2021 in San Francisco.</td>
+<td>Total order of 3,500 vehicles, the last of which are entering service during 2026. The I-Pace was and still is Waymo's exclusive vehicle for public revenue service from March 2023 until 2026. It is available to passengers in 11 different cities / areas as of 2026-04-10.</td>
+</tr>
+<tr>
+<td><a href="./Zeekr" title="Zeekr">Zeekr</a> / <a href="./Waymo_Ojai" title="Waymo Ojai">Waymo Ojai</a> (based on <a href="./Zeekr_Mix" title="Zeekr Mix">Zeekr Mix</a>)</td>
+<td>Sixth gen</td>
+<td>December 2021</td>
+<td>February 2026 in San Francisco and Los Angeles: Driverless testing service for employees only.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Hyundai_Ioniq_5" title="Hyundai Ioniq 5">Hyundai Ioniq 5</a></td>
+<td>Sixth gen</td>
+<td>October 2024</td>
+<td>Hyundai plans to deliver 50,000 units to Waymo, starting in 2028.</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>As of November 2025<a href="https://en.wikipedia.org/w/index.php?title=Waymo&amp;action=edit">[update]</a>, most of Waymo's robotaxis are customized <a href="./Jaguar_I-Pace" title="Jaguar I-Pace">Jaguar I-Pace</a> cars. Waymo plans to introduce <a href="./Hyundai_Ioniq_5" title="Hyundai Ioniq 5">Hyundai Ioniq 5</a> and <a href="./Waymo_Ojai" title="Waymo Ojai">Zeekr Ojai</a> cars.</p>
+<p>As of October 2024<a href="https://en.wikipedia.org/w/index.php?title=Waymo&amp;action=edit">[update]</a>, Morgan Stanley estimated the total vehicle cost at over $120,000, and another source estimated $150,000. As of June 2025<a href="https://en.wikipedia.org/w/index.php?title=Waymo&amp;action=edit">[update]</a>, another source estimates it to be above $100,000. Other costs include ride monitors, service personnel, and real estate for storing and servicing the vehicles.</p>
+<p>In February 2026, Waymo's chief safety officer confirmed that the company employs remote assistance workers in the United States and the Philippines to address situations that the vehicles cannot independently solve. The company stated that the remote workers do not drive the vehicles, simply providing guidance to the vehicle, which can accept or reject it.</p>
+<h2>Operations, efficiency, and safety</h2>
+<p>From <a href="./California_Public_Utilities_Commission" title="California Public Utilities Commission">California Public Utilities Commission</a> (CPUC) data, as of September 2025<a href="https://en.wikipedia.org/w/index.php?title=Waymo&amp;action=edit">[update]</a>, Waymo delivered 4.75 million <a href="./Units_of_measurement_in_transportation#Passenger-distance" title="Units of measurement in transportation">Passenger Miles Traveled</a> (PMT) monthly, which required 6.57 million <a href="./Vehicle_miles_traveled" title="Vehicle miles traveled">Vehicle Miles Traveled</a> (VMT). This is a three-fold growth from September 2024 in both PMT and VMT, with the ratio staying roughly equal.</p>
+<p>Vehicles have an average passenger occupancy of 0.75. In 70% of the trips, only one passenger is in the car. For 44% of miles, the vehicle is empty, and 4.6% of requested trips are cancelled.</p>
+<p>In 2024, Waymo and insurance company <a href="./Swiss_Re" title="Swiss Re">Swiss Re</a> published a study which estimated that Waymo generated 92% fewer bodily injury claims and 88% fewer property damage claims than human drivers over the same number of miles in the same locations. The study said that by the end of 2024, the company was facing two potential bodily injury claims (accidents where the Waymo vehicle was potentially at fault), and estimated that human drivers would have generated 26 bodily injury claims. For property damage claims, Waymo logged nine versus an estimated 78 for human drivers. Experts noted that the sample size in the study of 25 million miles driven is extremely small (0.0008%), compared to the 3 trillion miles logged annually by human drivers in the US.</p>
+<h2>Incidents and controversies</h2>
+<h3>Accidents</h3>
+<p>In July 2021, the <a href="./National_Highway_Traffic_Safety_Administration" title="National Highway Traffic Safety Administration">National Highway Traffic Safety Administration</a> (NHTSA) started requiring autonomous vehicle companies to report any accidents which result in injury or property damage that occur within 30 seconds of the vehicle operating in autonomous mode. As of February 17, 2026<a href="https://en.wikipedia.org/w/index.php?title=Waymo&amp;action=edit">[update]</a>, the (NHTSA) has logged 1,710 accidents (cumulative since July 2021), involving Waymo vehicles. From July 2021 to January 2025, Waymo's vehicles have been involved in about 30 accidents with injuries, though the NHTSA reports do not ascribe fault.</p>
+<p>Some examples of Waymo accidents:</p>
+<ul>
+<li>In May 2023, a Waymo hit and killed a dog which ran out into the street in front of the car. According to Waymo, its car detected the dog, while the human safety driver did not, and that whether the vehicle would take evasive maneuvers or not depends on the expected trajectory of the dog. Waymo compares the performance of its autonomous systems to a theoretical Non-Impaired, with Eyes Always ON the conflict (NIEON) human driver's expected performance.</li>
+<li>On December 11, 2023, two Waymo cars hit a tow truck minutes apart from each other; Waymo recalled its software in response.</li>
+<li>On February 6, 2024, a Waymo hit and injured a cyclist who was obstructed behind an oncoming truck.</li>
+<li>On May 21, 2024, a Waymo hit a utility pole; Waymo recalled its software in response.</li>
+<li>On January 19, 2025, an empty Waymo was stopped in a line of cars when a speeding driver rear-ended the line, killing a passenger and a dog in another car; this was the first fatal crash involving Waymo.</li>
+<li>On February 16, 2025, a cyclist was hospitalized after being <a href="./Dooring" title="Dooring">doored</a> by a Waymo passenger; the cyclist sued Waymo, alleging that it had stopped in an unsafe location and failed to warn the passengers before exiting.</li>
+<li>On October 27, 2025, a Waymo in <a href="./San_Francisco" title="San Francisco">San Francisco</a> hit and killed <a href="./KitKat_(cat)" title="KitKat (cat)">KitKat</a>, a local <a href="./Bodega_cat" title="Bodega cat">bodega cat</a>, after he darted under the car as it was pulling away. In response, Supervisor <a href="./Jackie_Fielder" title="Jackie Fielder">Jackie Fielder</a> called for the state to pass legislation allowing local governments to ban self-driving cars.</li>
+<li>On November 30, 2025, a Waymo hit and killed a dog. According to the dog's owner, Waymo failed to notice what had happened and continued on after the collision.</li>
+<li>On January 23, 2026, a Waymo hit a child crossing the street, who suffered minor injures. The NHTSA opened an investigation into Waymo. According to Waymo and the NTSB, the child was obscured behind an SUV, and the Waymo car braked but was unable to avoid contact.</li>
+</ul>
+<h3>Legal and political disputes</h3>
+<ul>
+<li>In January 2022, Waymo sued the <a href="./California_Department_of_Motor_Vehicles" title="California Department of Motor Vehicles">California Department of Motor Vehicles</a> (DMV) to prevent data on driverless crashes from being released to the public. Waymo maintained that such information constituted a <a href="./Trade_secret" title="Trade secret">trade secret</a>. According to <em><a href="./The_Los_Angeles_Times" title="The Los Angeles Times">The Los Angeles Times</a></em>, the "topics Waymo wants to keep hidden include how it plans to handle driverless car emergencies, what it would do if a robot taxi started driving itself where it wasn't supposed to go, and what constraints there are on the car's ability to traverse San Francisco's tunnels, tight curves and steep hills." The court ruled some details regarding safety records do not have to be released.</li>
+<li>In January 2024, the city attorney of San Francisco attempted to sue to prevent expansion of driverless vehicles including Waymo into San Francisco. The <a href="./San_Mateo_County,_California" title="San Mateo County, California">San Mateo County</a> government soon after also sent a letter to regulators opposing expansion to its county.</li>
+<li>In May 2024, the NHTSA launched an investigation into potential flaws in Waymo vehicles, focusing on 31 incidents that included Waymo vehicles ramming into a closing gate, driving on the wrong side of the road, and at least 17 crashes or fires. Waymo recalled its self-driving software in May 2025. The investigation was closed in July 2025 with no further action taken.</li>
+<li>In July 2025, anti-Waymo protestors in <a href="./Boston" title="Boston">Boston</a> were joined by city officials, who expressed concerns over safety and the impact on <a href="./Ridesharing_company" title="Ridesharing company">rideshare</a> drivers. Eight city councillors proposed an ordinance to restrict self-driving car services in Boston, with one provision requiring safety drivers.</li>
+<li>In September 2025, police in <a href="./San_Bruno,_California" title="San Bruno, California">San Bruno, California</a> pulled over a Waymo after it made an illegal U-turn.</li>
+<li>In November 2025, a man sued Waymo after he was falsely identified as a terrorist on the <a href="./Specially_Designated_Nationals_and_Blocked_Persons_List" title="Specially Designated Nationals and Blocked Persons List">Specially Designated Nationals and Blocked Persons List</a> and denied access to Waymo.</li>
+<li>In November 2025, <a href="./New_Jersey" title="New Jersey">New Jersey</a> State Senator <a href="./Andrew_Zwicker" title="Andrew Zwicker">Andrew Zwicker</a> proposed a bill to require a three-year pilot project for self-driving cars, with a safety driver present at all times; Waymo opposes the bill.</li>
+<li>In November 2025, <a href="./San_Diego_City_Council" title="San Diego City Council">San Diego City Council</a> member <a href="./Sean_Elo-Rivera" title="Sean Elo-Rivera">Sean Elo-Rivera</a> opposed Waymo expansion, citing the impact on taxi and rideshare drivers. In January 2026, the board of the <a href="./San_Diego_Metropolitan_Transit_System" title="San Diego Metropolitan Transit System">San Diego Metropolitan Transit System</a> passed a resolution opposing Waymo expansion.</li>
+<li>In November 2025, the city of <a href="./Santa_Monica,_California" title="Santa Monica, California">Santa Monica, California</a> banned Waymo from charging its vehicles between 11PM and 6AM, claiming that two of their charging stations are <a href="./Public_nuisance" title="Public nuisance">public nuisances</a>, due to complaints from residents nearby about noise and light pollution. Waymo continued using the stations, and asked a court to declare their operations not a nuisance.</li>
+<li>In December 2025, several members of the <a href="./Minneapolis_City_Council" title="Minneapolis City Council">Minneapolis City Council</a> opposed Waymo expansion, citing the impact on taxi and rideshare drivers.</li>
+</ul>
+<h4>School bus incidents</h4>
+<p>In September 2025, a Waymo in <a href="./Metro_Atlanta" title="Metro Atlanta">Atlanta</a> was recorded illegally passing a stopped <a href="./School_bus" title="School bus">school bus</a>. Georgia State Representative <a href="./Clint_Crowe" title="Clint Crowe">Clint Crowe</a> and State Senator <a href="./Rick_Williams_(Georgia_politician)" title="Rick Williams (Georgia politician)">Rick Williams</a> criticized Waymo, with Williams stating his support for higher fines for self-driving cars.</p>
+<ul>
+<li>The NHTSA launched an investigation on October 20.</li>
+<li><a href="./Austin_Independent_School_District" title="Austin Independent School District">Austin Independent School District</a> (AISD) revealed that Waymo cars had illegally passed its school buses 20 times from the start of the school year to December 1, and asked Waymo to stop its operations during school drop-off and pick-up hours, but Waymo refused.</li>
+<li><a href="./Atlanta_Public_Schools" title="Atlanta Public Schools">Atlanta Public Schools</a> later revealed six illegal passing incidents.</li>
+<li>Waymo recalled its self-driving software on December 8.</li>
+<li>As of January 15, 2026<a href="https://en.wikipedia.org/w/index.php?title=Waymo&amp;action=edit">[update]</a>, AISD has reported four violations since the recall.</li>
+<li>The NHTSA launched a second investigation on January 23.</li>
+<li>The NTSB launched an investigation into an incident on January 12, and released a preliminary report on March 3; the Waymo car stopped for the bus, but then asked a human operator whether the bus still had its lights on, and the human operator said no.</li>
+<li>The NTSB launched another investigation following an incident on March 25.</li>
+</ul>
+<h3>Vandalism</h3>
+<p>In 2018, after the <a href="./Death_of_Elaine_Herzberg" title="Death of Elaine Herzberg">death of Elaine Herzberg</a> — the first recorded case of a pedestrian fatality involving a self-driving car (an Uber test vehicle) — there were several cases of Waymo cars being vandalized.</p>
+<p>In 2023, the San Francisco group <em>Safe Street Rebel</em> used a practice called "coning" to trap Waymo and Cruise cars with traffic cones as a form of protest after stating that the cars had been involved in hundreds of incidents.</p>
+<p>In February 2024, during <a href="./Lunar_New_Year" title="Lunar New Year">Lunar New Year</a> celebrations in <a href="./Chinatown,_San_Francisco" title="Chinatown, San Francisco">Chinatown, San Francisco</a>, a mob of vandals attacked, graffitied, and set fire to a Waymo car. No one was injured.</p>
+<p>In February 2024, a pair of Waymo passengers described an attack by an onlooker who attempted to cover the car's sensors.</p>
+<p>In July 2024, Waymo sued two people who allegedly vandalized their cars.</p>
+<p>During the <a href="./June_2025_Los_Angeles_protests_against_mass_deportation" title="June 2025 Los Angeles protests against mass deportation">June 2025 Los Angeles protests against mass deportation</a>, several Waymo cars were set on fire when riots broke out. Officials including California Governor <a href="./Gavin_Newsom" title="Gavin Newsom">Gavin Newsom</a> and Los Angeles Mayor <a href="./Karen_Bass" title="Karen Bass">Karen Bass</a> condemned the destruction, attributing it to extremists infiltrating otherwise-peaceful protests.</p>
+<h3>Use of camera footage by police</h3>
+<p>Waymo has been criticized for the use of its camera footage by law enforcement agencies. According to Waymo, it "does not provide information or data to law enforcement without a valid legal request".</p>
+<h3>Other incidents</h3>
+<ul>
+<li>In 2021, it was noted that Waymo cars kept routing through the <a href="./Richmond_District,_San_Francisco" title="Richmond District, San Francisco">Richmond District</a> of San Francisco, with up to 50 cars each day driving to a <a href="./Dead_end_street" title="Dead end street">dead end street</a> before turning around.</li>
+<li>In August 2024, residents of San Francisco's <a href="./SoMa" title="SoMa">SoMa</a> district began to complain about <a href="./Noise_pollution" title="Noise pollution">noise pollution</a> from Waymo vehicles honking at each other in a local parking lot. Residents reported that the car horns could be heard daily, with varying levels of activity, usually peaking around 4 AM and during evening rush hour. The honking appears to have been triggered by the self-driving cars backing in and out of the lot. The story caught attention after a resident began live streaming the cars. Waymo apologized and said the issue will be addressed with software updates.</li>
+<li>In December 2024, a Waymo car drove in circles around a parking lot with a passenger inside, which took several minutes to resolve remotely. Waymo says it has fixed the issue.</li>
+<li>In April 2025:</li>
+<li>A Waymo car got stuck in a <a href="./Drive-thru" title="Drive-thru">drive-thru</a>.</li>
+<li>A Waymo passenger reported being trapped in the car after it drove the wrong way and stopped in the middle of the road. According to Waymo, one of the passengers pressed the "pull over" button, and the passengers could have unlocked the doors by pulling twice on the door handle.</li>
+<li>In November 2025, a Waymo car drove right next to an ongoing <a href="./Felony_traffic_stop" title="Felony traffic stop">felony traffic stop</a>. The vehicle was given a command by a police officer on how to proceed, but it did not comply.</li>
+<li>In December 2025:</li>
+<li>A "minor collision" between two Waymo cars blocked an intersection.</li>
+<li>A Waymo passenger found a person hiding in the trunk of the car; Waymo was criticized for not having a system to detect this.</li>
+<li>A Waymo car got stuck on a bridge in the <a href="./Venice_Canal_Historic_District" title="Venice Canal Historic District">Venice Canal Historic District</a> in Los Angeles during a parade.</li>
+<li>A Waymo car drove the wrong way on a one-way street.</li>
+<li>Waymo cars became inoperable during a large-scale <a href="./Power_outage" title="Power outage">power outage</a> in San Francisco, blocking traffic and intersections. In response, Waymo temporarily halted ride-hailing services until power was restored. Authorities expressed concern that similar behavior during a disaster would block emergency responders and residents fleeing danger.</li>
+<li>In January 2026, a Waymo car drove on newly-built tracks of the Phoenix <a href="./Valley_Metro_Rail" title="Valley Metro Rail">Valley Metro Rail</a>.</li>
+<li>In March 2026:</li>
+<li>A Waymo in <a href="./Austin,_Texas" title="Austin, Texas">Austin</a> attempted to make a U-turn but ended up stuck and blocked an ambulance responding to <a href="./2026_Austin_bar_shooting" title="2026 Austin bar shooting">a mass shooting</a>.</li>
+<li>A Waymo stopped between the train and the bar gate at a railroad crossing.</li>
+<li>In April 2026, a Waymo car drove the wrong way in a school zone.</li>
+</ul>
+<h2>See also</h2>
+<ul>
+<li><a href="./History_of_self-driving_cars" title="History of self-driving cars">History of self-driving cars</a></li>
+</ul>
+<h2>Notes</h2>
+<h2>References</h2>
+<h3>Primary sources</h3>
+<p>In the text, these references are preceded by a double dagger (‡):</p>
+<h2>Further reading</h2>
+<ul>
+<li>Grant, Christian (May 2007). <a href="https://web.archive.org/web/20210401042828/https://www.youtube.com/embed/tbGVWRIzZr4">"Episode Exe006: Sebastian Thrun, Director, Stanford Artificial Intelligence Laboratory"</a>. <em>Executive Talks</em>. Archived from <a href="http://www.executivetalks.com/exe006.html">the original</a> on April 1, 2021. Retrieved January 3, 2013.</li>
+<li>Lin, Patrick (July 30, 2013). <a href="https://www.wired.com/opinion/2013/07/the-surprising-ethics-of-robot-cars/">"The Ethics of Saving Lives with Autonomous Cars Are Far Murkier Than You Think"</a>. <em>Wired</em>. Retrieved August 24, 2013.</li>
+<li>Marcus, Gary (November 27, 2012). <a href="https://www.newyorker.com/online/blogs/newsdesk/2012/11/google-driverless-car-morality.html">"Moral Machines"</a>. <em>The New Yorker</em>. Retrieved August 24, 2013.</li>
+<li>Muller, Joann (May 27, 2013). <a href="https://www.forbes.com/sites/joannmuller/2013/05/08/silicon-valley-vs-detroit-the-battle-for-the-car-of-the-future/">"Silicon Valley vs. Detroit: The Battle for the Car of the Future"</a>. <em><a href="./Forbes" title="Forbes">Forbes</a></em>.</li>
+<li>Stock, Kyle (April 3, 2014). <a href="https://web.archive.org/web/20140404154928/http://www.businessweek.com/articles/2014-04-03/the-problem-with-self-driving-cars-they-dont-cry#r=hpt-ls">"The Problem with Self-Driving Cars"</a>. <em>Bloomberg Businessweek</em>. Archived from <a href="http://www.businessweek.com/articles/2014-04-03/the-problem-with-self-driving-cars-they-dont-cry#r=hpt-ls">the original</a> on April 4, 2014. Retrieved April 6, 2014.</li>
+<li>Walker Smith, Bryant (November 1, 2012), <a href="http://cyberlaw.stanford.edu/publications/automated-vehicles-are-probably-legal-united-states"><em>Automated Vehicles Are Probably Legal in the United States</em></a>, Stanford Law School, retrieved August 24, 2013</li>
+</ul>
+<h2>External links</h2>
+<p><a href="./File:Commons-logo.svg"><img alt="Wikimedia Commons logo" src="//upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/40px-Commons-logo.svg.png"></a></p>
+<p>Wikimedia Commons has media related to <a href="https://commons.wikimedia.org/wiki/Category:Waymo" title="commons:Category:Waymo">Waymo</a>.</p>
+<ul>
+<li><a href="https://waymo.com/">Official website</a> <a href="https://www.wikidata.org/wiki/Q15330#P856" title="Edit this at Wikidata"><img alt="Edit this at Wikidata" src="//upload.wikimedia.org/wikipedia/en/thumb/8/8a/OOjs_UI_icon_edit-ltr-progressive.svg/20px-OOjs_UI_icon_edit-ltr-progressive.svg.png"></a></li>
+<li><a href="https://openaccess.thecvf.com/content_CVPR_2020/html/Sun_Scalability_in_Perception_for_Autonomous_Driving_Waymo_Open_Dataset_CVPR_2020_paper.html">Scalability in Perception for Autonomous Driving: Waymo Open Dataset</a></li>
+<li><a href="https://www.jjricks.com/videos">Waymo Self Driving Car Videos</a>. <a href="https://web.archive.org/web/20240414141749/https://www.jjricks.com/videos">Archived</a> April 14, 2024, at the <a href="./Wayback_Machine" title="Wayback Machine">Wayback Machine</a> – citizen journalist recording Waymo autonomous trips in Phoenix area</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Alphabet_Inc." title="Template:Alphabet Inc.">v</a> - <a href="./Template_talk:Alphabet_Inc." title="Template talk:Alphabet Inc.">t</a> - <a href="./Special:EditPage/Template:Alphabet_Inc." title="Special:EditPage/Template:Alphabet Inc.">e</a>  <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc.</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Subsidiaries</td>
+<td></td>
+</tr>
+<tr>
+<td>People</td>
+<td></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Alphabet_Inc." title="Category:Alphabet Inc.">Category</a> - <a href="./Portal:Companies" title="Portal:Companies">Companies portal</a> - <a href="./File:Crystal_Clear_app_linneighborhood.svg">icon</a> <a href="./Portal:Internet" title="Portal:Internet">Internet portal</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Self-driving_cars_and_enabling_technologies" title="Template:Self-driving cars and enabling technologies">v</a> - <a href="./Template_talk:Self-driving_cars_and_enabling_technologies" title="Template talk:Self-driving cars and enabling technologies">t</a> - <a href="./Special:EditPage/Template:Self-driving_cars_and_enabling_technologies" title="Special:EditPage/Template:Self-driving cars and enabling technologies">e</a>  <a href="./Self-driving_car" title="Self-driving car">Self-driving cars</a>, self-driving vehicles and enabling technologies</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Overview and  context</td>
+<td>- <a href="./History_of_self-driving_cars" title="History of self-driving cars">History of self-driving cars</a> - <a href="./Impact_of_self-driving_cars" title="Impact of self-driving cars">Impact of self-driving cars</a> - <a href="./Intelligent_transportation_system" title="Intelligent transportation system">Intelligent transportation system</a> - <a href="./Context-aware_pervasive_systems" title="Context-aware pervasive systems">Context-aware pervasive systems</a> - <a href="./Mobile_computing" title="Mobile computing">Mobile computing</a> - <a href="./Smart,_connected_products" title="Smart, connected products">Smart, connected products</a> - <a href="./Ubiquitous_computing" title="Ubiquitous computing">Ubiquitous computing</a> - <a href="./Ambient_intelligence" title="Ambient intelligence">Ambient intelligence</a> - <a href="./Internet_of_things" title="Internet of things">Internet of things</a> - <a href="./List_of_self-driving_system_suppliers" title="List of self-driving system suppliers">List of self-driving system suppliers</a></td>
+</tr>
+<tr>
+<td><a href="./Self-driving_car#Levels_of_driving_automation" title="Self-driving car">SAE Levels</a></td>
+<td></td>
+</tr>
+<tr>
+<td>Vehicles</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Regulation_of_self-driving_cars" title="Regulation of self-driving cars">Regulation</a></td>
+<td>- <a href="./Self-driving_car#Regulation" title="Self-driving car">Legislation</a> - <a href="./IEEE_802.11p" title="IEEE 802.11p">IEEE 802.11p</a> - <a href="./Assured_clear_distance_ahead" title="Assured clear distance ahead">Safe speed automotive common law</a> - <a href="./Automated_Lane_Keeping_System" title="Automated Lane Keeping System">Automated lane keeping system</a> (unece regulation 157) - Regulation (EU) 2019/2144</td>
+</tr>
+<tr>
+<td>Liability</td>
+<td><a href="./Self-driving_car_liability" title="Self-driving car liability">Self-driving car liability</a></td>
+</tr>
+<tr>
+<td>Enabling  technologies</td>
+<td>- <a href="./Radar" title="Radar">Radar</a> - <a href="./Laser" title="Laser">Laser</a> - <a href="./LIDAR" title="LIDAR">LIDAR</a> - <a href="./Artificial_neural_network" title="Artificial neural network">Artificial neural network</a> - <a href="./Computer_stereo_vision" title="Computer stereo vision">Computer stereo vision</a> - <a href="./Computer_vision#Recognition" title="Computer vision">Image recognition</a> - <a href="./Dedicated_short-range_communications" title="Dedicated short-range communications">Dedicated short-range communications</a> - <a href="./Real-time_Control_System" title="Real-time Control System">Real-time Control System</a> - <a href="./RFpro" title="RFpro">rFpro</a> - <a href="./Eye_tracking" title="Eye tracking">Eye tracking</a> - <a href="./Radio-frequency_identification" title="Radio-frequency identification">Radio-frequency identification</a> - <a href="./Automotive_navigation_system" title="Automotive navigation system">Automotive navigation system</a></td>
+</tr>
+<tr>
+<td>Organizations,  Projects &amp;  People</td>
+<td></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

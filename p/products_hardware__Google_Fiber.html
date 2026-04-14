@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Google Fiber</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link active" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Google Fiber</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Google_Fiber<br>
+Category: products_hardware<br>
+Depth: 1</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Google Fiber, Inc., sometimes stylized as GFiber, is a fiber broadband Internet service operated by Alphabet Inc. servicing a growing number of households in cities in 19 states across the United States. In mid-2016, Google Fiber was estimated to have about 453,000 broadband customers.</p>
+<h2>Images</h2>
+<p><img alt="330px-Fibercities" src="../images/330px-Fibercities.png"><br>
+<img alt="330px-GoogleFiberNetworkBox" src="../images/330px-GoogleFiberNetworkBox.jpg"><br>
+<img alt="330px-Fiber_Jack" src="../images/330px-Fiber_Jack.png"><br>
+<img alt="250px-GoogleFiberKansasCity" src="../images/250px-GoogleFiberKansasCity.JPG"><br>
+<img alt="120px-Google_Fiber_store_2C_Austin" src="../images/120px-Google_Fiber_store_2C_Austin.jpg"><br>
+<img alt="120px-Google_Fiber_store_2C_Austin_1" src="../images/120px-Google_Fiber_store_2C_Austin_1.jpg"><br>
+<img alt="120px-Google_Fiber_store_2C_Austin_2" src="../images/120px-Google_Fiber_store_2C_Austin_2.jpg"><br>
+<img alt="120px-TV_box_and_Network_box_at_Google_Fiber_store_2C_Austin" src="../images/120px-TV_box_and_Network_box_at_Google_Fiber_store_2C_Austin.jpg"><br>
+<img alt="250px-GFiber_FCC_Broadband_Label" src="../images/250px-GFiber_FCC_Broadband_Label.png"></p>
+<h2>Full Article</h2>
+<p>Broadband network from Alphabet in the United States</p>
+<p>Not to be confused with <a href="./Google_Fi_Wireless" title="Google Fi Wireless">Google Fi Wireless</a>.</p>
+<p><strong>Google Fiber, Inc.</strong>, sometimes stylized as <strong>GFiber</strong>, is a <a href="./Fiber-to-the-premises" title="Fiber-to-the-premises">fiber</a> <a href="./Broadband_Internet" title="Broadband Internet">broadband Internet</a> service operated by <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc.</a> servicing a growing number of households in cities in 19 states across the <a href="./United_States" title="United States">United States</a>. In mid-2016, Google Fiber was estimated to have about 453,000 broadband customers.</p>
+<p>The service was first introduced in 2012 in the <a href="./Kansas_City_metropolitan_area" title="Kansas City metropolitan area">Kansas City metropolitan area</a>, growing to include twenty Kansas City area suburbs within three years. Initially proposed as an experimental project, Google Fiber was announced as a viable business model in December 2012, when <a href="./Google" title="Google">Google</a> executive chairman <a href="./Eric_Schmidt" title="Eric Schmidt">Eric Schmidt</a> stated "It's actually not an experiment, we're actually running it as a business", at <em><a href="./The_New_York_Times" title="The New York Times">The New York Times</a></em>' DealBook Conference.</p>
+<p>Google Fiber announced expansion to <a href="./Austin,_Texas" title="Austin, Texas">Austin, Texas</a>, and <a href="./Provo,_Utah" title="Provo, Utah">Provo, Utah</a>, in April 2013, and subsequent expansions in 2014 and 2015 to <a href="./Atlanta_metropolitan_area" title="Atlanta metropolitan area">Atlanta</a>, <a href="./Charlotte,_North_Carolina" title="Charlotte, North Carolina">Charlotte</a>, <a href="./Research_Triangle" title="Research Triangle">Research Triangle</a>, <a href="./Nashville,_Tennessee" title="Nashville, Tennessee">Nashville</a>, <a href="./Salt_Lake_City" title="Salt Lake City">Salt Lake City</a>, and <a href="./San_Antonio" title="San Antonio">San Antonio</a>. GFiber resumed expansion and by early 2024, GFiber also served Huntsville (Alabama), Maricopa County (Arizona), Des Moines and West Des Moines (Iowa), Omaha (Nebraska) among others.</p>
+<p>In August 2015, Google announced its intention to restructure the company, moving less central services and products into a new umbrella corporation, <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc.</a> As part of this restructuring plan, Google Fiber would become a subsidiary of Alphabet and would possibly become part of the Access and Energy business unit.</p>
+<p>In October 2016, all expansion plans were put on hold, and some jobs were cut. Google said it would continue to provide Google Fiber service in the cities where it was already installed. Since then, GFiber acquired Webpass to add presence in 5 additional states. In March 2022, Google Fiber announced it would bring high speed internet to the <a href="./Des_Moines,_Iowa" title="Des Moines, Iowa">Des Moines, Iowa</a>, metro area, making it the first expansion in five years. GFiber has resumed very active expansion in several new states.</p>
+<p>In August 2022, Google Fiber announced it would expand into 22 metro areas in five states (<a href="./Arizona" title="Arizona">Arizona</a>, <a href="./Colorado" title="Colorado">Colorado</a>, <a href="./Idaho" title="Idaho">Idaho</a>, <a href="./Nebraska" title="Nebraska">Nebraska</a>, and <a href="./Nevada" title="Nevada">Nevada</a>), including previously announced expansions into <a href="./Mesa,_Arizona" title="Mesa, Arizona">Mesa, Arizona</a>, and <a href="./Colorado_Springs,_Colorado" title="Colorado Springs, Colorado">Colorado Springs, Colorado</a>, based on where it felt speeds were lagging. It also announced additional investment in <a href="./North_Carolina" title="North Carolina">North Carolina</a>. <em><a href="./CNET" title="CNET">CNET</a></em> characterized this an example of fast fiber winning the <a href="./Broadband_networks" title="Broadband networks">broadband</a> wars. In October 2023, Google Fiber rebranded to GFiber and announced plans to begin offering 20Gig internet and Wi-Fi 7 hardware in the near future.</p>
+<p>On March 12, 2026, the company announced it would be merging with <a href="./Astound_Broadband" title="Astound Broadband">Astound Broadband</a>. The combined company will be majority-owned by investment company <a href="./Stonepeak" title="Stonepeak">Stonepeak</a>. The transaction is expected to close by the end of 2026.</p>
+<h2>Services</h2>
+<p>Google Fiber offers three symmetrical speed internet options as of January 2025. They are called <a href="https://fiber.google.com/blog/2025/01/new-products-tailored-for-how-you-live.html">Core, Home, and Edge</a>.</p>
+<p>Google Fiber in the past offered five options, depending on location: Fiber 1 Gig, 2 Gig, <a href="https://fiber.google.com/blog/2023/02/fall-in-love-with-fast-5-gig-is-here.html">5 Gig</a>, <a href="https://fiber.google.com/blog/2022/10/ready-for-faster-internet-be-trusted.html">8 Gig</a> and an option for home phone service. All speed tiers included one <a href="./Terabyte" title="Terabyte">terabyte</a> of storage on <a href="./Google_Drive" title="Google Drive">Google Drive</a> service.</p>
+<table>
+<thead>
+<tr>
+<th>Plan</th>
+<th>Core</th>
+<th>Fiber 2 Gig (legacy)</th>
+<th>Home</th>
+<th>Fiber 5 Gig (legacy)</th>
+<th>Edge</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Internet bandwidth (<a href="./Downstream_(networking)" title="Downstream (networking)">download</a>)</td>
+<td>1 Gbit/s</td>
+<td>2 Gbit/s</td>
+<td>3 Gbit/s</td>
+<td>5 Gbit/s</td>
+<td>8 Gbit/s</td>
+</tr>
+<tr>
+<td>Internet bandwidth (<a href="./Upstream_(networking)" title="Upstream (networking)">upload</a>)</td>
+<td>1 Gbit/s</td>
+<td>1 Gbit/s (2 Gbit/s select markets)</td>
+<td>3 Gbit/s</td>
+<td>5 Gbit/s</td>
+<td>8 Gbit/s</td>
+</tr>
+<tr>
+<td>Construction fee</td>
+<td>None</td>
+<td>None</td>
+<td>None</td>
+<td>None</td>
+<td>None</td>
+</tr>
+<tr>
+<td>Monthly recurring cost</td>
+<td>$70</td>
+<td>$100</td>
+<td>$100</td>
+<td>$125</td>
+<td>$150</td>
+</tr>
+<tr>
+<td>Storage included</td>
+<td>None</td>
+<td>1TB Google Drive</td>
+<td>None</td>
+<td>1TB Google Drive</td>
+<td>None</td>
+</tr>
+<tr>
+<td>Hardware included</td>
+<td>Multi-Gig Wi-Fi 6E router Up to 1 Mesh Extender</td>
+<td>Wi-Fi 6 router 1 Mesh Extender</td>
+<td>Multi-Gig Wi-Fi 6E router Up to 2 Mesh Extenders  Battery Backup (optional)</td>
+<td>Wi-Fi 6 router Includes up to 2 Mesh Extenders</td>
+<td>Multi-Gig Wi-Fi 6E router Up to 2 Mesh Extenders  Battery Backup</td>
+</tr>
+</tbody>
+</table>
+<p>New updated plans and speeds were unveiled in early 2025. 1TB free Google Drive was discontinued.</p>
+<p>Google also offers free Google Fiber Internet connectivity in each of its markets to select public and affordable housing properties.</p>
+<p>Google Fiber participated in the <a href="./Affordable_Connectivity_Program" title="Affordable Connectivity Program">FCC's Affordable Connectivity Program</a> with discounted rates until its cancellation in June 2024.</p>
+<p>In February 2020, Google Fiber stopped offering TV service directly to new customers. Instead, during the sign-up process for Google Fiber, customers are presented with promotions for three <a href="./Virtual_MVPD" title="Virtual MVPD">virtual MVPD</a> services: sister company <a href="./YouTube_TV" title="YouTube TV">YouTube TV</a>, as well as <a href="./FuboTV" title="FuboTV">FuboTV</a> and (later) <a href="./Philo_(company)" title="Philo (company)">Philo</a>. TV service was maintained for existing clients until early 2022.</p>
+<h2>Distribution</h2>
+<p>To avoid underground cabling complexity for the <a href="./Last_mile_(telecommunications)" title="Last mile (telecommunications)">last mile</a>, Google Fiber relies on aggregators dubbed <em>Google Fiber Huts</em>.</p>
+<p>From these Google Fiber Huts, the fiber cables travel along utility poles into neighborhoods and homes, and stop at a <em>Fiber Jack</em> (an <a href="./Optical_network_terminal" title="Optical network terminal">optical network terminal</a> or ONT) in each home.</p>
+<p>The estimated cost of wiring a fiber network like Google Fiber into a major American city was $1 billion in 2016.</p>
+<h2>First city selection process</h2>
+<p>The initial location was chosen following a competitive selection process. Over 1,100 communities applied to be the first recipients of the service. Google originally stated that they would announce the winner or winners by the end of 2010; however, in mid-December, Google pushed back the announcement to "early 2011" due to the number of applications.</p>
+<p>The request form was simple, and some have argued that it was too straightforward. This led to various attention-getting behaviors by those hoping to have their town selected. Some examples are given below:</p>
+<ul>
+<li>Greenville, South Carolina, utilized 1,000 of their citizens and glow sticks to create "The World's First and Largest People-Powered Google Chain". From an aerial view, the title "Google" was colorfully visible.</li>
+<li>Topeka, Kansas, <a href="./Google,_Kansas" title="Google, Kansas">temporarily renamed itself "Google"</a>.</li>
+<li>A small plane bearing a banner reading "<a href="./Will_it_play_in_Peoria%3F" title="Will it play in Peoria?">Will Google Play in Peoria, IL?</a>" flew over the <a href="./Google_campus" title="Google campus">Google campus</a> in <a href="./Mountain_View,_California" title="Mountain View, California">Mountain View, California</a>.</li>
+<li>The mayor of <a href="./Duluth,_Minnesota" title="Duluth, Minnesota">Duluth, Minnesota</a>, jokingly proclaimed that every <a href="./Birth_order" title="Birth order">first-born child</a> will be named either Google Fiber or Googlette Fiber.</li>
+<li>The city of <a href="./Rancho_Cucamonga,_California" title="Rancho Cucamonga, California">Rancho Cucamonga, California</a>, dubbed their city, "Rancho Googlemonga".</li>
+<li>One of the islands in <a href="./Sarasota,_Florida" title="Sarasota, Florida">Sarasota, Florida</a>, was temporarily renamed "Google Island".</li>
+</ul>
+<p>Municipalities and citizens also uploaded <a href="./YouTube" title="YouTube">YouTube</a> videos to support their bids. Some examples:</p>
+<ul>
+<li>A YouTube video in support of Sarasota, Florida, used the <a href="./Bobby_McFerrin" title="Bobby McFerrin">Bobby McFerrin</a> song "<a href="./Don't_Worry,_Be_Happy" title="Don't Worry, Be Happy">Don't Worry, Be Happy</a>". A video for Sarasota was uploaded through <a href="./Facebook" title="Facebook">Facebook</a>'s video service.</li>
+<li>Comedian and <a href="./United_States_Senator" title="United States Senator">United States Senator</a> <a href="./Al_Franken" title="Al Franken">Al Franken</a> made a YouTube video to support the bid of Duluth, Minnesota.</li>
+<li><a href="./Ann_Arbor,_Michigan" title="Ann Arbor, Michigan">Ann Arbor, Michigan</a>, has its own <a href="./YouTube" title="YouTube">YouTube</a> channel featuring a <a href="./Late_Show_Top_Ten_List" title="Late Show Top Ten List">David Letterman-style Top Ten list</a> delivered by town VIPs such as Mayor <a href="./John_Hieftje" title="John Hieftje">John Hieftje</a> and <a href="./University_of_Michigan" title="University of Michigan">University of Michigan</a> President <a href="./Mary_Sue_Coleman" title="Mary Sue Coleman">Mary Sue Coleman</a>. Ann Arbor also held a city-wide GoogleFest, kicking off with a gathering of hundreds of participants dancing and chanting "Ann Arbor Google Fiber, ain't Nothing any finer."</li>
+</ul>
+<h2>Operating locations</h2>
+<p>In 2011, Google launched a trial in a residential community of <a href="./Palo_Alto,_California" title="Palo Alto, California">Palo Alto, California</a>. On March 30 of the same year, <a href="./Kansas_City,_Kansas" title="Kansas City, Kansas">Kansas City, Kansas</a>, was selected as the first city to receive Google Fiber. In 2013, Austin, Texas, and Provo, Utah, were announced as expansion cities for Google Fiber on April 9 and 17 respectively.</p>
+<ul>
+<li>Texas</li>
+<li>Austin</li>
+<li>San Antonio</li>
+<li>Utah</li>
+<li>Logan</li>
+<li>Provo</li>
+<li>Salt Lake City</li>
+<li>Washington</li>
+<li>Seattle</li>
+<li>Nebraska</li>
+<li>Bellevue</li>
+<li>Omaha</li>
+<li>North Carolina</li>
+<li>Charlotte</li>
+<li>The Triangle</li>
+<li>Wilmington (upcoming as of 2026)</li>
+<li>Nevada</li>
+<li>Las Vegas (launched March 2026)</li>
+<li>South Carolina</li>
+<li>Fort Mill</li>
+<li>Tega Cay</li>
+<li>Tennessee</li>
+<li>Franklin</li>
+<li>Murfreesboro</li>
+<li>Nashville</li>
+<li>Smyrna</li>
+<li>Illinois</li>
+<li>Chicago</li>
+<li>Idaho</li>
+<li>Pocatello</li>
+<li>lowa</li>
+<li>Council Bluffs</li>
+<li>Des Moines</li>
+<li>Norwalk (upcoming as of 2026)</li>
+<li>West Des Moines</li>
+<li>Kansas/Missouri</li>
+<li>Kansas City</li>
+<li>Lawrence (upcoming as of 2026)</li>
+<li>Jefferson City</li>
+<li>Colorado</li>
+<li>Adams County (upcoming as of 2026)</li>
+<li>Broomfield County (upcoming as of 2026)</li>
+<li>Douglas County (upcoming as of 2026)</li>
+<li>Denver</li>
+<li>Golden (upcoming as of 2026)</li>
+<li>Lakewood</li>
+<li>Westminster</li>
+<li>Wheat Ridge (upcoming as of 2026)</li>
+<li>Florida</li>
+<li>Miami</li>
+<li>Georgia</li>
+<li>Atlanta</li>
+<li>Alabama</li>
+<li>Huntsville</li>
+<li>Arizona</li>
+<li>Chandler</li>
+<li>Mesa</li>
+<li>Queen Creek</li>
+<li>Tempe (upcoming as of 2026)</li>
+<li>California</li>
+<li>Oakland</li>
+<li>Orange County</li>
+<li>San Diego</li>
+<li>San Francisco</li>
+</ul>
+<h3>Stanford University</h3>
+<ul>
+<li>In summer 2011, Google launched a free trial of its forthcoming fiber service in one residential community near <a href="./Stanford_University" title="Stanford University">Stanford University</a> in <a href="./Palo_Alto,_California" title="Palo Alto, California">Palo Alto, California</a>.</li>
+</ul>
+<h3>Kansas City, Kansas, and Kansas City, Missouri</h3>
+<p>Google found that affluent neighborhoods in Kansas City signed up for the faster service while those in poorer neighborhoods did not sign up for even the free option. In response to this <a href="./Digital_divide" title="Digital divide">digital divide</a>, Google sent a team of 60 employees to the underserved areas to promote the Google Fiber service. Additionally, Google offered micro-grants to community organizations that want to start up <a href="./Digital_literacy" title="Digital literacy">digital literacy</a> programs in Kansas City.</p>
+<p>The following are chronological announcements of service in the <a href="./Kansas_City_metropolitan_area" title="Kansas City metropolitan area">Kansas City metropolitan area</a>. Neighborhoods are said to be selected based on demand:</p>
+<ul>
+<li><a href="./Kansas_City,_Kansas" title="Kansas City, Kansas">Kansas City, Kansas</a> – On March 30, 2011, Kansas City, Kansas, was selected from over 1,100 applicants to be the first Google Fiber community.</li>
+<li><a href="./Kansas_City,_Missouri" title="Kansas City, Missouri">Kansas City, Missouri</a> – On May 17, 2011, Google announced the decision to include Kansas City, Missouri, thus offering service to both sides of the state line. The network became available to residents in September 2012.</li>
+<li><a href="./Olathe,_Kansas" title="Olathe, Kansas">Olathe, Kansas</a> – On March 19, 2013, Google announced that the project would be expanded to Olathe.</li>
+<li>
+<p><a href="./North_Kansas_City,_Missouri" title="North Kansas City, Missouri">North Kansas City, Missouri</a> – On April 19, 2013, Google announced that they were to begin a 20-year lease on dark fiber in the existing <em>LiNKCity</em> fiber network in North Kansas City. The original news article was incomplete, and later articles clarified the lease. Independent of Google's network, the system in North Kansas City will also be upgraded to gigabit capacity and managed by a local company based out of North Kansas City.</p>
+</li>
+<li>
+<p><a href="./Shawnee,_Kansas" title="Shawnee, Kansas">Shawnee, Kansas</a> – May 2, 2013</p>
+</li>
+<li><a href="./Raytown,_Missouri" title="Raytown, Missouri">Raytown, Missouri</a> – May 3, 2013</li>
+<li><a href="./Grandview,_Missouri" title="Grandview, Missouri">Grandview, Missouri</a> – May 7, 2013</li>
+<li><a href="./Gladstone,_Missouri" title="Gladstone, Missouri">Gladstone, Missouri</a> – May 13, 2013</li>
+<li><a href="./Raytown,_Missouri" title="Raytown, Missouri">Raytown, Missouri</a> – May 22, 2013</li>
+<li><a href="./Lee's_Summit,_Missouri" title="Lee's Summit, Missouri">Lee's Summit, Missouri</a> – June 21, 2013</li>
+<li><a href="./Mission,_Kansas" title="Mission, Kansas">Mission, Kansas</a> – June 27, 2013</li>
+<li><a href="./Prairie_Village,_Kansas" title="Prairie Village, Kansas">Prairie Village, Kansas</a> – August 5, 2013</li>
+<li><a href="./Leawood,_Kansas" title="Leawood, Kansas">Leawood, Kansas</a> – August 19, 2013 – (cancelled July 24, 2014)</li>
+<li><a href="./Merriam,_Kansas" title="Merriam, Kansas">Merriam, Kansas</a> – August 26, 2013</li>
+<li><a href="./Roeland_Park,_Kansas" title="Roeland Park, Kansas">Roeland Park, Kansas</a> – September 3, 2013</li>
+<li><a href="./Mission_Hills,_Kansas" title="Mission Hills, Kansas">Mission Hills, Kansas</a> – September 9, 2013</li>
+<li><a href="./Fairway,_Kansas" title="Fairway, Kansas">Fairway, Kansas</a> – September 9, 2013</li>
+<li><a href="./Lenexa,_Kansas" title="Lenexa, Kansas">Lenexa, Kansas</a> – September 17, 2013</li>
+</ul>
+<p>Google placed deployment in <a href="./Overland_Park,_Kansas" title="Overland Park, Kansas">Overland Park, Kansas</a>, on indefinite hold in October 2013, following delays by the City Council over concerns about whether an <a href="./Indemnification" title="Indemnification">indemnification</a> clause that Google required might force the city to repair any damage caused by the project. As of July 2014, Overland Park's City Council had voted on a deal that would allow for Google Fiber. Soon after, the city appeared on Google Fiber's website.</p>
+<h3>Austin, Texas</h3>
+<ul>
+<li>On April 9, 2013, it was announced that Austin, Texas, would become a Google Fiber City.</li>
+<li>On October 15, 2014, it was announced that Austin signups for Google Fiber would start in December 2014.</li>
+<li>On December 3, 2014, Google started taking registrations from residents and small businesses.</li>
+<li>The Google Fiber store in Austin was closed by 2023; however, the buildout continued in the city.</li>
+<li>
+<p>5 Gig launched in the Austin Market on August 21, 2023.</p>
+</li>
+<li>
+<p>Google Fiber store entrance, Austin</p>
+</li>
+<li>Google Fiber store, Austin</li>
+<li>Google Fiber store, Austin</li>
+<li>TV box and Network box at Google Fiber store, Austin</li>
+</ul>
+<h3>Utah</h3>
+<ul>
+<li><a href="./Provo,_Utah" title="Provo, Utah">Provo, Utah</a> – On April 17, 2013, it was announced that Provo would become the third Google Fiber City. Expansion of Google Fiber service to Provo, Utah will be accomplished through an agreement with the City of Provo to allow Google to acquire the existing fiber network known as "<a href="./IProvo" title="IProvo">iProvo</a>". The agreement will allow Google to purchase the iProvo network for $1, while requiring Google to upgrade the aging network to <a href="./Gigabit" title="Gigabit">gigabit</a> capacity, offer free gigabit service to 25 local public institutions, and offer 5 Mbit/s service to every home in the city for free after a $300 activation fee.</li>
+<li><a href="./Salt_Lake_City" title="Salt Lake City">Salt Lake City</a> - On March 24, 2015, Google announced that Google Fiber would expand into <a href="./Salt_Lake_City,_Utah" title="Salt Lake City, Utah">Salt Lake City, Utah</a>. Service became available for signup on August 24, 2016.</li>
+<li><a href="./Millcreek,_Utah" title="Millcreek, Utah">Millcreek</a>: On July 14, 2020, Google announced that Google Fiber would expand into Millcreek, Utah, to serve its first Millcreek customers in early 2021. On December 28, 2021, Google posted a blog article reflecting on the year 2021. In this article, they mentioned that the following cities had begun offering service sometime in 2021: Millcreek, South Salt Lake, Holladay, and Taylorsville.</li>
+<li><a href="./South_Salt_Lake,_Utah" title="South Salt Lake, Utah">South Salt Lake</a>: On February 25, 2021, Google announced that Google Fiber would expand into South Salt Lake, Utah. By July 26, 2021, Google had announced that construction was underway and expected to be completed by early 2022. On December 28, 2021, Google posted a blog article reflecting on the year of 2021. In this article, they mentioned that the following cities had begun offering service sometime in 2021: Millcreek, South Salt Lake, Holladay, and Taylorsville.</li>
+<li><a href="./Holladay,_Utah" title="Holladay, Utah">Holladay</a>: On March 11, 2021, Google announced that Google Fiber construction had begun in Holladay, Utah. Plans to allow Google Fiber expansion to the city were initially approved in November 2020. Construction is expected to conclude in early 2022. On December 28, 2021, Google posted a blog article reflecting on the year 2021. In this article, they mentioned that the following cities had begun offering service sometime in 2021: Millcreek, South Salt Lake, Holladay, and Taylorsville.</li>
+<li><a href="./Taylorsville,_Utah" title="Taylorsville, Utah">Taylorsville</a>: On April 22, 2021, Google announced that Google Fiber would expand into Taylorsville, Utah. By July 26, 2021, Google had announced that construction was underway and expected to be completed by early 2022. On December 28, 2021, Google posted a blog article reflecting on the year of 2021. In this article, they mentioned that the following cities had begun offering service sometime in 2021: Millcreek, South Salt Lake, Holladay, and Taylorsville.</li>
+<li><a href="./Sandy,_Utah" title="Sandy, Utah">Sandy</a> - On May 5, 2021, Google announced that Google Fiber would expand into Sandy, Utah. The initial timeline was to complete an "initial footprint" within two years. On March 22, 2022, Google announced that it had begun offering service in Sandy and North Salt Lake.</li>
+<li><a href="./North_Salt_Lake,_Utah" title="North Salt Lake, Utah">North Salt Lake</a> - On July 26, 2021, Google announced that Google Fiber would expand into North Salt Lake, Utah. Construction efforts were expected to begin soon after, with a completion date sometime in early 2022. On March 22, 2022, Google announced that it had begun offering service in Sandy and North Salt Lake and that it was approved to begin construction in White City, Draper, Riverton, Springville, West Bountiful, and West Jordan.</li>
+</ul>
+<h3>Charlotte, North Carolina</h3>
+<p>On July 12, 2016, sign-ups opened in <a href="./Highland_Creek_(Charlotte_neighborhood)" title="Highland Creek (Charlotte neighborhood)">Highland Creek</a>.</p>
+<p>On October 4, 2016, sign-ups opened in Prosperity Village.</p>
+<h3>Atlanta</h3>
+<p>In the original announcement of 2015, the following areas were announced:</p>
+<ul>
+<li><a href="./Avondale_Estates,_Georgia" title="Avondale Estates, Georgia">Avondale Estates</a></li>
+<li><a href="./Brookhaven,_Georgia" title="Brookhaven, Georgia">Brookhaven</a></li>
+<li><a href="./Castleberry_Hill" title="Castleberry Hill">Castleberry Hill</a></li>
+<li><a href="./College_Park,_Georgia" title="College Park, Georgia">College Park</a></li>
+<li><a href="./Decatur,_Georgia" title="Decatur, Georgia">Decatur</a></li>
+<li><a href="./East_Point,_Georgia" title="East Point, Georgia">East Point</a></li>
+<li><a href="./Hapeville,_Georgia" title="Hapeville, Georgia">Hapeville</a></li>
+<li><a href="./Sandy_Springs,_Georgia" title="Sandy Springs, Georgia">Sandy Springs</a></li>
+<li><a href="./Smyrna,_Georgia" title="Smyrna, Georgia">Smyrna</a></li>
+<li><a href="./Vine_City" title="Vine City">Vine City</a></li>
+</ul>
+<p>In August 2016, sign-ups were opened.</p>
+<h3>Research Triangle, Raleigh–Durham, North Carolina</h3>
+<p>In the original announcement of 2015, the following areas of the <a href="./Research_Triangle" title="Research Triangle">Research Triangle</a> of <a href="./Raleigh–Durham,_North_Carolina" title="Raleigh–Durham, North Carolina">Raleigh–Durham, North Carolina</a> were announced:</p>
+<ul>
+<li><a href="./Cary,_North_Carolina" title="Cary, North Carolina">Cary</a></li>
+<li><a href="./Chapel_Hill,_North_Carolina" title="Chapel Hill, North Carolina">Chapel Hill</a></li>
+<li><a href="./Durham,_North_Carolina" title="Durham, North Carolina">Durham</a></li>
+<li><a href="./Garner,_North_Carolina" title="Garner, North Carolina">Garner</a></li>
+<li><a href="./Morrisville,_North_Carolina" title="Morrisville, North Carolina">Morrisville</a></li>
+<li><a href="./Raleigh" title="Raleigh">Raleigh</a></li>
+</ul>
+<p>On September 13, 2016, sign-ups opened.</p>
+<h3>Nashville, Tennessee</h3>
+<p>The areas initially announced in February 2015 were:</p>
+<ul>
+<li><a href="./Oak_Hill,_Tennessee" title="Oak Hill, Tennessee">Oak Hill</a></li>
+<li><a href="./Forest_Hills,_Tennessee" title="Forest Hills, Tennessee">Forest Hills</a></li>
+<li><a href="./Berry_Hill,_Tennessee" title="Berry Hill, Tennessee">Berry Hill</a></li>
+<li><a href="./Belle_Meade,_Tennessee" title="Belle Meade, Tennessee">Belle Meade</a></li>
+</ul>
+<p>As of December 2016, construction is underway. Sign-ups are open.</p>
+<p>As of August 2017, Google Fiber announced that the Sylvan Park neighborhood in West Nashville had Google Fiber service officially operating, making Nashville a city with Google Fiber service.</p>
+<h3>Huntsville, Alabama</h3>
+<p>On February 22, 2016, Google announced that Google Fiber would expand into <a href="./Huntsville,_Alabama" title="Huntsville, Alabama">Huntsville, Alabama</a>. Google Fiber announced it would start offering high-speed Internet, TV and telephone service in north Huntsville on May 23, 2017.<br>
+On April 2, 2018, Huntsville Utilities continues to build fiber in Southeast Huntsville, which has been turned over to Google Fiber to service.</p>
+<h3>West Des Moines, Iowa</h3>
+<p>Google Fiber announced it would start offering high-speed Internet, TV, and telephone service in northeast <a href="./West_Des_Moines" title="West Des Moines">West Des Moines</a> on March 22, 2021.</p>
+<h2>Announced future locations</h2>
+<h3>Utah</h3>
+<ul>
+<li><a href="./Woods_Cross,_Utah" title="Woods Cross, Utah">Woods Cross</a>: On July 26, 2021, Google announced that Google Fiber would expand into Woods Cross, Utah. This service will be available to Woods Cross City residents in the spring of 2022.</li>
+<li><a href="./South_Jordan,_Utah" title="South Jordan, Utah">South Jordan</a>: On October 8, 2021, Google announced that Google Fiber would expand into South Jordan, Utah. The goal is to have "service in some areas in early 2022".</li>
+<li><a href="./Springville,_Utah" title="Springville, Utah">Springville</a>: On October 20, 2021, Google announced that Google Fiber would expand into Springville, Utah. Construction is expected to begin in spring 2022 and last through 2023.</li>
+<li><a href="./Riverton,_UT" title="Riverton, UT">Riverton</a>: On December 14, 2021, Google announced that Google Fiber would expand into Riverton, Utah. Construction is expected to begin in the second half of 2022, and they expect "to start serving customers in Riverton in late 2022 or early 2023."</li>
+<li><a href="./Draper,_Utah" title="Draper, Utah">Draper</a>: On February 2, 2022, Google announced that Google Fiber would expand into Draper, Utah. Infrastructure construction will begin in spring 2022 with an estimated completion time of one year.</li>
+<li><a href="./West_Jordan,_Utah" title="West Jordan, Utah">West Jordan</a>: On February 24, 2022, Google announced that Google Fiber would expand into West Jordan, Utah. Construction is slated to begin later in 2022, with the first West Jordan customers expected to come online around early 2023.</li>
+</ul>
+<h3>California expansion</h3>
+<p>On January 27, 2015, Google announced that Google Fiber would expand into additional markets:</p>
+<ul>
+<li><a href="./Southern_California" title="Southern California">Southern California</a></li>
+<li><a href="./Long_Beach" title="Long Beach">Long Beach</a></li>
+<li><a href="./Huntington_Beach" title="Huntington Beach">Huntington Beach</a> (<a href="./Orange_County,_California" title="Orange County, California">Orange County</a>)</li>
+</ul>
+<h3>San Antonio, Texas</h3>
+<p>On April 14, 2016, Google sent a blast email to early adopters of Google Fiber announcing that they were indeed behind the visible construction across <a href="./San_Antonio,_Texas" title="San Antonio, Texas">San Antonio, Texas</a>. A few details were given about the vast extent of the construction that was being undertaken, Google was in the process of deploying about 4,000 linear miles (6,500 km) of fiber-optic cable throughout <a href="./San_Antonio" title="San Antonio">San Antonio</a>. In advance of the imminent deployment of the new fiber network the direct competitors of Google Fiber, <a href="./AT&amp;T_U-verse" title="AT&amp;T U-verse">AT&amp;T U-Verse</a>, <a href="./Time_Warner_Cable" title="Time Warner Cable">Time Warner Cable</a>, and <a href="./Grande_Communications" title="Grande Communications">Grande Communications</a>, dropped prices and increased the speeds of their networks. San Antonio, the seventh-largest city in the nation, was the largest project that Google Fiber had taken on to date.</p>
+<p>On August 5, 2015, expansion into San Antonio was announced. As of December 2016, construction was underway. However, in January 2017, construction was halted pending concerns about the placement of Google Fiber huts in city parks. Mayor <a href="./Ivy_Taylor" title="Ivy Taylor">Ivy Taylor</a> expressed commitment to working with Google to address community concerns and allow the project to continue.</p>
+<p>As of May 9, 2019, Google Fiber had micro-trenched 600 miles of fiber in San Antonio neighborhoods. City staff said the majority was on the far Northwest and Northeast sides, including the pilot area in the Westover Hills neighborhood. After closing service in Louisville, Kentucky, the company said it learned from its challenges and refined its micro-trenching program to go deeper. According to the company, its Louisville microtrenching was as shallow as two inches. City staff said San Antonio's trenching depth was 6–8 inches.</p>
+<h2>Closed and former locations</h2>
+<h3>Louisville, Kentucky</h3>
+<p>In April 2017, Google announced that Google Fiber would start construction in Louisville, Kentucky. Google Fiber got the service to sections of Louisville in five months after it first announced that it would be coming to the city—faster than it had ever deployed before—by using shallow trenching. In February 2019 Google announced it would shut down service on April 15. Before departing, Google Fiber service was criticized for disruptive infrastructure installations and poor workmanship. Google agreed to pay $3.8 million for clean up.</p>
+<h2>Possible future expansion</h2>
+<h3>2014</h3>
+<p>In February 2014, Google announced it had "invited cities in nine metro areas around the U.S.—34 cities altogether—to work with us to explore what it would take to bring them Google Fiber."</p>
+<p>The remaining <a href="./List_of_metropolitan_areas_of_the_United_States" title="List of metropolitan areas of the United States">metropolitan areas</a> where Fiber has not yet begun constructing are: <a href="./Phoenix_metropolitan_area" title="Phoenix metropolitan area">Phoenix</a>, <a href="./Portland_metropolitan_area" title="Portland metropolitan area">Portland</a>, <a href="./Greater_San_Antonio" title="Greater San Antonio">San Antonio</a> and <a href="./Silicon_Valley" title="Silicon Valley">San Jose</a>. Of these, the following have yet to be selected by Google for fiber deployments:</p>
+<ul>
+<li>Arizona – <a href="./Phoenix,_Arizona" title="Phoenix, Arizona">Phoenix</a>, <a href="./Scottsdale,_Arizona" title="Scottsdale, Arizona">Scottsdale</a>, <a href="./Tempe,_Arizona" title="Tempe, Arizona">Tempe</a>. These plans were put on hold in October 2016.</li>
+<li>California – These plans were put on hold in October 2016.</li>
+<li><a href="./San_Jose,_California" title="San Jose, California">San Jose</a></li>
+<li><a href="./Santa_Clara,_California" title="Santa Clara, California">Santa Clara</a></li>
+<li><a href="./Sunnyvale,_California" title="Sunnyvale, California">Sunnyvale</a></li>
+<li><a href="./Mountain_View,_California" title="Mountain View, California">Mountain View</a></li>
+<li><a href="./Palo_Alto,_California" title="Palo Alto, California">Palo Alto</a></li>
+<li>Oregon – <a href="./Portland,_Oregon" title="Portland, Oregon">Portland</a>, <a href="./Beaverton,_Oregon" title="Beaverton, Oregon">Beaverton</a>, <a href="./Hillsboro,_Oregon" title="Hillsboro, Oregon">Hillsboro</a>, <a href="./Gresham,_Oregon" title="Gresham, Oregon">Gresham</a>, <a href="./Lake_Oswego,_Oregon" title="Lake Oswego, Oregon">Lake Oswego</a>, <a href="./Tigard,_Oregon" title="Tigard, Oregon">Tigard</a> These plans were put on hold in October 2016.</li>
+</ul>
+<p>On April 15, 2014, Google began polling business users on their need for gigabit service, saying they would be "conducting a pilot program where we'll connect a limited number of small businesses to our network".</p>
+<h3>2015</h3>
+<p>On September 10, 2015, Google tweeted that it was exploring the possibility of adding Irvine and <a href="./San_Diego,_California" title="San Diego, California">San Diego, California</a>, as future expansion cities.</p>
+<p>On October 28, 2015, Jill Szuchmacher, Google Fiber Director of Expansion, announced ongoing negotiations with local governments in <a href="./Jacksonville,_Florida" title="Jacksonville, Florida">Jacksonville, Florida</a>, <a href="./Tampa,_Florida" title="Tampa, Florida">Tampa, Florida</a>, and <a href="./Oklahoma_City,_Oklahoma" title="Oklahoma City, Oklahoma">Oklahoma City, Oklahoma</a>. Szuchmacher stated that Google is interested in the installation of Google Fiber networks in each of the cities and that construction could take up to eighteen months once the project is underway. In October 2016, those plans were put on hold.</p>
+<p>On December 8, 2015, the Seattle City Council's Director of Communications replied to a tweet indicating that the city was in the process of applying for Google Fiber service. On December 8, 2015, Jill Szuchmacher said the company will work with <a href="./Chicago" title="Chicago">Chicago</a> city leaders to collect information and study factors that could affect construction of Google Fiber.</p>
+<h3>2016</h3>
+<p>On June 14, 2016, Jill Szuchmacher said the company will work with <a href="./Dallas" title="Dallas">Dallas</a> mayor <a href="./Mike_Rawlings" title="Mike Rawlings">Mike Rawlings</a> to try to bring another hub to Texas.</p>
+<p>In October 2016, all expansion plans were put on hold, and some jobs were cut. Google Fiber will continue to provide service in the cities where it is already installed.</p>
+<h3>2017</h3>
+<p>In 2017 Google Fiber launched in three new cities: Huntsville, Alabama; Louisville, Kentucky; and San Antonio, Texas. It also began to heavily rely on shallow trenching, a new method of laying cables that cuts a small groove in the street or sidewalk, lays the fiber in that groove, and backfills it with a special epoxy, to expedite the construction process. In at least one case, cables were buried too shallow and were ripped up by repaving.</p>
+<h2>Acquisition of Webpass</h2>
+<p>On June 22, 2016, Google Fiber bought Webpass, an <a href="./Internet_service_provider" title="Internet service provider">Internet service provider</a> that has been in business for 13 years and specializes in high-speed Internet for business and residential customers. They have a large presence[<em><a href="./Wikipedia:Please_clarify" title="Wikipedia:Please clarify">clarification needed</a></em>] in California and specifically the <a href="./Bay_Area" title="Bay Area">Bay Area</a> as well as <a href="./San_Diego" title="San Diego">San Diego</a>, <a href="./Miami" title="Miami">Miami</a>, <a href="./Miami_Beach" title="Miami Beach">Miami Beach</a>, <a href="./Coral_Gables,_Florida" title="Coral Gables, Florida">Coral Gables</a>, Chicago, <a href="./Denver" title="Denver">Denver</a>, and <a href="./Boston" title="Boston">Boston</a>. The deal closed in October 2016.</p>
+<h2>Technical specifications</h2>
+<p>Google Fiber provides an Internet connection speed of up to eight <a href="./Gigabits_per_second" title="Gigabits per second">gigabits per second</a> (8,000 Mbit/s) for download and eight <a href="./Gigabit_per_second" title="Gigabit per second">gigabit per second</a> (8,000 Mbit/s) upload. Google Fiber says its original 1 Gbit/s download service allows for the download of a full movie in less than two minutes.</p>
+<p>The GFiber Nutrition Label was created in anticipation of the FCC requiring all internet providers to display their product info in a standardized format. With the FCC requirement of consumer labels, all internet providers will be required to be more transparent with their fees, promotional pricing, typical speeds, and latency.</p>
+<h2>Prohibition of servers</h2>
+<p>When first launched, Google Fiber's terms of service stated that its subscribers were not allowed to create any type of <a href="./Server_(computing)" title="Server (computing)">server</a>:<br>
+"Your Google Fiber account is for your use and the reasonable use of your guests. Unless you have a written agreement with Google Fiber permitting you do so, you should not host any server using your Google Fiber connection, use your Google Fiber account to provide a large number of people with Internet access, or use your Google Fiber account to provide commercial services to third parties (including, but not limited to, selling Internet access to third parties)."</p>
+<p>The <a href="./Electronic_Frontier_Foundation" title="Electronic Frontier Foundation">Electronic Frontier Foundation</a> criticized the practice, noting the ambiguity of the word "server" which might include such standard application protocols as <a href="./BitTorrent" title="BitTorrent">BitTorrent</a>, and <a href="./Spotify" title="Spotify">Spotify</a>, as well as the effect of and on IPv6 adoption due its lack of <a href="./Network_address_translation" title="Network address translation">NAT</a> technical limitations on network servers, but also noted similar prohibitions from other ISPs such as <a href="./Comcast" title="Comcast">Comcast</a>, <a href="./Verizon" title="Verizon">Verizon</a>, <a href="./Cox_Communications" title="Cox Communications">Cox</a>, and <a href="./AT&amp;T" title="AT&amp;T">AT&amp;T</a>.</p>
+<p>In October 2013, the <a href="./Acceptable_use_policy" title="Acceptable use policy">acceptable use policy</a> for Google Fiber was modified to allow "personal, non-commercial use of servers".</p>
+<h2>April Fools' hoaxes</h2>
+<p>See also: <a href="./List_of_Google_April_Fools'_Day_jokes" title="List of Google April Fools' Day jokes">List of Google April Fools' Day jokes</a></p>
+<p>On <a href="./April_Fools'_Day" title="April Fools' Day">April Fools' Day</a> 2007, Google hosted a signup for Google TiSP offering "a fully functional, end-to-end system that provides in-home wireless access by connecting your commode-based TiSP wireless router to one of the thousands of TiSP Access Nodes via fiber-optic cable strung through your local municipal sewage lines."</p>
+<p>On April Fools' Day 2012, Google Fiber announced that its product was an edible Google Fiber bar instead of fiber-optic Internet broadband. It is stated that the Google Fiber bar delivers "what the body needs to sustain activity, energy, and productivity."</p>
+<p>On April Fools' Day 2013, Google Fiber announced the introduction of Google Fiber to the Pole. The description provided was "Google Fiber to the Pole provides ubiquitous gigabit connectivity to fiberhoods across Kansas City. This latest innovation in Google Fiber technology enables users to access Google Fiber's ultrafast gigabit speeds even when they are out and about." Clicking on the "Learn more" and "Find a pole near you" buttons displayed a message reading "April Fool's! While Fiber Poles don't exist, we are working on a bunch of cool stuff that does. Keep posted on all things Fiber by checking out our blog."</p>
+<p>The April Fools' Day 2014 prank was an announcement of <em>Coffee To The Home</em>, using a spout on the fiber jack where the service enters the customer's home to deliver customized coffee drinks.</p>
+<p>On April Fools' Day 2015, Google Fiber announced Dial-Up Mode for people who prefer slower Internet. It reaches speeds up to 56k and helps people get back to real life more often.</p>
+<p>For the 2016 April Fools' Day joke, Google Fiber announced it was "exploring 1 billion times faster speeds".</p>
+<h2>Reactions</h2>
+<p><em><a href="./Time_(magazine)" title="Time (magazine)">Time</a></em> magazine has claimed that, rather than wanting to actually operate as an <a href="./Internet_service_provider" title="Internet service provider">Internet service provider</a>, the company was hoping to shame the major cable operators into improving their service so that Google searches could be done faster. Google has neither confirmed nor denied this claim.</p>
+<p>AT&amp;T and other Internet service providers have launched their own gigabit services since Google Fiber was revealed. Some cable subscribers have also had their speeds increased without additional costs.</p>
+<p>According to a <a href="./Goldman_Sachs" title="Goldman Sachs">Goldman Sachs</a> report, Google could connect approximately 830,000 homes a year at the cost of $1.25 billion a year, or a total of 7.5 million homes in nine years at a cost of slightly over $10 billion.</p>
+<p>In January 2014, a bill was introduced in the <a href="./Kansas_Legislature" title="Kansas Legislature">Kansas Legislature</a> (Senate Bill 304, referred to as the "Municipal Communications Network and Private Telecommunications Investment Safeguards Act"), which would prevent Google Fiber from expanding further in Kansas using the model used in Kansas City. The bill proposes: "Except with regard to unserved areas, a municipality may not, directly or indirectly:</p>
+<ol>
+<li>Offer to provide to one or more subscribers, video, telecommunications, or broadband service; or</li>
+<li>purchase, lease, construct, maintain, or operate any facility for the purpose of enabling a private business or entity to offer, provide, carry, or deliver video, telecommunications, or broadband service to one or more subscribers."</li>
+</ol>
+<p>By February 2014, Senate Bill 304 (SB304) had lost momentum in the Kansas state senate, and the bill's sponsor, Kansas Cable Telecommunications Association (KCTA), indicated that it was doubtful that it would continue to pursue the legislation in the current legislative session.</p>
+<h2>See also</h2>
+<ul>
+<li><a href="./Google_WiFi" title="Google WiFi">Google WiFi</a>, Google's municipal wireless network</li>
+<li><a href="./Project_Loon" title="Project Loon">Project Loon</a>, Google's research project aiming to provide Internet access to rural and remote areas via high-altitude balloons</li>
+<li><a href="./List_of_multiple-system_operators" title="List of multiple-system operators">List of multiple-system operators</a></li>
+</ul>
+<h2>Notes</h2>
+<h2>References</h2>
+<h2>External links</h2>
+<p><a href="./File:Commons-logo.svg"><img alt="Wikimedia Commons logo" src="//upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/40px-Commons-logo.svg.png"></a></p>
+<p>Wikimedia Commons has media related to <a href="https://commons.wikimedia.org/wiki/Category:Google%20Fiber" title="commons:Category:Google Fiber">Google Fiber</a>.</p>
+<ul>
+<li><a href="https://fiber.google.com/about/">Official website</a></li>
+</ul>
+<dl>
+<dd>
+<ul>
+<li><a href="https://webpass.net/">WebPass</a> (Acquired)</li>
+</ul>
+</dd>
+</dl>
+<ul>
+<li><a href="https://www.youtube.com/user/googlefiberofficial">Google Fiber's channel</a> on <a href="./YouTube_user_(identifier)" title="YouTube user (identifier)">YouTube</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Alphabet_Inc." title="Template:Alphabet Inc.">v</a> - <a href="./Template_talk:Alphabet_Inc." title="Template talk:Alphabet Inc.">t</a> - <a href="./Special:EditPage/Template:Alphabet_Inc." title="Special:EditPage/Template:Alphabet Inc.">e</a>  <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc.</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Subsidiaries</td>
+<td></td>
+</tr>
+<tr>
+<td>People</td>
+<td></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Alphabet_Inc." title="Category:Alphabet Inc.">Category</a> - <a href="./Portal:Companies" title="Portal:Companies">Companies portal</a> - <a href="./File:Crystal_Clear_app_linneighborhood.svg">icon</a> <a href="./Portal:Internet" title="Portal:Internet">Internet portal</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Internet_service_providers_of_the_United_States" title="Template:Internet service providers of the United States">v</a> - <a href="./Template_talk:Internet_service_providers_of_the_United_States" title="Template talk:Internet service providers of the United States">t</a> - <a href="./Special:EditPage/Template:Internet_service_providers_of_the_United_States" title="Special:EditPage/Template:Internet service providers of the United States">e</a>  <a href="./Internet_in_the_United_States" title="Internet in the United States">Internet service providers of the United States</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Cable_Internet_access" title="Cable Internet access">Cable ISP</a></td>
+<td>- <a href="./Altice_USA" title="Altice USA">Altice USA</a> - <a href="./Armstrong_Group_of_Companies" title="Armstrong Group of Companies">Armstrong</a> - <a href="./Astound_Broadband" title="Astound Broadband">Astound Broadband</a> - <a href="./Blue_Ridge_Communications" title="Blue Ridge Communications">Blue Ridge Communications</a>   - <a href="./Adams_Cable" title="Adams Cable">Adams Cable</a> - <a href="./Blue_Stream_(company)" title="Blue Stream (company)">Blue Stream</a> - <a href="./Breezeline" title="Breezeline">Breezeline</a> - <a href="./Broadstripe" title="Broadstripe">Broadstripe</a> - <a href="./Buckeye_Broadband" title="Buckeye Broadband">Buckeye Broadband</a> - <a href="./Cable_One" title="Cable One">Cable One</a>   - <a href="./Hargray" title="Hargray">Hargray</a> - <a href="./Spectrum_(brand)" title="Spectrum (brand)">Charter Spectrum</a> - <a href="./Consolidated_Communications" title="Consolidated Communications">Consolidated Communications</a> - <a href="./Cox_Communications" title="Cox Communications">Cox Communications</a> - <a href="./Docomo_Pacific" title="Docomo Pacific">Docomo Pacific</a> - <a href="./Emery_Telcom" title="Emery Telcom">Emery Telcom</a> - <a href="./Full_Channel" title="Full Channel">Full Channel</a> - <a href="./GCI_(company)" title="GCI (company)">GCI</a> - <a href="./Mediacom" title="Mediacom">Mediacom</a> - <a href="./Midco" title="Midco">Midco</a> - <a href="./OneLink_Communications" title="OneLink Communications">OneLink Communications</a> - <a href="./Satview_Broadband" title="Satview Broadband">Satview Broadband</a> - <a href="./Service_Electric" title="Service Electric">Service Electric</a> - <a href="./Shentel" title="Shentel">Shentel</a> - <a href="./SRT_Communications" title="SRT Communications">SRT Communications</a> - <a href="./TDS_Telecom" title="TDS Telecom">TDS Telecom</a> - <a href="./TruVista_Communications" title="TruVista Communications">TruVista Communications</a> - <a href="./Vyve_Broadband" title="Vyve Broadband">Vyve Broadband</a> - <a href="./Wide_Open_West" title="Wide Open West">WOW!</a> - <a href="./Xfinity" title="Xfinity">Xfinity</a></td>
+</tr>
+<tr>
+<td><a href="./Fiber_to_the_x" title="Fiber to the x">Fiber ISP</a></td>
+<td>- <a href="./Altafiber" title="Altafiber">Altafiber</a>   - <a href="./Hawaiian_Telcom" title="Hawaiian Telcom">Hawaiian Telcom</a> - <a href="./Altice_USA" title="Altice USA">Altice USA</a> - <a href="./Astound_Broadband" title="Astound Broadband">Astound Broadband</a> - <a href="./AT&amp;T_Fiber" title="AT&amp;T Fiber">AT&amp;T Fiber</a> - <a href="./Blue_Ridge_Communications" title="Blue Ridge Communications">Blue Ridge Communications</a>   - <a href="./Adams_Cable" title="Adams Cable">Adams Cable</a> - <a href="./Claro_Puerto_Rico" title="Claro Puerto Rico">Claro</a> - <a href="./Consolidated_Communications" title="Consolidated Communications">Consolidated Communications</a> - <a href="./EPB" title="EPB">EPB</a> - <a href="./Frontier_Fiber" title="Frontier Fiber">Frontier Fiber</a> - <a href="./Google_Fiber">Google Fiber</a> - <a href="./Greenlight_Networks" title="Greenlight Networks">Greenlight Networks</a> - <a href="./GTA_Teleguam" title="GTA Teleguam">GTA Teleguam</a> - <a href="./Lumen_Technologies" title="Lumen Technologies">Lumen Technologies</a> - <a href="./Midco" title="Midco">Midco</a> - <a href="./NEP_Telephone" title="NEP Telephone">NEP Telephone</a> - <a href="./Phonoscope_Communications" title="Phonoscope Communications">Phonoscope Communications</a> - <a href="./Service_Electric" title="Service Electric">Service Electric</a> - <a href="./Sonic.net" title="Sonic.net">Sonic.net</a> - <a href="./Stealth_Communications" title="Stealth Communications">Stealth Communications</a> - <a href="./TDS_Telecom" title="TDS Telecom">TDS Telecom</a> - <a href="./Ting_Inc." title="Ting Inc.">Ting Inc.</a> - <a href="./Verizon_Fios" title="Verizon Fios">Verizon FiOS</a> - <a href="./Windstream_Holdings" title="Windstream Holdings">Windstream</a> - <a href="./Ziply_Fiber" title="Ziply Fiber">Ziply Fiber</a></td>
+</tr>
+<tr>
+<td><a href="./DSL" title="DSL">Copper / DSL ISP</a></td>
+<td>- <a href="./Astound_Broadband" title="Astound Broadband">Astound Broadband</a> - <a href="./AT&amp;T_Internet" title="AT&amp;T Internet">AT&amp;T Internet</a> - <a href="./CenturyLink" title="CenturyLink">CenturyLink</a> - <a href="./Consolidated_Communications" title="Consolidated Communications">Consolidated Communications</a> - <a href="./EarthLink" title="EarthLink">EarthLink</a> - <a href="./Frontier_Communications" title="Frontier Communications">Frontier Communications</a> - <a href="./T-Mobile_US" title="T-Mobile US">T-Internet</a> - <a href="./TDS_Telecom" title="TDS Telecom">TDS Telecom</a> - <a href="./Verizon_High_Speed_Internet" title="Verizon High Speed Internet">Verizon</a> - <a href="./Windstream_Holdings" title="Windstream Holdings">Windstream</a> - <a href="./Ziply_Fiber" title="Ziply Fiber">Ziply Fiber</a></td>
+</tr>
+<tr>
+<td><a href="./Satellite_Internet_access" title="Satellite Internet access">Satellite ISP</a></td>
+<td>- <a href="./Hughes_Network_Systems" title="Hughes Network Systems">HughesNet</a> - <a href="./Starlink" title="Starlink">Starlink</a> - <a href="./Viasat_(American_company)" title="Viasat (American company)">Viasat</a></td>
+</tr>
+<tr>
+<td>Defunct ISP</td>
+<td>- <a href="./Apex_Global_Internet_Services" title="Apex Global Internet Services">AGIS</a> - <a href="./Advanced_Network_and_Services" title="Advanced Network and Services">ANS</a> - <a href="./Boston_CitiNet" title="Boston CitiNet">Boston CitiNet</a> - <a href="./ATMNet" title="ATMNet">ATMNet</a> - <a href="./@Home_Network" title="@Home Network">@Home</a> - <a href="./Prodigy_(online_service)" title="Prodigy (online service)">Prodigy</a> - <a href="./Pure_Talk" title="Pure Talk">Pure Talk</a> - <a href="./Texas.net" title="Texas.net">Texas.net</a> - <a href="./WorldWide_Access" title="WorldWide Access">WorldWide Access</a></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Cable_TV_in_the_United_States" title="Template:Cable TV in the United States">v</a> - <a href="./Template_talk:Cable_TV_in_the_United_States" title="Template talk:Cable TV in the United States">t</a> - <a href="./Special:EditPage/Template:Cable_TV_in_the_United_States" title="Special:EditPage/Template:Cable TV in the United States">e</a>  Cable, satellite, and other specialty television providers (<a href="./Multichannel_television_in_the_United_States" title="Multichannel television in the United States">multi-channel video programming distributors</a>) in the <a href="./United_States" title="United States">United States</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Cable_television_in_the_United_States" title="Cable television in the United States">Cable</a></td>
+<td>- <a href="./Altice_USA" title="Altice USA">Altice USA</a>   - <a href="./Optimum_(brand)" title="Optimum (brand)">Optimum</a>   - <a href="./Suddenlink_Communications" title="Suddenlink Communications">Suddenlink Communications</a> - <a href="./Armstrong_Group_of_Companies" title="Armstrong Group of Companies">Armstrong</a> - <a href="./Astound_Broadband" title="Astound Broadband">Astound Broadband</a>   - <a href="./Grande_Communications" title="Grande Communications">Grande Communications</a>   - <a href="./RCN_Corporation" title="RCN Corporation">RCN Corporation</a>   - <a href="./Wave_Broadband" title="Wave Broadband">Wave Broadband</a> - <a href="./AT&amp;T_Alascom" title="AT&amp;T Alascom">AT&amp;T Alascom</a> - <a href="./Blue_Ridge_Communications" title="Blue Ridge Communications">Blue Ridge Communications</a>   - <a href="./Adams_Cable" title="Adams Cable">Adams Cable</a> - <a href="./Blue_Stream_(company)" title="Blue Stream (company)">Blue Stream</a> - <a href="./Breezeline" title="Breezeline">Breezeline</a> - <a href="./Broadstripe" title="Broadstripe">Broadstripe</a> - <a href="./Buckeye_Broadband" title="Buckeye Broadband">Buckeye Broadband</a> - <a href="./Cable_One" title="Cable One">Cable One</a>   - <a href="./Hargray" title="Hargray">Hargray</a> - <a href="./Xfinity" title="Xfinity">Comcast Xfinity</a> - <a href="./Consolidated_Communications" title="Consolidated Communications">Consolidated Communications</a> - <a href="./Cox_Communications" title="Cox Communications">Cox Communications</a> - <a href="./Docomo_Pacific" title="Docomo Pacific">Docomo Pacific</a> - <a href="./Emery_Telcom" title="Emery Telcom">Emery Telcom</a> - <a href="./Full_Channel" title="Full Channel">Full Channel</a> - <a href="./GCI_(company)" title="GCI (company)">GCI</a> - <a href="./Mediacom" title="Mediacom">Mediacom</a> - <a href="./Midco" title="Midco">Midco</a> - <a href="./Liberty_Puerto_Rico" title="Liberty Puerto Rico">Liberty Puerto Rico</a> - <a href="./Satview_Broadband" title="Satview Broadband">Satview Broadband</a> - <a href="./Service_Electric" title="Service Electric">Service Electric</a> - <a href="./Shentel" title="Shentel">Shentel</a> - <a href="./Spectrum_(brand)" title="Spectrum (brand)">Spectrum</a> - <a href="./SRT_Communications" title="SRT Communications">SRT Communications</a> - <a href="./TDS_Telecom" title="TDS Telecom">TDS Telecom</a> - Troy Cablevision - <a href="./TruVista_Communications" title="TruVista Communications">TruVista Communications</a> - <a href="./Vyve_Broadband" title="Vyve Broadband">Vyve Broadband</a> - <a href="./Wide_Open_West" title="Wide Open West">WOW!</a></td>
+</tr>
+<tr>
+<td><a href="./Satellite_television_in_the_United_States" title="Satellite television in the United States">Satellite</a></td>
+<td>- <a href="./Claro_Puerto_Rico" title="Claro Puerto Rico">Claro Puerto Rico</a> - <a href="./Dish_Network" title="Dish Network">Dish Network</a> - <a href="./DirecTV" title="DirecTV">DirecTV</a> - <a href="./Glorystar" title="Glorystar">Glorystar</a> - <a href="./Headend_in_the_Sky" title="Headend in the Sky">Headend in the Sky</a></td>
+</tr>
+<tr>
+<td><a href="./Fiber_to_the_x" title="Fiber to the x">Fiber</a> / <a href="./IPTV" title="IPTV">IPTV</a></td>
+<td>- <a href="./Altafiber" title="Altafiber">Altafiber</a>   - <a href="./Hawaiian_Telcom" title="Hawaiian Telcom">Hawaiian Telcom</a> - <a href="./Claro_Puerto_Rico" title="Claro Puerto Rico">Claro</a> - <a href="./Consolidated_Communications" title="Consolidated Communications">Consolidated Communications</a> - <a href="./EPB" title="EPB">EPB</a> - <a href="./Frontier_Fiber" title="Frontier Fiber">Frontier Fiber</a> - <a href="./GTA_Teleguam" title="GTA Teleguam">GTA Teleguam</a> - <a href="./Midco" title="Midco">Midco</a> - <a href="./NEP_Telephone" title="NEP Telephone">NEP Datastream TV</a> - <a href="./North_State_Communications" title="North State Communications">North State Communications</a> - <a href="./Sonic_(ISP)" title="Sonic (ISP)">Sonic.net</a> - <a href="./TDS_Telecom" title="TDS Telecom">TDS Telecom</a> - <a href="./Verizon_Fios" title="Verizon Fios">Verizon Fios</a> - <a href="./Whidbey_Telecom" title="Whidbey Telecom">Whidbey Telecom</a> - <a href="./Windstream_Holdings" title="Windstream Holdings">Windstream Kinetic</a> - <a href="./Ziply_Fiber" title="Ziply Fiber">Ziply Fiber</a></td>
+</tr>
+<tr>
+<td><a href="./Multichannel_television_in_the_United_States#Virtual_MVPD,_TV_Everywhere,_and_over-the-top_media_services" title="Multichannel television in the United States">Virtual MVPD</a></td>
+<td>- <a href="./DirecTV_Stream" title="DirecTV Stream">DirecTV Stream</a> - <a href="./Frndly_TV" title="Frndly TV">Frndly TV</a> - <a href="./FuboTV" title="FuboTV">FuboTV</a> - <a href="./Hulu#Hulu_+_Live_TV_service" title="Hulu">Hulu + Live TV</a> - <a href="./Philo_(company)" title="Philo (company)">Philo</a> - <a href="./Sling_TV" title="Sling TV">Sling TV</a> - <a href="./Spectrum_TV_Stream" title="Spectrum TV Stream">Spectrum TV Stream</a> - <a href="./Xfinity_Flex" title="Xfinity Flex">Xfinity Flex</a> - <a href="./YouTube_TV" title="YouTube TV">YouTube TV</a></td>
+</tr>
+<tr>
+<td><a href="./Over-the-top_media_service" title="Over-the-top media service">Over- the-top VOD</a></td>
+<td>- <a href="./A&amp;E_Networks" title="A&amp;E Networks">A&amp;E Networks</a>   - <a href="./A&amp;E_Crime_Central" title="A&amp;E Crime Central">Crime Central</a>   - <a href="./History_(American_TV_network)" title="History (American TV network)">History Vault</a>   - <a href="./Lifetime_(TV_network)" title="Lifetime (TV network)">Lifetime Movie Club</a> - <a href="./Amazon_(company)" title="Amazon (company)">Amazon</a>   - <a href="./Amazon_Prime_Video" title="Amazon Prime Video">Prime Video</a>   - <a href="./MGM+" title="MGM+">MGM+</a>   - <a href="./Amazon_Freevee" title="Amazon Freevee">Freevee</a>   - <a href="./ScreenPix" title="ScreenPix">ScreenPix</a> - <a href="./AMC_Networks" title="AMC Networks">AMC Networks</a>   - <a href="./Acorn_TV" title="Acorn TV">Acorn TV</a>   - <a href="./AMC+" title="AMC+">AMC+</a>   - <a href="./Hidive" title="Hidive">Hidive</a>   - <a href="./IFC_Films" title="IFC Films">IFC Films Unlimited</a>   - <a href="./Shudder_(streaming_service)" title="Shudder (streaming service)">Shudder</a>   - <a href="./Sundance_TV" title="Sundance TV">Sundance Now</a>   - <a href="./Allblk" title="Allblk">Allblk</a>   - <a href="./WE_TV" title="WE TV">WE TV+</a> - <a href="./Angel_Studios" title="Angel Studios">Angel Studios</a> - <a href="./Apple_TV_(streaming_service)" title="Apple TV (streaming service)">Apple TV</a> - <a href="./BritBox" title="BritBox">BritBox</a> - <a href="./Bounce_TV#Brown_Sugar" title="Bounce TV">Brown Sugar</a> - <a href="./BroadwayHD" title="BroadwayHD">BroadwayHD</a> - <a href="./Cineverse" title="Cineverse">Cineverse</a>   - <a href="./CONtv" title="CONtv">CONtv</a>   - <a href="./Docurama" title="Docurama">Docurama</a>   - <a href="./Dove_Channel_(streaming_service)" title="Dove Channel (streaming service)">Dove Channel</a>   - <a href="./Fandor" title="Fandor">Fandor</a>   - <a href="./Screambox" title="Screambox">Screambox</a> - <a href="./The_Criterion_Collection" title="The Criterion Collection">The Criterion Channel</a> - <a href="./Curiosity_Stream" title="Curiosity Stream">Curiosity Stream</a> - <a href="./CW_Seed" title="CW Seed">CW Seed</a> - <a href="./Dekkoo" title="Dekkoo">Dekkoo</a> - <a href="./The_Walt_Disney_Company" title="The Walt Disney Company">Disney</a>   - <a href="./Disney+" title="Disney+">Disney+</a>   - <a href="./Hulu" title="Hulu">Hulu</a>   - <a href="./ESPN+" title="ESPN+">ESPN+</a> - <a href="./DOGTV" title="DOGTV">DOGTV</a> - <a href="./Dropout_(streaming_service)" title="Dropout (streaming service)">Dropout</a> - <a href="./Eros_Now" title="Eros Now">Eros Now</a> - <a href="./Facebook_Watch" title="Facebook Watch">Facebook Watch</a> - <a href="./FilmRise" title="FilmRise">FilmRise</a> - <a href="./Fox_Corporation" title="Fox Corporation">Fox Corporation</a>   - <a href="./Fox_Nation" title="Fox Nation">Fox Nation</a>   - <a href="./Tubi" title="Tubi">Tubi</a> - <a href="./Hallmark+" title="Hallmark+">Hallmark+</a> - <a href="./Here_TV" title="Here TV">Here TV</a> - <a href="./Kino_Lorber" title="Kino Lorber">Kino Lorber</a>   - <a href="./MHz_Networks#MHz_Choice" title="MHz Networks">MHz Choice</a>   - Kino Film Collection - <a href="./Kocowa" title="Kocowa">Kocowa</a> - <a href="./Local_Now" title="Local Now">Local Now</a> - <a href="./Mubi_(streaming_service)" title="Mubi (streaming service)">MUBI</a> - <a href="./Netflix" title="Netflix">Netflix</a> - <a href="./NBCUniversal" title="NBCUniversal">NBCUniversal</a>   - <a href="./Peacock_(streaming_service)" title="Peacock (streaming service)">Peacock</a>   - <a href="./Vudu" title="Vudu">Vudu</a>   - <a href="./Xumo" title="Xumo">Xumo</a> - <a href="./NFL+" title="NFL+">NFL+</a> - <a href="./Paramount_Global" title="Paramount Global">Paramount Global</a>   - <a href="./BET+" title="BET+">BET+</a>   - <a href="./Paramount+" title="Paramount+">Paramount+</a>   - <a href="./Noggin_(brand)" title="Noggin (brand)">Noggin</a>   - <a href="./Pluto_TV" title="Pluto TV">Pluto TV</a>   - <a href="./Showtime_(TV_network)" title="Showtime (TV network)">Showtime</a> - <a href="./Racetrack_Television_Network" title="Racetrack Television Network">Racetrack Television Network</a> - <a href="./Redbox" title="Redbox">Redbox</a> - <a href="./Revry" title="Revry">Revry</a> - <a href="./The_Roku_Channel" title="The Roku Channel">Roku Channel</a> - <a href="./Sony_Pictures" title="Sony Pictures">Sony</a>   - <a href="./Crunchyroll" title="Crunchyroll">Crunchyroll</a> - <a href="./Samsung_TV_Plus" title="Samsung TV Plus">Samsung TV Plus</a> - <a href="./Shout!_Factory" title="Shout! Factory">Shout! Factory TV</a> - <a href="./Starz" title="Starz">Starz</a> - <a href="./Stirr" title="Stirr">Stirr</a> - <a href="./TelevisaUnivision_(United_States)" title="TelevisaUnivision (United States)">Univision</a>   - <a href="./Pantaya" title="Pantaya">Pantaya</a>   - <a href="./TelevisaUnivision_(United_States)#Digital_properties" title="TelevisaUnivision (United States)">Univision NOW</a>   - <a href="./Vix_(streaming_service)" title="Vix (streaming service)">ViX</a> - <a href="./Tivo" title="Tivo">Tivo Stream 4k</a> - <a href="./First_Look_Media" title="First Look Media">Topic</a> - <a href="./UFC_Fight_Pass" title="UFC Fight Pass">UFC Fight Pass</a> - <a href="./Viaplay" title="Viaplay">Viaplay</a> - <a href="./Viki_(streaming_service)" title="Viki (streaming service)">Viki</a> - <a href="./Vix_(streaming_service)" title="Vix (streaming service)">ViX</a> - <a href="./Warner_Bros._Discovery" title="Warner Bros. Discovery">Warner Bros. Discovery</a>   - <a href="./Boomerang_(TV_network)" title="Boomerang (TV network)">Boomerang</a>   - <a href="./Cinemax" title="Cinemax">Cinemax</a>   - <a href="./Discovery+" title="Discovery+">Discovery+</a>   - <a href="./Food_Network" title="Food Network">Food Network Kitchen</a>   - <a href="./HBO_Max" title="HBO Max">HBO Max</a>   - <a href="./Rooster_Teeth" title="Rooster Teeth">Rooster Teeth</a> - <a href="./WOW_Presents_Plus" title="WOW Presents Plus">WOW Presents Plus</a> - <a href="./WWE_Network" title="WWE Network">WWE Network</a> - <a href="./YuppTV" title="YuppTV">YuppTV</a></td>
+</tr>
+<tr>
+<td>Defunct</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:North_American_TV" title="Template:North American TV">v</a> - <a href="./Template_talk:North_American_TV" title="Template talk:North American TV">t</a> - <a href="./Special:EditPage/Template:North_American_TV" title="Special:EditPage/Template:North American TV">e</a>  Additional resources on North American television</td>
+</tr>
+<tr>
+<td>- <a href="./Template:CATV_Africa,_Asia,_Middle_East_and_Oceania" title="Template:CATV Africa, Asia, Middle East and Oceania">Middle East, Africa, Asia and Oceania</a> - <a href="./Template:CATV_Americas" title="Template:CATV Americas">Americas</a> - <a href="./Template:CATV_Europe" title="Template:CATV Europe">Europe</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:United_States_wireless_communications_service_providers" title="Template:United States wireless communications service providers">v</a> - <a href="./Template_talk:United_States_wireless_communications_service_providers" title="Template talk:United States wireless communications service providers">t</a> - <a href="./Special:EditPage/Template:United_States_wireless_communications_service_providers" title="Special:EditPage/Template:United States wireless communications service providers">e</a>  <a href="./List_of_mobile_network_operators_in_the_United_States" title="List of mobile network operators in the United States">Wireless communications service providers in the United States</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>National</td>
+<td>- <a href="./AT&amp;T_Mobility" title="AT&amp;T Mobility">AT&amp;T Mobility</a> - <a href="./Boost_Mobile" title="Boost Mobile">Boost Mobile</a> - <a href="./T-Mobile_US" title="T-Mobile US">T-Mobile US</a> - <a href="./Verizon_(wireless_service)" title="Verizon (wireless service)">Verizon</a></td>
+</tr>
+<tr>
+<td>Regional</td>
+<td>- <a href="./ATN_International" title="ATN International">ATN International</a> - <a href="./C_Spire" title="C Spire">C Spire</a> - <a href="./Cellcom_(United_States)" title="Cellcom (United States)">Cellcom</a> - <a href="./Cellular_One" title="Cellular One">Cellular One</a> - <a href="./Claro_Puerto_Rico" title="Claro Puerto Rico">Claro Puerto Rico</a> - <a href="./Docomo_Pacific" title="Docomo Pacific">Docomo Pacific</a> - <a href="./GCI_Communication" title="GCI Communication">GCI</a> - <a href="./GTA_Teleguam" title="GTA Teleguam">GTA Teleguam</a> - <a href="./Liberty_Puerto_Rico" title="Liberty Puerto Rico">Liberty Puerto Rico</a> - <a href="./Mobi_(company)" title="Mobi (company)">Mobi</a> - <a href="./Southern_Linc" title="Southern Linc">Southern Linc</a> - <a href="./United_Wireless" title="United Wireless">United Wireless</a></td>
+</tr>
+<tr>
+<td><a href="./Mobile_virtual_network_operator" title="Mobile virtual network operator">MVNOs</a></td>
+<td>- <a href="./List_of_mobile_virtual_network_operators_in_the_United_States" title="List of mobile virtual network operators in the United States">List of mobile virtual network operators in the United States</a></td>
+</tr>
+<tr>
+<td>Defunct  operators</td>
+<td>- <a href="./Advanced_Mobile_Phone_Service" title="Advanced Mobile Phone Service">Advanced Mobile Phone Service</a> - <a href="./AirTouch" title="AirTouch">AirTouch</a> - <a href="./Alltel" title="Alltel">Alltel</a> - <a href="./AT&amp;T_Wireless_Services" title="AT&amp;T Wireless Services">AT&amp;T Wireless Services</a> - <a href="./Dobson_Cellular" title="Dobson Cellular">Dobson Cellular</a> - <a href="./Edge_Wireless" title="Edge Wireless">Edge Wireless</a> - <a href="./Element_Mobile" title="Element Mobile">Element Mobile</a> - <a href="./First_Cellular_of_Southern_Illinois" title="First Cellular of Southern Illinois">First Cellular of Southern Illinois</a> - <a href="./Houston_Cellular" title="Houston Cellular">Houston Cellular</a> - <a href="./Indigo_Wireless" title="Indigo Wireless">Indigo Wireless</a> - <a href="./Midwest_Wireless" title="Midwest Wireless">Midwest Wireless</a> - <a href="./Nextel" title="Nextel">Nextel</a> - <a href="./Northcoast_PCS" title="Northcoast PCS">Northcoast PCS</a> - <a href="./NTelos" title="NTelos">nTelos</a> - <a href="./Open_Mobile" title="Open Mobile">Open Mobile</a> - <a href="./Pocket_Communications" title="Pocket Communications">Pocket Communications</a> - <a href="./Powertel_(United_States)" title="Powertel (United States)">Powertel</a> - <a href="./PrimeCo" title="PrimeCo">PrimeCo</a> - <a href="./Revol_Wireless" title="Revol Wireless">Revol Wireless</a> - <a href="./Rural_Cellular" title="Rural Cellular">Rural Cellular</a> - <a href="./Shentel" title="Shentel">Shentel</a> - <a href="./Sprint_Corporation" title="Sprint Corporation">Sprint Corporation</a> - <a href="./SunCom" title="SunCom">SunCom</a> - <a href="./Unicel" title="Unicel">Unicel</a> - <a href="./Upoc_Networks" title="Upoc Networks">Upoc Networks</a> - <a href="./U.S._Cellular" title="U.S. Cellular">U.S. Cellular</a> - <a href="./West_Central_Wireless" title="West Central Wireless">West Central Wireless</a> - <a href="./Western_Wireless_Corporation" title="Western Wireless Corporation">Western Wireless Corporation</a> - <a href="./Yahoo_Mobile" title="Yahoo Mobile">Yahoo Mobile</a></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

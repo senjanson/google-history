@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Google Translate</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link active" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Google Translate</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Google_Translate<br>
+Category: products_consumer<br>
+Depth: 1</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Google Translate is a multilingual neural machine translation service developed by Google to translate text, documents and websites from one language into another. It offers a website interface, a mobile app for Android and iOS, and an API that helps developers build browser extensions and software applications. As of April 2026, Google Translate supports 249 languages and language varieties at various levels. It served over 200 million people daily in May 2013, and over 500 million total users as of April 2016, with more than 100 billion words translated daily.</p>
+<h2>Images</h2>
+<p><img alt="Google_Translate_screenshot" src="../images/Google_Translate_screenshot.png"><br>
+<img alt="330px-Google_Translate_screenshot" src="../images/330px-Google_Translate_screenshot.png"><br>
+<img alt="120px-Google_Translate_logo.svg" src="../images/120px-Google_Translate_logo.svg.png"><br>
+<img alt="330px-Google_Translate_screenshot" src="../images/330px-Google_Translate_screenshot.png"><br>
+<img alt="250px-Google_translate_webpage" src="../images/250px-Google_translate_webpage.png"><br>
+<img alt="250px-Google_English_accent_map.svg" src="../images/250px-Google_English_accent_map.svg.png"><br>
+<img alt="250px-Google_Translate_logo.svg" src="../images/250px-Google_Translate_logo.svg.png"><br>
+<img alt="Google_Translate_for_Android_screenshot" src="../images/Google_Translate_for_Android_screenshot.png"></p>
+<h2>Full Article</h2>
+<p>Multilingual neural machine translation service</p>
+<p><strong>Google Translate</strong> is a <a href="./Multilingualism" title="Multilingualism">multilingual</a> <a href="./Neural_machine_translation" title="Neural machine translation">neural</a> <a href="./Machine_translation" title="Machine translation">machine translation</a> service developed by <a href="./Google" title="Google">Google</a> to <a href="./Translation" title="Translation">translate</a> text, documents and websites from one language into another. It offers a <a href="./Web_application" title="Web application">website interface</a>, a <a href="./Mobile_app" title="Mobile app">mobile app</a> for <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> and <a href="./IOS" title="IOS">iOS</a>, and an <a href="./API" title="API">API</a> that helps developers build <a href="./Browser_extension" title="Browser extension">browser extensions</a> and <a href="./Application_software" title="Application software">software applications</a>. As of April 2026, Google Translate supports 249 languages and language varieties at various levels. It served over 200 million people daily in May 2013, and over 500 million total users as of April 2016<a href="https://en.wikipedia.org/w/index.php?title=Google_Translate&amp;action=edit">[update]</a>, with more than 100 billion words translated daily.</p>
+<p>Launched in April 2006 as a <a href="./Statistical_machine_translation" title="Statistical machine translation">statistical machine translation</a> service, it originally used <a href="./United_Nations" title="United Nations">United Nations</a> and <a href="./European_Parliament" title="European Parliament">European Parliament</a> documents and transcripts to gather linguistic data. Rather than translating languages directly, it first translated text to English and then pivoted to the target language in most of the language combinations it posited in its grid, with a few exceptions including Catalan–Spanish. During a translation, it looked for patterns in millions of documents to help decide which words to choose and how to arrange them in the target language. In recent years, it has used a <a href="./Deep_learning" title="Deep learning">deep learning</a> model to power its translations. Its accuracy, which has been criticized[<em><a href="./Wikipedia:Manual_of_Style/Words_to_watch#Unsupported_attributions" title="Wikipedia:Manual of Style/Words to watch">by whom?</a></em>] on several occasions, has been measured to vary greatly across languages. In November 2016, Google announced that Google Translate would switch to a <a href="./Neural_machine_translation" title="Neural machine translation">neural machine translation</a> engine – <a href="./Google_Neural_Machine_Translation" title="Google Neural Machine Translation">Google Neural Machine Translation</a> (GNMT) – which translated "whole sentences at a time, rather than just piece by piece. It uses this broader context to help it figure out the most relevant translation, which it then rearranges and adjusts to be more like a human speaking with proper grammar".</p>
+<h2>History</h2>
+<p>Google Translate is a web-based free-to-use translation service developed by Google in April 2006. It translates multiple forms of texts and media such as words, phrases and webpages.</p>
+<p>Originally, Google Translate was released as a <a href="./Statistical_machine_translation" title="Statistical machine translation">statistical machine translation</a> (SMT) service. The input text had to be translated into English first before being translated into the selected language. Since SMT uses predictive <a href="./Algorithm" title="Algorithm">algorithms</a> to translate text, it had poor grammatical accuracy. Despite this, Google initially did not hire experts to resolve this limitation due to the ever-evolving nature of language.</p>
+<p>In January 2010, Google introduced an <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> app and <a href="./IOS" title="IOS">iOS</a> version in February 2011 to serve as a portable personal interpreter. As of February 2010, it was integrated into browsers such as Chrome and was able to pronounce the translated text, automatically recognize words in a picture and spot unfamiliar text and languages.</p>
+<p>In May 2014, Google acquired <a href="./Word_Lens" title="Word Lens">Word Lens</a> to improve the quality of visual and voice translation. It is able to scan text or a picture using the device and have it translated instantly. Moreover, the system <a href="./Language_identification" title="Language identification">automatically identifies</a> foreign languages and translates speech without requiring individuals to tap the microphone button whenever <a href="./Speech_translation" title="Speech translation">speech translation</a> is needed.</p>
+<p>In November 2016, Google transitioned its translating method to a system called <a href="./Neural_machine_translation" title="Neural machine translation">neural machine translation</a>. It uses <a href="./Deep_learning" title="Deep learning">deep learning</a> techniques to translate whole sentences at a time, which has been measured to be more accurate between English and French, German, Spanish, and Chinese. No measurement results have been provided by Google researchers for GNMT from English to other languages, other languages to English, or between language pairs that do not include English. As of 2018, it translates more than 100 billion words a day.</p>
+<p>In 2017, Google Translate was used during a court hearing when court officials at <a href="./Teesside" title="Teesside">Teesside</a> Magistrates' Court failed to book an interpreter for the Chinese defendant.</p>
+<p>A petition for Google to add <a href="./Cree_language" title="Cree language">Cree</a> to Google Translate was created in 2021, but it was not one of the languages in development at the time of the Translate Community's closure.</p>
+<p>At the end of September 2022, Google Translate was discontinued in <a href="./Mainland_China" title="Mainland China">mainland China</a>, which Google said was due to "low usage".</p>
+<p>In 2024, a record of 110 languages including <a href="./Cantonese" title="Cantonese">Cantonese</a>, <a href="./Tok_Pisin" title="Tok Pisin">Tok Pisin</a> and some regional languages in <a href="./Russia" title="Russia">Russia</a> including <a href="./Bashkir_language" title="Bashkir language">Bashkir</a>, <a href="./Chechen_language" title="Chechen language">Chechen</a>, <a href="./Ossetian_language" title="Ossetian language">Ossetian</a> and <a href="./Crimean_Tatar_language" title="Crimean Tatar language">Crimean Tatar</a> were added. The languages were added through the help of the <a href="./PaLM_2" title="PaLM 2">PaLM 2</a> <a href="./Generative_AI" title="Generative AI">Generative AI</a> model.</p>
+<h2>Functions</h2>
+<p>Google Translate can translate multiple forms of text and media, which includes text, speech, and text within still or moving images. Specifically, its functions include:</p>
+<ul>
+<li><strong>Written Words Translation:</strong> a function that translates written words or text to a foreign language.</li>
+<li><strong>Website Translation:</strong> a function that translates a whole webpage to selected languages.</li>
+<li><strong>Document Translation:</strong> a function that translates a document uploaded by the users to selected languages. The documents should be in the form of: .doc, .docx, .odf, .pdf, .ppt, .pptx, .ps, .rtf, .txt, .xls, .xlsx.</li>
+<li><strong>Speech Translation:</strong> a function that instantly translates spoken language into the selected foreign language.</li>
+<li><strong>Mobile App Translation:</strong> in 2018, Google introduced its new Google Translate feature called "Tap to Translate", which made instant translation accessible inside any app without exiting or switching it.</li>
+<li><strong>Image Translation:</strong> a function that identifies text in a picture taken by the users and translates text on the screen instantly by images.</li>
+<li><strong>Handwritten Translation:</strong> a function that translates language that are handwritten on the phone screen or drawn on a virtual keyboard without the support of a keyboard.</li>
+<li><strong>Bilingual Conversation Translation:</strong> a function that translates conversations in multiple languages.</li>
+<li><strong>Transcription:</strong> a function that transcribes speech in different languages.</li>
+</ul>
+<p>For most of its features, Google Translate provides the pronunciation, dictionary, and listening to translation. Additionally, Google Translate has introduced its own Translate app, so translation is available with a mobile phone in offline mode.</p>
+<h2>Features</h2>
+<h3>Web interface</h3>
+<p>Google Translate produces approximations across languages of multiple forms of text and media, including text, speech, websites, or text on display in still or live video images. For some languages, Google Translate can synthesize speech from text, and in certain pairs it is possible to highlight specific corresponding words and phrases between the source and target text. Results are sometimes shown with dictional information below the translation box, but it is not a dictionary and has been shown to invent translations in all languages for words it does not recognize. If "Detect language" is selected, text in an unknown language can be automatically identified. In the web interface, users can suggest alternate translations, such as for technical terms, or correct mistakes. These suggestions may be included in future updates to the translation process. If a user enters a <a href="./URL" title="URL">URL</a> in the source text, Google Translate will produce a <a href="./Hyperlink" title="Hyperlink">hyperlink</a> to a machine translation of the website. Users can save translation proposals in a "phrasebook" for later use, and a shareable URL is generated for each translation. For some languages, text can be entered via an <a href="./Virtual_keyboard" title="Virtual keyboard">on-screen keyboard</a>, whether through <a href="./Handwriting_recognition" title="Handwriting recognition">handwriting recognition</a> or <a href="./Speech_recognition" title="Speech recognition">speech recognition</a>. It is possible to enter searches in a source language that are first translated to a destination language allowing one to browse and interpret results from the selected destination language in the source language.</p>
+<p>Texts written in the <a href="./Arabic_script" title="Arabic script">Arabic</a>, <a href="./Cyrillic_script" title="Cyrillic script">Cyrillic</a>, <a href="./Devanagari" title="Devanagari">Devanagari</a> and <a href="./Greek_alphabet" title="Greek alphabet">Greek</a> scripts can be automatically transliterated from their phonetic equivalents written in the <a href="./Latin_alphabet" title="Latin alphabet">Latin alphabet</a>. The browser version of Google Translate provides the option to show phonetic equivalents of text translated from Japanese to English. The same option is not available on the paid API version.</p>
+<p>Many of the more popular languages have a "text-to-speech" audio function that is able to read back a text in that language, up to several hundred words or so. In the case of <a href="./Pluricentric_language" title="Pluricentric language">pluricentric languages</a>, the accent depends on the region: for English, in the <a href="./Americas" title="Americas">Americas</a>, most of the <a href="./Asia–Pacific" title="Asia–Pacific">Asia–Pacific</a> and <a href="./West_Asia" title="West Asia">West Asia</a>, the audio uses a female <a href="./General_American_English" title="General American English">General American</a> accent, whereas in Europe, Hong Kong, Malaysia, Singapore, Guyana and all other parts of the world, a female <a href="./British_English" title="British English">British</a> (<a href="./Received_Pronunciation" title="Received Pronunciation">Received Pronunciation</a>) accent is used, except for a special <a href="./Australian_English" title="Australian English">General Australian</a> accent used in Australia, New Zealand and Norfolk Island, and an <a href="./Indian_English" title="Indian English">Indian English</a> accent used in India; for Spanish, in the <a href="./Americas" title="Americas">Americas</a>, a <a href="./Spanish_language_in_the_Americas" title="Spanish language in the Americas">Latin American</a> accent is used, while in other parts of the world, a <a href="./Castilian_Spanish" title="Castilian Spanish">Castilian</a> accent is used; for <a href="./French_language" title="French language">French</a>, a <a href="./Quebec_French" title="Quebec French">Quebec</a> accent is used in Canada, while in other parts of the world, a <a href="./Standard_French" title="Standard French">standard European accent</a> is used; for <a href="./Bengali_language" title="Bengali language">Bengali</a>, a male Bangladeshi accent is used, except in India, where a special female Indian Bengali accent is used instead. Until March 2023, some less widely spoken languages used the open-source <a href="./ESpeak" title="ESpeak">eSpeak</a> synthesizer for their speech; producing a robotic, awkward voice that may be difficult to understand.</p>
+<h4>Browser integration</h4>
+<p>Google Translate is available in some <a href="./Web_browser" title="Web browser">web browsers</a> as an optional downloadable <a href="./Browser_extension" title="Browser extension">extension</a> that can run the translation engine, which allow right-click command access to the translation service. In February 2010, Google Translate was integrated into the <a href="./Google_Chrome" title="Google Chrome">Google Chrome</a> browser by default, for optional automatic webpage translation.</p>
+<h3>Mobile app</h3>
+<p>The Google Translate app for <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> and <a href="./IOS" title="IOS">iOS</a> supports 249 languages and can propose translations for 37 languages via photo, 32 via voice in "conversation mode", and 27 via live video imagery in "augmented reality mode".</p>
+<p>The Android app was released in January 2010, and for iOS on February 8, 2011, after an <a href="./HTML5" title="HTML5">HTML5</a> <a href="./Web_application" title="Web application">web application</a> was released for iOS users in August 2008. The Android app is compatible with devices running at least Android 2.1, while the iOS app is compatible with <a href="./IPod_Touch" title="IPod Touch">iPod Touches</a>, <a href="./IPad" title="IPad">iPads</a> and <a href="./IPhone" title="IPhone">iPhones</a> updated to iOS 7.0+.</p>
+<p>A January 2011 Android version experimented with a "Conversation Mode" that aims to allow users to communicate fluidly with a nearby person in another language. Originally limited to English and Spanish, the feature received support for 12 new languages, still in testing, the following October.</p>
+<p>The 'Camera input' functionality allows users to take a photograph of a document, signboard, etc. Google Translate recognises the text from the image using <a href="./Optical_character_recognition" title="Optical character recognition">optical character recognition</a> (OCR) technology and gives the translation. Camera input is not available for all languages.</p>
+<p>In January 2015, the apps gained the ability to propose translations of physical signs in real time using the device's camera, as a result of Google's acquisition of the <a href="./Word_Lens" title="Word Lens">Word Lens</a> app. The original January launch only supported seven languages, but a July update added support for 20 new languages, with the release of a new implementation that utilizes <a href="./Convolutional_neural_network" title="Convolutional neural network">convolutional neural networks</a>, and also enhanced the speed and quality of Conversation Mode translations (<a href="./Augmented_reality" title="Augmented reality">augmented reality</a>). The feature was subsequently renamed Instant Camera. The technology underlying Instant Camera combines image processing and optical character recognition, then attempts to produce cross-language equivalents using standard Google Translate estimations for the text as it is perceived.</p>
+<p>On May 11, 2016, Google introduced <em>Tap to Translate</em> for Google Translate for Android. Upon highlighting text in an app that is in a foreign language, Translate will pop up inside of the app and offer translations.</p>
+<h3>API</h3>
+<p>On May 26, 2011, Google announced that the Google Translate <a href="./API" title="API">API</a> for <a href="./Software_development" title="Software development">software developers</a> had been deprecated and would cease functioning. The Translate API page stated the reason as "substantial economic burden caused by extensive abuse" with an end date set for December 1, 2011. In response to public pressure, Google announced in June 2011 that the API would continue to be available as a paid service.</p>
+<p>Because the API was used in numerous third-party websites and apps, the original decision to deprecate it led some developers to criticize Google and question the viability of using Google APIs in their products.</p>
+<h3>Google Assistant</h3>
+<p>Google Translate also provides translations for <a href="./Google_Assistant" title="Google Assistant">Google Assistant</a> and the devices that Google Assistant runs on such as <a href="./Google_Nest_(smart_speakers)" title="Google Nest (smart speakers)">Google Nest</a> and <a href="./Pixel_Buds" title="Pixel Buds">Pixel Buds</a>.</p>
+<h2>Supported languages</h2>
+<p>As of April 2026, the following 249 languages, dialects and language varieties written in different scripts (240 unique languages and dialects) are supported by Google Translate.</p>
+<ol>
+<li><a href="./Abkhaz_language" title="Abkhaz language">Abkhaz</a></li>
+<li><a href="./Acehnese_language" title="Acehnese language">Acehnese</a></li>
+<li><a href="./Acholi_dialect" title="Acholi dialect">Acholi</a></li>
+<li><a href="./Afar_language" title="Afar language">Afar</a></li>
+<li><a href="./Afrikaans" title="Afrikaans">Afrikaans</a></li>
+<li><a href="./Albanian_language" title="Albanian language">Albanian</a></li>
+<li><a href="./Alur_language" title="Alur language">Alur</a></li>
+<li><a href="./Amharic" title="Amharic">Amharic</a></li>
+<li><a href="./Arabic" title="Arabic">Arabic</a></li>
+<li><a href="./Armenian_language" title="Armenian language">Armenian</a></li>
+<li><a href="./Assamese_language" title="Assamese language">Assamese</a></li>
+<li><a href="./Avar_language" title="Avar language">Avar</a></li>
+<li><a href="./Awadhi_language" title="Awadhi language">Awadhi</a></li>
+<li><a href="./Aymara_language" title="Aymara language">Aymara</a></li>
+<li><a href="./Azerbaijani_language" title="Azerbaijani language">Azerbaijani</a></li>
+<li><a href="./Balinese_language" title="Balinese language">Balinese</a></li>
+<li><a href="./Balochi_language" title="Balochi language">Baluchi</a></li>
+<li><a href="./Bambara_language" title="Bambara language">Bambara</a></li>
+<li><a href="./Baoulé_language" title="Baoulé language">Baoulé</a></li>
+<li><a href="./Bashkir_language" title="Bashkir language">Bashkir</a></li>
+<li><a href="./Basque_language" title="Basque language">Basque</a></li>
+<li><a href="./Batak_Karo_language" title="Batak Karo language">Batak Karo</a></li>
+<li><a href="./Batak_Simalungun_language" title="Batak Simalungun language">Batak Simalungun</a></li>
+<li><a href="./Toba_Batak_language" title="Toba Batak language">Batak Toba</a></li>
+<li><a href="./Belarusian_language" title="Belarusian language">Belarusian</a></li>
+<li><a href="./Bemba_language" title="Bemba language">Bemba</a></li>
+<li><a href="./Bengali_language" title="Bengali language">Bengali</a></li>
+<li><a href="./Betawi_language" title="Betawi language">Betawi</a></li>
+<li><a href="./Bhojpuri_language" title="Bhojpuri language">Bhojpuri</a></li>
+<li><a href="./Central_Bikol" title="Central Bikol">Bikol</a></li>
+<li><a href="./Bosnian_language" title="Bosnian language">Bosnian</a></li>
+<li><a href="./Breton_language" title="Breton language">Breton</a></li>
+<li><a href="./Bulgarian_language" title="Bulgarian language">Bulgarian</a></li>
+<li><a href="./Buryat_language" title="Buryat language">Buryat</a></li>
+<li><a href="./Cantonese" title="Cantonese">Cantonese</a></li>
+<li><a href="./Catalan_language" title="Catalan language">Catalan</a></li>
+<li><a href="./Cebuano_language" title="Cebuano language">Cebuano</a></li>
+<li><a href="./Chamorro_language" title="Chamorro language">Chamorro</a></li>
+<li><a href="./Chechen_language" title="Chechen language">Chechen</a></li>
+<li><a href="./Chewa_language" title="Chewa language">Chichewa</a></li>
+<li><a href="./Chinese_language" title="Chinese language">Chinese</a> (<a href="./Simplified_Chinese_characters" title="Simplified Chinese characters">Simplified</a>)</li>
+<li><a href="./Chinese_language" title="Chinese language">Chinese</a> (<a href="./Traditional_Chinese_characters" title="Traditional Chinese characters">Traditional</a>)</li>
+<li><a href="./Chuukese_language" title="Chuukese language">Chuukese</a></li>
+<li><a href="./Chuvash_language" title="Chuvash language">Chuvash</a></li>
+<li><a href="./Corsican_language" title="Corsican language">Corsican</a></li>
+<li><a href="./Crimean_Tatar_language" title="Crimean Tatar language">Crimean Tatar</a> (<a href="./Crimean_Tatar_alphabet#Cyrillic" title="Crimean Tatar alphabet">Cyrillic</a>)</li>
+<li><a href="./Crimean_Tatar_language" title="Crimean Tatar language">Crimean Tatar</a> (<a href="./Crimean_Tatar_alphabet#Latin" title="Crimean Tatar alphabet">Latin</a>)</li>
+<li><a href="./Croatian_language" title="Croatian language">Croatian</a></li>
+<li><a href="./Czech_language" title="Czech language">Czech</a></li>
+<li><a href="./Danish_language" title="Danish language">Danish</a></li>
+<li><a href="./Dari" title="Dari">Dari</a></li>
+<li><a href="./Maldivian_language" title="Maldivian language">Dhivehi</a></li>
+<li><a href="./Dinka_language" title="Dinka language">Dinka</a></li>
+<li><a href="./Dogri_language" title="Dogri language">Dogri</a></li>
+<li><a href="./Tonga_language_(Zambia_and_Zimbabwe)" title="Tonga language (Zambia and Zimbabwe)">Dombe</a></li>
+<li><a href="./Dutch_language" title="Dutch language">Dutch</a></li>
+<li><a href="./Dyula_language" title="Dyula language">Dyula</a></li>
+<li><a href="./Dzongkha" title="Dzongkha">Dzongkha</a></li>
+<li><a href="./English_language" title="English language">English</a></li>
+<li><a href="./Esperanto" title="Esperanto">Esperanto</a></li>
+<li><a href="./Estonian_language" title="Estonian language">Estonian</a></li>
+<li><a href="./Ewe_language" title="Ewe language">Ewe</a></li>
+<li><a href="./Faroese_language" title="Faroese language">Faroese</a></li>
+<li><a href="./Fijian_language" title="Fijian language">Fijian</a></li>
+<li><a href="./Filipino_language" title="Filipino language">Filipino</a></li>
+<li><a href="./Finnish_language" title="Finnish language">Finnish</a></li>
+<li><a href="./Fon_language" title="Fon language">Fon</a></li>
+<li><a href="./French_language" title="French language">French</a></li>
+<li><a href="./French_language" title="French language">French</a> (<a href="./Canadian_French" title="Canadian French">Canada</a>)</li>
+<li><a href="./West_Frisian_language" title="West Frisian language">Frisian</a></li>
+<li><a href="./Friulian_language" title="Friulian language">Friulian</a></li>
+<li><a href="./Fula_language" title="Fula language">Fulani</a></li>
+<li><a href="./Ga_language" title="Ga language">Ga</a></li>
+<li><a href="./Galician_language" title="Galician language">Galician</a></li>
+<li><a href="./Georgian_language" title="Georgian language">Georgian</a></li>
+<li><a href="./German_language" title="German language">German</a></li>
+<li><a href="./Greek_language" title="Greek language">Greek</a></li>
+<li><a href="./Guarani_language" title="Guarani language">Guarani</a></li>
+<li><a href="./Gujarati_language" title="Gujarati language">Gujarati</a></li>
+<li><a href="./Haitian_Creole" title="Haitian Creole">Haitian Creole</a></li>
+<li><a href="./Hakha_Chin" title="Hakha Chin">Hakha Chin</a></li>
+<li><a href="./Hausa_language" title="Hausa language">Hausa</a></li>
+<li><a href="./Hawaiian_language" title="Hawaiian language">Hawaiian</a></li>
+<li><a href="./Hebrew_language" title="Hebrew language">Hebrew</a></li>
+<li><a href="./Hiligaynon_language" title="Hiligaynon language">Hiligaynon</a></li>
+<li><a href="./Hindi" title="Hindi">Hindi</a></li>
+<li><a href="./Hmong_language" title="Hmong language">Hmong</a></li>
+<li><a href="./Hungarian_language" title="Hungarian language">Hungarian</a></li>
+<li><a href="./Hunsrik" title="Hunsrik">Hunsrik</a></li>
+<li><a href="./Iban_language" title="Iban language">Iban</a></li>
+<li><a href="./Icelandic_language" title="Icelandic language">Icelandic</a></li>
+<li><a href="./Igbo_language" title="Igbo language">Igbo</a></li>
+<li><a href="./Ilocano_language" title="Ilocano language">Ilocano</a></li>
+<li><a href="./Indonesian_language" title="Indonesian language">Indonesian</a></li>
+<li><a href="./Inuktitut" title="Inuktitut">Inuktut</a> (Latin)</li>
+<li><a href="./Inuktitut" title="Inuktitut">Inuktut</a> (<a href="./Inuktitut_syllabics" title="Inuktitut syllabics">Syllabics</a>)</li>
+<li><a href="./Irish_language" title="Irish language">Irish</a></li>
+<li><a href="./Italian_language" title="Italian language">Italian</a></li>
+<li><a href="./Jamaican_Patois" title="Jamaican Patois">Jamaican Patois</a></li>
+<li><a href="./Japanese_language" title="Japanese language">Japanese</a></li>
+<li><a href="./Javanese_language" title="Javanese language">Javanese</a></li>
+<li><a href="./Jingpo_language" title="Jingpo language">Jingpo</a></li>
+<li><a href="./West_Greenlandic" title="West Greenlandic">Kalaallisut</a></li>
+<li><a href="./Kannada" title="Kannada">Kannada</a></li>
+<li><a href="./Kanuri_language" title="Kanuri language">Kanuri</a></li>
+<li><a href="./Kapampangan_language" title="Kapampangan language">Kapampangan</a></li>
+<li><a href="./Kazakh_language" title="Kazakh language">Kazakh</a></li>
+<li><a href="./Khasi_language" title="Khasi language">Khasi</a></li>
+<li><a href="./Khmer_language" title="Khmer language">Khmer</a></li>
+<li><a href="./Kiga_language" title="Kiga language">Kiga</a></li>
+<li><a href="./Kongo_language" title="Kongo language">Kikongo</a></li>
+<li><a href="./Kinyarwanda" title="Kinyarwanda">Kinyarwanda</a></li>
+<li><a href="./Kituba_language" title="Kituba language">Kituba</a></li>
+<li><a href="./Kokborok" title="Kokborok">Kokborok</a></li>
+<li><a href="./Komi_language" title="Komi language">Komi</a></li>
+<li><a href="./Konkani_language" title="Konkani language">Konkani</a></li>
+<li><a href="./Korean_language" title="Korean language">Korean</a></li>
+<li><a href="./Krio_language" title="Krio language">Krio</a></li>
+<li><a href="./Kurdish_language" title="Kurdish language">Kurdish</a> (<a href="./Kurmanji" title="Kurmanji">Kurmanji</a>)</li>
+<li><a href="./Kurdish_language" title="Kurdish language">Kurdish</a> (<a href="./Sorani" title="Sorani">Sorani</a>)</li>
+<li><a href="./Kyrgyz_language" title="Kyrgyz language">Kyrgyz</a></li>
+<li><a href="./Lao_language" title="Lao language">Lao</a></li>
+<li><a href="./Latgalian_language" title="Latgalian language">Latgalian</a></li>
+<li><a href="./Latin" title="Latin">Latin</a></li>
+<li><a href="./Latvian_language" title="Latvian language">Latvian</a></li>
+<li><a href="./Ligurian_language" title="Ligurian language">Ligurian</a></li>
+<li><a href="./Limburgish" title="Limburgish">Limburgish</a></li>
+<li><a href="./Lingala" title="Lingala">Lingala</a></li>
+<li><a href="./Lithuanian_language" title="Lithuanian language">Lithuanian</a></li>
+<li><a href="./Lombard_language" title="Lombard language">Lombard</a></li>
+<li><a href="./Luganda" title="Luganda">Luganda</a></li>
+<li><a href="./Dholuo" title="Dholuo">Luo</a></li>
+<li><a href="./Luxembourgish" title="Luxembourgish">Luxembourgish</a></li>
+<li><a href="./Macedonian_language" title="Macedonian language">Macedonian</a></li>
+<li><a href="./Madurese_language" title="Madurese language">Madurese</a></li>
+<li><a href="./Maithili_language" title="Maithili language">Maithili</a></li>
+<li><a href="./Makassarese_language" title="Makassarese language">Makassar</a></li>
+<li><a href="./Malagasy_language" title="Malagasy language">Malagasy</a></li>
+<li><a href="./Malay_language" title="Malay language">Malay</a></li>
+<li><a href="./Malay_language" title="Malay language">Malay</a> (<a href="./Jawi_script" title="Jawi script">Jawi</a>)</li>
+<li><a href="./Malayalam" title="Malayalam">Malayalam</a></li>
+<li><a href="./Maltese_language" title="Maltese language">Maltese</a></li>
+<li><a href="./Mam_language" title="Mam language">Mam</a></li>
+<li><a href="./Manx_language" title="Manx language">Manx</a></li>
+<li><a href="./Māori_language" title="Māori language">Maori</a></li>
+<li><a href="./Marathi_language" title="Marathi language">Marathi</a></li>
+<li><a href="./Marshallese_language" title="Marshallese language">Marshallese</a></li>
+<li><a href="./Marwari_language" title="Marwari language">Marwadi</a></li>
+<li><a href="./Mauritian_Creole" title="Mauritian Creole">Mauritian Creole</a></li>
+<li><a href="./Meadow_Mari_language" title="Meadow Mari language">Meadow Mari</a></li>
+<li><a href="./Meitei_language" title="Meitei language">Meiteilon (Manipuri)</a></li>
+<li><a href="./Minangkabau_language" title="Minangkabau language">Minang</a></li>
+<li><a href="./Mizo_language" title="Mizo language">Mizo</a></li>
+<li><a href="./Mongolian_language" title="Mongolian language">Mongolian</a></li>
+<li><a href="./Burmese_language" title="Burmese language">Myanmar (Burmese)</a></li>
+<li><a href="./Huasteca_Nahuatl" title="Huasteca Nahuatl">Nahuatl (Eastern Huasteca)</a></li>
+<li><a href="./Ndau_dialect" title="Ndau dialect">Ndau</a></li>
+<li><a href="./Southern_Ndebele_language" title="Southern Ndebele language">Ndebele (South)</a></li>
+<li><a href="./Newar_language" title="Newar language">Nepalbhasa (Newari)</a></li>
+<li><a href="./Nepali_language" title="Nepali language">Nepali</a></li>
+<li><a href="./N'Ko_language" title="N'Ko language">NKo</a></li>
+<li><a href="./Norwegian_language" title="Norwegian language">Norwegian</a> (<a href="./Bokmål" title="Bokmål">Bokmål</a>)</li>
+<li><a href="./Nuer_language" title="Nuer language">Nuer</a></li>
+<li><a href="./Occitan_language" title="Occitan language">Occitan</a></li>
+<li><a href="./Odia_language" title="Odia language">Odia (Oriya)</a></li>
+<li><a href="./Oromo_language" title="Oromo language">Oromo</a></li>
+<li><a href="./Ossetian_language" title="Ossetian language">Ossetian</a></li>
+<li><a href="./Pangasinan_language" title="Pangasinan language">Pangasinan</a></li>
+<li><a href="./Papiamento" title="Papiamento">Papiamento</a></li>
+<li><a href="./Pashto" title="Pashto">Pashto</a></li>
+<li><a href="./Persian_language" title="Persian language">Persian</a></li>
+<li><a href="./Polish_language" title="Polish language">Polish</a></li>
+<li><a href="./Portuguese_language" title="Portuguese language">Portuguese</a> (<a href="./Brazilian_Portuguese" title="Brazilian Portuguese">Brazil</a>)</li>
+<li><a href="./Portuguese_language" title="Portuguese language">Portuguese</a> (<a href="./European_Portuguese" title="European Portuguese">Portugal</a>)</li>
+<li><a href="./Punjabi_language" title="Punjabi language">Punjabi</a> (<a href="./Gurmukhi" title="Gurmukhi">Gurmukhi</a>)</li>
+<li><a href="./Punjabi_language" title="Punjabi language">Punjabi</a> (<a href="./Shahmukhi" title="Shahmukhi">Shahmukhi</a>)</li>
+<li><a href="./Southern_Quechua" title="Southern Quechua">Quechua</a></li>
+<li><a href="./Qʼeqchiʼ_language" title="Qʼeqchiʼ language">Qʼeqchiʼ</a></li>
+<li><a href="./Romani_language" title="Romani language">Romani</a></li>
+<li><a href="./Romanian_language" title="Romanian language">Romanian</a></li>
+<li><a href="./Kirundi" title="Kirundi">Rundi</a></li>
+<li><a href="./Russian_language" title="Russian language">Russian</a></li>
+<li><a href="./Northern_Sámi" title="Northern Sámi">Sami (North)</a></li>
+<li><a href="./Samoan_language" title="Samoan language">Samoan</a></li>
+<li><a href="./Sango_language" title="Sango language">Sango</a></li>
+<li><a href="./Sanskrit" title="Sanskrit">Sanskrit</a></li>
+<li><a href="./Santali_language" title="Santali language">Santali</a> (Latin)</li>
+<li><a href="./Santali_language" title="Santali language">Santali</a> (<a href="./Ol_Chiki" title="Ol Chiki">Ol Chiki</a>)</li>
+<li><a href="./Scottish_Gaelic" title="Scottish Gaelic">Scots Gaelic</a></li>
+<li><a href="./Northern_Sotho" title="Northern Sotho">Sepedi</a></li>
+<li><a href="./Serbian_language" title="Serbian language">Serbian</a></li>
+<li><a href="./Sotho_language" title="Sotho language">Sesotho</a></li>
+<li><a href="./Seychellois_Creole" title="Seychellois Creole">Seychellois Creole</a></li>
+<li><a href="./Shan_language" title="Shan language">Shan</a></li>
+<li><a href="./Shona_language" title="Shona language">Shona</a></li>
+<li><a href="./Sicilian_language" title="Sicilian language">Sicilian</a></li>
+<li><a href="./Silesian_language" title="Silesian language">Silesian</a></li>
+<li><a href="./Sindhi_language" title="Sindhi language">Sindhi</a></li>
+<li><a href="./Sinhala_language" title="Sinhala language">Sinhala</a></li>
+<li><a href="./Slovak_language" title="Slovak language">Slovak</a></li>
+<li><a href="./Slovene_language" title="Slovene language">Slovenian</a></li>
+<li><a href="./Somali_language" title="Somali language">Somali</a></li>
+<li><a href="./Spanish_language" title="Spanish language">Spanish</a></li>
+<li><a href="./Sundanese_language" title="Sundanese language">Sundanese</a></li>
+<li><a href="./Susu_language" title="Susu language">Susu</a></li>
+<li><a href="./Swahili_language" title="Swahili language">Swahili</a></li>
+<li><a href="./Swazi_language" title="Swazi language">Swati</a></li>
+<li><a href="./Swedish_language" title="Swedish language">Swedish</a></li>
+<li><a href="./Tahitian_language" title="Tahitian language">Tahitian</a></li>
+<li><a href="./Tajik_language" title="Tajik language">Tajik</a></li>
+<li><a href="./Berber_languages" title="Berber languages">Tamazight</a></li>
+<li><a href="./Berber_languages" title="Berber languages">Tamazight</a> (<a href="./Tifinagh" title="Tifinagh">Tifinagh</a>)</li>
+<li><a href="./Tamil_language" title="Tamil language">Tamil</a></li>
+<li><a href="./Tatar_language" title="Tatar language">Tatar</a></li>
+<li><a href="./Telugu_language" title="Telugu language">Telugu</a></li>
+<li><a href="./Tetum_language" title="Tetum language">Tetum</a></li>
+<li><a href="./Thai_language" title="Thai language">Thai</a></li>
+<li><a href="./Lhasa_Tibetan" title="Lhasa Tibetan">Tibetan</a></li>
+<li><a href="./Tigrinya_language" title="Tigrinya language">Tigrinya</a></li>
+<li><a href="./Tiv_language" title="Tiv language">Tiv</a></li>
+<li><a href="./Tok_Pisin" title="Tok Pisin">Tok Pisin</a></li>
+<li><a href="./Tongan_language" title="Tongan language">Tongan</a></li>
+<li><a href="./Luba-Kasai_language" title="Luba-Kasai language">Tshiluba</a></li>
+<li><a href="./Tsonga_language" title="Tsonga language">Tsonga</a></li>
+<li><a href="./Tswana_language" title="Tswana language">Tswana</a></li>
+<li><a href="./Tulu_language" title="Tulu language">Tulu</a></li>
+<li><a href="./Tumbuka_language" title="Tumbuka language">Tumbuka</a></li>
+<li><a href="./Turkish_language" title="Turkish language">Turkish</a></li>
+<li><a href="./Turkmen_language" title="Turkmen language">Turkmen</a></li>
+<li><a href="./Tuvan_language" title="Tuvan language">Tuvan</a></li>
+<li><a href="./Twi" title="Twi">Twi</a></li>
+<li><a href="./Udmurt_language" title="Udmurt language">Udmurt</a></li>
+<li><a href="./Ukrainian_language" title="Ukrainian language">Ukrainian</a></li>
+<li><a href="./Urdu" title="Urdu">Urdu</a></li>
+<li><a href="./Uyghur_language" title="Uyghur language">Uyghur</a></li>
+<li><a href="./Uzbek_language" title="Uzbek language">Uzbek</a></li>
+<li><a href="./Venda_language" title="Venda language">Venda</a></li>
+<li><a href="./Venetian_language" title="Venetian language">Venetian</a></li>
+<li><a href="./Vietnamese_language" title="Vietnamese language">Vietnamese</a></li>
+<li><a href="./Waray_language" title="Waray language">Waray</a></li>
+<li><a href="./Welsh_language" title="Welsh language">Welsh</a></li>
+<li><a href="./Wolof_language" title="Wolof language">Wolof</a></li>
+<li><a href="./Xhosa_language" title="Xhosa language">Xhosa</a></li>
+<li><a href="./Yakut_language" title="Yakut language">Yakut</a></li>
+<li><a href="./Yiddish" title="Yiddish">Yiddish</a></li>
+<li><a href="./Yoruba_language" title="Yoruba language">Yoruba</a></li>
+<li><a href="./Yucatec_Maya_language" title="Yucatec Maya language">Yucatec Maya</a></li>
+<li><a href="./Zapotec_languages" title="Zapotec languages">Zapotec</a></li>
+<li><a href="./Zulu_language" title="Zulu language">Zulu</a></li>
+</ol>
+<h3>Stages</h3>
+<p>History</p>
+<p><em>(by chronological order of introduction)</em></p>
+<ol>
+<li>1st stage</li>
+<li>English to and from <a href="./French_language" title="French language">French</a></li>
+<li>English to and from <a href="./German_language" title="German language">German</a></li>
+<li>English to and from <a href="./Spanish_language" title="Spanish language">Spanish</a></li>
+<li>2nd stage</li>
+<li>English to and from <a href="./Portuguese_language" title="Portuguese language">Portuguese</a> (<a href="./Brazilian_Portuguese" title="Brazilian Portuguese">Brazil</a>)</li>
+<li>3rd stage</li>
+<li>English to and from <a href="./Italian_language" title="Italian language">Italian</a></li>
+<li>4th stage</li>
+<li>English to and from <a href="./Chinese_language" title="Chinese language">Chinese</a> (<a href="./Simplified_Chinese_characters" title="Simplified Chinese characters">Simplified</a>)</li>
+<li>English to and from <a href="./Japanese_language" title="Japanese language">Japanese</a></li>
+<li>English to and from <a href="./Korean_language" title="Korean language">Korean</a></li>
+<li>5th stage (launched April 28, 2006)</li>
+<li>English to and from <a href="./Arabic" title="Arabic">Arabic</a></li>
+<li>6th stage (launched December 16, 2006)</li>
+<li>English to and from <a href="./Russian_language" title="Russian language">Russian</a></li>
+<li>7th stage (launched February 9, 2007)</li>
+<li>English to and from <a href="./Chinese_language" title="Chinese language">Chinese</a> (<a href="./Traditional_Chinese_characters" title="Traditional Chinese characters">Traditional</a>)</li>
+<li><a href="./Chinese_language" title="Chinese language">Chinese</a> ((<a href="./Simplified_Chinese_characters" title="Simplified Chinese characters">Simplified</a>) to and from <a href="./Traditional_Chinese_characters" title="Traditional Chinese characters">Traditional</a>)</li>
+<li>8th stage (all 25 language pairs use Google's machine translation system) (launched October 22, 2007)</li>
+<li>English to and from <a href="./Dutch_language" title="Dutch language">Dutch</a></li>
+<li>English to and from <a href="./Greek_language" title="Greek language">Greek</a></li>
+<li>9th stage</li>
+<li>English to and from <a href="./Hindi" title="Hindi">Hindi</a></li>
+<li>10th stage (as of this stage, translation can be done between any two languages, using English as an intermediate step, if needed) (launched May 8, 2008)<ol>
+<li><a href="./Bulgarian_language" title="Bulgarian language">Bulgarian</a></li>
+<li><a href="./Croatian_language" title="Croatian language">Croatian</a></li>
+<li><a href="./Czech_language" title="Czech language">Czech</a></li>
+<li><a href="./Danish_language" title="Danish language">Danish</a></li>
+<li><a href="./Finnish_language" title="Finnish language">Finnish</a></li>
+<li><a href="./Norwegian_language" title="Norwegian language">Norwegian</a> (<a href="./Bokmål" title="Bokmål">Bokmål</a>)</li>
+<li><a href="./Polish_language" title="Polish language">Polish</a></li>
+<li><a href="./Romanian_language" title="Romanian language">Romanian</a></li>
+<li><a href="./Swedish_language" title="Swedish language">Swedish</a></li>
+</ol>
+</li>
+<li>11th stage (launched September 25, 2008)<ol>
+<li><a href="./Catalan_language" title="Catalan language">Catalan</a></li>
+<li><a href="./Filipino_language" title="Filipino language">Filipino</a> (<a href="./Tagalog_language" title="Tagalog language">Tagalog</a>)</li>
+<li><a href="./Hebrew_language" title="Hebrew language">Hebrew</a></li>
+<li><a href="./Indonesian_language" title="Indonesian language">Indonesian</a></li>
+<li><a href="./Latvian_language" title="Latvian language">Latvian</a></li>
+<li><a href="./Lithuanian_language" title="Lithuanian language">Lithuanian</a></li>
+<li><a href="./Serbian_language" title="Serbian language">Serbian</a></li>
+<li><a href="./Slovak_language" title="Slovak language">Slovak</a></li>
+<li><a href="./Slovene_language" title="Slovene language">Slovene</a></li>
+<li><a href="./Ukrainian_language" title="Ukrainian language">Ukrainian</a></li>
+<li><a href="./Vietnamese_language" title="Vietnamese language">Vietnamese</a></li>
+</ol>
+</li>
+<li>12th stage (launched January 30, 2009)<ol>
+<li><a href="./Albanian_language" title="Albanian language">Albanian</a></li>
+<li><a href="./Estonian_language" title="Estonian language">Estonian</a></li>
+<li><a href="./Galician_language" title="Galician language">Galician</a></li>
+<li><a href="./Hungarian_language" title="Hungarian language">Hungarian</a></li>
+<li><a href="./Maltese_language" title="Maltese language">Maltese</a></li>
+<li><a href="./Thai_language" title="Thai language">Thai</a></li>
+<li><a href="./Turkish_language" title="Turkish language">Turkish</a></li>
+</ol>
+</li>
+<li>13th stage (launched June 19, 2009)<ol>
+<li><a href="./Persian_language" title="Persian language">Persian</a></li>
+</ol>
+</li>
+<li>14th stage (launched August 24, 2009)<ol>
+<li><a href="./Afrikaans" title="Afrikaans">Afrikaans</a></li>
+<li><a href="./Belarusian_language" title="Belarusian language">Belarusian</a></li>
+<li><a href="./Icelandic_language" title="Icelandic language">Icelandic</a></li>
+<li><a href="./Irish_language" title="Irish language">Irish</a></li>
+<li><a href="./Macedonian_language" title="Macedonian language">Macedonian</a></li>
+<li><a href="./Malay_language" title="Malay language">Malay</a></li>
+<li><a href="./Swahili_language" title="Swahili language">Swahili</a></li>
+<li><a href="./Welsh_language" title="Welsh language">Welsh</a></li>
+<li><a href="./Yiddish" title="Yiddish">Yiddish</a></li>
+</ol>
+</li>
+<li>15th stage (launched November 19, 2009)<ol>
+<li>The Beta stage is finished. Users can now choose to have the <a href="./Romanization" title="Romanization">romanization</a> written for Belarusian, Bulgarian, Chinese, Greek, Hindi, Japanese, Korean, Russian, Thai and Ukrainian. For translations from Arabic, Hindi and Persian, the user can enter a Latin transliteration of the text and the text will be transliterated to the native script for these languages as the user is typing. The text can now be read by a <a href="./Speech_synthesis" title="Speech synthesis">text-to-speech</a> program in English, French, German and Italian.</li>
+</ol>
+</li>
+<li>16th stage (launched January 30, 2010)<ol>
+<li><a href="./Haitian_Creole" title="Haitian Creole">Haitian Creole</a></li>
+</ol>
+</li>
+<li>17th stage (launched April 2010)<ol>
+<li>Speech program launched in Hindi and Spanish.</li>
+</ol>
+</li>
+<li>18th stage (launched May 5, 2010)<ol>
+<li>Speech program launched in Afrikaans, Albanian, Catalan, Chinese (Mandarin), Croatian, Czech, Danish, Dutch, Finnish, Greek, Hungarian, Icelandic, Indonesian, Latvian, Macedonian, Norwegian, Polish, Portuguese, Romanian, Russian, Serbian, Slovak, Swahili, Swedish, Turkish, Vietnamese and Welsh (based on <a href="./ESpeak" title="ESpeak">eSpeak</a>).</li>
+</ol>
+</li>
+<li>19th stage (launched May 13, 2010)<ol>
+<li><a href="./Armenian_language" title="Armenian language">Armenian</a></li>
+<li><a href="./Azerbaijani_language" title="Azerbaijani language">Azerbaijani</a></li>
+<li><a href="./Basque_language" title="Basque language">Basque</a></li>
+<li><a href="./Georgian_language" title="Georgian language">Georgian</a></li>
+<li><a href="./Urdu" title="Urdu">Urdu</a></li>
+</ol>
+</li>
+<li>20th stage (launched June 2010)<ol>
+<li>Provides romanization for Arabic.</li>
+</ol>
+</li>
+<li>21st stage (launched September 2010)<ol>
+<li>Allows phonetic typing for Arabic, Greek, Hindi, Persian, Russian, Serbian and Urdu.</li>
+<li><a href="./Latin" title="Latin">Latin</a></li>
+</ol>
+</li>
+<li>22nd stage (launched December 2010)<ol>
+<li>Romanization of Arabic removed.</li>
+<li>Spell check added.</li>
+<li>For some languages, Google replaced text-to-speech synthesizers from eSpeak's robot voice to native speaker's nature voice technologies made by SVOX (Chinese, Czech, Danish, Dutch, Finnish, Greek, Hungarian, Norwegian, Polish, Portuguese, Russian, Swedish and Turkish), and also the old versions of French, German, Italian and Spanish; Latin uses the same synthesizer as Italian.</li>
+<li>Speech program launched in Arabic, Japanese and Korean.</li>
+</ol>
+</li>
+<li>23rd stage (launched January 2011)<ol>
+<li>Choice of different translations for a word.</li>
+</ol>
+</li>
+<li>24th stage (launched June 2011)<ul>
+<li>5 new Indic languages (in alpha) and a transliterated input method:<br>
+1. <a href="./Bengali_language" title="Bengali language">Bengali</a><br>
+2. <a href="./Gujarati_language" title="Gujarati language">Gujarati</a><br>
+3. <a href="./Kannada" title="Kannada">Kannada</a><br>
+4. <a href="./Tamil_language" title="Tamil language">Tamil</a><br>
+5. <a href="./Telugu_language" title="Telugu language">Telugu</a></li>
+</ul>
+</li>
+<li>25th stage (launched July 2011)<ol>
+<li>Translation rating introduced.</li>
+</ol>
+</li>
+<li>26th stage (launched January 2012)<ol>
+<li>Dutch male voice synthesizer replaced with female.</li>
+<li>Elena by SVOX replaced the Slovak eSpeak voice.</li>
+<li>Transliteration of Yiddish added.</li>
+</ol>
+</li>
+<li>27th stage (launched February 2012)<ol>
+<li>Speech program launched in Thai.</li>
+<li><a href="./Esperanto" title="Esperanto">Esperanto</a></li>
+</ol>
+</li>
+<li>28th stage (launched September 2012)<ol>
+<li><a href="./Lao_language" title="Lao language">Lao</a></li>
+</ol>
+</li>
+<li>29th stage (launched October 2012)<ol>
+<li>Transliteration of Lao added. (alpha status)</li>
+</ol>
+</li>
+<li>30th stage (launched October 2012)<ol>
+<li>New speech program launched in English.</li>
+</ol>
+</li>
+<li>31st stage (launched November 2012)<ol>
+<li>New speech program in French, German, Italian, Latin and Spanish.</li>
+</ol>
+</li>
+<li>32nd stage (launched March 2013)<ol>
+<li>Phrasebook added.</li>
+</ol>
+</li>
+<li>33rd stage (launched April 2013)<ol>
+<li><a href="./Khmer_language" title="Khmer language">Khmer</a></li>
+</ol>
+</li>
+<li>34th stage (launched May 2013)<ol>
+<li><a href="./Bosnian_language" title="Bosnian language">Bosnian</a></li>
+<li><a href="./Cebuano_language" title="Cebuano language">Cebuano</a></li>
+<li><a href="./Hmong_language" title="Hmong language">Hmong</a></li>
+<li><a href="./Javanese_language" title="Javanese language">Javanese</a></li>
+<li><a href="./Marathi_language" title="Marathi language">Marathi</a></li>
+</ol>
+</li>
+<li>35th stage (launched May 2013)<ol>
+<li>16 additional languages can be used with camera-input: Bulgarian, Catalan, Croatian, Danish, Estonian, Finnish, Hungarian, Indonesian, Icelandic, Latvian, Lithuanian, Norwegian, Romanian, Slovak, Slovenian and Swedish.</li>
+</ol>
+</li>
+<li>36th stage (launched December 2013)<ol>
+<li><a href="./Hausa_language" title="Hausa language">Hausa</a></li>
+<li><a href="./Igbo_language" title="Igbo language">Igbo</a></li>
+<li><a href="./Māori_language" title="Māori language">Maori</a></li>
+<li><a href="./Mongolian_language" title="Mongolian language">Mongolian</a></li>
+<li><a href="./Nepali_language" title="Nepali language">Nepali</a></li>
+<li><a href="./Punjabi_language" title="Punjabi language">Punjabi</a> (<a href="./Gurmukhi" title="Gurmukhi">Gurmukhi</a>)</li>
+<li><a href="./Somali_language" title="Somali language">Somali</a></li>
+<li><a href="./Yoruba_language" title="Yoruba language">Yoruba</a></li>
+<li><a href="./Zulu_language" title="Zulu language">Zulu</a></li>
+</ol>
+</li>
+<li>37th stage (launched June 2014)<ol>
+<li>Definition of words added.</li>
+</ol>
+</li>
+<li>38th stage (launched December 2014)<ol>
+<li><a href="./Burmese_language" title="Burmese language">Burmese</a></li>
+<li><a href="./Chewa_language" title="Chewa language">Chewa</a></li>
+<li><a href="./Kazakh_language" title="Kazakh language">Kazakh</a></li>
+<li><a href="./Malagasy_language" title="Malagasy language">Malagasy</a></li>
+<li><a href="./Malayalam" title="Malayalam">Malayalam</a></li>
+<li><a href="./Sinhala_language" title="Sinhala language">Sinhala</a></li>
+<li><a href="./Sotho_language" title="Sotho language">Sotho</a></li>
+<li><a href="./Sundanese_language" title="Sundanese language">Sundanese</a></li>
+<li><a href="./Tajik_language" title="Tajik language">Tajik</a></li>
+<li><a href="./Uzbek_language" title="Uzbek language">Uzbek</a></li>
+</ol>
+</li>
+<li>39th stage (launched October 2015)<ol>
+<li>Transliteration of Arabic restored.</li>
+</ol>
+</li>
+<li>40th stage (launched November 2015)<ol>
+<li><a href="./Languages_in_Star_Wars#Aurebesh" title="Languages in Star Wars">Aurebesh</a></li>
+</ol>
+</li>
+<li>41st stage (launched February 2016)<ol>
+<li>Aurebesh removed.</li>
+<li>Speech program launched in Bengali.</li>
+<li><a href="./Amharic" title="Amharic">Amharic</a></li>
+<li><a href="./Corsican_language" title="Corsican language">Corsican</a></li>
+<li><a href="./Hawaiian_language" title="Hawaiian language">Hawaiian</a></li>
+<li><a href="./Kurdish_language" title="Kurdish language">Kurdish</a> (<a href="./Kurmanji" title="Kurmanji">Kurmanji</a>)</li>
+<li><a href="./Kyrgyz_language" title="Kyrgyz language">Kyrgyz</a></li>
+<li><a href="./Luxembourgish" title="Luxembourgish">Luxembourgish</a></li>
+<li><a href="./Pashto" title="Pashto">Pashto</a></li>
+<li><a href="./Samoan_language" title="Samoan language">Samoan</a></li>
+<li><a href="./Scottish_Gaelic" title="Scottish Gaelic">Scottish Gaelic</a></li>
+<li><a href="./Shona_language" title="Shona language">Shona</a></li>
+<li><a href="./Sindhi_language" title="Sindhi language">Sindhi</a></li>
+<li><a href="./West_Frisian_language" title="West Frisian language">West Frisian</a></li>
+<li><a href="./Xhosa_language" title="Xhosa language">Xhosa</a></li>
+</ol>
+</li>
+<li>42nd stage (launched September 2016)<ol>
+<li>Speech program launched in Ukrainian.</li>
+</ol>
+</li>
+<li>43rd stage (launched December 2016)<ol>
+<li>Speech program launched in Khmer and Sinhala.</li>
+</ol>
+</li>
+<li>44th stage (launched June 2018)<ol>
+<li>Speech program launched in Burmese, Malayalam, Marathi, Nepali and Telugu.</li>
+</ol>
+</li>
+<li>45th stage (launched September 2019)<ol>
+<li>Speech program launched in Gujarati, Kannada and Urdu.</li>
+</ol>
+</li>
+<li>46th stage (launched February 2020)<ol>
+<li><a href="./Kinyarwanda" title="Kinyarwanda">Kinyarwanda</a></li>
+<li><a href="./Odia_language" title="Odia language">Odia</a></li>
+<li><a href="./Tatar_language" title="Tatar language">Tatar</a></li>
+<li><a href="./Turkmen_language" title="Turkmen language">Turkmen</a></li>
+<li><a href="./Uyghur_language" title="Uyghur language">Uyghur</a></li>
+</ol>
+</li>
+<li>47th stage (launched February 2021)<ol>
+<li>Speech program launched in Afrikaans, Bulgarian, Catalan, Icelandic, Latvian, and Serbian (changed from eSpeak to a natural voice).</li>
+<li>New speech system (WaveNet) for several languages.</li>
+</ol>
+</li>
+<li>48th stage (launched January 2022)<ol>
+<li>Speech program launched in Hebrew.</li>
+</ol>
+</li>
+<li>49th stage (launched May 2022)<ol>
+<li><a href="./Assamese_language" title="Assamese language">Assamese</a></li>
+<li><a href="./Aymara_language" title="Aymara language">Aymara</a></li>
+<li><a href="./Bambara_language" title="Bambara language">Bambara</a></li>
+<li><a href="./Bhojpuri_language" title="Bhojpuri language">Bhojpuri</a></li>
+<li><a href="./Dogri_language" title="Dogri language">Dogri</a></li>
+<li><a href="./Ewe_language" title="Ewe language">Ewe</a></li>
+<li><a href="./Guarani_language" title="Guarani language">Guarani</a></li>
+<li><a href="./Ilocano_language" title="Ilocano language">Ilocano</a></li>
+<li><a href="./Konkani_language" title="Konkani language">Konkani</a></li>
+<li><a href="./Krio_language" title="Krio language">Krio</a></li>
+<li><a href="./Kurdish_language" title="Kurdish language">Kurdish</a> (<a href="./Sorani" title="Sorani">Sorani</a>)</li>
+<li><a href="./Lingala" title="Lingala">Lingala</a></li>
+<li><a href="./Luganda" title="Luganda">Luganda</a></li>
+<li><a href="./Maithili_language" title="Maithili language">Maithili</a></li>
+<li><a href="./Maldivian_language" title="Maldivian language">Maldivian</a></li>
+<li><a href="./Meitei_language" title="Meitei language">Meitei</a></li>
+<li><a href="./Mizo_language" title="Mizo language">Mizo</a></li>
+<li><a href="./Northern_Sotho" title="Northern Sotho">Northern Sotho</a></li>
+<li><a href="./Oromo_language" title="Oromo language">Oromo</a></li>
+<li><a href="./Southern_Quechua" title="Southern Quechua">Quechua</a></li>
+<li><a href="./Sanskrit" title="Sanskrit">Sanskrit</a></li>
+<li><a href="./Tigrinya_language" title="Tigrinya language">Tigrinya</a></li>
+<li><a href="./Tsonga_language" title="Tsonga language">Tsonga</a></li>
+<li><a href="./Twi" title="Twi">Twi</a></li>
+<li>eSpeak voice synthesizer removed from Armenian, Esperanto, Macedonian and Welsh.</li>
+</ol>
+</li>
+<li>50th stage (launched November 2022)<ol>
+<li>Speech program launched in Albanian, Bosnian and Swahili (changed from eSpeak to natural).</li>
+<li>New speech program launched in Malayalam, Marathi and Tamil.</li>
+</ol>
+</li>
+<li>51st stage (launched March 2023)<ol>
+<li>Speech program launched in Croatian (changed from eSpeak to natural).</li>
+</ol>
+</li>
+<li>52nd stage (launched April 2023)<ol>
+<li>Speech program launched in Welsh (only on Google search results).</li>
+<li>New speech programs launched in Chinese (simplified and traditional), German, Indonesian, Malay, Malayalam, Tamil, and Telugu (Chinese, German, Indonesian, Malayalam and Tamil reverted from WaveNet).</li>
+</ol>
+</li>
+<li>53rd stage (launched June 2023)<ol>
+<li>Speech program launched in Lithuanian and Punjabi.</li>
+</ol>
+</li>
+<li>54th stage (launched June 2024)<ol>
+<li><a href="./Abkhaz_language" title="Abkhaz language">Abkhaz</a></li>
+<li><a href="./Acehnese_language" title="Acehnese language">Acehnese</a></li>
+<li><a href="./Acholi_dialect" title="Acholi dialect">Acholi</a></li>
+<li><a href="./Afar_language" title="Afar language">Afar</a></li>
+<li><a href="./Alur_language" title="Alur language">Alur</a></li>
+<li><a href="./Avar_language" title="Avar language">Avar</a></li>
+<li><a href="./Awadhi_language" title="Awadhi language">Awadhi</a></li>
+<li><a href="./Balinese_language" title="Balinese language">Balinese</a></li>
+<li><a href="./Balochi_language" title="Balochi language">Baluchi</a></li>
+<li><a href="./Baoulé_language" title="Baoulé language">Baoulé</a></li>
+<li><a href="./Bashkir_language" title="Bashkir language">Bashkir</a></li>
+<li><a href="./Batak_Karo_language" title="Batak Karo language">Batak Karo</a></li>
+<li><a href="./Batak_Simalungun_language" title="Batak Simalungun language">Batak Simalungun</a></li>
+<li><a href="./Toba_Batak_language" title="Toba Batak language">Batak Toba</a></li>
+<li><a href="./Bemba_language" title="Bemba language">Bemba</a></li>
+<li><a href="./Betawi_language" title="Betawi language">Betawi</a></li>
+<li><a href="./Bikol_languages" title="Bikol languages">Bikol</a></li>
+<li><a href="./Breton_language" title="Breton language">Breton</a></li>
+<li><a href="./Buryat_language" title="Buryat language">Buryat</a></li>
+<li><a href="./Cantonese" title="Cantonese">Cantonese</a></li>
+<li><a href="./Chamorro_language" title="Chamorro language">Chamorro</a></li>
+<li><a href="./Chechen_language" title="Chechen language">Chechen</a></li>
+<li><a href="./Chuukese_language" title="Chuukese language">Chuukese</a></li>
+<li><a href="./Chuvash_language" title="Chuvash language">Chuvash</a></li>
+<li><a href="./Crimean_Tatar_language" title="Crimean Tatar language">Crimean Tatar</a> (<a href="./Crimean_Tatar_alphabet#Cyrillic" title="Crimean Tatar alphabet">Cyrillic</a>)</li>
+<li><a href="./Dari" title="Dari">Dari</a></li>
+<li><a href="./Dinka_language" title="Dinka language">Dinka</a></li>
+<li><a href="./Tonga_language_(Zambia_and_Zimbabwe)" title="Tonga language (Zambia and Zimbabwe)">Dombe</a></li>
+<li><a href="./Dyula_language" title="Dyula language">Dyula</a></li>
+<li><a href="./Dzongkha" title="Dzongkha">Dzongkha</a></li>
+<li><a href="./Faroese_language" title="Faroese language">Faroese</a></li>
+<li><a href="./Fijian_language" title="Fijian language">Fijian</a></li>
+<li><a href="./Fon_language" title="Fon language">Fon</a></li>
+<li><a href="./Friulian_language" title="Friulian language">Friulian</a></li>
+<li><a href="./Fula_language" title="Fula language">Fulani</a></li>
+<li><a href="./Ga_language" title="Ga language">Ga</a></li>
+<li><a href="./Hakha_Chin" title="Hakha Chin">Hakha Chin</a></li>
+<li><a href="./Hiligaynon_language" title="Hiligaynon language">Hiligaynon</a></li>
+<li><a href="./Hunsrik" title="Hunsrik">Hunsrik</a></li>
+<li><a href="./Iban_language" title="Iban language">Iban</a></li>
+<li><a href="./Jamaican_Patois" title="Jamaican Patois">Jamaican Patois</a></li>
+<li><a href="./Jingpo_language" title="Jingpo language">Jingpo</a></li>
+<li><a href="./West_Greenlandic" title="West Greenlandic">Kalaallisut</a></li>
+<li><a href="./Kanuri_language" title="Kanuri language">Kanuri</a></li>
+<li><a href="./Kapampangan_language" title="Kapampangan language">Kapampangan</a></li>
+<li><a href="./Khasi_language" title="Khasi language">Khasi</a></li>
+<li><a href="./Kiga_language" title="Kiga language">Kiga</a></li>
+<li><a href="./Kongo_language" title="Kongo language">Kikongo</a></li>
+<li><a href="./Kituba_language" title="Kituba language">Kituba</a></li>
+<li><a href="./Kokborok" title="Kokborok">Kokborok</a></li>
+<li><a href="./Komi_language" title="Komi language">Komi</a></li>
+<li><a href="./Latgalian_language" title="Latgalian language">Latgalian</a></li>
+<li><a href="./Ligurian_language" title="Ligurian language">Ligurian</a></li>
+<li><a href="./Limburgish" title="Limburgish">Limburgish</a></li>
+<li><a href="./Lombard_language" title="Lombard language">Lombard</a></li>
+<li><a href="./Dholuo" title="Dholuo">Luo</a></li>
+<li><a href="./Madurese_language" title="Madurese language">Madurese</a></li>
+<li><a href="./Makassarese_language" title="Makassarese language">Makassar</a></li>
+<li><a href="./Malay_language" title="Malay language">Malay</a> (<a href="./Jawi_script" title="Jawi script">Jawi</a>)</li>
+<li><a href="./Mam_language" title="Mam language">Mam</a></li>
+<li><a href="./Manx_language" title="Manx language">Manx</a></li>
+<li><a href="./Marshallese_language" title="Marshallese language">Marshallese</a></li>
+<li><a href="./Marwari_language" title="Marwari language">Marwadi</a></li>
+<li><a href="./Mauritian_Creole" title="Mauritian Creole">Mauritian Creole</a></li>
+<li><a href="./Meadow_Mari_language" title="Meadow Mari language">Meadow Mari</a></li>
+<li><a href="./Minangkabau_language" title="Minangkabau language">Minang</a></li>
+<li><a href="./Huasteca_Nahuatl" title="Huasteca Nahuatl">Nahuatl (Eastern Huasteca)</a></li>
+<li><a href="./Ndau_dialect" title="Ndau dialect">Ndau</a></li>
+<li><a href="./Southern_Ndebele_language" title="Southern Ndebele language">Ndebele (South)</a></li>
+<li><a href="./Newar_language" title="Newar language">Nepalbhasa (Newari)</a></li>
+<li><a href="./N'Ko_language" title="N'Ko language">NKo</a></li>
+<li><a href="./Nuer_language" title="Nuer language">Nuer</a></li>
+<li><a href="./Occitan_language" title="Occitan language">Occitan</a></li>
+<li><a href="./Ossetian_language" title="Ossetian language">Ossetian</a></li>
+<li><a href="./Pangasinan_language" title="Pangasinan language">Pangasinan</a></li>
+<li><a href="./Papiamento" title="Papiamento">Papiamento</a></li>
+<li><a href="./Portuguese_language" title="Portuguese language">Portuguese</a> (<a href="./European_Portuguese" title="European Portuguese">Portugal</a>)</li>
+<li><a href="./Punjabi_language" title="Punjabi language">Punjabi</a> (<a href="./Shahmukhi" title="Shahmukhi">Shahmukhi</a>)</li>
+<li><a href="./Qʼeqchiʼ_language" title="Qʼeqchiʼ language">Qʼeqchiʼ</a></li>
+<li><a href="./Romani_language" title="Romani language">Romani</a></li>
+<li><a href="./Kirundi" title="Kirundi">Rundi</a></li>
+<li><a href="./Northern_Sámi" title="Northern Sámi">Sami (North)</a></li>
+<li><a href="./Sango_language" title="Sango language">Sango</a></li>
+<li><a href="./Santali_language" title="Santali language">Santali</a></li>
+<li><a href="./Seychellois_Creole" title="Seychellois Creole">Seychellois Creole</a></li>
+<li><a href="./Shan_language" title="Shan language">Shan</a></li>
+<li><a href="./Sicilian_language" title="Sicilian language">Sicilian</a></li>
+<li><a href="./Silesian_language" title="Silesian language">Silesian</a></li>
+<li><a href="./Susu_language" title="Susu language">Susu</a></li>
+<li><a href="./Swazi_language" title="Swazi language">Swati</a></li>
+<li><a href="./Tahitian_language" title="Tahitian language">Tahitian</a></li>
+<li><a href="./Berber_languages" title="Berber languages">Tamazight</a></li>
+<li><a href="./Berber_languages" title="Berber languages">Tamazight</a> (<a href="./Tifinagh" title="Tifinagh">Tifinagh</a>)</li>
+<li><a href="./Tetum_language" title="Tetum language">Tetum</a></li>
+<li><a href="./Lhasa_Tibetan" title="Lhasa Tibetan">Tibetan</a></li>
+<li><a href="./Tiv_language" title="Tiv language">Tiv</a></li>
+<li><a href="./Tok_Pisin" title="Tok Pisin">Tok Pisin</a></li>
+<li><a href="./Tongan_language" title="Tongan language">Tongan</a></li>
+<li><a href="./Tswana_language" title="Tswana language">Tswana</a></li>
+<li><a href="./Tulu_language" title="Tulu language">Tulu</a></li>
+<li><a href="./Tumbuka_language" title="Tumbuka language">Tumbuka</a></li>
+<li><a href="./Tuvan_language" title="Tuvan language">Tuvan</a></li>
+<li><a href="./Udmurt_language" title="Udmurt language">Udmurt</a></li>
+<li><a href="./Venda_language" title="Venda language">Venda</a></li>
+<li><a href="./Venetian_language" title="Venetian language">Venetian</a></li>
+<li><a href="./Waray_language" title="Waray language">Waray</a></li>
+<li><a href="./Wolof_language" title="Wolof language">Wolof</a></li>
+<li><a href="./Yakut_language" title="Yakut language">Yakut</a></li>
+<li><a href="./Yucatec_Maya_language" title="Yucatec Maya language">Yucatec Maya</a></li>
+<li><a href="./Zapotec_languages" title="Zapotec languages">Zapotec</a></li>
+<li>Speech program launched in Amharic, Bulgarian, Cantonese, Galician, Hausa, and Welsh</li>
+</ol>
+</li>
+<li>55th stage (launched October 2024)<ol>
+<li><a href="./Crimean_Tatar_language" title="Crimean Tatar language">Crimean Tatar</a> (<a href="./Crimean_Tatar_alphabet#Latin" title="Crimean Tatar alphabet">Latin</a>)</li>
+<li><a href="./French_language" title="French language">French</a> (<a href="./Canadian_French" title="Canadian French">Canada</a>)</li>
+<li><a href="./Inuktitut" title="Inuktitut">Inuktut</a> (Latin)</li>
+<li><a href="./Inuktitut" title="Inuktitut">Inuktut</a> (<a href="./Inuktitut_syllabics" title="Inuktitut syllabics">Syllabics</a>)</li>
+<li><a href="./Santali_language" title="Santali language">Santali</a> (<a href="./Ol_Chiki" title="Ol Chiki">Ol Chiki</a>)</li>
+<li><a href="./Luba-Kasai_language" title="Luba-Kasai language">Tshiluba</a></li>
+</ol>
+</li>
+</ol>
+<h2>Translation methodology</h2>
+<p>In April 2006, Google Translate launched with a statistical machine translation engine.</p>
+<p>Google Translate does not apply <a href="./Grammar" title="Grammar">grammatical</a> rules, since its algorithms are based on statistical or pattern analysis rather than traditional rule-based analysis. The system's original creator, <a href="./Franz_Josef_Och" title="Franz Josef Och">Franz Josef Och</a>, has criticized the effectiveness of <a href="./Rule-based_machine_translation" title="Rule-based machine translation">rule-based</a> <a href="./Algorithm" title="Algorithm">algorithms</a> in favor of statistical approaches. Original versions of Google Translate were based on a method called <a href="./Statistical_machine_translation" title="Statistical machine translation">statistical machine translation</a>, and more specifically, on research by Och who won the <a href="./DARPA" title="DARPA">DARPA</a> contest for speed machine translation in 2003. Och was the head of Google's machine translation group until leaving to join Human Longevity, Inc. in July 2014.</p>
+<p>Google Translate does not directly translate from one language to another (L1 → L2). Instead, it often translates first to English and then to the target language (L1 → EN → L2). However, because English, like all human languages, is ambiguous and depends on context, this can cause translation errors. For example, translating <em>vous</em> from French to Russian gives <em>vous</em> → <em>you</em> → <em>ты</em> OR <em>Bы/вы</em>. If Google were using an unambiguous, <a href="./Artificial_language" title="Artificial language">artificial language</a> as the intermediary, it would be <em>vous</em> → <em>you</em> → <em>Bы/вы</em> OR <em>tu</em> → <em>thou</em> → <em>ты</em>. Such a suffixing of words disambiguates their different meanings. Hence, publishing in English, using unambiguous words, providing context, or using expressions such as "you all" may or may not make a better one-step translation depending on the target language.</p>
+<p>The following languages do not have a direct Google translation to or from English. These languages are translated through the indicated intermediate language (which in most cases is closely related to the desired language but more widely spoken) in addition to through English:[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>]</p>
+<ul>
+<li><a href="./Belarusian_language" title="Belarusian language">Belarusian</a> (<a href="./East_Slavic_languages" title="East Slavic languages">be ↔ ru</a> ↔ en ↔ other);</li>
+<li><a href="./Catalan_language" title="Catalan language">Catalan</a> (<a href="./Iberian_Romance_languages" title="Iberian Romance languages">ca ↔ es</a> ↔ en ↔ other);</li>
+<li><a href="./Galician_language" title="Galician language">Galician</a> (<a href="./Galician–Portuguese" title="Galician–Portuguese">gl ↔ pt</a> ↔ en ↔ other);</li>
+<li><a href="./Haitian_Creole" title="Haitian Creole">Haitian Creole</a> (<a href="./French-based_creole_languages" title="French-based creole languages">ht ↔ fr</a> ↔ en ↔ other);</li>
+<li><a href="./Korean_language" title="Korean language">Korean</a> (<a href="./Altaic_languages" title="Altaic languages">ko ↔ ja</a> ↔ en ↔ other);</li>
+<li><a href="./Slovak_language" title="Slovak language">Slovak</a> (<a href="./Czech–Slovak_languages" title="Czech–Slovak languages">sk ↔ cs</a> ↔ en ↔ other);</li>
+<li><a href="./Ukrainian_language" title="Ukrainian language">Ukrainian</a> (<a href="./East_Slavic_languages" title="East Slavic languages">uk ↔ ru</a> ↔ en ↔ other);</li>
+<li><a href="./Urdu" title="Urdu">Urdu</a> (<a href="./Hindustani_language" title="Hindustani language">ur ↔ hi</a> ↔ en ↔ other).</li>
+</ul>
+<p>According to Och, a solid base for developing a usable statistical machine translation system for a new pair of languages from scratch would consist of a bilingual <a href="./Text_corpus" title="Text corpus">text corpus</a> (or <a href="./Parallel_text" title="Parallel text">parallel collection</a>) of more than 150–200 million words, and two monolingual corpora each of more than a billion words. Statistical <a href="./Mathematical_model" title="Mathematical model">models</a> from these data are then used to translate between those languages. To acquire this huge amount of linguistic data, Google used <a href="./United_Nations" title="United Nations">United Nations</a> and <a href="./European_Parliament" title="European Parliament">European Parliament</a> documents and transcripts. The UN typically publishes documents in all six <a href="./Official_languages_of_the_United_Nations" title="Official languages of the United Nations">official UN languages</a>, which has produced a very large 6-language corpus. Google representatives have been involved with domestic conferences in Japan where it has solicited bilingual data from researchers.</p>
+<p>When Google Translate generates a translation proposal, it looks for <a href="./Pattern" title="Pattern">patterns</a> in hundreds of millions of documents to help decide on the best translation. By detecting patterns in documents that have already been translated by human translators, Google Translate makes <a href="./Artificial_intelligence" title="Artificial intelligence">informed guesses (AI)</a> as to what an appropriate translation should be.</p>
+<p>Before October 2007, for languages other than <a href="./Arabic" title="Arabic">Arabic</a>, <a href="./Chinese_language" title="Chinese language">Chinese</a> and <a href="./Russian_language" title="Russian language">Russian</a>, Google Translate was based on <a href="./SYSTRAN" title="SYSTRAN">SYSTRAN</a>, a software engine which is still used by several other online translation services such as <a href="./Babel_Fish_(website)" title="Babel Fish (website)">Babel Fish</a> (now defunct). From October 2007, Google Translate used proprietary, in-house technology based on <a href="./Statistical_machine_translation" title="Statistical machine translation">statistical machine translation</a> instead, before transitioning to neural machine translation.</p>
+<h3>Google Translate Community</h3>
+<p>Google used to have <a href="./Crowdsourcing" title="Crowdsourcing">crowdsourcing</a> features for volunteers to be a part of its "Translate Community", intended to help improve Google Translate's accuracy. Volunteers could select up to five languages to help improve translation; users could verify translated phrases and translate phrases in their languages to and from English, helping to improve the accuracy of translating more rare and complex phrases. In August 2016, a <a href="./Crowdsource_(app)" title="Crowdsource (app)">Google Crowdsource</a> app was released for Android users, in which translation tasks are offered. There were three ways to contribute. First, Google showed a phrase that one should type in the translated version. Second, Google showed a proposed translation for a user to agree, disagree, or skip. Third, users could suggest translations for phrases where they think they can improve on Google's results. Tests in 44 languages showed that the "suggest an edit" feature led to an improvement in a maximum of 40% of cases over four years. Despite its role in improving translation quality and expanding language coverage, Google closed the Translate Community on March 28, 2024.</p>
+<h3>Statistical machine translation</h3>
+<p>Although Google has deployed a new system called neural machine translation for better quality translation, there are languages that still use the traditional translation method called statistical machine translation. It is a rule-based translation method that uses predictive algorithms to guess ways to translate texts in foreign languages. It aims to translate whole phrases rather than single words then gather overlapping phrases for translation. Moreover, it also analyzes bilingual text corpora to generate a statistical model that translates texts from one language to another.</p>
+<h3>Neural machine translation</h3>
+<p>In September 2016, a research team at Google announced the development of the <a href="./Google_Neural_Machine_Translation" title="Google Neural Machine Translation">Google Neural Machine Translation</a> system (GNMT) to increase fluency and accuracy in Google Translate and in November announced that Google Translate would switch to GNMT.</p>
+<p>Google Translate's <a href="./Neural_machine_translation" title="Neural machine translation">neural machine translation</a> system used a large <a href="./End-to-end_principle" title="End-to-end principle">end-to-end</a> <a href="./Neural_network_(machine_learning)" title="Neural network (machine learning)">artificial neural network</a> that attempts to perform <a href="./Deep_learning" title="Deep learning">deep learning</a>, in particular, <a href="./Long_short-term_memory" title="Long short-term memory">long short-term memory</a> networks. GNMT improved the quality of translation over SMT in some instances because it uses an <a href="./Example-based_machine_translation" title="Example-based machine translation">example-based machine translation</a> (EBMT) method in which the system "learns from millions of examples." According to Google researchers, it translated "whole sentences at a time, rather than just piece by piece. It uses this broader context to help it figure out the most relevant translation, which it then rearranges and adjusts to be more like a human speaking with proper grammar". GNMT's "proposed architecture" of "system learning" has been implemented on over a hundred languages supported by Google Translate. With the end-to-end framework, Google states but does not demonstrate for most languages that "the system learns over time to create better, more natural translations." The GNMT network attempts <a href="./Interlingual_machine_translation" title="Interlingual machine translation">interlingual machine translation</a>, which encodes the "semantics of the sentence rather than simply memorizing phrase-to-phrase translations", and the system did not invent its own universal language, but uses "the commonality found in between many languages". GNMT was first enabled for eight languages: to and from English and Chinese, French, German, Japanese, Korean, Portuguese, Spanish and Turkish. In March 2017, it was enabled for Hindi, Russian and Vietnamese, followed by Bengali, Gujarati, Indonesian, Kannada, Malayalam, Marathi, Punjabi, Tamil and Telugu in April.</p>
+<p>Since 2020, Google has phased out GNMT and has implemented deep learning networks based on <a href="./Transformer_(deep_learning_architecture)" title="Transformer (deep learning architecture)">transformers</a>.</p>
+<h2>Accuracy</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./File:Question_book-new.svg">icon</a></td>
+<td>This section <strong>needs additional citations for <a href="./Wikipedia:Verifiability" title="Wikipedia:Verifiability">verification</a></strong>. Please help <a href="./Special:EditPage/Google_Translate" title="Special:EditPage/Google Translate">improve this article</a> by <a href="./Help:Referencing_for_beginners" title="Help:Referencing for beginners">adding citations to reliable sources</a> in this section. Unsourced material may be challenged and removed. <em>(October 2025)</em> <em>(<a href="./Help:Maintenance_template_removal" title="Help:Maintenance template removal">Learn how and when to remove this message</a>)</em></td>
+</tr>
+</tbody>
+</table>
+<p>Google Translate is not as reliable as human translation. When text is well-structured, written using formal language, with simple sentences, relating to formal topics for which training data is ample, it often produces conversions similar to human translations between English and a number of high-resource languages. Accuracy decreases for those languages when fewer of those conditions apply, for example when sentence length increases or the text uses familiar or literary language. For many other languages vis-à-vis English, it can produce the gist of text in those formal circumstances. Human evaluation from English to all 102 languages shows that the main idea of a text is conveyed more than 50% of the time for 35 languages. For 67 languages, a minimally comprehensible result is not achieved 50% of the time or greater. A few studies have evaluated Chinese,[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>] French,[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>] German,[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>] and Spanish[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>] to English, but no systematic human evaluation has been conducted from most Google Translate languages to English. Speculative language-to-language scores extrapolated from English-to-other measurements indicate that Google Translate will produce translation results that convey the gist of a text from one language to another more than half the time in about 1% of language pairs, where neither language is English. Research conducted in 2011 showed that Google Translate got a slightly higher score than the <a href="./University_of_California,_Los_Angeles" title="University of California, Los Angeles">UCLA</a> minimum score for the English Proficiency Exam. Due to its identical choice of words without considering the flexibility of choosing alternative words or expressions, it produces a relatively similar translation to human translation from the perspective of formality, referential cohesion, and conceptual cohesion. Moreover, a number of languages are translated into a sentence structure and sentence length similar to a human translation. Furthermore, Google carried out a test that required native speakers of each language to rate the translation on a scale between 0 and 6, and Google Translate scored 5.43 on average.</p>
+<p>When used as a dictionary to translate single words, Google Translate is highly inaccurate because it must guess between <a href="./Polysemy" title="Polysemy">polysemic words</a>. Among the top 100 words in the English language, which make up more than 50% of all written English, the average word has <a href="./Most_common_words_in_English" title="Most common words in English">more than 15 senses</a>, which makes the odds against a correct translation about 15 to 1 if each sense maps to a different word in the target language. Most common English words have at least two senses, which produces 50/50 odds in the likely case that the target language uses different words for those different senses. The odds are similar from other languages to English. Google Translate makes statistical guesses that raise the likelihood of producing the most frequent sense of a word, with the consequence that an accurate translation will be unobtainable in cases that do not match the majority or plurality <a href="./Text_corpus" title="Text corpus">corpus</a> occurrence. The accuracy of single-word predictions has not been measured for any language. Because almost all non-English language pairs pivot through English, the odds against obtaining accurate single-word translations from one non-English language to another can be estimated by multiplying the number of senses in the source language with the number of senses each of those terms have in English. When Google Translate does not have a word in its vocabulary, it makes up a result as part of its algorithm.</p>
+<h2>Limitations</h2>
+<p>Google Translate, like other automatic translation tools, has its limitations, struggles with <a href="./Polysemy" title="Polysemy">polysemy</a> (the multiple meanings a word may have) and <a href="./Idiom#Multiword_expression" title="Idiom">multiword expressions</a> (terms that have meanings that cannot be understood or translated by analyzing the individual word units that compose them). A word in a foreign language might have two different meanings in the translated language. This might lead to mistranslation. Additionally, grammatical errors remain a major limitation to the accuracy of Google Translate. Google Translate struggles to differentiate between <em>imperfect</em> and <em>perfect</em> <a href="./Grammatical_aspect" title="Grammatical aspect">aspects</a> in Romance languages. The <a href="./Subjunctive_mood" title="Subjunctive mood">subjunctive mood</a> is often erroneous.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>] Moreover, the formal second person (<em>vous</em>) is often chosen, whatever the context.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>] Since its English reference material contains only "you" forms, it has difficulty translating a language with "you all" or formal "you" variations.</p>
+<p>Due to differences between languages in investment, research, and the extent of digital resources, the accuracy of Google Translate varies greatly among languages. Some languages produce better results than others. Most languages from Africa, Asia, and the Pacific, tend to score poorly in relation to the scores of many well-financed European languages, Afrikaans and Chinese being the high-scoring exceptions from their continents. No languages indigenous to Australia are included within Google Translate. Higher scores for European can be partially attributed to the <a href="./Europarl_Corpus" title="Europarl Corpus">Europarl Corpus</a>, a trove of documents from the <a href="./European_Parliament" title="European Parliament">European Parliament</a> that have been professionally translated by the mandate of the European Union into as many as 21 languages. A 2010 analysis indicated that French to English translation is relatively accurate, and 2011 and 2012 analyses showed that Italian to English translation is relatively accurate as well. However, if the source text is shorter, rule-based machine translations often perform better; this effect is particularly evident in Chinese to English translations. While edits of translations may be submitted, in Chinese specifically one cannot edit sentences as a whole. Instead, one must edit sometimes arbitrary sets of characters, leading to incorrect edits.</p>
+<p>The service can be used as a dictionary by typing in words. One can translate from a book by using a scanner and an OCR like Google Drive. In its Written Words Translation function, there is a word limit on the amount of text that can be translated at once. Therefore, long text should be transferred to a document form and translated through its Document Translate function.</p>
+<h2>Open-source licenses and components</h2>
+<table>
+<thead>
+<tr>
+<th>Language</th>
+<th><a href="./WordNet" title="WordNet">WordNet</a></th>
+<th>License</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Albanian</td>
+<td>Albanet</td>
+<td><a href="./Creative_Commons_license" title="Creative Commons license">CC BY 3.0</a>/<a href="./GNU_General_Public_License#Version_3" title="GNU General Public License">GPL 3</a></td>
+</tr>
+<tr>
+<td>Arabic</td>
+<td><a href="./Arabic_WordNet" title="Arabic WordNet">Arabic WordNet</a></td>
+<td><a href="./Creative_Commons_license" title="Creative Commons license">CC BY-SA 3.0</a></td>
+</tr>
+<tr>
+<td>Catalan</td>
+<td>Multilingual Central Repository</td>
+<td><a href="./Creative_Commons_license" title="Creative Commons license">CC BY 3.0</a></td>
+</tr>
+<tr>
+<td>Chinese</td>
+<td>Chinese Wordnet</td>
+<td>Wordnet</td>
+</tr>
+<tr>
+<td>Danish</td>
+<td>DanNet</td>
+<td>Wordnet</td>
+</tr>
+<tr>
+<td>English</td>
+<td>Princeton WordNet</td>
+<td>Wordnet</td>
+</tr>
+<tr>
+<td>Finnish</td>
+<td>FinnWordNet</td>
+<td>Wordnet</td>
+</tr>
+<tr>
+<td>French</td>
+<td>WOLF (WOrdnet Libre du Français)</td>
+<td><a href="./CeCILL" title="CeCILL">CeCILL</a>-C</td>
+</tr>
+<tr>
+<td>Galician</td>
+<td>Multilingual Central Repository</td>
+<td><a href="./Creative_Commons_license" title="Creative Commons license">CC BY 3.0</a></td>
+</tr>
+<tr>
+<td>Haitian Creole</td>
+<td>MIT-Haiti Initiative</td>
+<td><a href="./Creative_Commons_license#Version_4.0" title="Creative Commons license">CC BY 4.0</a></td>
+</tr>
+<tr>
+<td>Hebrew</td>
+<td>Hebrew Wordnet</td>
+<td>Wordnet</td>
+</tr>
+<tr>
+<td>Indonesian</td>
+<td>Wordnet Bahasa</td>
+<td><a href="./MIT_License" title="MIT License">MIT</a></td>
+</tr>
+<tr>
+<td>Italian</td>
+<td>MultiWordNet</td>
+<td><a href="./Creative_Commons_license" title="Creative Commons license">CC BY 3.0</a></td>
+</tr>
+<tr>
+<td>Japanese</td>
+<td>Japanese Wordnet</td>
+<td>Wordnet</td>
+</tr>
+<tr>
+<td>Malay</td>
+<td>Wordnet Bahasa</td>
+<td><a href="./MIT_License" title="MIT License">MIT</a></td>
+</tr>
+<tr>
+<td>Norwegian</td>
+<td>Norwegian Wordnet</td>
+<td>Wordnet</td>
+</tr>
+<tr>
+<td>Persian</td>
+<td>Persian Wordnet</td>
+<td>Free-to-use</td>
+</tr>
+<tr>
+<td>Polish</td>
+<td><a href="./PlWordNet" title="PlWordNet">plWordNet</a></td>
+<td>Wordnet</td>
+</tr>
+<tr>
+<td>Portuguese</td>
+<td>OpenWN-PT</td>
+<td><a href="./Creative_Commons_license" title="Creative Commons license">CC BY-SA 3.0</a></td>
+</tr>
+<tr>
+<td>Spanish</td>
+<td>Multilingual Central Repository</td>
+<td><a href="./Creative_Commons_license" title="Creative Commons license">CC BY 3.0</a></td>
+</tr>
+<tr>
+<td>Thai</td>
+<td>Thai Wordnet</td>
+<td>Wordnet</td>
+</tr>
+</tbody>
+</table>
+<p>Irish language data from <a href="./Foras_na_Gaeilge" title="Foras na Gaeilge">Foras na Gaeilge</a>'s New English-Irish Dictionary. (English database designed and developed for Foras na Gaeilge by Lexicography MasterClass Ltd.) Welsh language data from Gweiadur by Gwerin.</p>
+<p>Certain content is copyrighted by <a href="./Oxford_University_Press" title="Oxford University Press">Oxford University Press</a>, United States. Some phrase translations come from <a href="./Wikitravel" title="Wikitravel">Wikitravel</a>.</p>
+<h2>Reviews</h2>
+<p>Shortly after launching the translation service for the first time, Google won an international competition for English–Arabic and English–Chinese machine translation.</p>
+<h3>Translation mistakes and oddities</h3>
+<p>Since Google Translate uses statistical matching to translate, translated text can often include apparently nonsensical and obvious errors, often swapping common terms for similar but nonequivalent common terms in the other language, as well as inverting sentence meaning. Novelty websites like <a href="./Translation_Services_USA#Bad_Translator" title="Translation Services USA">Bad Translator</a> and Translation Party have used the service to produce humorous text by translating back and forth between multiple languages, similar to the children's game <a href="./Chinese_whispers" title="Chinese whispers">telephone</a>.</p>
+<p>Certain texts in Japanese have shown to be translated to "Replying to @sarah_mcdonald(s)" in English, often with no relation to the source text. Examples include "もーるるるるるるるる", "バチバチで草" and "絵にfう". This has been asked on multiple platforms, including <a href="./YouTube" title="YouTube">YouTube</a>.</p>
+<h2>See also</h2>
+<ul>
+<li><a href="./Apertium" title="Apertium">Apertium</a></li>
+<li><a href="./Baidu_Fanyi" title="Baidu Fanyi">Baidu Fanyi</a></li>
+<li><a href="./Comparison_of_machine_translation_applications" title="Comparison of machine translation applications">Comparison of machine translation applications</a></li>
+<li><a href="./DeepL_Translator" title="DeepL Translator">DeepL Translator</a></li>
+<li><a href="./Google_Dictionary" title="Google Dictionary">Google Dictionary</a></li>
+<li><a href="./Google_Translator_Toolkit" title="Google Translator Toolkit">Google Translator Toolkit</a></li>
+<li><a href="./List_of_Google_products" title="List of Google products">List of Google products</a></li>
+<li><a href="./Microsoft_Translator" title="Microsoft Translator">Microsoft Translator</a></li>
+<li><a href="./PROMT" title="PROMT">PROMT</a></li>
+<li><a href="./Speech_Recognition_&amp;_Synthesis" title="Speech Recognition &amp; Synthesis">Speech Recognition &amp; Synthesis</a></li>
+<li><a href="./SYSTRAN" title="SYSTRAN">SYSTRAN</a></li>
+<li><a href="./Translate_(Apple)" title="Translate (Apple)">Translate (Apple)</a></li>
+<li><a href="./Yandex_Translate" title="Yandex Translate">Yandex Translate</a></li>
+</ul>
+<h2>References</h2>
+<h2>External links</h2>
+<ul>
+<li>
+<p><a href="./File:Globe_of_letters.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/d/de/Globe_of_letters.svg/40px-Globe_of_letters.svg.png"></a><a href="./Portal:Language" title="Portal:Language">Language portal</a></p>
+</li>
+<li>
+<p><a href="https://translate.google.com/?hl=en">Official website</a></p>
+</li>
+<li><a href="https://translate.google.com/contribute?hl=en">Contribute</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products" title="List of Google products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Android_(operating_system)" title="Template:Android (operating system)">v</a> - <a href="./Template_talk:Android_(operating_system)" title="Template talk:Android (operating system)">t</a> - <a href="./Special:EditPage/Template:Android_(operating_system)" title="Special:EditPage/Template:Android (operating system)">e</a>  <a href="./Android_(operating_system)" title="Android (operating system)">Android</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>- <a href="./Android_Go" title="Android Go">Android Go</a>   - <a href="./Comparison_of_Android_Go_products" title="Comparison of Android Go products">Comparison of products</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Android_software_development" title="Android software development">Software development</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Android_version_history" title="Android version history">Releases</a></td>
+<td>- <a href="./Android_Cupcake" title="Android Cupcake">Cupcake (1.5)</a> - <a href="./Android_Donut" title="Android Donut">Donut (1.6)</a> - <a href="./Android_Eclair" title="Android Eclair">Eclair (2.0–2.1)</a> - <a href="./Android_Froyo" title="Android Froyo">Froyo (2.2)</a> - <a href="./Android_Gingerbread" title="Android Gingerbread">Gingerbread (2.3)</a> - <a href="./Android_Honeycomb" title="Android Honeycomb">Honeycomb (3.x)</a> - <a href="./Android_Ice_Cream_Sandwich" title="Android Ice Cream Sandwich">Ice Cream Sandwich (4.0)</a> - <a href="./Android_Jelly_Bean" title="Android Jelly Bean">Jelly Bean (4.1–4.3)</a> - <a href="./Android_KitKat" title="Android KitKat">KitKat (4.4)</a> - <a href="./Android_Lollipop" title="Android Lollipop">Lollipop (5.x)</a> - <a href="./Android_Marshmallow" title="Android Marshmallow">Marshmallow (6.x)</a> - <a href="./Android_Nougat" title="Android Nougat">Nougat (7.x)</a> - <a href="./Android_Oreo" title="Android Oreo">Oreo (8.x)</a> - <a href="./Android_Pie" title="Android Pie">Pie (9)</a> - <a href="./Android_10" title="Android 10">10</a> - <a href="./Android_11" title="Android 11">11</a> - <a href="./Android_12" title="Android 12">12</a> - <a href="./Android_13" title="Android 13">13</a> - <a href="./Android_14" title="Android 14">14</a> - <a href="./Android_15" title="Android 15">15</a> - <a href="./Android_16" title="Android 16">16</a></td>
+</tr>
+<tr>
+<td>Derivatives</td>
+<td>- <a href="./Android_Automotive" title="Android Automotive">Android Automotive</a> - <a href="./Android_Things" title="Android Things">Android Things</a> - <a href="./Android_TV" title="Android TV">TV</a>   - <a href="./List_of_Android_TV_devices" title="List of Android TV devices">devices</a> - <a href="./Android_XR" title="Android XR">Android XR</a> - <a href="./Wear_OS" title="Wear OS">Wear OS</a></td>
+</tr>
+<tr>
+<td>Devices</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./List_of_custom_Android_distributions" title="List of custom Android distributions">Custom distributions</a></td>
+<td>- <a href="./AliOS" title="AliOS">AliOS</a> - <a href="./Android-x86" title="Android-x86">Android-x86</a>   - <a href="./Remix_OS" title="Remix OS">Remix OS</a> - <a href="./AOKP" title="AOKP">AOKP</a> - <a href="./Baidu_Yi" title="Baidu Yi">Baidu Yi</a> - <a href="./Barnes_&amp;_Noble_Nook" title="Barnes &amp; Noble Nook">Barnes &amp; Noble Nook</a> - <a href="./CalyxOS" title="CalyxOS">CalyxOS</a> - <a href="./ColorOS" title="ColorOS">ColorOS</a>   - <a href="./OxygenOS" title="OxygenOS">OxygenOS</a>   - <a href="./Realme" title="Realme">realme UI</a> - <a href="./CopperheadOS" title="CopperheadOS">CopperheadOS</a> - <a href="./EMUI" title="EMUI">EMUI</a>   - <a href="./Honor_(brand)" title="Honor (brand)">MagicOS</a> - <a href="./Fire_OS" title="Fire OS">Fire OS</a> - <a href="./Meizu#Flyme" title="Meizu">Flyme OS</a> - <a href="./GrapheneOS" title="GrapheneOS">GrapheneOS</a> - <a href="./LeWa_OS" title="LeWa OS">LeWa OS</a> - <a href="./LineageOS" title="LineageOS">LineageOS</a>   - <a href=".//e/_(operating_system)" title="/e/ (operating system)">/e/</a>   - <a href="./CrDroid" title="CrDroid">CrDroid</a>   - <a href="./CyanogenMod" title="CyanogenMod">CyanogenMod</a>   - <a href="./DivestOS" title="DivestOS">DivestOS</a>   - <a href="./IodéOS" title="IodéOS">iodéOS</a>   - <a href="./Kali_NetHunter" title="Kali NetHunter">Kali NetHunter</a> - <a href="./LiteOS" title="LiteOS">LiteOS</a> - <a href="./Meta_Horizon_OS" title="Meta Horizon OS">Meta Horizon OS</a> - <a href="./MicroG" title="MicroG">MicroG</a> - <a href="./Nokia_X_family#Nokia_X_software_platform" title="Nokia X family">Nokia X software platform</a> - <a href="./OmniROM" title="OmniROM">OmniROM</a> - <a href="./OPhone" title="OPhone">OPhone</a> - <a href="./PixelExperience" title="PixelExperience">PixelExperience</a> - <a href="./Google_Pixel#Pixel_UI_(Pixel_Launcher)" title="Google Pixel">Pixel UI</a> - <a href="./Replicant_(operating_system)" title="Replicant (operating system)">Replicant</a> - <a href="./Resurrection_Remix_OS" title="Resurrection Remix OS">Resurrection Remix OS</a> - <a href="./SlimRoms" title="SlimRoms">SlimRoms</a> - <a href="./TCL_Technology" title="TCL Technology">TCL UI</a> - <a href="./Ubuntu_Touch#Ubuntu_for_Android" title="Ubuntu Touch">Ubuntu for Android</a> - <a href="./Xiaomi_HyperOS" title="Xiaomi HyperOS">Xiaomi HyperOS</a>   - <a href="./MIUI" title="MIUI">MIUI</a> - <a href="./XobotOS" title="XobotOS">XobotOS</a> - <a href="./Lenovo_smartphones" title="Lenovo smartphones">ZUI</a></td>
+</tr>
+<tr>
+<td>Booting and recovery</td>
+<td>- <a href="./Booting_process_of_Android_devices" title="Booting process of Android devices">Booting process</a> - <a href="./Android_recovery_mode" title="Android recovery mode">Recovery mode</a>   - <a href="./TWRP_(software)" title="TWRP (software)">TWRP</a>   - <a href="./ClockworkMod" title="ClockworkMod">ClockworkMod</a> - <a href="./Fastboot" title="Fastboot">Fastboot</a></td>
+</tr>
+<tr>
+<td><a href="./API" title="API">APIs</a></td>
+<td>- <a href="./Google_Maps" title="Google Maps">Google Maps</a> - <a href="./Google_Play_Services" title="Google Play Services">Google Play Services</a>   - <a href="./SafetyNet" title="SafetyNet">SafetyNet/Play Integrity API</a> - <a href="./Google_Search" title="Google Search">Google Search</a></td>
+</tr>
+<tr>
+<td>Alternative <a href="./User_interface" title="User interface">UIs</a></td>
+<td>- <a href="./Cherry_OS_(operating_system)" title="Cherry OS (operating system)">Cherry OS</a> - <a href="./ColorOS" title="ColorOS">ColorOS</a> - <a href="./EMUI" title="EMUI">EMUI</a> - <a href="./Funtouch_OS" title="Funtouch OS">Funtouch OS</a> - <a href="./Meizu#Flyme" title="Meizu">Flyme OS</a> - <a href="./HiOS" title="HiOS">HiOS</a> - <a href="./Hive_UI" title="Hive UI">Hive UI (XOLO Hive)</a> - <a href="./HTC_Sense" title="HTC Sense">HTC Sense</a> - <a href="./LG_UX" title="LG UX">LG UX</a>   - <a href="./Optimus_UI" title="Optimus UI">Optimus UI</a> - <a href="./Motoblur" title="Motoblur">Motoblur</a> - <a href="./Nothing_OS" title="Nothing OS">Nothing OS</a> - <a href="./One_UI" title="One UI">One UI</a>   - <a href="./Samsung_Experience" title="Samsung Experience">Experience</a>   - <a href="./TouchWiz" title="TouchWiz">TouchWiz</a> - <a href="./Origin_OS" title="Origin OS">Origin OS</a> - <a href="./OxygenOS" title="OxygenOS">OxygenOS</a> - <a href="./Google_Pixel#Pixel_UI_(Pixel_Launcher)" title="Google Pixel">Pixel UI</a> - <a href="./XOS_(operating_system)" title="XOS (operating system)">XOS</a> - Xperia UI - <a href="./Asus_ZenFone#ZenUI_interface" title="Asus ZenFone">ZenUI</a></td>
+</tr>
+<tr>
+<td><a href="./Rooting_(Android)" title="Rooting (Android)">Rooting</a></td>
+<td>- <a href="./SuperSU" title="SuperSU">SuperSU</a> - <a href="./Magisk_(software)" title="Magisk (software)">Magisk</a> - <a href="./Kingo_Root" title="Kingo Root">Kingo Root</a> - <a href="./Kernel_Assisted_Superuser" title="Kernel Assisted Superuser">Kernel Assisted Superuser</a></td>
+</tr>
+<tr>
+<td>Lists</td>
+<td>- <a href="./List_of_custom_Android_distributions" title="List of custom Android distributions">Custom distributions</a> - <a href="./List_of_features_in_Android" title="List of features in Android">Features</a> - <a href="./List_of_free_and_open-source_Android_applications" title="List of free and open-source Android applications">Free and open-source applications</a> - <a href="./List_of_Android_apps_by_Google" title="List of Android apps by Google">Google apps</a> - <a href="./List_of_Android_launchers" title="List of Android launchers">Launchers</a></td>
+</tr>
+<tr>
+<td>Related topics</td>
+<td>- <a href="./Index_of_Android_OS_articles" title="Index of Android OS articles">Index of articles</a> - <a href="./Androidland" title="Androidland">Androidland</a> - <a href="./Chromecast" title="Chromecast">Chromecast</a> - <a href="./Google" title="Google">Google</a> - <a href="./Comparison_of_Java_and_Android_API" title="Comparison of Java and Android API">Java vs. Android API</a> - <a href="./Android_lawn_statues" title="Android lawn statues">Lawn statues</a> - <a href="./BlueStacks" title="BlueStacks">BlueStacks</a> - Legal issues   - <em><a href="./Google_LLC_v._Oracle_America,_Inc." title="Google LLC v. Oracle America, Inc.">Google v. Oracle</a></em>   - <a href="./Smartphone_patent_wars" title="Smartphone patent wars">smartphone patent wars</a> - <a href="./Google_App_Runtime_for_Chrome" title="Google App Runtime for Chrome">Android Runtime for Chrome</a></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Android_(operating_system)_development_software" title="Category:Android (operating system) development software">Category:Android development</a> - <a href="./Category:Mobile_telecommunications" title="Category:Mobile telecommunications">Category:Mobile telecommunications</a> - <a href="./Portal:Software" title="Portal:Software">Software portal</a> - <a href="./Portal:Telecommunication" title="Portal:Telecommunication">Telecommunication portal</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Help:Authority_control" title="Help:Authority control">Authority control databases</a> <a href="https://www.wikidata.org/wiki/Q135622#identifiers" title="Edit this at Wikidata">Edit this at Wikidata</a></td>
+<td>- <a href="https://d-nb.info/gnd/1128250675">GND</a></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TensorFlow</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link active" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>TensorFlow</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/TensorFlow<br>
+Category: products_cloud_and_ai<br>
+Depth: 1</p>
+</blockquote>
+<h2>Summary</h2>
+<p>TensorFlow is a software library for machine learning and artificial intelligence. It can be used across a range of tasks, but is used mainly for training and inference of neural networks. It is one of the most popular deep learning frameworks, alongside others such as PyTorch. It is free and open-source software released under the Apache License 2.0.</p>
+<h2>Images</h2>
+<p><img alt="960px-TensorFlow_logo.svg" src="../images/960px-TensorFlow_logo.svg.png"><br>
+<img alt="330px-TensorFlow_logo.svg" src="../images/330px-TensorFlow_logo.svg.png"><br>
+<img alt="250px-TensorFlow_logo.svg" src="../images/250px-TensorFlow_logo.svg.png"><br>
+<img alt="250px-TorontoMusicGarden10" src="../images/250px-TorontoMusicGarden10.jpg"><br>
+<img alt="250px-TorontoMusicGarden10-TensorFlow2" src="../images/250px-TorontoMusicGarden10-TensorFlow2.jpg"></p>
+<h2>Full Article</h2>
+<p>Machine learning software library</p>
+<p><strong>TensorFlow</strong> is a <a href="./Library_(computing)" title="Library (computing)">software library</a> for <a href="./Machine_learning" title="Machine learning">machine learning</a> and <a href="./Artificial_intelligence" title="Artificial intelligence">artificial intelligence</a>. It can be used across a range of tasks, but is used mainly for <a href="./Types_of_artificial_neural_networks#Training" title="Types of artificial neural networks">training</a> and <a href="./Statistical_inference" title="Statistical inference">inference</a> of <a href="./Neural_network_(machine_learning)" title="Neural network (machine learning)">neural networks</a>. It is one of the most popular <a href="./Deep_learning" title="Deep learning">deep learning</a> frameworks, alongside others such as <a href="./PyTorch" title="PyTorch">PyTorch</a>. It is <a href="./Free_and_open-source_software" title="Free and open-source software">free and open-source software</a> released under the <a href="./Apache_License_2.0" title="Apache License 2.0">Apache License 2.0</a>.</p>
+<p>It was developed by the <a href="./Google_Brain" title="Google Brain">Google Brain</a> team for <a href="./Google" title="Google">Google</a>'s internal use in research and production. The initial version was released under the <a href="./Apache_License_2.0" title="Apache License 2.0">Apache License 2.0</a> in 2015. Google released an updated version, TensorFlow 2.0, in September 2019.</p>
+<p>TensorFlow can be used in a wide variety of programming languages, including <a href="./Python_(programming_language)" title="Python (programming language)">Python</a>, <a href="./JavaScript" title="JavaScript">JavaScript</a>, <a href="./C++" title="C++">C++</a>, and <a href="./Java_(programming_language)" title="Java (programming language)">Java</a>, facilitating its use in a range of applications in many sectors.</p>
+<h2>History</h2>
+<h3>DistBelief</h3>
+<p>Starting in 2011, Google Brain built DistBelief as a <a href="./Proprietary_software" title="Proprietary software">proprietary</a> <a href="./Machine_learning" title="Machine learning">machine learning</a> system based on <a href="./Deep_learning" title="Deep learning">deep learning</a> <a href="./Artificial_neural_network" title="Artificial neural network">neural networks</a>. Its use grew rapidly across diverse <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a> companies in both research and commercial applications. Google assigned multiple computer scientists, including <a href="./Jeff_Dean_(computer_scientist)" title="Jeff Dean (computer scientist)">Jeff Dean</a>, to simplify and <a href="./Code_refactoring" title="Code refactoring">refactor</a> the codebase of DistBelief into a faster, more robust application-grade library, which became TensorFlow. In 2009, the team, led by <a href="./Geoffrey_Hinton" title="Geoffrey Hinton">Geoffrey Hinton</a>, had implemented generalized <a href="./Backpropagation" title="Backpropagation">backpropagation</a> and other improvements, which allowed generation of <a href="./Neural_network" title="Neural network">neural networks</a> with substantially higher accuracy, for instance a 25% reduction in errors in <a href="./Speech_recognition" title="Speech recognition">speech recognition</a>.</p>
+<h3>TensorFlow</h3>
+<p>TensorFlow is Google Brain's second-generation system. Version 1.0.0 was released on February 11, 2017. While the <a href="./Reference_implementation" title="Reference implementation">reference implementation</a> runs on single devices, TensorFlow can run on multiple <a href="./Central_processing_unit" title="Central processing unit">CPUs</a> and <a href="./GPU" title="GPU">GPUs</a> (with optional <a href="./CUDA" title="CUDA">CUDA</a> and <a href="./SYCL" title="SYCL">SYCL</a> extensions for <a href="./General-purpose_computing_on_graphics_processing_units" title="General-purpose computing on graphics processing units">general-purpose computing on graphics processing units</a>). TensorFlow is available on 64-bit <a href="./Linux" title="Linux">Linux</a>, <a href="./MacOS" title="MacOS">macOS</a>, <a href="./Windows" title="Windows">Windows</a>, and mobile computing platforms including <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> and <a href="./IOS" title="IOS">iOS</a>.</p>
+<p>Its flexible architecture allows for easy deployment of computation across a variety of platforms (CPUs, GPUs, <a href="./Tensor_processing_unit" title="Tensor processing unit">TPUs</a>), and from desktops to clusters of servers to mobile and <a href="./Edge_device" title="Edge device">edge devices</a>.</p>
+<p>TensorFlow computations are expressed as <a href="./State_(computer_science)" title="State (computer science)">stateful</a> <a href="./Dataflow_programming" title="Dataflow programming">dataflow</a> <a href="./Directed_graph" title="Directed graph">graphs</a>. The name TensorFlow derives from the operations that such neural networks perform on multidimensional data arrays, which are referred to as <em><a href="./Tensor_(machine_learning)" title="Tensor (machine learning)">tensors</a></em>. During the <a href="./Google_I/O" title="Google I/O">Google I/O Conference</a> in June 2016, Jeff Dean stated that 1,500 repositories on <a href="./GitHub" title="GitHub">GitHub</a> mentioned TensorFlow, of which only 5 were from Google.</p>
+<p>In March 2018, Google announced TensorFlow.js version 1.0 for machine learning in <a href="./JavaScript" title="JavaScript">JavaScript</a>.</p>
+<p>In Jan 2019, Google announced TensorFlow 2.0. It became officially available in September 2019.</p>
+<p>In May 2019, Google announced TensorFlow Graphics for deep learning in computer graphics.</p>
+<h3>Tensor processing unit (TPU)</h3>
+<p>Main article: <a href="./Tensor_processing_unit" title="Tensor processing unit">Tensor processing unit</a></p>
+<p>In May 2016, Google announced its <a href="./Tensor_processing_unit" title="Tensor processing unit">Tensor processing unit</a> (TPU), an <a href="./Application-specific_integrated_circuit" title="Application-specific integrated circuit">application-specific integrated circuit</a> (<a href="./Application-specific_integrated_circuit" title="Application-specific integrated circuit">ASIC</a>, a hardware chip) built specifically for machine learning and tailored for TensorFlow. A TPU is a programmable <a href="./AI_accelerator_(computer_hardware)" title="AI accelerator (computer hardware)">AI accelerator</a> designed to provide high <a href="./Throughput" title="Throughput">throughput</a> of low-precision <a href="./Arithmetic" title="Arithmetic">arithmetic</a> (e.g., <a href="./8-bit" title="8-bit">8-bit</a>), and oriented toward using or running models rather than <a href="./Supervised_learning" title="Supervised learning">training</a> them. Google announced they had been running TPUs inside their data centers for more than a year, and had found them to deliver an <a href="./Order_of_magnitude" title="Order of magnitude">order of magnitude</a> better-optimized <a href="./Performance_per_watt" title="Performance per watt">performance per watt</a> for machine learning.</p>
+<p>In May 2017, Google announced the second-generation, as well as the availability of the TPUs in <a href="./Google_Compute_Engine" title="Google Compute Engine">Google Compute Engine</a>. The second-generation TPUs deliver up to 180 <a href="./FLOPS" title="FLOPS">teraflops</a> of performance, and when organized into clusters of 64 TPUs, provide up to 11.5 <a href="./FLOPS" title="FLOPS">petaflops</a>.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>]</p>
+<p>In May 2018, Google announced the third-generation TPUs delivering up to 420 <a href="./FLOPS" title="FLOPS">teraflops</a> of performance and 128 GB high <a href="./Bandwidth_(computing)" title="Bandwidth (computing)">bandwidth</a> memory (HBM). Cloud TPU v3 Pods offer 100+ <a href="./FLOPS" title="FLOPS">petaflops</a> of performance and 32 TB HBM.</p>
+<p>In February 2018, Google announced that they were making TPUs available in beta on the <a href="./Google_Cloud_Platform" title="Google Cloud Platform">Google Cloud Platform</a>.</p>
+<h3>Edge TPU</h3>
+<p>In July 2018, the Edge TPU was announced. Edge TPU is Google's purpose-built <a href="./Application-specific_integrated_circuit" title="Application-specific integrated circuit">ASIC</a> chip designed to run TensorFlow Lite machine learning (ML) models on small client computing devices such as smartphones known as <a href="./Edge_computing" title="Edge computing">edge computing</a>.</p>
+<h3>TensorFlow Lite</h3>
+<p>In May 2017, Google announced TensorFlow Lite as a software stack to support machine learning models for mobile and embedded devices, and in November 2017, provided the developer preview. In January 2019, the TensorFlow team released a developer preview of the mobile GPU inference engine with OpenGL ES 3.1 Compute Shaders on Android devices and Metal Compute Shaders on iOS devices. In May 2019, Google announced that their TensorFlow Lite Micro (also known as TensorFlow Lite for Microcontrollers) and <a href="./Arm_Holdings" title="Arm Holdings">ARM's</a> uTensor would be merging. It was renamed as LiteRT in 2024.</p>
+<h3>TensorFlow 2.0</h3>
+<p>As TensorFlow's market share among research papers was declining to the advantage of <a href="./PyTorch" title="PyTorch">PyTorch</a>, the TensorFlow Team announced a release of a new major version of the library in September 2019. TensorFlow 2.0 introduced many changes, the most significant being TensorFlow eager, which changed the automatic differentiation scheme from the static computational graph to the "Define-by-Run" scheme originally made popular by <a href="./Chainer" title="Chainer">Chainer</a> and later <a href="./PyTorch" title="PyTorch">PyTorch</a>. Other major changes included removal of old libraries, cross-compatibility between trained models on different versions of TensorFlow, and significant improvements to the performance on GPU.</p>
+<h2>Features</h2>
+<h3>AutoDifferentiation</h3>
+<p><a href="./Automatic_differentiation" title="Automatic differentiation">AutoDifferentiation</a> is the process of automatically calculating the gradient vector of a model with respect to each of its parameters. With this feature, TensorFlow can automatically compute the gradients for the parameters in a model, which is useful to algorithms such as <a href="./Backpropagation" title="Backpropagation">backpropagation</a> which require gradients to optimize performance. To do so, the framework must keep track of the order of operations done to the input Tensors in a model, and then compute the gradients with respect to the appropriate parameters.</p>
+<h3>Eager execution</h3>
+<p>TensorFlow includes an "eager execution" mode, which means that operations are evaluated immediately as opposed to being added to a computational graph which is executed later. Code executed eagerly can be examined step-by step-through a debugger, since data is augmented at each line of code rather than later in a computational graph. This execution paradigm is considered to be easier to debug because of its step by step transparency.</p>
+<h3>Distribute</h3>
+<p>In both eager and graph executions, TensorFlow provides an API for distributing computation across multiple devices with various distribution strategies. This <a href="./Distributed_computing" title="Distributed computing">distributed computing</a> can often speed up the execution of training and evaluating of TensorFlow models and is a common practice in the field of AI.</p>
+<h3>Losses</h3>
+<p>To train and assess models, TensorFlow provides a set of <a href="./Loss_function" title="Loss function">loss functions</a> (also known as <a href="./Mathematical_optimization" title="Mathematical optimization">cost functions</a>). Some popular examples include <a href="./Mean_squared_error" title="Mean squared error">mean squared error</a> (MSE) and <a href="./Cross_entropy" title="Cross entropy">binary cross entropy</a> (BCE).</p>
+<h3>Metrics</h3>
+<p>In order to assess the performance of machine learning models, TensorFlow gives API access to commonly used metrics. Examples include various accuracy metrics (binary, categorical, sparse categorical) along with other metrics such as <a href="./Precision_and_recall" title="Precision and recall">Precision, Recall</a>, and <a href="./Jaccard_index" title="Jaccard index">Intersection-over-Union</a> (IoU).</p>
+<h3>TF.nn</h3>
+<p>TensorFlow.nn is a module for executing primitive <a href="./Artificial_neural_network" title="Artificial neural network">neural network</a> operations on models. Some of these operations include variations of <a href="./Convolutional_neural_network" title="Convolutional neural network">convolutions</a> (1/2/3D, Atrous, depthwise), <a href="./Activation_function" title="Activation function">activation functions</a> (<a href="./Softmax_function" title="Softmax function">Softmax</a>, <a href="./Rectifier_(neural_networks)" title="Rectifier (neural networks)">RELU</a>, GELU, <a href="./Sigmoid_function" title="Sigmoid function">Sigmoid</a>, etc.) and their variations, and other operations (<a href="./Max_pooling" title="Max pooling">max-pooling</a>, bias-add, etc.).</p>
+<h3>Optimizers</h3>
+<p>TensorFlow offers a set of optimizers for training neural networks, including <a href="./Adam_(optimization_algorithm)" title="Adam (optimization algorithm)">ADAM</a>, <a href="./Adagrad" title="Adagrad">ADAGRAD</a>, and <a href="./Stochastic_gradient_descent" title="Stochastic gradient descent">Stochastic Gradient Descent</a> (SGD). When training a model, different optimizers offer different modes of parameter tuning, often affecting a model's convergence and performance.</p>
+<h2>Usage and extensions</h2>
+<h3>TensorFlow</h3>
+<p>TensorFlow serves as a core platform and library for machine learning. TensorFlow's APIs use <a href="./Keras" title="Keras">Keras</a> to allow users to make their own machine-learning models. In addition to building and training their model, TensorFlow can also help load the data to train the model, and deploy it using TensorFlow Serving.</p>
+<p>TensorFlow provides a stable <a href="./Python_(programming_language)" title="Python (programming language)">Python</a> <a href="./API" title="API">Application Program Interface</a> (<a href="./API" title="API">API</a>), as well as APIs without backwards compatibility guarantee for <a href="./JavaScript" title="JavaScript">JavaScript</a>, <a href="./C++" title="C++">C++</a>, and <a href="./Java_(programming_language)" title="Java (programming language)">Java</a>. Third-party language binding packages are also available for <a href="./C_Sharp_(programming_language)" title="C Sharp (programming language)">C#</a>, <a href="./Haskell" title="Haskell">Haskell</a>, <a href="./Julia_(programming_language)" title="Julia (programming language)">Julia</a>, <a href="./MATLAB" title="MATLAB">MATLAB</a>, <a href="./Object_Pascal" title="Object Pascal">Object Pascal</a>, <a href="./R_(software)" title="R (software)">R</a>, <a href="./Scala_(programming_language)" title="Scala (programming language)">Scala</a>, <a href="./Rust_(programming_language)" title="Rust (programming language)">Rust</a>, <a href="./OCaml" title="OCaml">OCaml</a>, and <a href="./Crystal_(programming_language)" title="Crystal (programming language)">Crystal</a>. Bindings that are now archived and unsupported include <a href="./Go_(programming_language)" title="Go (programming language)">Go</a> and <a href="./Swift_(programming_language)" title="Swift (programming language)">Swift</a>.</p>
+<h3>TensorFlow.js</h3>
+<p>TensorFlow also has a library for machine learning in JavaScript. Using the provided <a href="./JavaScript" title="JavaScript">JavaScript</a> APIs, TensorFlow.js allows users to use either Tensorflow.js models or converted models from TensorFlow or TFLite, retrain the given models, and run on the web.</p>
+<h3>LiteRT</h3>
+<p>LiteRT, formerly known as TensorFlow Lite, has APIs for mobile apps or embedded devices to generate and deploy TensorFlow models. These models are compressed and optimized in order to be more efficient and have a higher performance on smaller capacity devices.</p>
+<p>LiteRT uses <a href="./FlatBuffers" title="FlatBuffers">FlatBuffers</a> as the data serialization format for network models, eschewing the <a href="./Protocol_Buffers" title="Protocol Buffers">Protocol Buffers</a> format used by standard TensorFlow models.</p>
+<h3>TFX</h3>
+<p>TensorFlow Extended (abbrev. TFX) provides numerous components to perform all the operations needed for end-to-end production. Components include loading, validating, and transforming data, tuning, training, and evaluating the machine learning model, and pushing the model itself into production.</p>
+<h3>Integrations</h3>
+<h4>Numpy</h4>
+<p><a href="./NumPy" title="NumPy">Numpy</a> is one of the most popular <a href="./Python_(programming_language)" title="Python (programming language)">Python</a> data libraries, and TensorFlow offers integration and compatibility with its data structures. Numpy NDarrays, the library's native datatype, are automatically converted to TensorFlow Tensors in TF operations; the same is also true vice versa. This allows for the two libraries to work in unison without requiring the user to write explicit data conversions. Moreover, the integration extends to memory optimization by having TF Tensors share the underlying memory representations of Numpy NDarrays whenever possible.</p>
+<h3>Extensions</h3>
+<p>TensorFlow also offers a variety of <a href="./Library_(computing)" title="Library (computing)">libraries</a> and <a href="./Plug-in_(computing)" title="Plug-in (computing)">extensions</a> to advance and extend the models and methods used. For example, TensorFlow Recommenders and TensorFlow Graphics are <a href="./Library_(computing)" title="Library (computing)">libraries</a> for their respective functional. Other add-ons, <a href="./Library_(computing)" title="Library (computing)">libraries</a>, and <a href="./Software_framework" title="Software framework">frameworks</a> include TensorFlow Model Optimization, TensorFlow Probability, TensorFlow Quantum, and TensorFlow Decision Forests.</p>
+<h4>Google Colab</h4>
+<p>Google also released <a href="./Google_Colab" title="Google Colab">Collaboratory</a>, a TensorFlow <a href="./Jupyter_notebook" title="Jupyter notebook">Jupyter notebook</a> environment that does not require any setup. It runs on Google Cloud and allows users free access to GPUs and the ability to store and share notebooks on <a href="./Google_Drive" title="Google Drive">Google Drive</a>.</p>
+<h4>Google JAX</h4>
+<p>Main article: <a href="./Google_JAX" title="Google JAX">Google JAX</a></p>
+<p><a href="./Google_JAX" title="Google JAX">Google JAX</a> is a machine learning <a href="./Software_framework" title="Software framework">framework</a> for transforming numerical functions. It is described as bringing together a modified version of <a href="https://github.com/HIPS/autograd">autograd</a> (automatic obtaining of the gradient function through differentiation of a function) and TensorFlow's <a href="https://www.tensorflow.org/xla">XLA</a> (Accelerated Linear Algebra). It is designed to follow the structure and workflow of <a href="./NumPy" title="NumPy">NumPy</a> as closely as possible and works with TensorFlow as well as other frameworks such as <a href="./PyTorch" title="PyTorch">PyTorch</a>. The primary functions of JAX are:</p>
+<ol>
+<li>grad: automatic differentiation</li>
+<li>jit: compilation</li>
+<li>vmap: auto-vectorization</li>
+<li>pmap: SPMD programming</li>
+</ol>
+<h2>Applications</h2>
+<h3>Medical</h3>
+<p><a href="./GE_Healthcare" title="GE Healthcare">GE Healthcare</a> used TensorFlow to increase the speed and accuracy of <a href="./Magnetic_resonance_imaging" title="Magnetic resonance imaging">MRIs</a> in identifying specific body parts. Google used TensorFlow to create DermAssist, a free mobile application that allows users to take pictures of their skin and identify potential health complications. <a href="./Sinovation_Ventures" title="Sinovation Ventures">Sinovation Ventures</a> used TensorFlow to identify and classify eye diseases from <a href="./Optical_coherence_tomography" title="Optical coherence tomography">optical coherence tomography</a> (OCT) scans.</p>
+<h3>Social media</h3>
+<p><a href="./Twitter" title="Twitter">Twitter</a> implemented TensorFlow to rank tweets by importance for a given user, and changed their platform to show tweets in order of this ranking. Previously, tweets were simply shown in reverse chronological order. The photo sharing app <a href="./VSCO" title="VSCO">VSCO</a> used TensorFlow to help suggest custom filters for photos.</p>
+<h3>Search Engine</h3>
+<p><a href="./Google" title="Google">Google</a> officially released <a href="./RankBrain" title="RankBrain">RankBrain</a> on October 26, 2015, backed by TensorFlow.</p>
+<h3>Education</h3>
+<p>InSpace, a virtual learning platform, used TensorFlow to filter out toxic chat messages in classrooms. Liulishuo, an online English learning platform, utilized TensorFlow to create an adaptive curriculum for each student. TensorFlow was used to assess the current abilities of students and also helped decide which content to show based on those capabilities.</p>
+<h3>Retail</h3>
+<p>The e-commerce platform <a href="./Carousell_(company)" title="Carousell (company)">Carousell</a> used TensorFlow to provide personalized recommendations for customers. The cosmetics company ModiFace used TensorFlow to create an augmented reality experience for customers to test various shades of make-up on their face.</p>
+<h3>Research</h3>
+<p>TensorFlow is the foundation for the automated <a href="./Image_captioning" title="Image captioning">image-captioning</a> software <a href="./DeepDream" title="DeepDream">DeepDream</a>.</p>
+<h2>See also</h2>
+<ul>
+<li>
+<p><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/31/Free_and_open-source_software_logo_%282009%29.svg/40px-Free_and_open-source_software_logo_%282009%29.svg.png"><a href="./Portal:Free_and_open-source_software" title="Portal:Free and open-source software">Free and open-source software portal</a></p>
+</li>
+<li>
+<p><a href="./Comparison_of_deep_learning_software" title="Comparison of deep learning software">Comparison of deep learning software</a></p>
+</li>
+<li><a href="./Differentiable_programming" title="Differentiable programming">Differentiable programming</a></li>
+<li><a href="./Keras" title="Keras">Keras</a></li>
+<li><a href="./Open-source_artificial_intelligence" title="Open-source artificial intelligence">Open-source artificial intelligence</a></li>
+<li><a href="./TensorFlow_Hub" title="TensorFlow Hub">TensorFlow Hub</a></li>
+</ul>
+<h2>References</h2>
+<h2>Further reading</h2>
+<ul>
+<li>Moroney, Laurence (October 1, 2020). <a href="https://www.oreilly.com/library/view/ai-and-machine/9781492078180/"><em>AI and Machine Learning for Coders</em></a> (1st ed.). <a href="./O'Reilly_Media" title="O'Reilly Media">O'Reilly Media</a>. p. 365. <a href="./ISBN_(identifier)" title="ISBN (identifier)">ISBN</a> <a href="./Special:BookSources/9781492078197" title="Special:BookSources/9781492078197">9781492078197</a>. <a href="https://web.archive.org/web/20210607074743/https://www.oreilly.com/library/view/ai-and-machine/9781492078180/">Archived</a> from the original on June 7, 2021. Retrieved December 21, 2020.</li>
+<li>Géron, Aurélien (October 15, 2019). <a href="https://www.oreilly.com/library/view/hands-on-machine-learning/9781492032632/"><em>Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow</em></a> (2nd ed.). <a href="./O'Reilly_Media" title="O'Reilly Media">O'Reilly Media</a>. p. 856. <a href="./ISBN_(identifier)" title="ISBN (identifier)">ISBN</a> <a href="./Special:BookSources/9781492032632" title="Special:BookSources/9781492032632">9781492032632</a>. <a href="https://web.archive.org/web/20210501010926/https://www.oreilly.com/library/view/hands-on-machine-learning/9781492032632/">Archived</a> from the original on May 1, 2021. Retrieved November 25, 2019.</li>
+<li>Ramsundar, Bharath; Zadeh, Reza Bosagh (March 23, 2018). <a href="https://www.oreilly.com/library/view/tensorflow-for-deep/9781491980446/"><em>TensorFlow for Deep Learning</em></a> (1st ed.). <a href="./O'Reilly_Media" title="O'Reilly Media">O'Reilly Media</a>. p. 256. <a href="./ISBN_(identifier)" title="ISBN (identifier)">ISBN</a> <a href="./Special:BookSources/9781491980446" title="Special:BookSources/9781491980446">9781491980446</a>. <a href="https://web.archive.org/web/20210607150529/https://www.oreilly.com/library/view/tensorflow-for-deep/9781491980446/">Archived</a> from the original on June 7, 2021. Retrieved November 25, 2019.</li>
+<li>Hope, Tom; Resheff, Yehezkel S.; Lieder, Itay (August 27, 2017). <a href="https://www.oreilly.com/library/view/learning-tensorflow/9781491978504/"><em>Learning TensorFlow: A Guide to Building Deep Learning Systems</em></a> (1st ed.). <a href="./O'Reilly_Media" title="O'Reilly Media">O'Reilly Media</a>. p. 242. <a href="./ISBN_(identifier)" title="ISBN (identifier)">ISBN</a> <a href="./Special:BookSources/9781491978504" title="Special:BookSources/9781491978504">9781491978504</a>. <a href="https://web.archive.org/web/20210308153359/https://www.oreilly.com/library/view/learning-tensorflow/9781491978504/">Archived</a> from the original on March 8, 2021. Retrieved November 25, 2019.</li>
+<li>Shukla, Nishant (February 12, 2018). <em>Machine Learning with TensorFlow</em> (1st ed.). <a href="./Manning_Publications" title="Manning Publications">Manning Publications</a>. p. 272. <a href="./ISBN_(identifier)" title="ISBN (identifier)">ISBN</a> <a href="./Special:BookSources/9781617293870" title="Special:BookSources/9781617293870">9781617293870</a>.</li>
+</ul>
+<h2>External links</h2>
+<ul>
+<li><a href="http://www.tensorflow.org">Official website</a></li>
+<li><a href="https://www.oreilly.com/library/view/learning-tensorflowjs/9781492090786/">Learning TensorFlow.js Book (ENG)</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_AI" title="Template:Google AI">v</a> - <a href="./Template_talk:Google_AI" title="Template talk:Google AI">t</a> - <a href="./Special:EditPage/Template:Google_AI" title="Special:EditPage/Template:Google AI">e</a>  <a href="./Google_AI" title="Google AI">Google AI</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>- <a href="./Google" title="Google">Google</a> - <a href="./Google_Brain" title="Google Brain">Google Brain</a> - <a href="./Google_DeepMind" title="Google DeepMind">Google DeepMind</a></td>
+<td></td>
+</tr>
+<tr>
+<td>Computer  programs</td>
+<td></td>
+</tr>
+<tr>
+<td>Machine  learning</td>
+<td></td>
+</tr>
+<tr>
+<td>Generative  AI</td>
+<td></td>
+</tr>
+<tr>
+<td>See also</td>
+<td>- "<a href="./Attention_Is_All_You_Need" title="Attention Is All You Need">Attention Is All You Need</a>" - <a href="./Future_of_Go_Summit" title="Future of Go Summit">Future of Go Summit</a> - <a href="./Generative_pre-trained_transformer" title="Generative pre-trained transformer">Generative pre-trained transformer</a> - <a href="./Google_Labs" title="Google Labs">Google Labs</a> - <a href="./Google_Pixel" title="Google Pixel">Google Pixel</a> - <a href="./Google_Workspace" title="Google Workspace">Google Workspace</a> - <a href="./Robot_Constitution" title="Robot Constitution">Robot Constitution</a></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Google_DeepMind" title="Category:Google DeepMind">Category</a> - <a href="https://commons.wikimedia.org/wiki/Category:DeepMind" title="commons:Category:DeepMind">Commons</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Deep_learning_software" title="Template:Deep learning software">v</a> - <a href="./Template_talk:Deep_learning_software" title="Template talk:Deep learning software">t</a> - <a href="./Special:EditPage/Template:Deep_learning_software" title="Special:EditPage/Template:Deep learning software">e</a>  <a href="./Comparison_of_deep_learning_software" title="Comparison of deep learning software">Deep learning software</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>- <a href="./Comparison_of_deep_learning_software" title="Comparison of deep learning software">Comparison</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Open-source_software" title="Open-source software">Open source</a></td>
+<td>- <a href="./Apache_MXNet" title="Apache MXNet">Apache MXNet</a> - <a href="./Apache_SINGA" title="Apache SINGA">Apache SINGA</a> - <a href="./Caffe_(software)" title="Caffe (software)">Caffe</a> - <a href="./Deeplearning4j" title="Deeplearning4j">Deeplearning4j</a> - <a href="./DeepSpeed" title="DeepSpeed">DeepSpeed</a> - <a href="./Dlib" title="Dlib">Dlib</a> - <a href="./Keras" title="Keras">Keras</a> - <a href="./Microsoft_Cognitive_Toolkit" title="Microsoft Cognitive Toolkit">Microsoft Cognitive Toolkit</a> - <a href="./ML.NET" title="ML.NET">ML.NET</a> - <a href="./OpenNN" title="OpenNN">OpenNN</a> - <a href="./PyTorch" title="PyTorch">PyTorch</a> - <a href="./TensorFlow">TensorFlow</a> - <a href="./Theano_(software)" title="Theano (software)">Theano</a> - <a href="./Torch_(machine_learning)" title="Torch (machine learning)">Torch</a> - <a href="./Open_Neural_Network_Exchange" title="Open Neural Network Exchange">ONNX</a> - <a href="./OpenVINO" title="OpenVINO">OpenVINO</a> - <a href="./MindSpore" title="MindSpore">MindSpore</a></td>
+</tr>
+<tr>
+<td><a href="./Proprietary_software" title="Proprietary software">Proprietary</a></td>
+<td>- <a href="./Apple_Inc." title="Apple Inc.">Apple</a> <a href="./Core_ML" title="Core ML">Core ML</a> - <a href="./Watson_(computer)" title="Watson (computer)">IBM Watson</a> - <a href="./Neural_Designer" title="Neural Designer">Neural Designer</a> - <a href="./Wolfram_Mathematica" title="Wolfram Mathematica">Wolfram Mathematica</a> - <a href="./MATLAB" title="MATLAB">MATLAB</a> Deep Learning Toolbox</td>
+</tr>
+<tr>
+<td>- <a href="./Category:Deep_learning" title="Category:Deep learning">Category</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Differentiable_computing" title="Template:Differentiable computing">v</a> - <a href="./Template_talk:Differentiable_computing" title="Template talk:Differentiable computing">t</a> - <a href="./Special:EditPage/Template:Differentiable_computing" title="Special:EditPage/Template:Differentiable computing">e</a>  Differentiable computing</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Differentiable_function" title="Differentiable function">General</a></td>
+<td>- <strong><a href="./Differentiable_programming" title="Differentiable programming">Differentiable programming</a></strong> - <a href="./Information_geometry" title="Information geometry">Information geometry</a> - <a href="./Statistical_manifold" title="Statistical manifold">Statistical manifold</a> - <a href="./Automatic_differentiation" title="Automatic differentiation">Automatic differentiation</a> - <a href="./Neuromorphic_computing" title="Neuromorphic computing">Neuromorphic computing</a> - <a href="./Pattern_recognition" title="Pattern recognition">Pattern recognition</a> - <a href="./Ricci_calculus" title="Ricci calculus">Ricci calculus</a> - <a href="./Computational_learning_theory" title="Computational learning theory">Computational learning theory</a> - <a href="./Inductive_bias" title="Inductive bias">Inductive bias</a></td>
+</tr>
+<tr>
+<td>Hardware</td>
+<td>- <a href="./Graphcore" title="Graphcore">IPU</a> - <a href="./Tensor_Processing_Unit" title="Tensor Processing Unit">TPU</a> - <a href="./Vision_processing_unit" title="Vision processing unit">VPU</a> - <a href="./Memristor" title="Memristor">Memristor</a> - <a href="./SpiNNaker" title="SpiNNaker">SpiNNaker</a></td>
+</tr>
+<tr>
+<td>Software libraries</td>
+<td>- <a href="./TensorFlow">TensorFlow</a> - <a href="./PyTorch" title="PyTorch">PyTorch</a> - <a href="./Keras" title="Keras">Keras</a> - <a href="./Scikit-learn" title="Scikit-learn">scikit-learn</a> - <a href="./Theano_(software)" title="Theano (software)">Theano</a> - <a href="./JAX_(software)" title="JAX (software)">JAX</a> - <a href="./Flux_(machine-learning_framework)" title="Flux (machine-learning framework)">Flux.jl</a> - <a href="./MindSpore" title="MindSpore">MindSpore</a></td>
+</tr>
+<tr>
+<td>- Portals   - <a href="./Portal:Computer_programming" title="Portal:Computer programming">Computer programming</a>   - <a href="./Portal:Technology" title="Portal:Technology">Technology</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_FOSS" title="Template:Google FOSS">v</a> - <a href="./Template_talk:Google_FOSS" title="Template talk:Google FOSS">t</a> - <a href="./Special:EditPage/Template:Google_FOSS" title="Special:EditPage/Template:Google FOSS">e</a>  <a href="./Google" title="Google">Google</a> free and open-source software</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Software</td>
+<td></td>
+</tr>
+<tr>
+<td>Related</td>
+<td>- <a href="./Google_Code-in" title="Google Code-in">Code-in</a> - <em><a href="./Google_LLC_v._Oracle_America,_Inc." title="Google LLC v. Oracle America, Inc.">Google LLC v. Oracle America, Inc.</a></em> - <a href="./Open_Source_Security_Foundation" title="Open Source Security Foundation">Open Source Security Foundation</a> - <a href="./Google_Summer_of_Code" title="Google Summer of Code">Summer of Code</a></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

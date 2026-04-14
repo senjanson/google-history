@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Googleplex</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link active" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Googleplex</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Googleplex<br>
+Category: company<br>
+Depth: 1</p>
+</blockquote>
+<h2>Summary</h2>
+<p>The Googleplex is the corporate headquarters complex of Google and its parent company, Alphabet Inc. It is located at 1600 Amphitheatre Parkway in Mountain View, California.</p>
+<h2>Images</h2>
+<p><img alt="Google_Campus_2C_Mountain_View_2C_CA" src="../images/Google_Campus_2C_Mountain_View_2C_CA.jpg"><br>
+<img alt="330px-Google_Campus_2C_Mountain_View_2C_CA" src="../images/330px-Google_Campus_2C_Mountain_View_2C_CA.jpg"><br>
+<img alt="330px-Google_Campus_2C_Mountain_View_2C_CA" src="../images/330px-Google_Campus_2C_Mountain_View_2C_CA.jpg"><br>
+<img alt="250px-Googleplexsouthsidesecondangle" src="../images/250px-Googleplexsouthsidesecondangle.jpg"><br>
+<img alt="250px-Googleplexlobby-adjusted" src="../images/250px-Googleplexlobby-adjusted.jpg"><br>
+<img alt="250px-Google_Campus_in_Googleplex" src="../images/250px-Google_Campus_in_Googleplex.jpg"><br>
+<img alt="250px-Google_Building_CL2_from_CL5_nearby_Shoreline_Park" src="../images/250px-Google_Building_CL2_from_CL5_nearby_Shoreline_Park.jpg"><br>
+<img alt="250px-Googleplex_central_courtyard" src="../images/250px-Googleplex_central_courtyard.jpg"></p>
+<h2>Full Article</h2>
+<p>Corporate headquarters complex of Google</p>
+<p>This article is about the headquarters of Google. For the large number, see <a href="./Googolplex" title="Googolplex">Googolplex</a>.</p>
+<p>The <strong>Googleplex</strong> is the <a href="./Corporate_headquarters" title="Corporate headquarters">corporate headquarters</a> complex of <a href="./Google" title="Google">Google</a> and its parent company, <a href="./Alphabet_Inc" title="Alphabet Inc">Alphabet Inc</a>. It is located at 1600 Amphitheatre Parkway in <a href="./Mountain_View,_California" title="Mountain View, California">Mountain View, California</a>.</p>
+<p>The original complex, with 2 million square feet (190,000 square meters) of office space, is the company's second-largest square footage assemblage of Google buildings, after Google's <a href="./111_Eighth_Avenue" title="111 Eighth Avenue">111 Eighth Avenue</a> building in <a href="./New_York_City" title="New York City">New York City</a>, which the company bought in 2010.</p>
+<p>"Googleplex" is a <a href="./Portmanteau" title="Portmanteau">portmanteau</a> of <em>Google</em> and <em>complex</em> (meaning a complex of <a href="./Building" title="Building">buildings</a>) and a reference to <em><a href="./Googolplex" title="Googolplex">googolplex</a></em>, the name given to the large number 1010100, or 10googol.</p>
+<h2>Facilities and history</h2>
+<h3>The original campus</h3>
+<h4>SGI campus</h4>
+<p>The site was previously occupied by <a href="./Silicon_Graphics,_Inc." title="Silicon Graphics, Inc.">Silicon Graphics</a> (SGI). The office space and corporate campus is located within a larger 26-acre (11-hectare) site that contains Charleston Park, a 5-acre (2-hectare) public park; improved access to Permanente Creek; and public roads that connect the corporate site to Shoreline Park and the Bay Trail. The project, launched in 1994, was built on the site of one of the few working farms in the area and was city owned at the time (identified as "Farmer's Field" in the planning documents). It was a creative collaboration between SGI, StUDIOS Architecture, SWA Group, and the Planning and Community Development Agency of the City of <a href="./Mountain_View,_California" title="Mountain View, California">Mountain View, California</a>.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>] The objective was to develop in complementary fashion the privately owned corporate headquarters and adjoining public greenspace. Key design decisions placed parking for nearly 2000 cars underground, enabling SWA to integrate the two open spaces with water features, shallow pools, fountains, pathways, and plazas. The project was completed in 1997. The <a href="./American_Society_of_Landscape_Architects" title="American Society of Landscape Architects">American Society of Landscape Architects</a> (ASLA) noted that the SGI project was a significant departure from typical corporate campuses and which challenged conventional thinking about private and public space, and awarded the project the ASLA Centennial Medallion in 1999.</p>
+<h4>Google campus</h4>
+<p>The former SGI facilities were leased by Google beginning in 2003. A redesign of the interiors was completed by <a href="./Clive_Wilkinson" title="Clive Wilkinson">Clive Wilkinson</a> Architects in 2005.<br>
+In June 2006, Google purchased some of Silicon Graphics's properties, including the Googleplex, for $319 million.</p>
+<p>Because the buildings are of relatively low height, the complex sprawls out over a large area of land. The interior of the headquarters is furnished with items like shade lamps and giant rubber balls and the lobby contains a piano and a projection of current live Google search queries. Facilities include free laundry rooms (Buildings 40, 42 &amp; CL3), two small swimming pools, multiple sand volleyball courts, a bowling alley, massage rooms, organic gardens, and eighteen cafeterias with diverse menus. Google installed replicas of <a href="./SpaceShipOne" title="SpaceShipOne">SpaceShipOne</a> and a dinosaur skeleton.</p>
+<p>Since 2017, solar panels cover the rooftops of eight buildings and two solar carports, capable of producing 1.6 megawatts of electricity. At the time of installation, Google believed it to be the <a href="./List_of_rooftop_photovoltaic_installations" title="List of rooftop photovoltaic installations">largest in the United States</a> among corporations. The panels provide the power for 30% of the peak electricity demand in their solar-powered buildings.<br>
+Four 100<a href="./Kilowatt" title="Kilowatt">kW</a> <a href="./Bloom_Energy_Server" title="Bloom Energy Server">Bloom Energy Servers</a> were shipped to Google in July 2008, as the first customer of Bloom Energy.</p>
+<p>The <a href="./Android_lawn_statues" title="Android lawn statues">Android lawn statues</a> were outside of Building 44 on Charleston Road, and were relocated on the Google campus at 1981 Landings Drive. They include a giant green statue of the <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> logo and additional statues to represent all the versions of the Android operating system.</p>
+<h3>Bay View addition</h3>
+<p>In 2013, construction began on a new 1.1-million-square-foot (100,000-square-meter) campus dubbed "Bay View", adjoining the original campus on 42 acres (17 ha) leased from the NASA Ames Research Center and overlooking San Francisco Bay at Moffett Federal Airfield. The estimated cost of the project was $120 million with a target opening date of 2015.</p>
+<p>NBBJ was the architect and this was the first time Google has designed its own buildings.</p>
+<p>The addition is off the northeast corner of the complex, by the Stevens Creek Nature Study Area and Shoreline Park. Before announcing the construction, Google, through its internal real estate firm, Planetarium Ventures, sought permission from the City of Mountain View to build bridges over the adjacent Stevens Creek. 2012 year-end annual report noted it can develop only 7 acres (2.8 ha) of the 42-acre (17-hectare) site.</p>
+<p>Google planned in 2015 a 60-acre (24-hectare) addition designed by Heather wicked Studio and in North . The site, however, was granted to LinkedIn by the city councilors and the Google project was revised in 2016, with 3 buildings to be built on 2 different sites east of Googleplex in Mountain View: one immediately next to Googleplex, and the two smaller ones a few blocks away.</p>
+<h3>Google Visitor Experience</h3>
+<p>In September 2023, Google announced the Google Visitor Experience, a visitor center next to the Googleplex which occupies the building formerly known as Charleston East, and now known as Gradient Canopy. The visitor center includes a <a href="./Google_Store" title="Google Store">Google Store</a>, a public plaza, a café, and public art, and opened on October 12, 2023.</p>
+<h2>Location</h2>
+<p>The Googleplex is located between Charleston Road, Amphitheatre Parkway, and Shoreline Boulevard in north <a href="./Mountain_View,_California" title="Mountain View, California">Mountain View, California</a>, close to the <a href="./Shoreline_Park,_Mountain_View" title="Shoreline Park, Mountain View">Shoreline Park</a> <a href="./Wetlands" title="Wetlands">wetlands</a>. Employees living in San Francisco, the East Bay, or South Bay may take a free <a href="./Wi-Fi" title="Wi-Fi">Wi-Fi</a>-enabled Google shuttle to and from work. The shuttles are powered by a fuel blend of 95% petroleum diesel and 5% <a href="./Biodiesel" title="Biodiesel">biodiesel</a> and are equipped with emissions reduction technology.</p>
+<p>To the north lies the <a href="./Shoreline_Amphitheatre" title="Shoreline Amphitheatre">Shoreline Amphitheatre</a> and <a href="./Intuit_Inc." title="Intuit Inc.">Intuit</a>, and to the south lies <a href="./Microsoft" title="Microsoft">Microsoft</a>'s <a href="./Silicon_Valley" title="Silicon Valley">Silicon Valley</a> research complex, the <a href="./Computer_History_Museum" title="Computer History Museum">Computer History Museum</a>, and <a href="./Century_Theatres" title="Century Theatres">Century Theatres</a>. <a href="./Moffett_Federal_Airfield" title="Moffett Federal Airfield">Moffett Field</a> is nearby to the east.</p>
+<h2>Other Google Mountain View locations</h2>
+<p>Google in its 2012-year-end annual report said it had 3.5 million square feet of office space in Mountain View.</p>
+<p>Google has another large campus in Mountain View dubbed "The Quad" at 399 North Whisman Road about 3 miles (5 kilometers) from the Googleplex.</p>
+<p>In 2013, Google leased the entire <a href="./Mayfield_Mall" title="Mayfield Mall">Mayfield Mall</a>, an enclosed shopping mall that last operated in 1984 and was leased by Hewlett-Packard from 1986 to 2002.</p>
+<p>The semi-secret <a href="./X_Development" title="X Development">Google X Lab</a>, which is the development lab for items such as <a href="./Google_Glass" title="Google Glass">Google Glass</a>, is located in "ordinary two-story red-brick buildings" about 1⁄2 mile (800 meters) from the Googleplex. It has a "burbling fountain out front and rows of company-issued bikes, which employees use to shuttle to the main campus."</p>
+<h2>In popular culture</h2>
+<p>The Googleplex is depicted in the 2013 film <em><a href="./The_Internship" title="The Internship">The Internship</a></em>, with the <a href="./Georgia_Institute_of_Technology" title="Georgia Institute of Technology">Georgia Tech</a> campus standing in as a double, because Google disallows filming on the campus grounds for privacy reasons. It was the inspiration for the fictional Hooli headquarters in the HBO TV series <em><a href="./Silicon_Valley_(TV_series)" title="Silicon Valley (TV series)">Silicon Valley</a></em>. The fictional tech company Nudle in the 2016 video game <em><a href="./Watch_Dogs_2" title="Watch Dogs 2">Watch Dogs 2</a></em> has a headquarters based on Googleplex.</p>
+<h2>References</h2>
+<h2>External links</h2>
+<p><a href="./File:Commons-logo.svg"><img alt="Wikimedia Commons logo" src="//upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/40px-Commons-logo.svg.png"></a></p>
+<p>Wikimedia Commons has media related to <a href="https://commons.wikimedia.org/wiki/Category:Googleplex" title="commons:Category:Googleplex">Googleplex</a>.</p>
+<ul>
+<li><a href="https://web.archive.org/web/20100116120658/http://www.time.com/time/photogallery/0,29307,1947844,00.html">Life in the Googleplex 2006 Photo Essay</a> from <em><a href="./Time_(magazine)" title="Time (magazine)">Time</a></em> magazine</li>
+<li><a href="http://www.informationweek.com/galleries/showImage.jhtml?galleryID=4&amp;imageID=1">Googleplex East: Inside Google's New York City Headquarters</a> <a href="https://web.archive.org/web/20070219021620/http://www.informationweek.com/galleries/showImage.jhtml%3FgalleryID%3D4%26imageID%3D1">Archived</a> February 19, 2007, at the <a href="./Wayback_Machine" title="Wayback Machine">Wayback Machine</a>, from <em><a href="./Information_Week" title="Information Week">Information Week</a></em></li>
+<li><a href="https://www.youtube.com/watch?v=eFeLKXbnxxg">A Video Tour of Googleplex</a> on <a href="./YouTube_video_(identifier)" title="YouTube video (identifier)">YouTube</a></li>
+<li><a href="http://www.kinomap.com/#!km-44fu9b">Biking around Googleplex</a> on <a href="./Kinomap" title="Kinomap">Kinomap</a></li>
+<li><a href="./Andrew_Norman_Wilson_(artist)" title="Andrew Norman Wilson (artist)">Andrew Norman Wilson's</a> Viral Video <a href="http://www.andrewnormanwilson.com/WorkersGoogleplex.html">"Workers Leaving the Googleplex"</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products" title="List of Google products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Mountain_View,_California" title="Template:Mountain View, California">v</a> - <a href="./Template_talk:Mountain_View,_California" title="Template talk:Mountain View, California">t</a> - <a href="./Special:EditPage/Template:Mountain_View,_California" title="Special:EditPage/Template:Mountain View, California">e</a>  <a href="./Mountain_View,_California" title="Mountain View, California">Mountain View, California</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Education</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>Primary and secondary schools</td>
+<td>- <a href="./Mountain_View_Whisman_School_District" title="Mountain View Whisman School District">Mountain View Whisman School District</a>   - <a href="./Gabriela_Mistral_Elementary_School" title="Gabriela Mistral Elementary School">Gabriela Mistral Elementary School</a> - <a href="./Los_Altos_School_District" title="Los Altos School District">Los Altos School District</a> - <a href="./Mountain_View–Los_Altos_Union_High_School_District" title="Mountain View–Los Altos Union High School District">Mountain View–Los Altos Union High School District</a>   - <a href="./Mountain_View_High_School_(Mountain_View,_California)" title="Mountain View High School (Mountain View, California)">Mountain View High School</a> - <a href="./German_International_School_of_Silicon_Valley" title="German International School of Silicon Valley">German International School of Silicon Valley</a> - <a href="./Saint_Francis_High_School_(Mountain_View,_California)" title="Saint Francis High School (Mountain View, California)">Saint Francis High School</a> - <a href="./Yew_Chung_International_School_of_Silicon_Valley" title="Yew Chung International School of Silicon Valley">Yew Chung International School of Silicon Valley</a></td>
+</tr>
+<tr>
+<td>Other education</td>
+<td>- <a href="./St._Joseph's_College_(Santa_Clara_County,_California)" title="St. Joseph's College (Santa Clara County, California)">St. Joseph's College</a> (closed)</td>
+</tr>
+<tr>
+<td><strong>Other</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>Neighborhoods</td>
+<td>- Blossom Valley - Castro City - Cuernavaca - Cuesta Park - Dutch Haven - Eastern Varsity Park - Gemello - Greater San Antonio - Jackson Park - Martens-Carmelita - Moffett Boulevard - <a href="./Monta_Loma,_Mountain_View" title="Monta Loma, Mountain View">Monta Loma</a> - North Whisman - Old Mountain View - Rex Manor/Mountain Shadows - Shoreline West - Slater - St. Francis Acres - Stierlin Estates - Sylvan Park - Wagon Wheel - Waverly Park - Whisman Station - Willowgate</td>
+</tr>
+<tr>
+<td>Landmarks</td>
+<td>- <a href="./Computer_History_Museum" title="Computer History Museum">Computer History Museum</a> - <a href="./Googleplex">Googleplex</a> - <a href="./Historic_Adobe_Building" title="Historic Adobe Building">Historic Adobe Building</a> - <a href="./Mountain_View_Center_for_the_Performing_Arts" title="Mountain View Center for the Performing Arts">Mountain View Center for the Performing Arts</a> - <a href="./Rengstorff_House" title="Rengstorff House">Rengstorff House</a> - <a href="./Shockley_Semiconductor_Laboratory" title="Shockley Semiconductor Laboratory">Shockley Semiconductor Laboratory</a> - <a href="./Shoreline_Amphitheatre" title="Shoreline Amphitheatre">Shoreline Amphitheatre</a> - <a href="./Shoreline_Park,_Mountain_View" title="Shoreline Park, Mountain View">Shoreline Park</a> - <a href="./Saint_Joseph_Parish_(Mountain_View,_California)" title="Saint Joseph Parish (Mountain View, California)">Saint Joseph Parish</a></td>
+</tr>
+<tr>
+<td>Transportation</td>
+<td>- <a href="./Downtown_Mountain_View_station" title="Downtown Mountain View station">Downtown Mountain View station</a> - <a href="./Moffett_Federal_Airfield" title="Moffett Federal Airfield">Moffett Federal Airfield</a></td>
+</tr>
+<tr>
+<td>History</td>
+<td>- <a href="./Timeline_of_Mountain_View,_California" title="Timeline of Mountain View, California">Timeline</a></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Santa_Clara_Valley_attractions" title="Template:Santa Clara Valley attractions">v</a> - <a href="./Template_talk:Santa_Clara_Valley_attractions" title="Template talk:Santa Clara Valley attractions">t</a> - <a href="./Special:EditPage/Template:Santa_Clara_Valley_attractions" title="Special:EditPage/Template:Santa Clara Valley attractions">e</a>  <a href="./List_of_tourist_attractions_in_Santa_Clara_Valley" title="List of tourist attractions in Santa Clara Valley">List of tourist attractions in Santa Clara Valley</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Arboreta &amp; gardens</td>
+<td>- <a href="./Arizona_Cactus_Garden" title="Arizona Cactus Garden">Arizona Cactus Garden</a> - <a href="./Chinese_Cultural_Garden" title="Chinese Cultural Garden">Chinese Cultural Garden</a> - <a href="./Edenvale_Gardens_Regional_Park" title="Edenvale Gardens Regional Park">Edenvale Garden Park</a> - <a href="./Emma_Prusch_Farm_Park" title="Emma Prusch Farm Park">Emma Prusch Farm Park</a> - <a href="./Hakone_Gardens" title="Hakone Gardens">Hakone Gardens</a> - <a href="./Japanese_Friendship_Garden_(Kelley_Park)" title="Japanese Friendship Garden (Kelley Park)">Japanese Friendship Garden</a> - <a href="./Overfelt_Gardens" title="Overfelt Gardens">Overfelt Gardens</a> - <a href="./San_Jose_Municipal_Rose_Garden" title="San Jose Municipal Rose Garden">San Jose Municipal Rose Garden</a> - <a href="./Stanford_University_Arboretum" title="Stanford University Arboretum">Stanford Arboretum</a></td>
+</tr>
+<tr>
+<td>Cultural organizations</td>
+<td>- <a href="./The_Choral_Project" title="The Choral Project">Choral Project</a> - <a href="./Opera_San_José" title="Opera San José">Opera San José</a> - <a href="./Pacific_Art_League" title="Pacific Art League">Pacific Art League</a> - <a href="./SjDANCEco" title="SjDANCEco">sjDANCEco</a> - <a href="./Symphony_San_Jose" title="Symphony San Jose">Symphony San Jose</a> - <a href="./Vivace_Youth_Chorus_of_San_Jose" title="Vivace Youth Chorus of San Jose">Vivace Youth Chorus</a></td>
+</tr>
+<tr>
+<td>Event venues</td>
+<td></td>
+</tr>
+<tr>
+<td>Events</td>
+<td>- <a href="./BayCon" title="BayCon">BayCon</a> - <a href="./Christmas_in_the_Park_(San_Jose)" title="Christmas in the Park (San Jose)">Christmas in the Park</a> - <a href="./Cinequest_Film_Festival" title="Cinequest Film Festival">Cinequest Film Festival</a> - <a href="./FanimeCon" title="FanimeCon">FanimeCon</a> - <a href="./Further_Confusion" title="Further Confusion">Further Confusion</a> - <a href="./San_Jose_Bike_Party" title="San Jose Bike Party">SJ Bike Party</a> - <a href="./San_Jose_Holiday_Parade" title="San Jose Holiday Parade">SJ Holiday Parade</a> - <a href="./San_Jose_Jazz_Festival" title="San Jose Jazz Festival">SJ Jazz Festival</a> - <a href="./Silicon_Valley_Comic_Con" title="Silicon Valley Comic Con">Silicon Valley Comic Con</a> - <a href="./Stanford_Jazz_Workshop" title="Stanford Jazz Workshop">Stanford Jazz Festival</a></td>
+</tr>
+<tr>
+<td>Historical</td>
+<td></td>
+</tr>
+<tr>
+<td>Museums</td>
+<td></td>
+</tr>
+<tr>
+<td>Parks &amp; trails</td>
+<td>- <a href="./Almaden_Quicksilver_County_Park" title="Almaden Quicksilver County Park">Almaden Quicksilver County Park</a> - <a href="./Alum_Rock_Park" title="Alum Rock Park">Alum Rock Park</a> - <a href="./Anderson_Lake_(California)" title="Anderson Lake (California)">Anderson Lake</a> - <a href="./Bay_Area_Ridge_Trail" title="Bay Area Ridge Trail">Bay Area Ridge Trail</a> - <a href="./Calero_Reservoir" title="Calero Reservoir">Calero Reservoir</a> - <a href="./Castle_Rock_State_Park_(California)" title="Castle Rock State Park (California)">Castle Rock State Park</a> - <a href="./Coyote–Bear_Park" title="Coyote–Bear Park">Coyote–Bear Park</a> - <a href="./Coyote_Creek_Trail" title="Coyote Creek Trail">Coyote Creek Trail</a> - <a href="./Ed_R._Levin_County_Park" title="Ed R. Levin County Park">Ed Levin Park</a> - <a href="./Joseph_D._Grant_County_Park" title="Joseph D. Grant County Park">Joseph D. Grant County Park</a> - <a href="./Guadalupe_River_Trail" title="Guadalupe River Trail">Guadalupe River Trail</a> - <a href="./Henry_W._Coe_State_Park" title="Henry W. Coe State Park">Henry W. Coe State Park</a> - <a href="./Kelley_Park" title="Kelley Park">Kelley Park</a> - <a href="./Lake_Cunningham" title="Lake Cunningham">Lake Cunningham</a> - <a href="./Los_Alamitos_Creek_Trail" title="Los Alamitos Creek Trail">Los Alamitos Creek Trail</a> - <a href="./Los_Gatos_Creek_Trail" title="Los Gatos Creek Trail">Los Gatos Creek Trail</a> - <a href="./Plaza_de_César_Chávez" title="Plaza de César Chávez">Plaza de César Chávez</a> - <a href="./Rancho_San_Antonio_County_Park" title="Rancho San Antonio County Park">Rancho San Antonio</a> - <a href="./Rosicrucian_Park" title="Rosicrucian Park">Rosicrucian Park</a> - <a href="./St._James_Park_(San_Jose)" title="St. James Park (San Jose)">St. James Park</a> - <a href="./Sanborn_County_Park" title="Sanborn County Park">Sanborn County Park</a> - <a href="./San_Francisco_Bay_Trail" title="San Francisco Bay Trail">SF Bay Trail</a> - <a href="./Shoreline_Park,_Mountain_View" title="Shoreline Park, Mountain View">Shoreline Park</a> - <a href="./Stevens_Creek_(California)" title="Stevens Creek (California)">Stevens Creek Trail</a> - <a href="./Uvas_Canyon_County_Park" title="Uvas Canyon County Park">Uvas Canyon</a> - <a href="./Uvas_Creek_Preserve" title="Uvas Creek Preserve">Uvas Creek Preserve</a> - <a href="./Uvas_Reservoir" title="Uvas Reservoir">Uvas Reservoir</a> - <a href="./Vasona_Park" title="Vasona Park">Vasona Park</a></td>
+</tr>
+<tr>
+<td>Shopping</td>
+<td>- <a href="./Eastridge" title="Eastridge">Eastridge</a> - <a href="./Great_Mall_of_the_Bay_Area" title="Great Mall of the Bay Area">Great Mall</a> - <a href="./NASA_Gift_Shop_in_Silicon_Valley" title="NASA Gift Shop in Silicon Valley">NASA Gift Shop</a> - <a href="./Westfield_Oakridge" title="Westfield Oakridge">Oakridge</a> - <a href="./Pruneyard_Shopping_Center" title="Pruneyard Shopping Center">PruneYard</a> - <a href="./San_Antonio_Shopping_Center" title="San Antonio Shopping Center">San Antonio</a> - <a href="./San_Jose_Flea_Market" title="San Jose Flea Market">San Jose Flea Market</a> - <a href="./Santana_Row" title="Santana Row">Santana Row</a> - <a href="./Stanford_Shopping_Center" title="Stanford Shopping Center">Stanford</a> - <a href="./Westfield_Valley_Fair" title="Westfield Valley Fair">Valley Fair</a> - <a href="./Westgate_Center" title="Westgate Center">Westgate</a></td>
+</tr>
+<tr>
+<td>Theme parks &amp; tours</td>
+<td>- <a href="./Billy_Jones_(railroader)#Billy_Jones_Wildcat_Railroad" title="Billy Jones (railroader)">Billy Jones Wildcat Railroad</a> - <a href="./California's_Great_America" title="California's Great America">California's Great America</a> - <a href="./Gilroy_Gardens" title="Gilroy Gardens">Gilroy Gardens</a> - <a href="./Happy_Hollow_Park_&amp;_Zoo" title="Happy Hollow Park &amp; Zoo">Happy Hollow Park &amp; Zoo</a> - <a href="./Raging_Waters#Raging_Waters_San_Jose" title="Raging Waters">CaliBunga Waterpark</a></td>
+</tr>
+<tr>
+<td>Vineyards &amp; wineries</td>
+<td>- <a href="./Byington_Vineyard" title="Byington Vineyard">Byington Vineyard</a> - <a href="./J._Lohr_Vineyards_&amp;_Wines" title="J. Lohr Vineyards &amp; Wines">J. Lohr Vineyards &amp; Wines</a> - <a href="./Mountain_Winery" title="Mountain Winery">Mountain Winery</a> - <a href="./Picchetti_Brothers_Winery" title="Picchetti Brothers Winery">Picchetti Brothers Winery</a> - <a href="./Savannah–Chanelle_Vineyards" title="Savannah–Chanelle Vineyards">Savannah–Chanelle Vineyards</a></td>
+</tr>
+</tbody>
+</table>
+<p><a href="./Wikipedia:Contents/Portals" title="Wikipedia:Contents/Portals">Portals</a>:</p>
+<ul>
+<li><a href="./File:Crystal_Clear_app_linneighborhood.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Crystal_Clear_app_linneighborhood.svg/20px-Crystal_Clear_app_linneighborhood.svg.png"></a> <a href="./Portal:Internet" title="Portal:Internet">Internet</a></li>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/d/da/SF_From_Marin_Highlands3.jpg/40px-SF_From_Marin_Highlands3.jpg"> <a href="./Portal:San_Francisco_Bay_Area" title="Portal:San Francisco Bay Area">San Francisco Bay Area</a></li>
+<li><a href="./File:EC1835_C_cut.jpg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/27/EC1835_C_cut.jpg/20px-EC1835_C_cut.jpg"></a> <a href="./Portal:1990s" title="Portal:1990s">1990s</a></li>
+</ul></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

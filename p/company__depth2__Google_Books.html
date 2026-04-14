@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Google Books</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link active" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Google Books</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Google_Books<br>
+Category: company__depth2<br>
+Depth: 2</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Google Books, formerly known as Google Book Search, Google Print, and by its code name Project Ocean, is a service provided by Google that searches the full text of books and magazines that Google has scanned, converted to text using optical character recognition (OCR), and stored in its digital database. Books are provided either by publishers and authors through the Google Books Partner Program or by Google's library partners through the Library Project. Additionally, Google has partnered with a number of magazine publishers to digitize their archives.</p>
+<h2>Images</h2>
+<p><img alt="330px-Google_Books_UI_2C_showing_Frankenstein_2C_Or_2C_The_Modern_Prometheus" src="../images/330px-Google_Books_UI_2C_showing_Frankenstein_2C_Or_2C_The_Modern_Prometheus.png"><br>
+<img alt="250px-Google_Books_UI_2C_showing_Frankenstein_2C_Or_2C_The_Modern_Prometheus" src="../images/250px-Google_Books_UI_2C_showing_Frankenstein_2C_Or_2C_The_Modern_Prometheus.png"><br>
+<img alt="250px-Hand_of_Google" src="../images/250px-Hand_of_Google.png"><br>
+<img alt="250px-Google_Book_Search_-_notice_board_at_michigan_university_library" src="../images/250px-Google_Book_Search_-_notice_board_at_michigan_university_library.jpg"></p>
+<h2>Full Article</h2>
+<p>Books search services from Google</p>
+<p>"Google Print" redirects here; not to be confused with <a href="./Google_Cloud_Print" title="Google Cloud Print">Google Cloud Print</a>.</p>
+<p>This article is about Google's book search engine. For Google's e-book service, see <a href="./Google_Play_Books" title="Google Play Books">Google Play Books</a>. For the children's book, see <a href="./The_Google_Book" title="The Google Book"><em>The Google Book</em></a>.</p>
+<p><strong>Google Books</strong>, formerly known as <strong>Google Book Search</strong>, <strong>Google Print</strong>, and by its code name <strong>Project Ocean</strong>, is a service provided by <a href="./Google" title="Google">Google</a> that searches the full text of books and magazines that Google has scanned, converted to text using <a href="./Optical_character_recognition" title="Optical character recognition">optical character recognition</a> (OCR), and stored in its digital database. Books are provided either by publishers and authors through the Google Books Partner Program or by Google's library partners through the Library Project. Additionally, Google has partnered with a number of magazine publishers to digitize their archives.</p>
+<p>The Publisher Program was first known as Google Print when it was introduced at the <a href="./Frankfurt_Book_Fair" title="Frankfurt Book Fair">Frankfurt Book Fair</a> in October 2004. The Google Books Library Project, which scans works in the collections of library partners and adds them to the digital inventory, was announced in December 2004.</p>
+<p>The Google Books initiative has been hailed for its potential to offer unprecedented access to what may become the largest online body of human knowledge and promoting the <a href="./Democratization_of_knowledge" title="Democratization of knowledge">democratization of knowledge</a>. However, it has also been criticized for potential copyright violations, and lack of editing to correct the many errors introduced into the scanned texts by the OCR process.</p>
+<p>As of October 2019<a href="https://en.wikipedia.org/w/index.php?title=Google_Books&amp;action=edit">[update]</a>, Google celebrated 15 years of Google Books and provided the number of scanned books as more than 40 million titles.<br>
+Google estimated in 2010 that there were about 130 million distinct titles in the world, and stated that it intended to scan all of them. However, the <a href="./Book_scanning" title="Book scanning">scanning process</a> in American academic libraries has slowed since the 2000s. Google Book's scanning efforts have been subject to litigation, including <em><a href="./Authors_Guild_v._Google" title="Authors Guild v. Google">Authors Guild v. Google</a></em>, a class-action lawsuit in the United States, decided in Google's favor (<a href="./Google_Books#Legal_issues">see below</a>). This was a major case that came close to changing copyright practices for <a href="./Orphan_work" title="Orphan work">orphan works</a> in the United States. A 2023 study by scholars from the <a href="./University_of_California,_Berkeley" title="University of California, Berkeley">University of California, Berkeley</a>, and <a href="./Northeastern_University" title="Northeastern University">Northeastern University</a>'s business schools found that Google Books's digitization of books has led to increased sales for the physical versions of the books.</p>
+<h2>Details</h2>
+<p>Results from Google Books show up in both the universal <a href="./Google_Search" title="Google Search">Google Search</a> and in the dedicated Google Books search website (<em>books.google.com</em>).</p>
+<p>In response to search queries, Google Books allows users to view full pages from books in which the search terms appear if the book is out of copyright or if the copyright owner has given permission. If Google believes the book is still under copyright, a user sees "snippets" of text around the queried search terms. All instances of the search terms in the book text appear with a yellow highlight.</p>
+<p>The four access levels used on Google Books are:</p>
+<ul>
+<li><strong>Full view</strong>: Books in the <a href="./Public_domain" title="Public domain">public domain</a> are available for "full view" and can be downloaded for free. In-print books acquired through the Partner Program are also available for full view if the publisher has given permission, although this is rare.</li>
+<li><strong>Preview</strong>: For in-print books where permission has been granted, the number of viewable pages is limited to a "preview" set by a variety of access restrictions and security measures, some based on user-tracking. Usually, the publisher can set the percentage of the book available for preview. Users are restricted from copying, downloading or printing book previews. A watermark reading "Copyrighted material" appears at the bottom of pages. All books acquired through the Partner Program are available for preview.</li>
+<li><strong>Snippet view</strong>: A "snippet view" – two to three lines of text surrounding the queried search term – is displayed in cases where Google does not have permission of the copyright owner to display a preview. This could be because Google cannot identify the owner or the owner declined permission. If a search term appears many times in a book, Google displays no more than three snippets, thus preventing the user from viewing too much of the book. Also, Google does not display any snippets for certain reference books, such as dictionaries, where the display of even snippets can harm the market for the work. Google maintains that no permission is required under copyright law to display the snippet view.</li>
+<li><strong>No preview</strong>: Google also displays search results for books that have not been digitized. As these books have not been scanned, their text is not searchable and only the <a href="./Metadata" title="Metadata">metadata</a> such as the title, author, publisher, number of pages, ISBN, subject and copyright information, and in some cases, a table of contents and book summary is available. In effect, this is similar to an online library card catalog.</li>
+</ul>
+<p>In response to criticism from groups such as the <a href="./American_Association_of_Publishers" title="American Association of Publishers">American Association of Publishers</a> and the <a href="./Authors_Guild" title="Authors Guild">Authors Guild</a>, Google announced an <a href="./Opt-out" title="Opt-out">opt-out</a> policy in August 2005, through which copyright owners could provide a list of titles that they do not want scanned, and the request would be respected. The company also stated that it would not scan any in-copyright books between August and 1 November 2005, to provide the owners with the opportunity to decide which books to exclude from the Project. Thus, copyright owners have three choices with respect to any work:</p>
+<ol>
+<li>They can participate in the Partner Program to make a book available for preview or full view, in which case it would share revenue derived from the display of pages from the work in response to user queries.</li>
+<li>They can let Google scan the book under the Library Project and display snippets in response to user queries.</li>
+<li>They can opt out of the Library Project, in which case Google will not scan the book. If the book has already been scanned, Google will reset its access level as 'No preview'.</li>
+</ol>
+<p>Most scanned works are no longer in print or commercially available.</p>
+<p>In addition to procuring books from libraries, Google also obtains books from its publisher partners, through the "Partner Program" – designed to help publishers and authors promote their books. Publishers and authors submit either a digital copy of their book in <a href="./EPUB" title="EPUB">EPUB</a> or <a href="./Portable_Document_Format" title="Portable Document Format">PDF</a> format, or a print copy to Google, which is made available on Google Books for preview. The publisher can control the percentage of the book available for preview, with the minimum being 20%. They can also choose to make the book fully viewable, and even allow users to download a PDF copy. Books can also be made available for sale on Google Play. Unlike the Library Project, this does not raise any copyright concerns as it is conducted pursuant to an agreement with the publisher. The publisher can choose to withdraw from the agreement at any time.</p>
+<p>For many books, Google Books displays the original page numbers. However, <a href="./Tim_Parks" title="Tim Parks">Tim Parks</a>, writing in <em>The New York Review of Books</em> in 2014, noted that Google had stopped providing page numbers for many recent publications (likely the ones acquired through the Partner Program) "presumably in alliance with the publishers, in order to force those of us who need to prepare footnotes to buy paper editions."</p>
+<h2>Scanning of books</h2>
+<p>The project began in 2002 under the codename Project Ocean. Google co-founder <a href="./Larry_Page" title="Larry Page">Larry Page</a> had always had an interest in digitizing books. When he and <a href="./Marissa_Mayer" title="Marissa Mayer">Marissa Mayer</a> began experimenting with <a href="./Book_scanning" title="Book scanning">book scanning</a> in 2002, it took 40 minutes for them to digitize a 300-page book. But soon after the technology had been developed to the extent that scanning operators could scan up to 6000 pages an hour.</p>
+<p>Google established designated scanning centers to which books were transported by trucks. The stations could digitize at the rate of 1,000 pages per hour. The books were placed in a custom-built mechanical cradle that adjusted the book spine in place while an array of lights and optical instruments scanned the two open pages. Each page would have two cameras directed at it capturing the image, while a range finder <a href="./LIDAR" title="LIDAR">LIDAR</a> overlaid a three-dimensional laser grid on the book's surface to capture the curvature of the paper. A human operator would turn the pages by hand, using a foot pedal to take the photographs. With no need to flatten the pages or align them perfectly, Google's system not only reached a remarkable efficiency and speed but also helped protect the fragile collections from being over-handled. Afterwards, the crude images went through three levels of processing: first, de-warping algorithms used the LIDAR data fix the pages' curvature. Then, <a href="./Optical_character_recognition" title="Optical character recognition">optical character recognition</a> (OCR) software transformed the raw images into text, and, lastly, another round of algorithms extracted page numbers, footnotes, illustrations and diagrams.</p>
+<p>Many of the books are scanned using a customized <a href="./Elphel" title="Elphel">Elphel</a> 323 camera at a rate of 1,000 pages per hour. A <a href="./Patent" title="Patent">patent</a> awarded to Google in 2009 revealed that Google had come up with an innovative system for scanning books that uses two cameras and infrared light to automatically correct for the curvature of pages in a book. By constructing a 3D model of each page and then "de-warping" it, Google is able to present flat-looking pages without having to really make the pages flat, which requires the use of destructive methods such as <a href="./Book_scanning#Unbinding" title="Book scanning">unbinding</a> or glass plates to individually flatten each page, which is inefficient for large scale scanning.</p>
+<p>Google decided to omit color information in favour of better spatial resolution, as most out-of-copyright books at the time did not contain colors. Each page image was passed through algorithms that distinguished the text and illustration regions. Text regions were then processed via OCR to enable full-text searching. Google expended considerable resources in coming up with optimal compression techniques, aiming for high image quality while keeping the file sizes minimal to enable access by internet users with low bandwidth.</p>
+<h2>Website functionality</h2>
+<p>For each work, Google Books automatically generates an overview page. This page displays information extracted from the book—its publishing details, a high frequency word map, the table of contents—as well as secondary material, such as summaries, reader reviews (not readable in the mobile version of the website), and links to other relevant texts. A visitor to the page, for instance, might see a list of books that share a similar genre and theme, or they might see a list of current scholarship on the book. This content, moreover, offers interactive possibilities for users signed into their <a href="./Google_account" title="Google account">Google account</a>. They can export the bibliographic data and <a href="./Citation" title="Citation">citations</a> in <a href="./Citation#Styles" title="Citation">standard formats</a>, write their own reviews, add it to their library to be tagged, organized, and shared with other people. Thus, Google Books collects these more interpretive elements from a range of sources, including the users, third-party sites like <a href="./Goodreads" title="Goodreads">Goodreads</a>, and often the book's author and publisher.</p>
+<p>In fact, to encourage authors to upload their own books, Google has added several functionalities to the website. The authors can allow visitors to download their ebook for free, or they can set their own purchase price. They can change the price back and forth, offering discounts whenever it suits them. Also, if a book's author chooses to add an <a href="./International_Standard_Book_Number" title="International Standard Book Number">ISBN</a>, <a href="./Library_of_Congress_Control_Number" title="Library of Congress Control Number">LCCN</a> or <a href="./Online_Computer_Library_Center" title="Online Computer Library Center">OCLC</a> record number, the service will update the book's url to include it. Then, the author can set a specific page as the link's anchor. This option makes their book more easily discoverable.</p>
+<h2>Ngram Viewer</h2>
+<p>Main article: <a href="./Google_Ngram_Viewer" title="Google Ngram Viewer">Google Ngram Viewer</a></p>
+<p>The Ngram Viewer is a service connected to Google Books that graphs the frequency of word usage across their book collection. The service is important for historians and linguists as it can provide an inside look into human culture through word use throughout time periods. This program has fallen under criticism because of errors in the metadata used in the program.</p>
+<h2>Content issues and criticism</h2>
+<p>The project has received criticism that its stated aim of preserving orphaned and out-of-print works is at risk due to scanned data having errors and such problems not being solved.</p>
+<h3>Scanning errors</h3>
+<p>The scanning process is subject to errors. For example, some pages may be unreadable, upside down, or in the wrong order. Scholars have even reported crumpled pages, obscuring thumbs and fingers, and smeared or blurry images. On this issue, a declaration from Google at the end of scanned books says:</p>
+<blockquote>
+<p>The digitization at the most basic level is based on page images of the physical books. To make this book available as an ePub formatted file we have taken those page images and extracted the text using Optical Character Recognition (or OCR for short) technology. The extraction of text from page images is a difficult engineering task. Smudges on the physical books' pages, fancy fonts, old fonts, torn pages, etc. can all lead to errors in the extracted text. Imperfect OCR is only the first challenge in the ultimate goal of moving from collections of page images to extracted-text based books. Our computer algorithms also have to automatically determine the structure of the book (what are the headers and footers, where images are placed, whether text is verse or prose, and so forth).<br>
+Getting this right allows us to render the book in a way that follows the format of the original book. Despite our best efforts you may see spelling mistakes, garbage characters, extraneous images, or missing pages in this book. Based on our estimates, these errors should not prevent you from enjoying the content of the book. The technical challenges of automatically constructing a perfect book are daunting, but we continue to make enhancements to our OCR and book structure extraction technologies.</p>
+</blockquote>
+<p>In 2009, Google stated that they would start using <a href="./ReCAPTCHA" title="ReCAPTCHA">reCAPTCHA</a> to help fix the errors found in Google Book scans. This method would only improve scanned words that are hard to recognize because of the scanning process and cannot solve errors such as turned pages or blocked words.</p>
+<p>Scanning errors have inspired works of art such as published collections of anomalous pages and a <a href="./Tumblr" title="Tumblr">Tumblr</a> blog.</p>
+<h3>Errors in metadata</h3>
+<p>Scholars have frequently reported rampant errors in the <a href="./Metadata" title="Metadata">metadata</a> information on Google Books – including misattributed authors and erroneous dates of publication. <a href="./Geoffrey_Nunberg" title="Geoffrey Nunberg">Geoffrey Nunberg</a>, a linguist researching on the changes in word usage over time noticed that a search for books published before 1950 and containing the word "internet" turned up an unlikely 527 results. Woody Allen is mentioned in 325 books ostensibly published before he was born. Google responded to Nunberg by blaming the bulk of errors on outside contractors.</p>
+<p>Other metadata errors reported include publication dates before the author's birth (e.g. 182 works by Charles Dickens prior to his birth in 1812); incorrect subject classifications (an edition of <em>Moby Dick</em> found under "computers", a biography of Mae West classified under "religion"), conflicting classifications (10 editions of Whitman's <em>Leaves of Grass</em> all classified as both "fiction" and "nonfiction"), incorrectly spelled titles, authors, and publishers (<em>Moby Dick: or the White "Wall"</em>), and metadata for one book incorrectly appended to a completely different book (the metadata for an 1818 mathematical work leads to a 1963 romance novel).</p>
+<blockquote>
+<p>A review of the author, title, publisher, and publication year metadata elements for 400 randomly selected Google Books records was undertaken. The results show 36% of sampled books in the digitization project contained metadata errors. This error rate is higher than one would expect to find in a typical library online catalog.</p>
+<p>The overall error rate of 36.75% found in this study suggests that Google Books' metadata has a high rate of error. While "major" and "minor" errors are a subjective distinction based on the somewhat indeterminate concept of "findability", the errors found in the four metadata elements examined in this study should all be considered major.</p>
+</blockquote>
+<p>Metadata errors based on incorrect scanned dates has made research using the Google Books Project database difficult. According to a 2009 article by academic <a href="./Geoffrey_Nunberg" title="Geoffrey Nunberg">Geoffrey Nunberg</a> Google was aware of these errors and working towards fixing them.</p>
+<h3>Language issues</h3>
+<p>Some European politicians and intellectuals have criticized Google's effort on <a href="./Linguistic_imperialism" title="Linguistic imperialism">linguistic imperialism</a> grounds. They argue that because the vast majority of books proposed to be scanned are in English, it will result in disproportionate representation of natural languages in the digital world. German, Russian, French, and Spanish, for instance, are popular languages in scholarship. The disproportionate online emphasis on English, however, could shape access to historical scholarship, and, ultimately, the growth and direction of future scholarship. Among these critics is <a href="./Jean-Noël_Jeanneney" title="Jean-Noël Jeanneney">Jean-Noël Jeanneney</a>, the former president of the <em><a href="./Bibliothèque_nationale_de_France" title="Bibliothèque nationale de France">Bibliothèque nationale de France</a></em>.</p>
+<h3>Google Books versus Google Scholar</h3>
+<p>While Google Books has digitized large numbers of journal back issues, its scans do not include the metadata required for identifying specific articles in specific issues. This has led the makers of <a href="./Google_Scholar" title="Google Scholar">Google Scholar</a> to start their own program to digitize and host older journal articles (in agreement with their publishers).</p>
+<h2>Library partners</h2>
+<p>The Google Books Library Project is aimed at scanning and making searchable the collections of several major research <a href="./Libraries" title="Libraries">libraries</a>. Along with <a href="./Bibliographic" title="Bibliographic">bibliographic</a> information, snippets of text from a book are often viewable. If a book is out of <a href="./Copyright" title="Copyright">copyright</a> and in the public domain, the book is fully available to read or <a href="./Download" title="Download">download</a>.</p>
+<p>In-copyright books scanned through the Library Project are made available on Google Books for snippet view. Regarding the quality of scans, Google acknowledges that they are "not always of sufficiently high quality" to be offered for sale on Google Play. Also, because of supposed technical constraints, Google does not replace scans with higher quality versions that may be provided by the publishers.</p>
+<p>The project is the subject of the <em><a href="./Authors_Guild_v._Google" title="Authors Guild v. Google">Authors Guild v. Google</a></em> lawsuit, filed in 2005 and ruled in favor of Google in 2013, and again, on appeal, in 2015.</p>
+<p>Copyright owners can claim the rights for a scanned book and make it available for preview or full view (by "transferring" it to their Partner Program account), or request Google to prevent the book text from being searched.</p>
+<p>The number of institutions participating in the Library Project has grown since its inception.</p>
+<h3>Initial partners</h3>
+<ul>
+<li>Harvard University, <a href="./Harvard_University_Library" title="Harvard University Library">Harvard University Library</a></li>
+</ul>
+<dl>
+<dd>The Harvard University Library and Google conducted a pilot throughout 2005. The project continued, with the aim of increasing online access to the holdings of the Harvard University Library, which included more than 15.8 million volumes. While physical access to Harvard's library materials is generally restricted to current Harvard students, faculty, researchers and visiting scholars, the Harvard-Google Project was designed to enable both members of the Harvard community and users everywhere to discover works in the Harvard collection.<br>
+- University of Michigan, <a href="./University_of_Michigan_Library" title="University of Michigan Library">University of Michigan Library</a></dd>
+<dd>As of March 2012, 5.5 million volumes were scanned.<br>
+- <a href="./New_York_Public_Library" title="New York Public Library">New York Public Library</a> (NYPL)</dd>
+<dd>NYPL worked with Google to offer a collection of its public domain books, scanned in their entirety and made available online for free from NYPL's website and Google. More than 400,000 books have been digitized.<br>
+- University of Oxford, <a href="./Bodleian_Library" title="Bodleian Library">Bodleian Library</a><br>
+- Stanford University, <a href="./Stanford_University_Libraries" title="Stanford University Libraries">Stanford University Libraries</a> (SULAIR)</dd>
+</dl>
+<h3>Additional partners</h3>
+<p>Other institutional partners have joined the project since the partnership was first announced:</p>
+<ul>
+<li><a href="./Austrian_National_Library" title="Austrian National Library">Austrian National Library</a></li>
+<li><a href="./Bavarian_State_Library" title="Bavarian State Library">Bavarian State Library</a></li>
+<li><a href="./Bibliothèque_municipale_de_Lyon" title="Bibliothèque municipale de Lyon">Bibliothèque municipale de Lyon</a></li>
+<li><a href="./Big_Ten_Academic_Alliance" title="Big Ten Academic Alliance">Big Ten Academic Alliance</a></li>
+<li>Columbia University, <a href="./Columbia_University_Library_System" title="Columbia University Library System">Columbia University Library System</a></li>
+<li><a href="./Complutense_University_of_Madrid" title="Complutense University of Madrid">Complutense University of Madrid</a></li>
+<li>Cornell University, <a href="./Cornell_University_Library" title="Cornell University Library">Cornell University Library</a></li>
+<li>Ghent University, <a href="./Ghent_University_Library" title="Ghent University Library">Ghent University Library</a>/<a href="./Boekentoren" title="Boekentoren">Boekentoren</a></li>
+<li>Keio University, <a href="./Keio_Media_Centers_(Libraries)" title="Keio Media Centers (Libraries)">Keio Media Centers (Libraries)</a></li>
+<li><a href="./National_Library_of_Catalonia" title="National Library of Catalonia">National Library of Catalonia</a></li>
+<li>Princeton University, <a href="./Princeton_University_Library" title="Princeton University Library">Princeton University Library</a></li>
+<li>University of California, <a href="./California_Digital_Library" title="California Digital Library">California Digital Library</a></li>
+<li>University of Lausanne, <a href="./Cantonal_and_University_Library_of_Lausanne" title="Cantonal and University Library of Lausanne">Cantonal and University Library of Lausanne</a></li>
+<li>University of Mysore, <a href="./Mysore_University_Library" title="Mysore University Library">Mysore University Library</a></li>
+</ul>
+<dl>
+<dd>The partnership was for digitizing 800,000 texts, including manuscripts written on palm leaves dating back to eighth century.<br>
+- <a href="./University_of_Texas_at_Austin" title="University of Texas at Austin">University of Texas at Austin</a>, University of Texas Libraries</dd>
+<dd>The partnership was for digitizing the library's Latin American collection – about half a million volumes.<br>
+- University of Virginia, <a href="./University_of_Virginia_Library" title="University of Virginia Library">University of Virginia Library</a><br>
+- University of Wisconsin–Madison, <a href="./University_of_Wisconsin–Madison#Libraries" title="University of Wisconsin–Madison">University of Wisconsin Libraries</a></dd>
+<dd>As of March 2012, about 600,000 volumes had been scanned.</dd>
+</dl>
+<h2>History</h2>
+<p><strong>2002</strong>: A group of team members at Google officially launch the "secret 'books' project." Google founders <a href="./Sergey_Brin" title="Sergey Brin">Sergey Brin</a> and <a href="./Larry_Page" title="Larry Page">Larry Page</a> came up with the idea that later became Google Books while still graduate students at Stanford in 1996. The history page on the Google Books website describes their initial vision for this project: "in a future world in which vast collections of books are digitized, people would use a '<a href="./Web_crawler" title="Web crawler">web crawler</a>' to index the books' content and analyze the connections between them, determining any given book's relevance and usefulness by tracking the number and quality of citations from other books." This team visited the sites of some of the larger digitization efforts at that time including the Library of Congress's <a href="./American_Memory" title="American Memory">American Memory Project</a>, <a href="./Project_Gutenberg" title="Project Gutenberg">Project Gutenberg</a>, and the Universal Library to find out how they work, as well as the University of Michigan, Page's alma mater, and the base for such digitization projects as <a href="./JSTOR" title="JSTOR">JSTOR</a> and Making of America. In a conversation with the at that time University President <a href="./Mary_Sue_Coleman" title="Mary Sue Coleman">Mary Sue Coleman</a>, when Page found out that the university's current estimate for scanning all the library's volumes was 1,000 years, Page reportedly told Coleman that he "believes Google can help make it happen in six."</p>
+<p><strong>2003</strong>: The team works to develop a high-speed scanning process as well as software for resolving issues in odd type sizes, unusual fonts, and "other unexpected peculiarities."</p>
+<p><strong>December 2004</strong>: Google signaled an extension to its Google Print initiative known as the Google Print Library Project. Google announced partnerships with several high-profile university and public libraries, including the <a href="./University_of_Michigan" title="University of Michigan">University of Michigan</a>, Harvard (<a href="./Harvard_University_Library" title="Harvard University Library">Harvard University Library</a>), Stanford (<a href="./Green_Library" title="Green Library">Green Library</a>), Oxford (<a href="./Bodleian_Library" title="Bodleian Library">Bodleian Library</a>), and the <a href="./New_York_Public_Library" title="New York Public Library">New York Public Library</a>. According to press releases and university librarians, Google planned to digitize and make available through its Google Books service approximately 15 million volumes within a decade. The announcement soon triggered controversy, as publisher and author associations challenged Google's plans to digitize, not just books in the public domain, but also titles still under copyright.</p>
+<p><strong>September–October 2005</strong>: Two lawsuits against Google charge that the company has not respected <a href="./Copyright" title="Copyright">copyrights</a> and has failed to properly compensate authors and publishers. One is a class action suit on behalf of authors (Authors Guild v. Google, September 20, 2005) and the other is a civil lawsuit brought by five large publishers and the <a href="./Association_of_American_Publishers" title="Association of American Publishers">Association of American Publishers</a>. (<a href="./McGraw_Hill_v._Google?action=edit&amp;redlink=1" title="McGraw Hill v. Google">McGraw Hill v. Google</a>, October 19, 2005)</p>
+<p><strong>November 2005</strong>: Google changed the name of this service from Google Print to Google Book Search. Its program enabling publishers and authors to include their books in the service was renamed Google Books Partner Program, and the partnership with libraries became <a href="./Google_Books#Google_Books_Library_Project">Google Books Library Project</a>.</p>
+<p><strong>2006</strong>: Google added a "download a pdf" button to all its out-of-copyright, public domain books. It also added a new browsing interface along with new "About this Book" pages.</p>
+<p><strong>August 2006</strong>: The <a href="./University_of_California_System" title="University of California System">University of California System</a> announced that it would join the Books digitization project. This includes a portion of the 34 million volumes within the approximately 100 libraries managed by the System.</p>
+<p><strong>September 2006</strong>: The <a href="./Complutense_University_of_Madrid" title="Complutense University of Madrid">Complutense University of Madrid</a> became the first Spanish-language library to join the Google Books Library Project.</p>
+<p><strong>October 2006</strong>: The <a href="./University_of_Wisconsin–Madison" title="University of Wisconsin–Madison">University of Wisconsin–Madison</a> announced that it would join the Book Search digitization project along with the <a href="./Wisconsin_Historical_Society" title="Wisconsin Historical Society">Wisconsin Historical Society</a> Library. Combined, the libraries have 7.2 million holdings.</p>
+<p><strong>November 2006</strong>: The <a href="./University_of_Virginia" title="University of Virginia">University of Virginia</a> joined the project. Its libraries contain more than five million volumes and more than 17 million manuscripts, rare books and archives.</p>
+<p><strong>January 2007</strong>: The <a href="./University_of_Texas_at_Austin" title="University of Texas at Austin">University of Texas at Austin</a> announced that it would join the Book Search digitization project. At least one million volumes would be digitized from the university's 13 library locations.</p>
+<p><strong>March 2007</strong>: The <a href="./Bavarian_State_Library" title="Bavarian State Library">Bavarian State Library</a> announced a partnership with Google to scan more than a million public domain and out-of-print works in German as well as English, French, Italian, Latin, and Spanish.</p>
+<p><strong>May 2007</strong>: A book digitizing project partnership was announced jointly by Google and the <a href="./Cantonal_and_University_Library_of_Lausanne" title="Cantonal and University Library of Lausanne">Cantonal and University Library of Lausanne</a>.</p>
+<p><strong>May 2007</strong>: The <a href="./Boekentoren" title="Boekentoren">Boekentoren</a> Library of <a href="./Ghent_University" title="Ghent University">Ghent University</a> announced that it would participate with Google in digitizing and making digitized versions of 19th century books in the French and Dutch languages available online.</p>
+<p><strong>May 2007:</strong> Mysore University announces Google will digitize over 800,000 books and manuscripts–including around 100,000 manuscripts written in Sanskrit or Kannada on both paper and palm leaves.</p>
+<p><strong>June 2007</strong>: The <a href="./Committee_on_Institutional_Cooperation" title="Committee on Institutional Cooperation">Committee on Institutional Cooperation</a> (rebranded as the <a href="./Big_Ten_Academic_Alliance" title="Big Ten Academic Alliance">Big Ten Academic Alliance</a> in 2016) announced that its twelve member libraries would participate in scanning 10 million books over the course of the next six years.</p>
+<p><strong>July 2007</strong>: <a href="./Keio_University" title="Keio University">Keio University</a> became Google's first library partner in <a href="./Japan" title="Japan">Japan</a> with the announcement that they would digitize at least 120,000 public domain books.</p>
+<p><strong>August 2007</strong>: Google announced that it would digitize up to 500,000 both copyrighted and public domain items from <a href="./Cornell_University_Library" title="Cornell University Library">Cornell University Library</a>. Google would also provide a digital copy of all works scanned to be incorporated into the university's own library system.</p>
+<p><strong>September 2007</strong>: Google added a feature that allows users to share snippets of books that are in the public domain. The snippets may appear exactly as they do in the scan of the book, or as plain text.</p>
+<p><strong>September 2007</strong>: Google debuted a new feature called "My Library" which allows users to create personal customized libraries, selections of books that they can label, review, rate, or full-text search.</p>
+<p><strong>December 2007</strong>: <a href="./Columbia_University" title="Columbia University">Columbia University</a> was added as a partner in digitizing public domain works.</p>
+<p><strong>May 2008</strong>: <a href="./Microsoft" title="Microsoft">Microsoft</a> tapered off and planned to end <a href="./Live_Search_Books" title="Live Search Books">its scanning project</a>, which had reached 750,000 books and 80 million journal articles.</p>
+<p><strong>October 2008</strong>: A <a href="./Google_Book_Search_Settlement_Agreement" title="Google Book Search Settlement Agreement">settlement</a> was reached between the publishing industry and Google after two years of negotiation. Google agreed to compensate authors and publishers in exchange for the right to make millions of books available to the public.</p>
+<p><strong>October 2008</strong>: The <a href="./HathiTrust" title="HathiTrust">HathiTrust</a> "Shared Digital Repository" (later known as the HathiTrust Digital Library) is launched jointly by the <a href="./Big_Ten_Academic_Alliance" title="Big Ten Academic Alliance">Committee on Institutional Cooperation</a> and the 11 university libraries in the <a href="./University_of_California" title="University of California">University of California system</a>, all of which were Google partner libraries, in order to archive and provide academic access to books from their collections scanned by Google and others.</p>
+<p><strong>November 2008</strong>: Google reached the 7 million book mark for items scanned by Google and by their publishing partners. 1 million were in full preview mode and 1 million were fully viewable and downloadable public domain works. About five million were <a href="./Out-of-print_book" title="Out-of-print book">out of print</a>.</p>
+<p><strong>December 2008</strong>: Google announced the inclusion of magazines in Google Books. Titles include <em><a href="./New_York_Magazine" title="New York Magazine">New York Magazine</a></em>, <em><a href="./Ebony_(magazine)" title="Ebony (magazine)">Ebony</a></em>, and <em><a href="./Popular_Mechanics" title="Popular Mechanics">Popular Mechanics</a></em></p>
+<p><strong>February 2009</strong>: Google launched a mobile version of Google Book Search, allowing iPhone and Android phone users to read over 1.5 million public domain works in the US (and over 500,000 outside the US) using a mobile browser. Instead of page images, the plain text of the book is displayed.</p>
+<p><strong>May 2009</strong>: At the annual <a href="./BookExpo" title="BookExpo">BookExpo</a> convention in New York, Google signaled its intent to introduce a program that would enable publishers to sell digital versions of their newest books direct to consumers through Google.</p>
+<p><strong>December 2009</strong>: A French court shut down the scanning of copyrighted books published in France, saying this violated copyright laws. It was the first major legal loss for the scanning project.</p>
+<p><strong>April 2010</strong>: Visual artists were not included in the previous lawsuit and settlement, are the plaintiff groups in another lawsuit, and say they intend to bring more than just Google Books under scrutiny. "The new class action," read the statement, "goes beyond Google's Library Project, and includes Google's other systematic and pervasive infringements of the rights of photographers, illustrators and other visual artists."</p>
+<p><strong>May 2010</strong>: It was reported that Google would launch a digital book store called <a href="./Google_Editions" title="Google Editions">Google Editions</a>. It would compete with Amazon, Barnes &amp; Noble, Apple and other electronic book retailers with its own e-book store. Unlike others, Google Editions would be completely online and would not require a specific device (such as kindle, Nook, or iPad).</p>
+<p><strong>June 2010</strong>: Google passed 12 million books scanned.</p>
+<p><strong>August 2010</strong>: It was announced that Google intends to scan all known existing 129,864,880 books within a decade, amounting to over 4 billion <a href="./Digital_page" title="Digital page">digital pages</a> and 2 trillion words in total.</p>
+<p><strong>December 2010</strong>: Google eBooks (Google Editions) was launched in the US.</p>
+<p><strong>December 2010</strong>: Google launched the Ngram Viewer, which collects and graphs data on word usage across its book collection.</p>
+<p><strong>March 2011</strong>: A federal judge rejected the <a href="./Google_Book_Search_Settlement_Agreement" title="Google Book Search Settlement Agreement">settlement</a> reached between the publishing industry and Google.</p>
+<p><strong>March 2012</strong>: Google passed 20 million books scanned.</p>
+<p><strong>March 2012</strong>: Google reached a settlement with publishers.</p>
+<p><strong>January 2013</strong>: The documentary <em><a href="./Google_and_the_World_Brain" title="Google and the World Brain">Google and the World Brain</a></em> was shown at the <a href="./Sundance_Film_Festival" title="Sundance Film Festival">Sundance Film Festival</a>.</p>
+<p><strong>November 2013</strong>: Ruling in <em><a href="./Authors_Guild_v._Google" title="Authors Guild v. Google">Authors Guild v. Google</a></em>, US District Judge <a href="./Denny_Chin" title="Denny Chin">Denny Chin</a> sides with Google, citing fair use. The authors said they would appeal.</p>
+<p><strong>October 2015</strong>: The appeals court sided with Google, declaring that Google did not violate copyright law. According to the New York Times, Google has scanned more than 25 million books.</p>
+<p><strong>April 2016</strong>: The US Supreme Court declined to hear the Authors Guild's appeal, which means the lower court's decision stood, and Google would be allowed to scan library books and display snippets in search results without violating the law.</p>
+<h3>Status</h3>
+<p>Google has been quite secretive regarding its plans on the future of the Google Books project. Scanning operations had been slowing down since at least 2012, as confirmed by the librarians at several of Google's partner institutions. At University of Wisconsin, the speed had reduced to less than half of what it was in 2006. However, the librarians have said that the dwindling pace could be a natural result of maturation of the project – initially stacks of books were entirely taken up for scanning whereas now only the titles that had not already been scanned needed to be considered. The company's own Google Books timeline page did not mention anything after 2007 even in 2017, and the Google Books blog was merged into the Google Search blog in 2012.</p>
+<p>Despite winning the decade-long litigation in 2017, <em><a href="./The_Atlantic" title="The Atlantic">The Atlantic</a></em> has said that Google has "all but shut down its scanning operation." In April 2017, <em><a href="./Wired_(magazine)" title="Wired (magazine)">Wired</a></em> reported that there were only a few Google employees working on the project, and new books were still being scanned, but at a significantly lower rate. It commented that the decade-long legal battle had caused Google to lose its ambition.</p>
+<h2>Legal issues</h2>
+<p>Further information: <a href="./Authors_Guild,_Inc._v._Google,_Inc." title="Authors Guild, Inc. v. Google, Inc.">Authors Guild, Inc. v. Google, Inc.</a></p>
+<p>Through the project, library books were being digitized somewhat indiscriminately regardless of copyright status, which led to a number of lawsuits against Google. By the end of 2008, Google had reportedly digitized over seven million books, of which only about one million were works in the public domain. Of the rest, one million were in copyright and in print, and five million were in copyright but out of print. In 2005, a group of authors and publishers brought a major <a href="./Class_action" title="Class action">class-action</a> lawsuit against Google for infringement on the copyrighted works. Google argued that it was preserving "orphaned works" – books still under copyright, but whose copyright holders could not be located.</p>
+<p>The <a href="./Authors_Guild" title="Authors Guild">Authors Guild</a> and <a href="./Association_of_American_Publishers" title="Association of American Publishers">Association of American Publishers</a> separately sued Google in 2005 for its book project, citing "massive <a href="./Copyright_infringement" title="Copyright infringement">copyright infringement</a>." Google countered that its project represented a <a href="./Fair_use" title="Fair use">fair use</a> and is the digital age equivalent of a <a href="./Card_catalog" title="Card catalog">card catalog</a> with every word in the publication indexed. The lawsuits were consolidated, and eventually a <a href="./Google_Book_Search_Settlement_Agreement" title="Google Book Search Settlement Agreement">settlement was proposed</a>. The settlement received significant criticism on a wide variety of grounds, including antitrust, privacy, and inadequacy of the proposed classes of authors and publishers. The settlement was eventually rejected, and the publishers settled with Google soon after. The Authors Guild continued its case, and in 2011 their proposed <a href="./Class_certification" title="Class certification">class was certified</a>. Google appealed that decision, with a number of <a href="./Amicus_curiae" title="Amicus curiae">amici</a> asserting the <a href="./Inadequacy_of_the_class?action=edit&amp;redlink=1" title="Inadequacy of the class">inadequacy of the class</a>, and the Second Circuit rejected the <a href="./Class_certification" title="Class certification">class certification</a> in July 2013, remanding the case to the District Court for consideration of Google's <a href="./Fair_use" title="Fair use">fair use</a> defense.</p>
+<p>In 2015 Authors Guild filed another appeal against Google to be considered by the 2nd U.S. Circuit Court of Appeals in New York. Google won the case unanimously based on the argument that they were not showing people the full texts but instead snippets, and they are not allowing people to illegally read the book. In a report, courts stated that they did not infringe on copyright laws, as they were protected under the fair use clause.</p>
+<p>Authors Guild tried again in 2016 to appeal the decision and this time took their case to be considered by the Supreme Court. The case was rejected, leaving the Second Circuit's decision on the case intact, meaning that Google did not violate copyright laws. This case also set a precedent for other similar cases in regards to fair use laws, as it further clarified the law and expanded it. Such clarification affects other scanning projects similar to Google.</p>
+<p>Other lawsuits followed the Authors Guild's lead. In 2006 a German lawsuit, previously filed, was withdrawn. In June 2006, Hervé de la Martinière, a French publisher known as La Martinière and <a href="./Éditions_du_Seuil" title="Éditions du Seuil">Éditions du Seuil</a>, announced its intention to sue Google France. In 2009, the Paris Civil Court awarded 300,000 <a href="./EUR" title="EUR">EUR</a> (approximately 430,000 <a href="./USD" title="USD">USD</a>) in damages and interest and ordered Google to pay 10,000 EUR a day until it removes the publisher's books from its database. The court wrote, "Google violated author copyright laws by fully reproducing and making accessible" books that Seuil owns without its permission and that Google "committed acts of breach of copyright, which are of harm to the publishers". Google said it will appeal. Syndicat National de l'Edition, which joined the lawsuit, said Google has scanned about 100,000 French works under copyright.</p>
+<p>In December 2009, Chinese author <a href="./Mian_Mian" title="Mian Mian">Mian Mian</a> filed a civil lawsuit for $8,900 against Google for scanning her novel, <em>Acid Lovers</em>. This is the first such lawsuit to be filed against Google in China. Also, in November that year, the China Written Works Copyright Society (CWWCS) accused Google of scanning 18,000 books by 570 Chinese writers without authorization. Google agreed on Nov 20 to provide a list of Chinese books it had scanned, but the company refused to admit having "infringed" copyright laws.[<em><a href="./Wikipedia:Reliable_sources" title="Wikipedia:Reliable sources">unreliable source?</a></em>]</p>
+<p>In March 2007, Thomas Rubin, associate general counsel for copyright, trademark, and trade secrets at Microsoft, accused Google of violating copyright law with their book search service. Rubin specifically criticized Google's policy of freely copying any work until notified by the copyright holder to stop.</p>
+<p>Google licensing of public domain works is also an area of concern due to using of <a href="./Digital_watermarking" title="Digital watermarking">digital watermarking</a> techniques with the books. Some published works that are in the public domain, such as all <a href="./Copyright_status_of_work_by_the_U.S._government" title="Copyright status of work by the U.S. government">works created by the U.S. Federal government</a>, are still treated like other works under copyright, and therefore locked after 1922.</p>
+<p>Since at least 2014, Google has allowed authors and publishers to remove book previews from Google Books upon request.</p>
+<h2>Similar projects</h2>
+<ul>
+<li><a href="./Project_Gutenberg" title="Project Gutenberg">Project Gutenberg</a> is a volunteer effort to digitize and archive cultural works, to "encourage the creation and distribution of eBooks". It was founded in 1971 by Michael S. Hart and is the oldest digital library. As of October 3, 2015<a href="https://en.wikipedia.org/w/index.php?title=Google_Books&amp;action=edit">[update]</a>, Project Gutenberg reached 50,000 items in its collection.</li>
+<li><a href="./Internet_Archive" title="Internet Archive">Internet Archive</a> is a non-profit which digitizes over 1000 books a day, as well as mirrors books from Google Books and other sources. As of May 2011<a href="https://en.wikipedia.org/w/index.php?title=Google_Books&amp;action=edit">[update]</a>, it hosted over 2.8 million public domain books, greater than the approximate 1 million public domain books at Google Books. <a href="./Open_Library" title="Open Library">Open Library</a>, a sister project of Internet Archive, lends 80,000 scanned and purchased commercial ebooks to the visitors of 150 libraries.</li>
+<li><a href="./HathiTrust" title="HathiTrust">HathiTrust</a> maintains HathiTrust Digital Library since October 13, 2008, which preserves and provides access to material scanned by Google, some of the Internet Archive books, and some scanned locally by partner institutions. As of May 2010<a href="https://en.wikipedia.org/w/index.php?title=Google_Books&amp;action=edit">[update]</a>, it includes about 6 million volumes, over 1 million of which are public domain (at least in the US).</li>
+<li><a href="https://www.humanitiesebook.org">ACLS Humanities E-Book</a>, an online collection of over 5,400 books of high quality in the humanities and related social sciences, accessible through institutional subscription.</li>
+<li>Microsoft funded the scanning of 300,000 books to create <a href="./Live_Search_Books" title="Live Search Books">Live Search Books</a> in late 2006. It ran until May 2008, when the project was abandoned and the books were made freely available on the Internet Archive.</li>
+<li>The <a href="./National_Digital_Library_of_India" title="National Digital Library of India">National Digital Library of India</a> (NDLI) is a project under Ministry of Human Resource Development, India. The objective is to integrate several national and international digital libraries in one single web-portal. The NDLI provides free of cost access to many books in English and the Indian languages.</li>
+<li><a href="./Europeana" title="Europeana">Europeana</a> links to roughly 10 million digital objects as of 2010<a href="https://en.wikipedia.org/w/index.php?title=Google_Books&amp;action=edit">[update]</a>, including video, photos, paintings, audio, maps, manuscripts, printed books, and newspapers from the past 2,000 years of European history from over 1,000 archives in the European Union.</li>
+<li><a href="./Gallica" title="Gallica">Gallica</a> from the French National Library links to about 4,000,000 digitized books, newspapers, manuscripts, maps and drawings, etc. Created in 1997, the digital library continues to expand at a rate of about 5000 new documents per month. Since the end of 2008, most of the new scanned documents are available in image and text formats. Most of these documents are written in French.</li>
+<li><a href="./Wikisource" title="Wikisource">Wikisource</a></li>
+<li><a href="./Runivers" title="Runivers">Runivers</a></li>
+</ul>
+<h2>See also</h2>
+<p><a href="./Wikipedia:Contents/Portals" title="Wikipedia:Contents/Portals">Portals</a>:</p>
+<ul>
+<li><a href="./File:Crystal_Clear_app_linneighborhood.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Crystal_Clear_app_linneighborhood.svg/20px-Crystal_Clear_app_linneighborhood.svg.png"></a> <a href="./Portal:Internet" title="Portal:Internet">Internet</a></li>
+<li>
+<p><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Books-aj.svg_aj_ashton_01.png/20px-Books-aj.svg_aj_ashton_01.png"> <a href="./Portal:Literature" title="Portal:Literature">Literature</a></p>
+</li>
+<li>
+<p><a href="./A9.com" title="A9.com">A9.com</a>, Amazon.com's book search</p>
+</li>
+<li><a href="./Book_Rights_Registry" title="Book Rights Registry">Book Rights Registry</a></li>
+<li><a href="./Digital_library" title="Digital library">Digital library</a></li>
+<li><a href="./List_of_digital_library_projects" title="List of digital library projects">List of digital library projects</a></li>
+<li><a href="./Universal_library" title="Universal library">Universal library</a></li>
+<li><a href="./National_Electronic_Library" title="National Electronic Library">National Electronic Library</a></li>
+</ul>
+<h2>References</h2>
+<h2>Further reading</h2>
+<ul>
+<li>Hoffmann, Anna Lauren (2016). "Google Books, Libraries, and Self-Respect: Information Justice beyond Distributions". <em><a href="./Library_Quarterly" title="Library Quarterly">Library Quarterly</a></em>. <strong>86</strong>: 76–92. <a href="./Doi_(identifier)" title="Doi (identifier)">doi</a>:<a href="https://doi.org/10.1086%2F684141">10.1086/684141</a>. <a href="./S2CID_(identifier)" title="S2CID (identifier)">S2CID</a> <a href="https://api.semanticscholar.org/CorpusID:146482065">146482065</a>.</li>
+<li>Jeanneney, Jean-Noël (2008). <em>Google and the Myth of Universal Knowledge: A View from Europe</em>. Chicago, IL: <a href="./University_of_Chicago_Press" title="University of Chicago Press">University of Chicago Press</a>.</li>
+<li>Marcum, Deanna B.; Schonfeld, Roger C. (2021). <em>Along Came Google: A History of Library Digitization</em>. Princeton: <a href="./Princeton_University_Press" title="Princeton University Press">Princeton University Press</a>. <a href="./ISBN_(identifier)" title="ISBN (identifier)">ISBN</a> <a href="./Special:BookSources/9780691172712" title="Special:BookSources/9780691172712">9780691172712</a>.</li>
+</ul>
+<h2>External links</h2>
+<p><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Wikidata-logo.svg/40px-Wikidata-logo.svg.png"></p>
+<p><a href="./Wikidata" title="Wikidata">Wikidata</a> has the property:</p>
+<ul>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Disc_Plain_blue_dark.svg/20px-Disc_Plain_blue_dark.svg.png"> <strong><em><a href="https://www.wikidata.org/wiki/Property%20talk:P675" title="d:Property talk:P675">Google Books ID (P675)</a></em></strong> (see <a href="https://query.wikidata.org/embed.html#SELECT%20%3FWikidata_item_%20%3FWikidata_item_Label%20%3Fvalue%20%3FvalueLabel%20%3FEnglish_Wikipedia_article%20%23Show%20data%20in%20this%20order%0A%7B%0A%09%3FWikidata_item_%20wdt%3AP675%20%3Fvalue%20.%20%23Collecting%20all%20items%20which%20have%20P675%20data%2C%20from%20whole%20Wikidata%20item%20pages%0A%09OPTIONAL%20%7B%3FEnglish_Wikipedia_article%20schema%3Aabout%20%3FWikidata_item_%3B%20schema%3AisPartOf%20%3Chttps%3A%2F%2Fen.wikipedia.org%2F%3E%20.%7D%20%23If%20collected%20item%20has%20link%20to%20English%20Wikipedia%2C%20show%20that%0A%09SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22en%22%20%20%7D%20%23Show%20label%20in%20this%20language.%20%22en%22%20is%20English.%20%20%20%0A%7D%0ALIMIT%201000">uses</a>)</li>
+</ul>
+<p><a href="./File:Commons-logo.svg"><img alt="Wikimedia Commons logo" src="//upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/40px-Commons-logo.svg.png"></a></p>
+<p>Wikimedia Commons has media related to <a href="https://commons.wikimedia.org/wiki/Category:Google%20Books" title="commons:Category:Google Books">Google Books</a>.</p>
+<ul>
+<li><a href="https://books.google.com">Official website</a> <a href="https://www.wikidata.org/wiki/Q206033#P856" title="Edit this at Wikidata"><img alt="Edit this at Wikidata" src="//upload.wikimedia.org/wikipedia/en/thumb/8/8a/OOjs_UI_icon_edit-ltr-progressive.svg/20px-OOjs_UI_icon_edit-ltr-progressive.svg.png"></a></li>
+<li><a href="https://books.google.com/intl/en/googlebooks/about.html">About Google Books</a></li>
+<li>Jones, Elisabeth (May 14, 2013). <a href="https://elisabethjones.wordpress.com/2013/05/14/new-google-books-library-project-timeline-now-with-more-citations/">"New Google Books Library Project Timeline: Now With (more) Citations!"</a>.</li>
+<li>Darnton, Robert (February 12, 2009). <a href="https://www.nybooks.com/articles/2009/02/12/google-the-future-of-books/">"Google &amp; the Future of Books"</a>. <em><a href="./New_York_Review_of_Books" title="New York Review of Books">New York Review of Books</a></em>. Vol. 56, no. 2. <a href="https://web.archive.org/web/20090125005446/http://www.nybooks.com/articles/22281">Archived</a> from the original on January 25, 2009.</li>
+<li><a href="https://www.publicdomainreprints.org/">"Public Domain Archive and Reprints Service"</a>. Public Domain Reprints.</li>
+<li>Somers, James (April 20, 2017). <a href="https://www.theatlantic.com/technology/archive/2017/04/the-tragedy-of-google-books/523320/">"Torching the Modern-Day Library of Alexandria"</a>. <em><a href="./The_Atlantic" title="The Atlantic">The Atlantic</a></em>.</li>
+<li><a href="./Jeffrey_Toobin" title="Jeffrey Toobin">Toobin, Jeffrey</a> (February 5, 2007). <a href="https://www.newyorker.com/magazine/2007/02/05/googles-moon-shot">"Google's Moon Shot"</a>. <em><a href="./The_New_Yorker" title="The New Yorker">The New Yorker</a></em>. <a href="https://web.archive.org/web/20070202023101/http://www.newyorker.com/fact/content/articles/070205fa_fact_toobin">Archived</a> from the original on February 2, 2007.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_Search_navbox" title="Template:Google Search navbox">v</a> - <a href="./Template_talk:Google_Search_navbox" title="Template talk:Google Search navbox">t</a> - <a href="./Special:EditPage/Template:Google_Search_navbox" title="Special:EditPage/Template:Google Search navbox">e</a>  <a href="./Google_Search" title="Google Search">Google Search</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Timeline_of_Google_Search" title="Timeline of Google Search">Timeline of Google Search</a></td>
+<td></td>
+</tr>
+<tr>
+<td>Features</td>
+<td>- <a href="./AI_Overviews" title="AI Overviews">AI Overviews</a> - <a href="./Google_AI_Mode" title="Google AI Mode">AI Mode</a> - <a href="./Knowledge_Graph_(Google)" title="Knowledge Graph (Google)">Knowledge Graph</a> - <a href="./SafeSearch" title="SafeSearch">SafeSearch</a> - <a href="./Google_SearchWiki" title="Google SearchWiki">SearchWiki</a> - <a href="./Google_Voice_Search" title="Google Voice Search">Voice Search</a> - <a href="./Google_Personalized_Search" title="Google Personalized Search">Google Personalized Search</a></td>
+</tr>
+<tr>
+<td>Component algorithms and updates</td>
+<td>- <a href="./Googlebot" title="Googlebot">Googlebot</a> - <a href="./Google_Hummingbird" title="Google Hummingbird">Hummingbird</a> - <a href="./Mobilegeddon" title="Mobilegeddon">Mobilegeddon</a> - <a href="./PageRank" title="PageRank">PageRank</a>   - <a href="./Google_matrix" title="Google matrix">Matrix</a> - <a href="./Google_Panda" title="Google Panda">Panda</a> - <a href="./Google_Penguin" title="Google Penguin">Penguin</a> - <a href="./Google_Pigeon" title="Google Pigeon">Pigeon</a> - <a href="./RankBrain" title="RankBrain">RankBrain</a></td>
+</tr>
+<tr>
+<td>Special purpose search engines</td>
+<td>- <a href="./Google_Dataset_Search" title="Google Dataset Search">Google Dataset Search</a> - <a href="./Google_Books">Google Books</a> - <a href="./Google_Images" title="Google Images">Google Images</a> - <a href="./Google_Finance" title="Google Finance">Google Finance</a> - <a href="./Google_News" title="Google News">Google News</a>   - <a href="./Google_News_Archive" title="Google News Archive">Google News Archive</a> - <a href="./Google_Scholar" title="Google Scholar">Google Scholar</a> - <a href="./Google_Shopping" title="Google Shopping">Google Shopping</a>  - <a href="./Dragonfly_(search_engine)" title="Dragonfly (search engine)">Dragonfly</a> - <a href="./Google_Blog_Search" title="Google Blog Search">Google Blog Search</a> - <a href="./Google_Code_Search" title="Google Code Search">Google Code Search</a></td>
+</tr>
+<tr>
+<td>Data insights</td>
+<td>- <a href="./Google_Books_Ngram_Viewer" title="Google Books Ngram Viewer">Google Books Ngram Viewer</a> - <a href="./Google_Trends" title="Google Trends">Google Trends</a>   - <a href="./Google_Insights_for_Search" title="Google Insights for Search">Google Insights for Search</a> - <a href="./List_of_Year_in_Search_top_searches" title="List of Year in Search top searches">Year in Search</a></td>
+</tr>
+<tr>
+<td>Developer and business tools</td>
+<td>- <a href="./Google_Programmable_Search_Engine" title="Google Programmable Search Engine">Google Programmable Search Engine</a> - <a href="./Google_Search_Console" title="Google Search Console">Google Search Console</a> - <a href="./Google_Get_Your_Business_Online" title="Google Get Your Business Online">Get Your Business Online</a></td>
+</tr>
+<tr>
+<td>Related</td>
+<td>- "<a href="./Reunion_(advertisement)" title="Reunion (advertisement)">Reunion</a>" - <a href="./Google_Search_Appliance" title="Google Search Appliance">Google Search Appliance</a> - <a href="./FairSearch" title="FairSearch">FairSearch</a></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Ebooks" title="Template:Ebooks">v</a> - <a href="./Template_talk:Ebooks" title="Template talk:Ebooks">t</a> - <a href="./Special:EditPage/Template:Ebooks" title="Special:EditPage/Template:Ebooks">e</a>  <a href="./Ebook" title="Ebook">Ebooks</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Comparison_of_e-book_formats" title="Comparison of e-book formats">Formats</a></td>
+<td>- <a href="./EPUB" title="EPUB">ePub</a> - <a href="./FictionBook" title="FictionBook">FictionBook</a> - <a href="./Comic_book_archive" title="Comic book archive">CBR/CBZ</a> - <a href="./Kindle_File_Format" title="Kindle File Format">Kindle File Format</a> - <a href="./Mobipocket" title="Mobipocket">Mobipocket</a> - <a href="./PDF" title="PDF">PDF</a> - <a href="./Text_file" title="Text file">Plain text</a> - <a href="./IBooks_Author" title="IBooks Author">IBA</a></td>
+</tr>
+<tr>
+<td>Reading</td>
+<td></td>
+</tr>
+<tr>
+<td>Editing</td>
+<td>- <a href="./ABBYY_FineReader" title="ABBYY FineReader">ABBYY FineReader</a> - <a href="./AbiWord" title="AbiWord">AbiWord</a> - <a href="./Adobe_InDesign" title="Adobe InDesign">Adobe InDesign</a> - <a href="./Adobe_RoboHelp" title="Adobe RoboHelp">Adobe RoboHelp</a> - <a href="./Rakuten_Aquafadas" title="Rakuten Aquafadas">Aquafadas</a> - <a href="./Atlantis_Word_Processor" title="Atlantis Word Processor">Atlantis Word Processor</a> - <a href="./Booktype" title="Booktype">Booktype</a> - <a href="./Calibre_(software)" title="Calibre (software)">Calibre</a> - <a href="./Calligra" title="Calligra">Calligra Author</a> - <a href="./Collabora_Online" title="Collabora Online">Collabora Online</a> - <a href="./EXeLearning" title="EXeLearning">eXeLearning</a> - <a href="./HelpNDoc" title="HelpNDoc">HelpNDoc</a> - <a href="./IBooks_Author" title="IBooks Author">iBooks Author</a> - <a href="./IStudio_Publisher" title="IStudio Publisher">iStudio Publisher</a> - <a href="./LaTeX" title="LaTeX">LaTeX</a> - <a href="./LibreOffice" title="LibreOffice">LibreOffice</a> - <a href="./MadCap_Software" title="MadCap Software">MadCap Flare</a> - <a href="./Oxygen_XML_Editor" title="Oxygen XML Editor">Oxygen XML Editor</a> - <a href="./PagePlus" title="PagePlus">PagePlus</a> - <a href="./Pages_(word_processor)" title="Pages (word processor)">Pages</a> - <a href="./QuarkXPress" title="QuarkXPress">QuarkXPress</a> - <a href="./Scrivener_(software)" title="Scrivener (software)">Scrivener</a> - <a href="./Sigil_(application)" title="Sigil (application)">Sigil</a> - <a href="./Writer2epub" title="Writer2epub">Writer2epub</a></td>
+</tr>
+<tr>
+<td><a href="./Category:Ebook_suppliers" title="Category:Ebook suppliers">Vendors</a></td>
+<td></td>
+</tr>
+<tr>
+<td>Related</td>
+<td>- <a href="./Academic_journal_publishing_reform" title="Academic journal publishing reform">Academic journal publishing reform</a> - <a href="./Book" title="Book">Books</a> - <a href="./Braille_e-book" title="Braille e-book">Braille e-book</a> - <a href="./Comparison_of_e-readers" title="Comparison of e-readers">Comparison of ebook readers</a> - <a href="./Comparison_of_iOS_e-reader_software" title="Comparison of iOS e-reader software">Comparison of iOS ebook reader software</a> - <a href="./Comparison_of_Android_e-reader_software" title="Comparison of Android e-reader software">Comparison of Android ebook reader software</a> - <a href="./E-book_lending" title="E-book lending">E-book lending</a> - <a href="./Electronic_publishing" title="Electronic publishing">Electronic publishing</a> - <a href="./IBooks_Author_Conference" title="IBooks Author Conference">iBooks Author Conference</a> - <a href="./International_Digital_Publishing_Forum" title="International Digital Publishing Forum">International Digital Publishing Forum</a> - <a href="./Kindle_single" title="Kindle single">Kindle single</a> - <a href="./Open_Publication_Distribution_System" title="Open Publication Distribution System">OPDS</a> - <a href="./Reflowable_document" title="Reflowable document">Reflowable document</a> - <a href="./Self-publishing" title="Self-publishing">Self-publishing</a> - <a href="./Semantic_publishing" title="Semantic publishing">Semantic publishing</a></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Books" title="Template:Books">v</a> - <a href="./Template_talk:Books" title="Template talk:Books">t</a> - <a href="./Special:EditPage/Template:Books" title="Special:EditPage/Template:Books">e</a>  <a href="./Book" title="Book">Books</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Production</td>
+<td>- <a href="./Bookbinding" title="Bookbinding">Binding</a> - <a href="./Book_cover" title="Book cover">Covers</a>   - <a href="./Dust_jacket" title="Dust jacket">dust jackets</a> - <a href="./Book_design" title="Book design">Design</a> - <a href="./Editing" title="Editing">Editing</a> - <a href="./Book_illustration" title="Book illustration">Illustration</a>   - <a href="./Illuminated_manuscript" title="Illuminated manuscript">Illuminated manuscripts</a> - <a href="./Printing" title="Printing">Printing</a>   - <a href="./Edition_(book)" title="Edition (book)">edition</a>   - <a href="./History_of_printing" title="History of printing">history</a>   - <a href="./Incunable" title="Incunable">incunabula</a>   - <a href="./Instant_book" title="Instant book">instant book</a>   - <a href="./Limited-edition_book" title="Limited-edition book">limited edition</a> - <a href="./Publishing" title="Publishing">Publishing</a>   - <a href="./Advance_copy" title="Advance copy">advance copy</a>   - <a href="./Hardcover" title="Hardcover">hardcover</a>   - <a href="./Paperback" title="Paperback">paperback</a> - <a href="./Book_size" title="Book size">Size</a> - <a href="./Typesetting" title="Typesetting">Typesetting</a> - <a href="./Volume_(bibliography)" title="Volume (bibliography)">Volume (bibliography)</a> - <a href="./Collection_(publishing)" title="Collection (publishing)">Collection (publishing)</a> - <a href="./Book_series" title="Book series">Book series</a></td>
+</tr>
+<tr>
+<td>Consumption</td>
+<td>- <a href="./Literary_award" title="Literary award">Awards</a> - <a href="./Bestseller" title="Bestseller">Bestsellers</a>   - <a href="./List_of_best-selling_books" title="List of best-selling books">list</a> - <a href="./Bibliography" title="Bibliography">Bibliography</a> - <a href="./Bibliomania" title="Bibliomania">Bibliomania</a> (<a href="./Tsundoku" title="Tsundoku"><em>tsundoku</em></a>) - <a href="./Bookworm" title="Bookworm">Bibliophilia</a> - <a href="./Bibliotherapy" title="Bibliotherapy">Bibliotherapy</a> - <a href="./Bookmark" title="Bookmark">Bookmarks</a> - <a href="./Bookselling" title="Bookselling">Bookselling</a>   - <a href="./Blurb" title="Blurb">blurbs</a>   - <a href="./Book_town" title="Book town">book towns</a>   - <a href="./History_of_bookselling" title="History of bookselling">history</a>   - <a href="./Used_book" title="Used book">used</a> - <a href="./Book_censorship" title="Book censorship">Censorship</a> - <a href="./Book_discussion_club" title="Book discussion club">Clubs</a> - <a href="./Book_collecting" title="Book collecting">Collecting</a> - <a href="./Book_scanning" title="Book scanning">Digitizing</a> - <a href="./Bookworm_(insect)" title="Bookworm (insect)">Bookworm (insect)</a> - Furniture   - <a href="./Bookcase" title="Bookcase">bookcases</a>   - <a href="./Bookend" title="Bookend">bookends</a> - <a href="./Library" title="Library">Library</a> - <a href="./Print_culture" title="Print culture">Print culture</a> - <a href="./Reading" title="Reading">Reading</a>   - <a href="./Literacy" title="Literacy">literacy</a> - <a href="./Book_review" title="Book review">Reviews</a></td>
+</tr>
+<tr>
+<td>By country</td>
+<td>- <a href="./Books_in_Brazil" title="Books in Brazil">Brazil</a> - <a href="./Traditional_Chinese_bookbinding" title="Traditional Chinese bookbinding">China</a> - <a href="./Books_in_France" title="Books in France">France</a> - <a href="./Books_in_Germany" title="Books in Germany">Germany</a> - <a href="./Books_in_Italy" title="Books in Italy">Italy</a> - <a href="./Wasōbon" title="Wasōbon">Japan</a> - <a href="./Books_in_the_Netherlands" title="Books in the Netherlands">Netherlands</a> - <a href="./Book_publishing_in_Pakistan" title="Book publishing in Pakistan">Pakistan</a> - <a href="./Books_in_Spain" title="Books in Spain">Spain</a> - <a href="./Books_in_the_United_Kingdom" title="Books in the United Kingdom">United Kingdom</a> - <a href="./Books_in_the_United_States" title="Books in the United States">United States</a></td>
+</tr>
+<tr>
+<td>Other</td>
+<td>- Genres   - <a href="./Non-fiction" title="Non-fiction">non-fiction</a>   - <a href="./Novel" title="Novel">novel</a>   - <a href="./Imaginary_book" title="Imaginary book">imaginary</a>   - <a href="./Miniature_book" title="Miniature book">miniature</a>   - <a href="./Pop-up_book" title="Pop-up book">pop-up</a>   - <a href="./Textbook" title="Textbook">textbook</a> - <a href="./Grimoire" title="Grimoire">Grimoire</a> - Formats   - <a href="./Audiobook" title="Audiobook">audiobooks</a>   - <a href="./Ebook" title="Ebook">Ebooks</a>   - <a href="./Folio" title="Folio">Folio</a> - <a href="./Coffee_table_book" title="Coffee table book">Coffee table book</a></td>
+</tr>
+<tr>
+<td>Related</td>
+<td>- <a href="./Lists_of_banned_books" title="Lists of banned books">Banned books</a> - <a href="./Book_burning" title="Book burning">Book burning</a>   - <a href="./List_of_book-burning_incidents" title="List of book-burning incidents">incidents</a>   - <a href="./Nazi_book_burnings" title="Nazi book burnings">Nazi</a> - <a href="./Book_curse" title="Book curse">Book curses</a> - <a href="./Book_packaging" title="Book packaging">Book packaging</a> - <a href="./Book_swapping" title="Book swapping">Book swapping</a> - <a href="./Book_tour" title="Book tour">Book tour</a> - <a href="./Conservation_and_restoration_of_books,_manuscripts,_documents_and_ephemera" title="Conservation and restoration of books, manuscripts, documents and ephemera">Conservation and restoration</a> - <a href="./Dog_ears" title="Dog ears">Dog ears</a> - <a href="./History_of_books" title="History of books">History of books</a>   - <a href="./Scroll" title="Scroll">scroll</a>   - <a href="./Codex" title="Codex">codex</a> - <a href="./Intellectual_property" title="Intellectual property">Intellectual property</a> - <a href="./ISBN" title="ISBN">ISBN</a> - <a href="./Outline_of_books" title="Outline of books">Outline</a> - <a href="./Preservation_(library_and_archive)" title="Preservation (library and archive)">Preservation</a> - <em><a href="./The_Philobiblon" title="The Philobiblon">The Philobiblon</a></em> - <a href="./World_Book_Day" title="World Book Day">World Book Day</a> - <a href="./World_Book_Capital" title="World Book Capital">World Book Capital</a></td>
+</tr>
+<tr>
+<td>- <a href="./Outline_of_books" title="Outline of books">Outline</a> - <a href="./Category:Books" title="Category:Books">Category</a> - <a href="./Portal:Books" title="Portal:Books">Portal</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><a href="./Help:Authority_control" title="Help:Authority control">Authority control databases</a> <a href="https://www.wikidata.org/wiki/Q206033#identifiers" title="Edit this at Wikidata">Edit this at Wikidata</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>International</td>
+<td>- <a href="https://d-nb.info/gnd/7721988-0">GND</a></td>
+</tr>
+<tr>
+<td>National</td>
+<td>- <a href="https://aleph.nkp.cz/F/?func=find-c&amp;local_base=aut&amp;ccl_term=ica=ph546078&amp;CON_LNG=ENG">Czech Republic</a></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

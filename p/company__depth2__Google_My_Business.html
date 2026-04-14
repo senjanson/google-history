@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Google My Business</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link active" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Google My Business</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Google_Maps<br>
+Category: company__depth2<br>
+Depth: 2</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Google Maps is a web mapping platform and consumer application developed by Google. It offers satellite imagery, aerial photography, street maps, 360° interactive panoramic views of streets, real-time traffic conditions, and route planning for traveling by foot, car, bike, and public transportation. As of 2020, Google Maps was being used by over one billion people every month around the world.</p>
+<h2>Images</h2>
+<p><img alt="250px-Google_Maps_icon__282026_29.svg" src="../images/250px-Google_Maps_icon__282026_29.svg.png"><br>
+<img alt="330px-Google_Maps_icon__282026_29.svg" src="../images/330px-Google_Maps_icon__282026_29.svg.png"><br>
+<img alt="250px-Google_Maps_icon__282026_29.svg" src="../images/250px-Google_Maps_icon__282026_29.svg.png"><br>
+<img alt="330px-Google_Maps_Screenshot" src="../images/330px-Google_Maps_Screenshot.png"><br>
+<img alt="250px-Google_Maps_Beta" src="../images/250px-Google_Maps_Beta.png"><br>
+<img alt="120px-Google_Maps_icon__282015-2020_29.svg" src="../images/120px-Google_Maps_icon__282015-2020_29.svg.png"><br>
+<img alt="250px-Google_was_here" src="../images/250px-Google_was_here.jpg"><br>
+<img alt="250px-Google_Traffic_screenshot" src="../images/250px-Google_Traffic_screenshot.png"><br>
+<img alt="250px-Google_Maps_Car_at_Googleplex" src="../images/250px-Google_Maps_Car_at_Googleplex.jpg"><br>
+<img alt="250px-Google-Maps-Backpack-NYC" src="../images/250px-Google-Maps-Backpack-NYC.png"><br>
+<img alt="250px-Leaning_Tower_of_Pisa_on_Google_Aerial_View" src="../images/250px-Leaning_Tower_of_Pisa_on_Google_Aerial_View.png"><br>
+<img alt="Google_Maps_review_screenshot" src="../images/Google_Maps_review_screenshot.png"><br>
+<img alt="250px-Google_My_Maps_Civil_War_Example" src="../images/250px-Google_My_Maps_Civil_War_Example.png"><br>
+<img alt="250px-Google_Maps_and_Street_View_redesigned_screenshot" src="../images/250px-Google_Maps_and_Street_View_redesigned_screenshot.png"><br>
+<img alt="Google_Maps_on_Android" src="../images/Google_Maps_on_Android.jpg"></p>
+<h2>Full Article</h2>
+<p>Web mapping service</p>
+<p><strong>Google Maps</strong> is a <a href="./Web_mapping" title="Web mapping">web mapping</a> platform and consumer application developed by <a href="./Google" title="Google">Google</a>. It offers <a href="./Satellite_imagery" title="Satellite imagery">satellite imagery</a>, <a href="./Aerial_photography" title="Aerial photography">aerial photography</a>, street maps, 360° <a href="./Interactive_panorama" title="Interactive panorama">interactive panoramic</a> views of streets (<a href="./Google_Street_View" title="Google Street View">Street View</a>), real-time traffic conditions, and <a href="./Route_planner" title="Route planner">route planning</a> for traveling by foot, car, bike, and <a href="./Public_transportation" title="Public transportation">public transportation</a>. As of 2020<a href="https://en.wikipedia.org/w/index.php?title=Google_Maps&amp;action=edit">[update]</a>, Google Maps was being used by over one billion people every month around the world.</p>
+<p>Google Maps began as a <a href="./C++" title="C++">C++</a> desktop program developed by brothers <a href="./Lars_Rasmussen_(software_developer)" title="Lars Rasmussen (software developer)">Lars</a> and <a href="./Jens_Eilstrup_Rasmussen" title="Jens Eilstrup Rasmussen">Jens Rasmussen</a>, Stephen Ma and Noel Gordon in <a href="./Australia" title="Australia">Australia</a> at Where 2 Technologies. In October 2004, the company was acquired by Google, which converted it into a <a href="./Web_application" title="Web application">web application</a>. After additional <a href="./Mergers_and_acquisitions" title="Mergers and acquisitions">acquisitions</a> of a <a href="./Geographic_data_and_information" title="Geographic data and information">geospatial data</a> visualization company and a real-time traffic analyzer, Google Maps was launched in February 2005. The service's <a href="./Front_and_back_ends" title="Front and back ends">front end</a> utilizes <a href="./JavaScript" title="JavaScript">JavaScript</a>, <a href="./XML" title="XML">XML</a>, and <a href="./Ajax_(programming)" title="Ajax (programming)">Ajax</a>. Google Maps offers an <a href="./Application_programming_interface" title="Application programming interface">API</a> that allows maps to be embedded on third-party websites, and offers a locator for businesses and other organizations in numerous countries around the world. <a href="./Google_Map_Maker" title="Google Map Maker">Google Map Maker</a> allowed users to <a href="./Collaboration" title="Collaboration">collaboratively</a> expand and update the service's mapping worldwide but was discontinued from March 2017. However, <a href="./Crowdsourcing" title="Crowdsourcing">crowdsourced</a> contributions to Google Maps were not discontinued as the company announced those features would be transferred to the Google Local Guides program, although users that are not Local Guides can still contribute.</p>
+<p>Google Maps's satellite view is a "top-down" or <a href="./Bird's-eye_view" title="Bird's-eye view">bird's-eye view</a>; most of the high-resolution imagery of cities is aerial photography taken from aircraft flying at 800 to 1,500 feet (240 to 460 m), while most other imagery is from satellites. Much of the available satellite imagery is no more than three years old and is updated on a regular basis, according to a 2011 report. Google Maps previously used <a href="./Web_Mercator_projection" title="Web Mercator projection">a variant</a> of the <a href="./Mercator_projection" title="Mercator projection">Mercator projection</a>, and therefore could not accurately show areas around the poles. In August 2018, the desktop version of Google Maps was updated to show a 3D globe. It is still possible to switch back to the 2D map in the settings.</p>
+<p>Google Maps for <a href="./Mobile_device" title="Mobile device">mobile devices</a> was first released in 2006; the latest versions feature <a href="./Satellite_navigation_device" title="Satellite navigation device">GPS</a> <a href="./Turn-by-turn_navigation" title="Turn-by-turn navigation">turn-by-turn navigation</a> along with dedicated <a href="./Parking" title="Parking">parking</a> assistance features. By 2013, it was found to be the world's most popular <a href="./Smartphone" title="Smartphone">smartphone</a> app, with over 54% of global smartphone owners using it. In 2017, the app was reported to have two billion users on <a href="./Android_(operating_system)" title="Android (operating system)">Android</a>, along with several other Google services including <a href="./YouTube" title="YouTube">YouTube</a>, <a href="./Google_Chrome" title="Google Chrome">Chrome</a>, <a href="./Gmail" title="Gmail">Gmail</a>, <a href="./Google_Search" title="Google Search">Search</a>, and <a href="./Google_Play" title="Google Play">Google Play</a>.</p>
+<h2>History</h2>
+<h3>Acquisitions</h3>
+<p>Google Maps first started as a <a href="./C++" title="C++">C++</a> program designed by two Danish brothers, <a href="./Lars_Rasmussen_(software_developer)" title="Lars Rasmussen (software developer)">Lars</a> and <a href="./Jens_Eilstrup_Rasmussen" title="Jens Eilstrup Rasmussen">Jens Eilstrup Rasmussen</a>, and Noel Gordon and Stephen Ma, at the Sydney-based company Where 2 Technologies, which was founded in early 2003. The program was initially designed to be separately downloaded by users, but the company later pitched the idea for a purely Web-based product to Google management, changing the method of distribution. In October 2004, the company was acquired by Google Inc. where it transformed into the web application Google Maps. The Rasmussen brothers, Gordon and Ma joined Google at that time.</p>
+<p>In the same month, Google acquired <a href="./Google_Earth#History" title="Google Earth">Keyhole</a>, a geospatial data visualization company, whose marquee application suite, Earth Viewer, emerged as the <a href="./Google_Earth" title="Google Earth">Google Earth</a> application in 2005 while other aspects of its core technology were integrated into Google Maps. In September 2004, Google acquired ZipDash, a company that provided real-time traffic analysis.</p>
+<h3>2005–2010</h3>
+<p>The launch of Google Maps was first announced on the Google Blog on February 8, 2005.</p>
+<p>In September 2005, in the aftermath of <a href="./Hurricane_Katrina" title="Hurricane Katrina">Hurricane Katrina</a>, Google Maps quickly updated its satellite imagery of <a href="./New_Orleans" title="New Orleans">New Orleans</a> to allow users to view the extent of the flooding in various parts of that city.</p>
+<p>In 2006, to address slow download speeds on mobile devices, engineer Sanjay Mavinkurve developed a method to reduce the color depth of map tiles, which reduced load times by 20 percent.</p>
+<p>As of 2007, Google Maps was equipped with a miniature view with a draggable rectangle that denotes the area shown in the main viewport, and "Info windows" for previewing details about locations on maps. As of 2024, this feature had been removed (likely several years prior).</p>
+<p>On November 28, 2007, Google Maps for Mobile 2.0 was released. It featured a <a href="./Software_release_life_cycle#Beta" title="Software release life cycle">beta version</a> of a "My Location" feature, which uses the GPS / <a href="./Assisted_GPS" title="Assisted GPS">Assisted GPS</a> location of the mobile device, if available, supplemented by determining the nearest <a href="./Wi-Fi" title="Wi-Fi">wireless networks</a> and <a href="./Cell_site" title="Cell site">cell sites</a>. The software looks up the location of the cell site using a database of known wireless networks and sites. My Location determines a user's position by <a href="./Triangulation" title="Triangulation">triangulating</a> signal strengths against a database of cell transmitter locations.</p>
+<p>Google Maps launched in India in 2008. On September 23, 2008, coinciding with the announcement of the <a href="./HTC_Dream" title="HTC Dream">first commercial Android device</a>, Google announced that a Google Maps app had been released for its Android operating system.</p>
+<p>In October 2009, Google replaced <a href="./Tele_Atlas" title="Tele Atlas">Tele Atlas</a> as their primary supplier of geospatial data in the US version of Maps and used their own data.</p>
+<h3>2011–2015</h3>
+<p>On April 19, 2011, Map Maker was added to the American version of Google Maps, allowing any viewer to edit and add changes to Google Maps. This provides Google with local map updates almost in real-time instead of waiting for digital map data companies to release more infrequent updates.</p>
+<p>On January 31, 2012, Google, due to offering its Maps for free, was found guilty of abusing the dominant position of its Google Maps application and ordered by a court to pay a fine and damages to Bottin Cartographer, a French mapping company. This ruling was overturned on appeal.</p>
+<p>In June 2012, Google started mapping the UK's rivers and canals in partnership with the <a href="./Canal_&amp;_River_Trust" title="Canal &amp; River Trust">Canal and River Trust</a>. The company has stated that "it would update the program during the year to allow users to plan trips which include locks, bridges and towpaths along the 2,000 miles of river paths in the UK."</p>
+<p>In December 2012, the Google Maps application was separately made available in the App Store, after Apple removed it from its default installation of the mobile operating system version <a href="./IOS_6" title="IOS 6">iOS 6</a> in September 2012.</p>
+<p>On January 29, 2013, Google Maps was updated to include a map of <a href="./North_Korea" title="North Korea">North Korea</a>. As of May 3, 2013<a href="https://en.wikipedia.org/w/index.php?title=Google_Maps&amp;action=edit">[update]</a>, Google Maps recognizes <a href="./Palestine" title="Palestine">Palestine</a> as a country, instead of redirecting to the <a href="./Palestinian_territories" title="Palestinian territories">Palestinian territories</a>.</p>
+<p>In August 2013, Google Maps removed the Wikipedia Layer, which provided links to Wikipedia content about locations shown in Google Maps using <a href="./Wikipedia:How_to_add_geocodes_to_articles" title="Wikipedia:How to add geocodes to articles">Wikipedia geocodes</a>.</p>
+<p>On April 12, 2014, Google Maps was updated to reflect the <a href="./Annexation_of_Crimea_by_the_Russian_Federation" title="Annexation of Crimea by the Russian Federation">annexation of Ukrainian Crimea by Russia</a>. Crimea is shown as the <a href="./Republic_of_Crimea_(Russia)" title="Republic of Crimea (Russia)">Republic of Crimea</a> in Russia and as the <a href="./Autonomous_Republic_of_Crimea" title="Autonomous Republic of Crimea">Autonomous Republic of Crimea</a> in Ukraine. All other versions show a dotted disputed border.</p>
+<p>In April 2015, on a map near the Pakistani city of Rawalpindi, the imagery of the Android logo urinating on the Apple logo was added via Map Maker and appeared on Google Maps. The <a href="./Vandalism" title="Vandalism">vandalism</a> was soon removed and Google publicly apologized. However, as a result, Google disabled user moderation on Map Maker, and on May 12, disabled editing worldwide until it could devise a new policy for approving edits and avoiding vandalism.</p>
+<p>On April 29, 2015, users of the classic Google Maps were forwarded to the new Google Maps with the option to be removed from the interface.</p>
+<p>On July 14, 2015, the Chinese name for <a href="./Scarborough_Shoal" title="Scarborough Shoal">Scarborough Shoal</a> was removed after a petition from the <a href="./Philippines" title="Philippines">Philippines</a> was posted on <a href="./Change.org" title="Change.org">Change.org</a>.</p>
+<h3>2016–2018</h3>
+<p>On June 27, 2016, Google rolled out new satellite imagery worldwide sourced from <a href="./Landsat_8" title="Landsat 8">Landsat 8</a>, comprising over 700 trillion pixels of new data. In September 2016, Google Maps acquired mapping analytics startup Urban Engines.</p>
+<p>In 2016, the Government of South Korea offered Google conditional access to the country's geographic database – access that already allows indigenous Korean mapping providers high-detail maps. Google declined the offer, as it was unwilling to accept restrictions on reducing the quality around locations the South Korean Government felt were sensitive (see <a href="./Restrictions_on_geographic_data_in_South_Korea" title="Restrictions on geographic data in South Korea">restrictions on geographic data in South Korea</a>).</p>
+<p>On October 16, 2017, Google Maps was updated with accessible imagery of several planets and moons such as <a href="./Titan_(moon)" title="Titan (moon)">Titan</a>, <a href="./Mercury_(planet)" title="Mercury (planet)">Mercury</a>, and <a href="./Venus" title="Venus">Venus</a>, as well as direct access to imagery of the <a href="./Moon" title="Moon">Moon</a> and <a href="./Mars" title="Mars">Mars</a>.</p>
+<p>In May 2018, Google announced major changes to the API structure starting June 11, 2018. This change consolidated the 18 different endpoints into three services and merged the basic and premium plans into one pay-as-you-go plan. This meant a 1400% price raise for users on the basic plan, with only six weeks of notice. This caused a harsh reaction within the developers community. In June, Google postponed the change date to July 16, 2018.</p>
+<p>In August 2018, Google Maps designed its overall view (when zoomed out completely) into a <a href="./Three-dimensional_space" title="Three-dimensional space">3D</a> globe, dropping[<em><a href="./Wikipedia:Disputed_statement" title="Wikipedia:Disputed statement">disputed</a> – <a href="./Talk:Google_Maps#easily_debunkable" title="Talk:Google Maps">discuss</a></em>] the <a href="./Mercator_projection" title="Mercator projection">Mercator projection</a> that projected the planet onto a flat surface.</p>
+<h3>2019–present</h3>
+<p>In January 2019, Google Maps added speed trap and <a href="./Speed_camera" title="Speed camera">speed camera</a> alerts as reported by other users.</p>
+<p>On October 17, 2019, Google Maps was updated to include incident reporting, resembling a functionality in <a href="./Waze" title="Waze">Waze</a> which was acquired by Google in 2013.</p>
+<p>In December 2019, Incognito mode was added, allowing users to enter destinations without saving entries to their Google accounts.</p>
+<p>In February 2020, Maps received a 15th anniversary redesign. It notably added a brand-new app icon, which now resembles the original icon in 2005.</p>
+<p>On September 23, 2020, Google announced a COVID-19 Layer update for Google Maps, which is designed to offer a seven-day average data of the total COVID-19-positive cases per 100,000 people in the area selected on the map. It also features a label indicating the rise and fall in the number of cases.</p>
+<p>In January 2021, Google announced that it would be launching a new feature displaying COVID-19 vaccination sites.</p>
+<p>In January 2021, Google announced updates to the route planner that would accommodate drivers of electric vehicles. Routing would take into account the type of vehicle, vehicle status including current charge, and the locations of charging stations.</p>
+<p>In June 2022, Google Maps added a layer displaying air quality for certain countries.</p>
+<p>In September 2022, Google removed the COVID-19 Layer from Google Maps due to lack of usage of the feature.</p>
+<p>In February 2026, South Korea allowed Google to export map data at 1:5,000-scale under security conditions after attempts in 2007, 2016, and 2025. The government compromised on its previous demands, finally allowing more detailed navigation to be included.</p>
+<h2>Functionality</h2>
+<h3>Directions and transit</h3>
+<p>Google Maps provides a <a href="./Route_planning_software" title="Route planning software">route planner</a>, allowing users to find available directions through driving, public transportation, walking, or biking. Google has partnered globally with over 800 public transportation providers to adopt <a href="./GTFS" title="GTFS">GTFS</a> (General Transit Feed Specification), making the data available to third parties. The app can indicate users' transit route, thanks to an October 2019 update. The incognito mode, eyes-free walking navigation features were released earlier. A July 2020 update provided bike share routes.</p>
+<p>In February 2024, Google Maps started rolling out glanceable directions for its Android and iOS apps. The feature allows users to track their journey from their device's <a href="./Lock_screen" title="Lock screen">lock screen</a>.</p>
+<h3>Traffic conditions</h3>
+<p>In 2007, Google began offering traffic data as a colored overlay on top of roads and motorways to represent the speed of vehicles on particular roads. <a href="./Crowdsourcing" title="Crowdsourcing">Crowdsourcing</a> is used to obtain the <a href="./GPS" title="GPS">GPS</a>-determined locations of a large number of cellphone users, from which live traffic maps are produced.</p>
+<p>Google has stated that the speed and location information it collects to calculate traffic conditions is anonymous. Options available in each phone's settings allow users not to share information about their location with Google Maps. Google stated, "Once you disable or opt out of My Location, Maps will not continue to send radio information back to Google servers to determine your handset's approximate location".[<em><a href="./Wikipedia:Verifiability" title="Wikipedia:Verifiability">failed verification</a></em>]</p>
+<h3>Street View</h3>
+<p>Main article: <a href="./Google_Street_View" title="Google Street View">Google Street View</a></p>
+<p>On May 25, 2007, Google released <a href="./Google_Street_View" title="Google Street View">Google Street View</a>, a feature of Google Maps providing <a href="./360°" title="360°">360°</a> panoramic street-level views of various locations. On the date of release, the feature only included five cities in the U.S. It has since expanded to thousands of locations around the world. In July 2009, Google began mapping college campuses and surrounding paths and <a href="./Trail" title="Trail">trails</a>.</p>
+<p>Street View garnered much controversy after its release because of <a href="./Google_Street_View_privacy_concerns" title="Google Street View privacy concerns">privacy concerns</a> about the uncensored nature of the panoramic photographs, although the views are only taken on public streets. Since then, Google has blurred faces and license plates through automated <a href="./Face_detection" title="Face detection">facial recognition</a>.</p>
+<p>In late 2014, Google launched Google Underwater Street View, including 2,300 kilometres (1,400 mi) of the Australian <a href="./Great_Barrier_Reef" title="Great Barrier Reef">Great Barrier Reef</a> in 3D. The images are taken by special cameras which turn 360 degrees and take shots every 3 seconds.</p>
+<p>In 2017, in both Google Maps and Google Earth, Street View navigation of the <a href="./International_Space_Station" title="International Space Station">International Space Station</a> interior spaces became available.</p>
+<h3>3D imagery</h3>
+<p>Main article: <a href="./Google_Earth#3D_imagery" title="Google Earth">Google Earth § 3D imagery</a></p>
+<p>Google Maps incorporated, in August 2018, 3D models of hundreds of cities in over 40 countries from Google Earth into its satellite view. The models were developed using aerial <a href="./Photogrammetry" title="Photogrammetry">photogrammetry</a> techniques.</p>
+<h3>Immersive View</h3>
+<p>At the <a href="./Google_I/O#2022" title="Google I/O">I/O 2022</a> event, Google announced Immersive View, a feature of Google Maps which would involve composite 3D images generated from <a href="./Street_View" title="Street View">Street View</a> and aerial images of locations using AI, complete with synchronous information. It was to be initially in five cities worldwide, with plans to add it to other cities later on. The feature was previewed in September 2022 with 250 photorealistic aerial 3D images of landmarks, and was full launched in February 2023. An expansion of Immersive View to routes was announced at Google I/O 2023, and was launched in October 2023 for 15 cities globally.</p>
+<p>The feature uses <a href="./Predictive_modelling" title="Predictive modelling">predictive modelling</a> and <a href="./Neural_radiance_field" title="Neural radiance field">neural radiance fields</a> to scan Street View and aerial images to generate composite 3D imagery of locations, including both exteriors and interiors, and routes, including driving, walking or cycling, as well as generate synchronous information and forecasts up to a month ahead from historical and environmental data about both such as weather, traffic and busyness.</p>
+<p>Immersive View has been available in the following locations:[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>]</p>
+<p>Locations with Immersive View</p>
+<table>
+<thead>
+<tr>
+<th>Country</th>
+<th>Locations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Argentina" title="Argentina">Argentina</a></td>
+<td><a href="./Buenos_Aires" title="Buenos Aires">Buenos Aires</a></td>
+</tr>
+<tr>
+<td><a href="./Australia" title="Australia">Australia</a></td>
+<td><a href="./Melbourne" title="Melbourne">Melbourne</a>, <a href="./Sydney" title="Sydney">Sydney</a></td>
+</tr>
+<tr>
+<td><a href="./Austria" title="Austria">Austria</a></td>
+<td><a href="./Vienna" title="Vienna">Vienna</a></td>
+</tr>
+<tr>
+<td><a href="./Belgium" title="Belgium">Belgium</a></td>
+<td><a href="./Brussels" title="Brussels">Brussels</a></td>
+</tr>
+<tr>
+<td><a href="./Brazil" title="Brazil">Brazil</a></td>
+<td><a href="./Brasília" title="Brasília">Brasília</a>, <a href="./Rio_de_Janeiro" title="Rio de Janeiro">Rio de Janeiro</a>, <a href="./São_Paulo" title="São Paulo">São Paulo</a></td>
+</tr>
+<tr>
+<td><a href="./Canada" title="Canada">Canada</a></td>
+<td><a href="./Calgary" title="Calgary">Calgary</a>, <a href="./Edmonton" title="Edmonton">Edmonton</a>, <a href="./Montreal" title="Montreal">Montreal</a>, <a href="./Ottawa" title="Ottawa">Ottawa</a>, <a href="./Toronto" title="Toronto">Toronto</a>, <a href="./Vancouver" title="Vancouver">Vancouver</a></td>
+</tr>
+<tr>
+<td><a href="./Chile" title="Chile">Chile</a></td>
+<td><a href="./Santiago" title="Santiago">Santiago</a></td>
+</tr>
+<tr>
+<td><a href="./Czech_Republic" title="Czech Republic">Czech Republic</a></td>
+<td><a href="./Prague" title="Prague">Prague</a></td>
+</tr>
+<tr>
+<td><a href="./France" title="France">France</a></td>
+<td><a href="./Nice" title="Nice">Nice</a>, <a href="./Paris" title="Paris">Paris</a></td>
+</tr>
+<tr>
+<td><a href="./Germany" title="Germany">Germany</a></td>
+<td><a href="./Berlin" title="Berlin">Berlin</a>, <a href="./Cologne" title="Cologne">Cologne</a>, <a href="./Frankfurt" title="Frankfurt">Frankfurt</a>, <a href="./Munich" title="Munich">Munich</a></td>
+</tr>
+<tr>
+<td><a href="./Greece" title="Greece">Greece</a></td>
+<td><a href="./Athens" title="Athens">Athens</a></td>
+</tr>
+<tr>
+<td><a href="./Hong_Kong" title="Hong Kong">Hong Kong</a></td>
+<td><a href="./Hong_Kong" title="Hong Kong">Hong Kong</a></td>
+</tr>
+<tr>
+<td><a href="./Hungary" title="Hungary">Hungary</a></td>
+<td><a href="./Budapest" title="Budapest">Budapest</a></td>
+</tr>
+<tr>
+<td><a href="./Italy" title="Italy">Italy</a></td>
+<td><a href="./Florence" title="Florence">Florence</a>, <a href="./Milan" title="Milan">Milan</a>, <a href="./Rome" title="Rome">Rome</a>, <a href="./Venice" title="Venice">Venice</a></td>
+</tr>
+<tr>
+<td><a href="./Japan" title="Japan">Japan</a></td>
+<td><a href="./Kyoto" title="Kyoto">Kyoto</a>, <a href="./Nagoya" title="Nagoya">Nagoya</a>, <a href="./Osaka" title="Osaka">Osaka</a>, <a href="./Tokyo" title="Tokyo">Tokyo</a></td>
+</tr>
+<tr>
+<td><a href="./Mexico" title="Mexico">Mexico</a></td>
+<td><a href="./Guadalajara" title="Guadalajara">Guadalajara</a>, <a href="./Mexico_City" title="Mexico City">Mexico City</a></td>
+</tr>
+<tr>
+<td><a href="./Netherlands" title="Netherlands">Netherlands</a></td>
+<td><a href="./Amsterdam" title="Amsterdam">Amsterdam</a></td>
+</tr>
+<tr>
+<td><a href="./Norway" title="Norway">Norway</a></td>
+<td><a href="./Oslo" title="Oslo">Oslo</a></td>
+</tr>
+<tr>
+<td><a href="./Poland" title="Poland">Poland</a></td>
+<td><a href="./Warsaw" title="Warsaw">Warsaw</a></td>
+</tr>
+<tr>
+<td><a href="./Portugal" title="Portugal">Portugal</a></td>
+<td><a href="./Lisbon" title="Lisbon">Lisbon</a>, <a href="./Porto" title="Porto">Porto</a></td>
+</tr>
+<tr>
+<td><a href="./Romania" title="Romania">Romania</a></td>
+<td><a href="./Bucharest" title="Bucharest">Bucharest</a></td>
+</tr>
+<tr>
+<td><a href="./Singapore" title="Singapore">Singapore</a></td>
+<td><a href="./Singapore" title="Singapore">Singapore</a></td>
+</tr>
+<tr>
+<td><a href="./South_Africa" title="South Africa">South Africa</a></td>
+<td><a href="./Cape_Town" title="Cape Town">Cape Town</a>, <a href="./Johannesburg" title="Johannesburg">Johannesburg</a></td>
+</tr>
+<tr>
+<td><a href="./Spain" title="Spain">Spain</a></td>
+<td><a href="./Barcelona" title="Barcelona">Barcelona</a>, <a href="./Madrid" title="Madrid">Madrid</a></td>
+</tr>
+<tr>
+<td><a href="./Sweden" title="Sweden">Sweden</a></td>
+<td><a href="./Stockholm" title="Stockholm">Stockholm</a></td>
+</tr>
+<tr>
+<td><a href="./Switzerland" title="Switzerland">Switzerland</a></td>
+<td><a href="./St._Gallen" title="St. Gallen">St. Gallen</a>, <a href="./Zurich" title="Zurich">Zurich</a></td>
+</tr>
+<tr>
+<td><a href="./Taiwan" title="Taiwan">Taiwan</a></td>
+<td><a href="./Taichung" title="Taichung">Taichung</a>, <a href="./Taipei" title="Taipei">Taipei</a></td>
+</tr>
+<tr>
+<td><a href="./United_Kingdom" title="United Kingdom">United Kingdom</a></td>
+<td><a href="./Edinburgh" title="Edinburgh">Edinburgh</a>, <a href="./London" title="London">London</a></td>
+</tr>
+<tr>
+<td><a href="./United_States" title="United States">United States</a></td>
+<td><a href="./Atlanta" title="Atlanta">Atlanta</a>, <a href="./Boston" title="Boston">Boston</a>, <a href="./Chicago" title="Chicago">Chicago</a>, <a href="./Detroit" title="Detroit">Detroit</a>, <a href="./Houston" title="Houston">Houston</a>, <a href="./Las_Vegas" title="Las Vegas">Las Vegas</a>, <a href="./Los_Angeles" title="Los Angeles">Los Angeles</a>, <a href="./Miami" title="Miami">Miami</a>, <a href="./New_York_City" title="New York City">New York City</a>, <a href="./Philadelphia" title="Philadelphia">Philadelphia</a>, <a href="./San_Diego" title="San Diego">San Diego</a>, <a href="./San_Francisco" title="San Francisco">San Francisco</a>, <a href="./Seattle" title="Seattle">Seattle</a></td>
+</tr>
+<tr>
+<td><a href="./Vatican_City" title="Vatican City">Vatican City</a></td>
+<td><a href="./Vatican_City" title="Vatican City">Vatican City</a></td>
+</tr>
+</tbody>
+</table>
+<h3>Landmark Icons</h3>
+<p>Google added icons of city attractions, in a similar style to <a href="./Apple_Maps" title="Apple Maps">Apple Maps</a>, on October 3, 2019. In the first stage, such icons were added to 9 cities.</p>
+<h3>45° imagery</h3>
+<p>In December 2009, Google introduced a new view consisting of 45° angle aerial imagery, offering a "<a href="./Bird's-eye_view" title="Bird's-eye view">bird's-eye view</a>" of cities. The first cities available were <a href="./San_Jose,_California" title="San Jose, California">San Jose</a> and <a href="./San_Diego" title="San Diego">San Diego</a>. This feature was initially available only to developers via the Google Maps API. In February 2010, it was introduced as an experimental feature in Google Maps Labs. In July 2010, 45° imagery was made available in Google Maps in select cities in South Africa, the United States, Germany and Italy.</p>
+<h3>Weather</h3>
+<p>In February 2024, Google Maps incorporated a small weather icon on the top left corner of the Android and iOS mobile apps, giving access to weather and <a href="./Air_quality_index" title="Air quality index">air quality index</a> details.</p>
+<h3>Lens in Maps</h3>
+<p>Previously called Search with Live View, Lens In Maps identifies shops, restaurants, transit stations and other street features with a phone's camera and places relevant information and a category pin on top, like closing/opening times, current busyness, pricing and reviews using AI and <a href="./Augmented_reality" title="Augmented reality">augmented reality</a>. The feature, if available on the device, can be accessed through tapping the Lens icon in the search bar. It was expanded to 50 new cities in October 2023 in its biggest expansion yet, after initially being released in late 2022 in Los Angeles, San Francisco, New York, London, and Paris. Lens in Maps shares features with Live View, which also displays information relating to street features while guiding a user to a selected destination with virtual arrows, signs and guidance.</p>
+<h3>Business listings</h3>
+<p>Google collates business listings from multiple on-line and off-line sources. To reduce duplication in the index, Google's algorithm combines listings automatically based on address, phone number, or geocode, but sometimes information for separate businesses will be inadvertently merged with each other, resulting in listings inaccurately incorporating elements from multiple businesses. Google allows business owners to create and verify their own business data through <em>Google Business Profile</em> (<em>GBP</em>), formerly <em>Google My Business</em> (<em>GMB</em>). Owners are encouraged to provide Google with business information including address, phone number, business category, and photos. Google has staff in India who check and correct listings remotely as well as support businesses with issues.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>] Google also has teams on the ground in most countries that validate physical addresses in person. In May 2024, Google announced it would discontinue the chat feature in Google Business Profile. Starting July 15, 2024, new chat conversations would be disabled, and by July 31, 2024, all chat functionalities would end.</p>
+<p>Google Maps can be manipulated by businesses that are not physically located in the area in which they record a listing. There are cases of people abusing Google Maps to overtake their competition by placing unverified listings on online directory sites, knowing the information will roll across to Google (duplicate sites). The people who update these listings do not use a registered business name. They place keywords and location details on their Google Maps business title, which can overtake credible business listings. In Australia in particular, genuine companies and businesses are noticing a trend of fake business listings in a variety of industries.</p>
+<p>Genuine business owners can also optimize their business listings to gain greater visibility in Google Maps, through a type of search engine marketing called <a href="./Local_search_engine_optimization" title="Local search engine optimization">local search engine optimization</a>.</p>
+<h3>Indoor maps</h3>
+<p>In March 2011, indoor maps were added to Google Maps, giving users the ability to navigate themselves within buildings such as <a href="./Airport" title="Airport">airports</a>, <a href="./Museum" title="Museum">museums</a>, shopping malls, <a href="./Big-box_store" title="Big-box store">big-box stores</a>, universities, <a href="./Transport_hub" title="Transport hub">transit stations</a>, and other public spaces (including underground facilities). Google encourages owners of public facilities to submit floor plans of their buildings in order to add them to the service. Map users can view different floors of a building or <a href="./Metro_station" title="Metro station">subway station</a> by clicking on a level selector that is displayed near any structures which are mapped on multiple levels.</p>
+<h3>My Maps</h3>
+<p>My Maps is a feature in Google Maps launched in April 2007 that enables users to create custom maps for personal use or sharing. Users can add points, lines, shapes, notes and images on top of Google Maps using a <a href="./WYSIWYG" title="WYSIWYG">WYSIWYG</a> editor. An Android app for My Maps, initially released in March 2013 under the name Google Maps Engine Lite, was available until its removal from the <a href="./Google_Play" title="Google Play">Play Store</a> in October 2021.</p>
+<h3>Google Local Guides</h3>
+<p><a href="./Google_Local_Guides?action=edit&amp;redlink=1" title="Google Local Guides">Google Local Guides</a> is a volunteer program launched by Google Maps to enable users to contribute to Google Maps when registered. It sometimes provides them additional perks and benefits for their collaboration. Users can achieve Level 1 to 10, and be awarded with badges. The program is partially a successor to <a href="./Google_Map_Maker" title="Google Map Maker">Google Map Maker</a> as features from the former program became integrated into the website and app.</p>
+<p>The program consists of adding reviews, photos, basic information, and videos; and correcting information such as <a href="./Accessibility" title="Accessibility">wheelchair accessibility</a>. Adding reviews, photos, videos, new places, new roads or providing useful information gives points to the users. The level of users is upgraded when they get a certain amount of points. Starting with Level 4, a star is shown near the avatar of the user.</p>
+<h3>Timelapse</h3>
+<p>Earth Timelapse, released in April 2021, is a program in which users can see how the earth has been changed in the last 37 years. They combined the 15 million satellite images (roughly ten quadrillion <a href="./Pixel" title="Pixel">pixels</a>) to create the 35 global cloud-free Images for this program.</p>
+<h3>Timeline</h3>
+<p>If a user shares their location with Google, Timeline summarises this location for each day on a Timeline map. Timeline estimates the mode of travel used to move between places and will also show photos taken at that location. In June 2024, Google started progressively removing access to the timeline on web browsers, with the information instead being stored on a local device.</p>
+<h2>Implementation</h2>
+<p>As the user drags the map, the grid squares are downloaded from the server and inserted into the page. When a user searches for a business, the results are downloaded in the background for insertion into the side panel and map; the page is not reloaded. A hidden <a href="./HTML_element#Frames" title="HTML element">iframe</a> with form submission is used because it preserves browser history. Like many other Google web applications, Google Maps uses <a href="./JavaScript" title="JavaScript">JavaScript</a> extensively. The site also uses protocol buffers for data transfer rather than <a href="./JSON" title="JSON">JSON</a>, for performance reasons.</p>
+<p>The version of <a href="./Google_Street_View" title="Google Street View">Google Street View</a> for classic Google Maps required <a href="./Adobe_Flash" title="Adobe Flash">Adobe Flash</a>. In October 2011, Google announced MapsGL, a <a href="./WebGL" title="WebGL">WebGL</a> version of Maps with better renderings and smoother transitions. Indoor maps use JPG, .PNG, .PDF, .BMP, or .GIF, for <a href="./Floor_plan" title="Floor plan">floor plans</a>.</p>
+<p>Users who are logged into a <a href="./Google_Account" title="Google Account">Google Account</a> can save locations so that they are overlaid on the map with various colored "pins" whenever they browse the application. These "Saved places" can be organized into default groups or user named groups and shared with other users. "Starred places" is one default group example. It previously automatically created a record within the now-discontinued product <a href="./Google_Bookmarks" title="Google Bookmarks">Google Bookmarks</a>.</p>
+<h3>Map data and imagery</h3>
+<p>See also: <a href="./List_of_satellite_map_images_with_missing_or_unclear_data" title="List of satellite map images with missing or unclear data">List of satellite map images with missing or unclear data</a></p>
+<p>The Google Maps terms and conditions state that usage of material from Google Maps is regulated by Google Terms of Service and some additional restrictions. Google has either purchased local map data from established companies, or has entered into lease agreements to use copyrighted map data. The owner of the copyright is listed at the bottom of zoomed maps. For example, street maps in Japan are leased from <a href="./Zenrin" title="Zenrin">Zenrin</a>. Street maps in China are leased from <a href="./AutoNavi" title="AutoNavi">AutoNavi</a>. Russian street maps are leased from Geocentre Consulting and <a href="./Tele_Atlas" title="Tele Atlas">Tele Atlas</a>. Data for <a href="./North_Korea" title="North Korea">North Korea</a> is sourced from the companion project <a href="./Google_Map_Maker" title="Google Map Maker">Google Map Maker</a>.</p>
+<p>Street map overlays, in some areas, may not match up precisely with the corresponding satellite images. The street data may be entirely erroneous, or simply out of date: "The biggest challenge is the currency of data, the authenticity of data," said Google Earth representative <a href="./Brian_McClendon" title="Brian McClendon">Brian McClendon</a>. As a result, in March 2008 Google added a feature to edit the locations of houses and businesses.</p>
+<p>Restrictions have been placed on Google Maps through the apparent censoring of locations deemed potential security threats. In some cases the area of redaction is for specific buildings, but in other cases, such as Washington, D.C., the restriction is to use outdated imagery.</p>
+<h3>Google Maps API</h3>
+<p>Google Maps API, now called Google Maps Platform, hosts about 17 different <a href="./API" title="API">APIs</a>, which are themed under the following categories: Maps, Places and Routes.</p>
+<p>After the success of reverse-engineered mashups such as chicagocrime.org and housingmaps.com, Google launched the Google Maps API in June 2005 to allow developers to integrate Google Maps into their websites. It was a free service that did not require an <a href="./API_key" title="API key">API key</a> until June 2018 (changes went into effect on July 16), when it was announced that an API key linked to a Google Cloud account with billing enabled would be required to access the API. The API currently<a href="https://en.wikipedia.org/w/index.php?title=Google_Maps&amp;action=edit">[update]</a> does not contain ads, but Google states in their terms of use that they reserve the right to display ads in the future.</p>
+<p>By using the Google Maps <a href="./Application_programming_interface" title="Application programming interface">API</a>, it is possible to embed Google Maps into an external website, onto which site-specific data can be overlaid. Although initially only a <a href="./JavaScript" title="JavaScript">JavaScript</a> API, the Maps API was expanded to include an API for <a href="./Adobe_Flash" title="Adobe Flash">Adobe Flash</a> applications (but this has been deprecated), a service for retrieving static map images, and <a href="./Web_service" title="Web service">web services</a> for performing <a href="./Geocoding" title="Geocoding">geocoding</a>, generating driving directions, and obtaining elevation profiles. Over 1,000,000 web sites use the Google Maps API, making it the most heavily used web application development API. In September 2011, Google announced it would deprecate the Google Maps API for Flash.</p>
+<p>The Google Maps API was free for commercial use, provided that the site on which it is being used is publicly accessible and did not charge for access, and was not generating more than 25,000 map accesses a day. Sites that did not meet these requirements could purchase the Google Maps API for Business.</p>
+<p>As of June 21, 2018, Google increased the prices of the Maps API and requires a billing profile.</p>
+<h3>Google Maps in China</h3>
+<p>Due to <a href="./Restrictions_on_geographic_data_in_China" title="Restrictions on geographic data in China">restrictions on geographic data in China</a>, Google Maps must partner with a Chinese digital map provider in order to legally show Chinese map data. Since 2006, this partner has been <a href="./AutoNavi" title="AutoNavi">AutoNavi</a>.</p>
+<p>Within China, the State Council mandates that all maps of China use the <a href="./GCJ-02" title="GCJ-02">GCJ-02</a> coordinate system, which is offset from the <a href="./WGS-84" title="WGS-84">WGS-84</a> system used in most of the world. google.<em>cn</em>/maps (formerly Google Ditu) uses the GCJ-02 system for both its street maps and satellite imagery. google.<em>com</em>/maps also uses GCJ-02 data for the street map, but uses WGS-84 coordinates for satellite imagery, causing the so-called <a href="./Restrictions_on_geographic_data_in_China#GPS_shift_problem" title="Restrictions on geographic data in China">China GPS shift problem</a>.</p>
+<p>Frontier alignments also present some differences between google.<em>cn</em>/maps and google.<em>com</em>/maps. On the latter, sections of the Chinese border with India and Pakistan are shown with dotted lines, indicating areas or frontiers in dispute. However, google.<em>cn</em> shows the Chinese frontier strictly according to Chinese claims with no dotted lines indicating the border with India and Pakistan. For example, the <a href="./South_Tibet" title="South Tibet">South Tibet</a> region claimed by China but administered by India as a large part of <a href="./Arunachal_Pradesh" title="Arunachal Pradesh">Arunachal Pradesh</a> is shown inside the Chinese frontier by google.<em>cn</em>, with Indian highways ending abruptly at the Chinese claim line. Google.<em>cn</em> also shows Taiwan and the <a href="./South_China_Sea_Islands" title="South China Sea Islands">South China Sea Islands</a> as part of China. Google Ditu's street map coverage of Taiwan no longer omits major state organs, such as the Presidential Palace, the <a href="./Constitution_of_the_Republic_of_China" title="Constitution of the Republic of China">five Yuans</a>, and the Supreme Court.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">additional citation(s) needed</a></em>]</p>
+<p>Google.<em>cn</em>/maps does not provide My Maps. On the other hand, while google.<em>cn</em> displays virtually all text in Chinese, google.<em>com</em>/maps displays most text (user-selectable real text as well as those on map) in English.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>] This behavior of displaying English text is not consistent but intermittent – sometimes it is in English, sometimes it is in Chinese. The criteria for choosing which language is displayed are not known publicly.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>]</p>
+<h2>Criticism and controversies</h2>
+<h3>Incorrect location naming</h3>
+<p>There are cases where Google Maps had added out-of-date neighborhood monikers. Thus, in Los Angeles, the name "Brooklyn Heights" was revived from its 1870s usage and "Silver Lake Heights" from its 1920s usage, or mistakenly relabeled areas (in Detroit, the neighborhood "Fiskhorn" became "Fishkorn"). Because many companies utilize Google Maps data, these previously obscure or incorrect names then gain traction; the names are often used by <a href="./Real_estate_agent" title="Real estate agent">realtors</a>, hotels, <a href="./Food_delivery" title="Food delivery">food delivery</a> sites, <a href="./Online_dating_service" title="Online dating service">dating sites</a>, and <a href="./News_media" title="News media">news organizations</a>.</p>
+<p>Google has said it created its maps from third-party data, public sources, satellites, and users, but many names used have not been connected to any official record. According to a former Google Maps employee (who was not authorized to speak publicly), users can submit changes to Google Maps, but some submissions are ruled upon by people with little local knowledge of a place, such as contractors in India. Critics maintain that names likes "BoCoCa" (for the area in Brooklyn between Boerum Hill, Cobble Hill and Carroll Gardens), are "just plain puzzling" or simply made up. Some names used by Google have been traced to non-professionally made maps with typographical errors that survived on Google Maps.</p>
+<h3>Potential misuse</h3>
+<p>See also: <a href="./Google_Street_View_privacy_concerns" title="Google Street View privacy concerns">Google Street View privacy concerns</a> and <a href="./List_of_satellite_map_images_with_missing_or_unclear_data" title="List of satellite map images with missing or unclear data">List of satellite map images with missing or unclear data</a></p>
+<p>In 2005 the <a href="./Australian_Nuclear_Science_and_Technology_Organisation" title="Australian Nuclear Science and Technology Organisation">Australian Nuclear Science and Technology Organisation</a> (ANSTO) complained about the potential for terrorists to use the satellite images in planning attacks, with specific reference to the <a href="./Open-pool_Australian_lightwater_reactor" title="Open-pool Australian lightwater reactor">Lucas Heights nuclear reactor</a>; however, the Australian Federal government did not support the organization's concern. At the time of the ANSTO complaint, Google had colored over some areas for security (mostly in the U.S.), such as the rooftop of the <a href="./White_House" title="White House">White House</a> and several other Washington, D.C. buildings.</p>
+<p>In October 2010, Nicaraguan military commander <a href="./Edén_Pastora" title="Edén Pastora">Edén Pastora</a> <a href="./Costa_Rica–Nicaragua_San_Juan_River_border_dispute#2010_Isla_Calero_dispute" title="Costa Rica–Nicaragua San Juan River border dispute">stationed Nicaraguan troops</a> on the <a href="./Isla_Calero" title="Isla Calero">Isla Calero</a> (in the delta of the <a href="./San_Juan_River_(Nicaragua)" title="San Juan River (Nicaragua)">San Juan River</a>), justifying his action on the border delineation given by Google Maps. Google has since updated its data which it found to be incorrect.</p>
+<p>On January 27, 2014, documents leaked by <a href="./Edward_Snowden" title="Edward Snowden">Edward Snowden</a> revealed that the <a href="./NSA" title="NSA">NSA</a> and the <a href="./GCHQ" title="GCHQ">GCHQ</a> intercepted Google Maps queries made on smartphones, and used them to locate the users making these queries. One leaked document, dating to 2008, stated that "[i]t effectively means that anyone using Google Maps on a smartphone is working in support of a GCHQ system."</p>
+<p>In May 2015, searches on Google Maps for offensive racial epithets for African Americans pointed the user to the <a href="./White_House" title="White House">White House</a>; Google apologized for the incident.</p>
+<p>In December 2015, 3 Japanese <a href="./Netizen" title="Netizen">netizens</a> were charged with vandalism after they were found to have added an unrelated law firm's name as well as indecent names to locations such as "<a href="./Nuclear_test_site" title="Nuclear test site">Nuclear test site</a>" to the <a href="./Hiroshima_Peace_Memorial" title="Hiroshima Peace Memorial">Atomic Bomb Dome</a> and "Izumo <a href="./Aum_Shinrikyo" title="Aum Shinrikyo">Satya</a>" to the <a href="./Izumo-taisha" title="Izumo-taisha">Izumo Taisha</a>.</p>
+<p>In February 2020, the artist Simon Weckert used 99 cell phones to fake a Google Maps traffic jam.</p>
+<p>In September 2024, several schools in Taiwan and Hong Kong were altered to incorrect labels, such as "<a href="./Psychiatric_hospitals" title="Psychiatric hospitals">psychiatric hospitals</a>" or "<a href="./Prisons" title="Prisons">prisons</a>". Initially, it was believed to be the result of hacker attacks. However, police later revealed that local students had carried out the prank. Google quickly corrected the mislabeled entries. Education officials in Taiwan and Hong Kong expressed concern over the incident.</p>
+<h3>Misdirection incidents</h3>
+<h4>Argentina</h4>
+<p>In May 2025, a Brazilian tourist driving from <a href="./Perito_Moreno,_Santa_Cruz" title="Perito Moreno, Santa Cruz">Perito Moreno</a> to <a href="./El_Calafate" title="El Calafate">El Calafate</a> walked 25 kilometres (16 mi) on foot during a snowstorm after Google Maps directed him to an unpaved section of Santa Cruz's 29 highway where his car got stranded. He was rescued by local police after walking for five hours in freezing weather.</p>
+<h4>Australia</h4>
+<p>In August 2023, a woman driving from <a href="./Alice_Springs" title="Alice Springs">Alice Springs</a> to the Harts Range Racecourse was stranded in the Central Australian desert for a night after following directions provided by Google Maps. She later discovered that Google Maps was providing directions for the actual <a href="./Hart_Range,_Northern_Territory" title="Hart Range, Northern Territory">Harts Range</a> instead of the rodeo. Google said it was looking into the naming of the two locations and consulting with "local and authoritative sources" to solve the issue.</p>
+<p>In February 2024, two German tourists were stranded for a week after Google Maps directed them to follow a dirt track through <a href="./Oyala_Thumotang_National_Park" title="Oyala Thumotang National Park">Oyala Thumotang National Park</a> and their vehicle became trapped in mud. <a href="./Queensland_Parks_and_Wildlife_Service" title="Queensland Parks and Wildlife Service">Queensland Parks and Wildlife Service</a> ranger Roger James said, "People should not trust Google Maps when they're travelling in remote regions of <a href="./Queensland" title="Queensland">Queensland</a> and they need to follow the signs, use official maps or other navigational devices."</p>
+<h4>India</h4>
+<p>Google Maps has been linked to several misdirection incidents in India in 2024. In 2024, three men from <a href="./Uttar_Pradesh" title="Uttar Pradesh">Uttar Pradesh</a> died after their car fell from an under-construction bridge. They were using Google Maps for driving which misdirected them and the car fell into the <a href="./Ramganga" title="Ramganga">Ramganga</a> river. The bridge had no warning signs or barricades in place at the time of the incident. Engineers from the state's road department and a Google Maps official were identified in a police complaint on charges related to the case.</p>
+<h4>North America</h4>
+<p>In June 2019, Google Maps provided nearly 100 <a href="./Colorado" title="Colorado">Colorado</a> drivers an alternative route that led to a dirt road after a crash occurred on <a href="./Peña_Boulevard" title="Peña Boulevard">Peña Boulevard</a>. The road had been turned to mud by rain, resulting in nearly 100 vehicles being trapped. Google said in a statement, "While we always work to provide the best directions, issues can arise due to unforeseen circumstances such as weather. We encourage all drivers to follow local laws, stay attentive, and use their best judgment while driving."</p>
+<p>In September 2023, Google was sued by a <a href="./North_Carolina" title="North Carolina">North Carolina</a> resident who alleged that Google Maps had directed her husband over the Snow Creek Bridge in <a href="./Hickory,_North_Carolina" title="Hickory, North Carolina">Hickory</a> the year prior, resulting in him drowning. According to the lawsuit, multiple people had notified Google about the state of the bridge, which collapsed in 2013, but Google had not updated the route information and continued to direct users over the bridge. At the time of the man's death, the barriers placed to block access to the bridge had been vandalized.</p>
+<p>In November 2023, a hiker was rescued by helicopter on the backside of <a href="./Mount_Fromme" title="Mount Fromme">Mount Fromme</a> in <a href="./Vancouver" title="Vancouver">Vancouver</a>. <a href="./North_Shore_Rescue" title="North Shore Rescue">North Shore Rescue</a> stated on its Facebook page that the hiker had followed a non-existent hiking trail on Google Maps. This was also the second hiker in two months to require rescuing after following the same trail. The fake trail has since been removed from the app.</p>
+<p>Also in November 2023, Google apologized after users were directed through desert roads after parts of <a href="./Interstate_15" title="Interstate 15">Interstate 15</a> were closed due to a <a href="./Dust_storm" title="Dust storm">dust storm</a>. Drivers became stranded after following the suggested detour route, which was a "bumpy dirt trail". Following the incident, Google stated that Google Maps would "no longer route drivers traveling between <a href="./Las_Vegas" title="Las Vegas">Las Vegas</a> and <a href="./Barstow,_California" title="Barstow, California">Barstow</a> down through those roads."</p>
+<h4>Russia</h4>
+<p>In December 2020, Sergey Ustinov, a motorist teenager, froze to death when his <a href="./Toyota_Chaser" title="Toyota Chaser">Toyota Chaser</a>'s radiator malfunctioned on an abandoned section of the <a href="./R504_Kolyma_Highway" title="R504 Kolyma Highway">Kolyma Highway</a> between <a href="./Kyubeme" title="Kyubeme">Kyubeme</a> and <a href="./Agayakan_(village)" title="Agayakan (village)">Agayakan</a>, close to the <a href="./Oymyakon" title="Oymyakon">coldest permanent inhabited place on Earth</a>. His passenger, Vladislav Istomin, was found alive but with serious frostbite after the pair initially tried to make a fire of tires but failed while the temperature outside hit -50°C.</p>
+<p>Google Maps was found accountable for redirecting the pair to the abandoned road, part of a 200 kms shorter route than the normal one between <a href="./Yakutsk" title="Yakutsk">Yakutsk</a> and <a href="./Magadan" title="Magadan">Magadan</a>, the start and end point of the two.</p>
+<h3>Labelling disputes</h3>
+<p>In February 2025, Google said that it would change all parks labelled "<a href="./State_park" title="State park">state parks</a>" in <a href="./Canada" title="Canada">Canada</a> to "<a href="./Provincial_park" title="Provincial park">provincial parks</a>". This issue predated the <a href="./Second_presidency_of_Donald_Trump" title="Second presidency of Donald Trump">Trump administration</a> but gained attention after Trump stated that he would like <a href="./Movements_for_the_annexation_of_Canada_to_the_United_States" title="Movements for the annexation of Canada to the United States">Canada to become the 51st state</a>. The "state park" listing was criticized by Canadians, including <a href="./British_Columbia" title="British Columbia">British Columbia</a> environment minister <a href="./Tamara_Davidson" title="Tamara Davidson">Tamara Davidson</a>.</p>
+<h3>Naming disputes</h3>
+<p>In 2012, BBC News reported that Google was facing potential legal action from Iran for its lack of a naming label for the <a href="./Persian_Gulf" title="Persian Gulf">Persian Gulf</a> on Google Maps. The body of water was not labelled on the map; Iran said Google would see "serious damages" if the gulf was not named on the map. The gulf is the subject of a <a href="./Persian_Gulf_naming_dispute" title="Persian Gulf naming dispute">naming dispute</a>. Since 2016, Google Maps has displayed both Persian Gulf and Arabian Gulf on the body of water and shows "either Arabian or Persian Gulf to local users, depending on geolocation and language settings."</p>
+<p>In February 2025, as a response to <a href="./Donald_Trump" title="Donald Trump">Donald Trump</a>'s <a href="./Executive_Order_14172" title="Executive Order 14172">Executive Order 14172</a>, the <a href="./Gulf_of_Mexico" title="Gulf of Mexico">Gulf of Mexico</a> was relabeled to "Gulf of America" for US users and "Gulf of Mexico (Gulf of America)" elsewhere, except for Mexico itself where it remained the Gulf of Mexico. The decision received criticism, with Mexican president <a href="./Claudia_Sheinbaum" title="Claudia Sheinbaum">Claudia Sheinbaum</a> asking Google to reconsider its decision, and stating that her government would not rule out filing a <a href="./Civil_lawsuit" title="Civil lawsuit">civil lawsuit</a> against Google. Google subsequently disabled user reviews of the gulf after the name change occurred; BBC News reported that "Google appears to have deleted some negative reviews left in the wake of its name change." In May 2025, Sheinbaum said a lawsuit had been filed against Google for its continued use of "Gulf of America" on Google Maps.</p>
+<p>In April 2025, an update was released for Google Maps that more explicitly displayed the "<a href="./West_Philippine_Sea" title="West Philippine Sea">West Philippine Sea</a>" label for parts of the <a href="./South_China_Sea" title="South China Sea">South China Sea</a> claimed by the <a href="./Philippines" title="Philippines">Philippines</a>. The decision was praised by Filipino officials but criticized by the <a href="./Chinese_Foreign_Ministry" title="Chinese Foreign Ministry">Chinese Foreign Ministry</a>. A Google spokesperson stated, "The West Philippine Sea has always been labeled on Google Maps. We recently made this label easier to see at additional zoom levels."</p>
+<h3>Palestine labeling controversy</h3>
+<p>Google Maps has been criticized for not labelling <a href="./Palestine" title="Palestine">Palestine</a> as a country. When users search for "Palestine", the name is not visible as a labeled entity on the map, while its neighboring states are shown. In 2016, in response to an accusation that it deleted Palestine from the maps, the company explained that they have never labelled Palestine on their maps and also that a temporary "bug" had removed the labels for the <a href="./West_Bank" title="West Bank">West Bank</a> and the <a href="./Gaza_Strip" title="Gaza Strip">Gaza Strip</a>. Google also claimed the reason they do not label Palestine is due to the territory and its boundaries still being disputed. However critics have pointed out that Google Maps shows the <a href="./Western_Sahara" title="Western Sahara">Western Sahara</a>, despite that terrority also being part of a long-running dispute, and arguing that Google demonstrates an inconsistent approach to disputed territories. Despite Google's explanation, backlash continued over the omission and in 2020, the controversy led to a <a href="./Change.org" title="Change.org">Change.org</a> petition to prompt Google to add Palestine to Google Maps, which has over 2.1 million signatures.</p>
+<h2>Discontinued features</h2>
+<h3>Google Latitude</h3>
+<p>Main article: <a href="./Google_Latitude" title="Google Latitude">Google Latitude</a></p>
+<p>Google Latitude was a feature that let users share their physical locations with other people. This service was based on Google Maps, specifically on mobile devices. There was an <a href="./IGoogle" title="IGoogle">iGoogle</a> widget for desktops and laptops as well. Some concerns were expressed about the privacy issues raised by the use of the service. On August 9, 2013, this service was discontinued, and on March 22, 2017, Google incorporated the features from Latitude into the Google Maps app.</p>
+<h3>Google Map Maker</h3>
+<p>Main article: <a href="./Google_Map_Maker" title="Google Map Maker">Google Map Maker</a></p>
+<p>In areas where Google Map Maker was available, for example, much of Asia, Africa, Latin America and Europe as well as the United States and Canada, anyone who logged into their Google account could directly improve the map by fixing incorrect driving directions, adding biking trails, or adding a missing building or road. General map errors in Australia, Austria, Belgium, Denmark, France, Liechtenstein, Netherlands, New Zealand, Norway, South Africa, Switzerland, and the United States could be reported using the Report a Problem link in Google Maps and would be updated by Google. For areas where Google used <a href="./Tele_Atlas" title="Tele Atlas">Tele Atlas</a> data, map errors could be reported using Tele Atlas map insight.</p>
+<p>If imagery was missing, outdated, misaligned, or generally incorrect, one could notify Google through their contact request form.</p>
+<p>In November 2016, Google announced the discontinuation of Google Map Maker as of March 2017.</p>
+<h2>Mobile app</h2>
+<p>Google Maps is available as a <a href="./Mobile_app" title="Mobile app">mobile app</a> for the <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> and <a href="./IOS" title="IOS">iOS</a> mobile operating systems. The first mobile version of Google Maps (then known as Google Local for Mobile) was launched in beta in November 2005 for mobile platforms supporting <a href="./Java_Platform,_Micro_Edition" title="Java Platform, Micro Edition">J2ME</a>. It was released as Google Maps for Mobile in 2006. In 2007 it came preloaded on the <a href="./IPhone_(1st_generation)" title="IPhone (1st generation)">first iPhone</a> in a deal with Apple. A version specifically for <a href="./Windows_Mobile" title="Windows Mobile">Windows Mobile</a> was released in February 2007 and the <a href="./Symbian" title="Symbian">Symbian</a> app was released in November 2007.</p>
+<p>Version 2.0 of Google Maps Mobile was announced at the end of 2007, with a stand out <em>My Location</em> feature to find the user's location using the cell towers, without needing <a href="./Global_Positioning_System" title="Global Positioning System">GPS</a>. In September 2008, Google Maps was released for and preloaded on Google's own new platform Android.</p>
+<p>Up until <a href="./IOS_6" title="IOS 6">iOS 6</a>, the built-in maps application on the <a href="./IOS" title="IOS">iOS</a> operating system was powered by Google Maps. However, with the announcement of iOS 6 in June 2012, <a href="./Apple_Inc." title="Apple Inc.">Apple</a> announced that they had created their own <a href="./Apple_Maps" title="Apple Maps">Apple Maps</a> mapping service, which officially replaced Google Maps when iOS 6 was released on September 19, 2012. However, at launch, Apple Maps received significant criticism from users due to inaccuracies, errors and <a href="./Software_bug" title="Software bug">bugs</a>. One day later, <em><a href="./The_Guardian" title="The Guardian">The Guardian</a></em> reported that Google was preparing its own Google Maps app, which was released on December 12, 2012. Within two days, the application had been downloaded over ten million times.</p>
+<h3>Features</h3>
+<p>The Google Maps apps for iOS and Android have many of the same features, including <a href="./Turn-by-turn_navigation" title="Turn-by-turn navigation">turn-by-turn navigation</a>, <a href="./Street_view" title="Street view">street view</a>, and public transit information. Turn-by-turn navigation was originally announced by Google as a separate beta testing app exclusive to Android 2.0 devices in October 2009. The original standalone iOS version did not support the <a href="./IPad" title="IPad">iPad</a>, but tablet support was added with version 2.0 in July 2013. An update in June 2012 for Android devices added support for offline access to downloaded maps of certain regions, a feature that was eventually released for iOS devices, and made more robust on Android, in May 2014. Google Maps is getting a new <a href="./Google_Gemini" title="Google Gemini">Gemini</a> upgrade that has <a href="./Hands-free_computing" title="Hands-free computing">hands-free</a>, that is not available in <a href="./Google_Assistant" title="Google Assistant">Google Assistant</a>. It makes navigating easier and smarter. Its required version is <a href="./IOS_15" title="IOS 15">iOS 15</a> or <a href="./Android_Pie" title="Android Pie">Android 9 “Pie”</a> for intergration.</p>
+<p>At the end of 2015 Google Maps announced its new offline functionality, but with various limitations – downloaded area cannot exceed 120,000 square kilometers and require a considerable amount of storage space. In January 2017, Google added a feature exclusively to Android that will, in some U.S. cities, indicate the level of difficulty in finding available parking spots, and on both Android and iOS, the app can, as of an April 2017 update, remember where users parked. In August 2017, Google Maps for Android was updated with new functionality to actively help the user in finding parking lots and garages close to a destination. In December 2017, Google added a new two-wheeler mode to its Android app, designed for users in India, allowing for more accessibility in traffic conditions. In 2019 the Android version introduced the new feature called live view that allows to view directions directly on the road thanks to <a href="./Augmented_reality" title="Augmented reality">augmented reality</a>. Google Maps won the 2020 Webby Award for Best User Interface in the category Apps, Mobile &amp; Voice. In March 2021, Google added a feature in which users can draw missing roads. In June 2022, Google implemented support for toll calculation. Both iOS and Android apps report how much the user has to pay in tolls when a route that includes toll roads is input. The feature is available for roads in the US, <a href="./India" title="India">India</a>, Japan and Indonesia with further expansion planned. As per reports the total number of toll roads covered in this phase is around 2000.</p>
+<h3>Reception</h3>
+<p><em><a href="./USA_Today" title="USA Today">USA Today</a></em> welcomed the application back to iOS, saying: "The reemergence in the middle of the night of a Google Maps app for the iPhone is like the return of an old friend. Only your friend, who'd gone missing for three months, comes back looking better than ever." Jason Parker of <em><a href="./CNET" title="CNET">CNET</a></em>, calling it "the king of maps", said, "With its iOS Maps app, Google sets the standard for what mobile navigation should be and more." Bree Fowler of the <a href="./Associated_Press" title="Associated Press">Associated Press</a> compared Google's and Apple's map applications, saying: "The one clear advantage that Apple has is style. Like Apple devices, the maps are clean and clear and have a fun, pretty element to them, especially in 3-D. But when it comes down to depth and information, Google still reigns superior and will no doubt be welcomed back by its fans." <em><a href="./Gizmodo" title="Gizmodo">Gizmodo</a></em> gave it a ranking of 4.5 stars, stating: "Maps Done Right". According to <em><a href="./The_New_York_Times" title="The New York Times">The New York Times</a></em>, Google "admits that it's [iOS app is] even better than Google Maps for Android phones, which has accommodated its evolving feature set mainly by piling on menus".</p>
+<p>Google Maps' <a href="./Geolocation" title="Geolocation">location tracking</a> is regarded by some as a threat to users' privacy, with Dylan Tweney of <em><a href="./VentureBeat" title="VentureBeat">VentureBeat</a></em> writing in August 2014 that "Google is probably logging your location, step by step, via Google Maps", and linked users to Google's location history map, which "lets you see the path you've traced for any given day that your smartphone has been running Google Maps". Tweney then provided instructions on how to disable location history. The history tracking was also noticed, and recommended disabled, by editors at <em>CNET</em> and <em><a href="./TechCrunch" title="TechCrunch">TechCrunch</a></em>. Additionally, <em><a href="./Quartz_(publication)" title="Quartz (publication)">Quartz</a></em> reported in April 2014 that a "sneaky new privacy change" would have an effect on the majority of iOS users. The privacy change, an update to the <a href="./Gmail" title="Gmail">Gmail</a> iOS app that "now supports sign-in across Google iOS apps, including Maps, <a href="./Google_Drive" title="Google Drive">Drive</a>, YouTube and <a href="./Google_Chrome" title="Google Chrome">Chrome</a>", meant that <a href="./Google" title="Google">Google</a> would be able to identify users' actions across its different apps.</p>
+<p>The Android version of the app surpassed five billion installations in March 2019. By November 2021, the Android app had surpassed 10 billion installations.</p>
+<h3>Go version</h3>
+<p>Google Maps Go, a version of the app designed for <a href="./Android_Go" title="Android Go">lower-end devices</a>, was released in beta in January 2018. By September 2018, the app had over 10 million installations.</p>
+<h2>Artistic and literary uses</h2>
+<p>The German "geo-novel" <em><a href="./Senghor_on_the_Rocks" title="Senghor on the Rocks">Senghor on the Rocks</a></em> (2008) presents its story as a series of spreads showing a Google Maps location on the left and the story's text on the right. Annika Richterich explains that the "satellite pictures in <em>Senghor on the Rocks</em> illustrate the main character's travel through the West-African state of <a href="./Senegal" title="Senegal">Senegal</a>".</p>
+<p>Artists have used Google Street View in a range of ways. <a href="./Emilio_Vavarella" title="Emilio Vavarella">Emilio Vavarella's</a> <em>The Google Trilogy</em> includes glitchy images and unintended portraits of the drivers of the Street View cars. The Japanese band <em><a href="./Group_inou" title="Group inou">group_inou</a></em> used Google Street View backgrounds to make a music video for their song EYE. The Canadian band <a href="./Arcade_Fire" title="Arcade Fire">Arcade Fire</a> made a customized music video that used Street View to show the viewer their own childhood home.</p>
+<h2>See also</h2>
+<ul>
+<li>
+<p><a href="./File:Crystal_Clear_app_linneighborhood.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Crystal_Clear_app_linneighborhood.svg/40px-Crystal_Clear_app_linneighborhood.svg.png"></a><a href="./Portal:Internet" title="Portal:Internet">Internet portal</a></p>
+</li>
+<li>
+<p><a href="./Azure_Maps" title="Azure Maps">Azure Maps</a></p>
+</li>
+<li><a href="./Apple_Maps" title="Apple Maps">Apple Maps</a></li>
+<li><a href="./Bing_Maps" title="Bing Maps">Bing Maps</a></li>
+<li><a href="./Comparison_of_web_map_services" title="Comparison of web map services">Comparison of web map services</a></li>
+<li><a href="./GeoGuessr" title="GeoGuessr">GeoGuessr</a></li>
+<li><a href="./Here_WeGo" title="Here WeGo">Here WeGo</a></li>
+<li><a href="./MapQuest" title="MapQuest">MapQuest</a></li>
+<li><a href="./OpenStreetMap" title="OpenStreetMap">OpenStreetMap</a></li>
+<li><a href="./Organic_Maps" title="Organic Maps">Organic Maps</a></li>
+<li><a href="./Terravision_(computer_program)" title="Terravision (computer program)">Terravision</a></li>
+<li><a href="./Wikiloc" title="Wikiloc">Wikiloc</a>, a mashup that shows trails and waypoints on Google Maps</li>
+<li><a href="./Wikimapia" title="Wikimapia">Wikimapia</a>, a mashup combining Google Maps and a <a href="./Wiki" title="Wiki">wiki</a> aimed at "describing the whole planet earth"</li>
+<li><a href="./Yandex_Maps" title="Yandex Maps">Yandex Maps</a>, popular in Russia and <a href="./Commonwealth_of_Independent_States" title="Commonwealth of Independent States">CIS</a></li>
+</ul>
+<h2>Notes</h2>
+<h2>References</h2>
+<h2>External links</h2>
+<ul>
+<li><a href="https://www.google.com/maps">Official website</a></li>
+<li><a href="https://blog.google/products/maps/">Official Google Maps blog</a></li>
+<li><a href="https://www.google.com/maps/about/">About Google Maps</a></li>
+<li><a href="https://maps.google.com/localguides/">Google Local Guides</a></li>
+<li><a href="https://cloud.google.com/maps-platform/">Google Maps Platform</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_Maps_navbox" title="Template:Google Maps navbox">v</a> - <a href="./Template_talk:Google_Maps_navbox" title="Template talk:Google Maps navbox">t</a> - <a href="./Special:EditPage/Template:Google_Maps_navbox" title="Special:EditPage/Template:Google Maps navbox">e</a>  <a href="./Google_Maps">Google Maps</a></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Related products</td>
+<td>- <a href="./Waze" title="Waze">Waze</a> - <a href="./Google_Arts_&amp;_Culture" title="Google Arts &amp; Culture">Arts &amp; Culture</a></td>
+<td></td>
+</tr>
+<tr>
+<td>Views and mapping sites</td>
+<td>- <a href="./Google_Earth" title="Google Earth">Earth</a> - <a href="./Google_Street_View" title="Google Street View">Street View</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Google_Street_View" title="Google Street View">Street View</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Other</td>
+<td>- <a href="./Historypin" title="Historypin">Historypin</a> - <a href="./Google_Maps_pin" title="Google Maps pin">Google Maps pin</a> - <em><a href="./Google_Maps_Road_Trip" title="Google Maps Road Trip">Google Maps Road Trip</a></em> - <a href="./Argleton" title="Argleton">Argleton</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Links to related articles</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><a href="./Help:Authority_control" title="Help:Authority control">Authority control databases</a> <a href="https://www.wikidata.org/wiki/Q12013#identifiers" title="Edit this at Wikidata">Edit this at Wikidata</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>International</td>
+<td>- <a href="https://viaf.org/viaf/186055050">VIAF</a> - <a href="https://d-nb.info/gnd/7566783-6">GND</a> - <a href="https://id.worldcat.org/fast/1403642">FAST</a></td>
+</tr>
+<tr>
+<td>National</td>
+<td>- <a href="https://id.loc.gov/authorities/n2006033374">United States</a> - <a href="https://catalogue.bnf.fr/ark:/12148/cb16253398g">France</a> - <a href="https://data.bnf.fr/ark:/12148/cb16253398g">BnF data</a> - <a href="https://www.nli.org.il/en/authorities/987007365081705171">Israel</a></td>
+</tr>
+<tr>
+<td>Other</td>
+<td>- <a href="https://www.idref.fr/148445063">IdRef</a></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

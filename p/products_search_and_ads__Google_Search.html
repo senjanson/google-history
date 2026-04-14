@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Google Search</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link active" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Google Search</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Google_Search<br>
+Category: products_search_and_ads<br>
+Depth: 1</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Google Search is a search engine operated by Google. It allows users to search for information on the Web by entering keywords or phrases. Google Search uses algorithms to analyze and rank websites based on their relevance to the search query. Google Search is the most-visited website in the world. As of 2025, Google Search has a 90% share of the global search engine market. Approximately 24.1% of Google's monthly global traffic comes from the United States, 5.6% from India, 5.5% from Japan, 4.8% from Brazil, and 3.7% from the United Kingdom according to data provided by Similarweb. The same source reports that 58% of users are male and 42% are female.</p>
+<h2>Images</h2>
+<p><img alt="330px-Google_Search_screenshot_in_2025__28EN_29" src="../images/330px-Google_Search_screenshot_in_2025__28EN_29.png"><br>
+<img alt="120px-Google_Favicon_2025.svg" src="../images/120px-Google_Favicon_2025.svg.png"><br>
+<img alt="330px-Google_Search_screenshot_in_2025__28EN_29" src="../images/330px-Google_Search_screenshot_in_2025__28EN_29.png"><br>
+<img alt="250px-AI_Overviews_result_for_What_is_Wikipedia_2C_2_March_2026" src="../images/250px-AI_Overviews_result_for_What_is_Wikipedia_2C_2_March_2026.png"><br>
+<img alt="250px-Product_Sans_typeface_sample.svg" src="../images/250px-Product_Sans_typeface_sample.svg.png"><br>
+<img alt="500px-Google_Search_with_definition_from_Wikipedia_on_the_right_side" src="../images/500px-Google_Search_with_definition_from_Wikipedia_on_the_right_side.png"><br>
+<img alt="250px-A_screenshot_of_suggestions_by_Google_Search_when__22wikip_22_is_typed__28new_29" src="../images/250px-A_screenshot_of_suggestions_by_Google_Search_when__22wikip_22_is_typed__28new_29.png"><br>
+<img alt="250px-Google_Videos_logo" src="../images/250px-Google_Videos_logo.png"><br>
+<img alt="330px-Google_Videos_search_engine_screenshot" src="../images/330px-Google_Videos_search_engine_screenshot.png"><br>
+<img alt="250px-Google_Search_error_of_January_31_2C_2009" src="../images/250px-Google_Search_error_of_January_31_2C_2009.png"></p>
+<h2>Full Article</h2>
+<p>Search engine from Google</p>
+<p>"Google.com" redirects here. For the company itself, see <a href="./Google" title="Google">Google</a>.</p>
+<p><strong>Google Search</strong> (also known simply as <strong>Google</strong> or <strong>google.com</strong>) is a <a href="./Search_engine" title="Search engine">search engine</a> operated by <a href="./Google" title="Google">Google</a>. It allows users to search for information on the <a href="./World_Wide_Web" title="World Wide Web">Web</a> by entering keywords or phrases. Google Search uses <a href="./Algorithm" title="Algorithm">algorithms</a> to analyze and rank <a href="./Website" title="Website">websites</a> based on their relevance to the search query. Google Search is the <a href="./List_of_most-visited_websites" title="List of most-visited websites">most-visited website in the world</a>. As of 2025, Google Search has a 90% share of the global search engine market. Approximately 24.1% of Google's monthly global traffic comes from the <a href="./United_States" title="United States">United States</a>, 5.6% from <a href="./India" title="India">India</a>, 5.5% from <a href="./Japan" title="Japan">Japan</a>, 4.8% from <a href="./Brazil" title="Brazil">Brazil</a>, and 3.7% from the <a href="./United_Kingdom" title="United Kingdom">United Kingdom</a> according to data provided by <a href="./Similarweb" title="Similarweb">Similarweb</a>. The same source reports that 58% of users are male and 42% are female.</p>
+<p>The order of search results returned by Google is based, in part, on a priority rank system called "<a href="./PageRank" title="PageRank">PageRank</a>". Google Search also provides many different options for customized searches, using symbols to include, exclude, specify or require certain search behavior, and offers specialized interactive experiences, such as flight status and package tracking, weather forecasts, currency, unit, and time conversions, word definitions, and more.</p>
+<p>The main purpose of Google Search is to search for text in publicly accessible documents offered by web servers, as opposed to other data, such as <a href="./Image_search" title="Image search">images</a> or <a href="./Database_search_engine" title="Database search engine">data contained in databases</a>. It was originally developed in 1996 by <a href="./Larry_Page" title="Larry Page">Larry Page</a>, <a href="./Sergey_Brin" title="Sergey Brin">Sergey Brin</a>, and <a href="./Scott_Hassan" title="Scott Hassan">Scott Hassan</a>. The search engine would also be set up in the garage of <a href="./Susan_Wojcicki" title="Susan Wojcicki">Susan Wojcicki</a>'s <a href="./Menlo_Park,_California" title="Menlo Park, California">Menlo Park</a> home. In 2011, Google introduced "<a href="./Google_Voice_Search" title="Google Voice Search">Google Voice Search</a>" to search for spoken, rather than typed, words. In 2012, Google introduced a <a href="./Semantic_search" title="Semantic search">semantic search</a> feature named <a href="./Knowledge_Graph_(Google)" title="Knowledge Graph (Google)">Knowledge Graph</a>.</p>
+<p>Analysis of the frequency of search terms may indicate economic, social and health trends. Data about the frequency of use of search terms on Google can be <a href="./Open_data" title="Open data">openly</a> inquired via <a href="./Google_Trends" title="Google Trends">Google Trends</a> and <a href="./Google_Flu_Trends" title="Google Flu Trends">have been shown to correlate</a> with <a href="./Flu" title="Flu">flu</a> outbreaks and unemployment levels, and provide the information faster than traditional reporting methods and surveys. As of mid-2016, Google's search engine has begun to rely on <a href="./Deep_learning#Deep_neural_networks" title="Deep learning">deep neural networks</a>.</p>
+<p>In August 2024, a US judge in Virginia ruled that Google held an <a href="./Monopoly" title="Monopoly">illegal monopoly</a> over Internet search and search advertising. The court found that Google maintained its market dominance by paying large amounts to phone-makers and browser-developers to make Google its default search engine. In April 2025, the trial to determine which remedies sought by the Department of Justice would be imposed to address Google's illegal monopoly, which could include breaking up the company and preventing it from using its data to secure dominance in the AI sector.[<em><a href="./Wikipedia:Manual_of_Style/Dates_and_numbers#Chronological_items" title="Wikipedia:Manual of Style/Dates and numbers">needs update</a></em>]</p>
+<h2>Search indexing</h2>
+<p>See also: <a href="./Googlebot" title="Googlebot">Googlebot</a></p>
+<p>Google <a href="./Search_engine_indexing" title="Search engine indexing">indexes</a> hundreds of <a href="./Terabyte" title="Terabyte">terabytes</a> of information from <a href="./Web_page" title="Web page">web pages</a>. Before 2024, Google also provided desktop users links to <a href="./Search_engine_cache" title="Search engine cache">cached</a> versions of their search results, formed by the search engine's latest indexing of the <a href="./Website" title="Website">website</a> in question. Additionally, Google indexes some file types, being able to show users <a href="./Portable_Document_Format" title="Portable Document Format">PDFs</a>, <a href="./Word_document" title="Word document">Word documents</a>, <a href="./Excel_spreadsheet" title="Excel spreadsheet">Excel spreadsheets</a>, <a href="./Microsoft_PowerPoint" title="Microsoft PowerPoint">PowerPoint presentations</a>, certain <a href="./Adobe_Flash" title="Adobe Flash">Flash multimedia content</a>, and <a href="./Plain_text" title="Plain text">plain text</a> files. Users can also activate "<a href="./SafeSearch" title="SafeSearch">SafeSearch</a>", a filtering technology aimed at preventing explicit and pornographic content from appearing in search results.</p>
+<p>Despite Google search's immense index, sources generally assume that Google is only indexing less than 5% of the total Internet, with the rest belonging to the <a href="./Deep_web" title="Deep web">deep web</a>, inaccessible through its search tools.</p>
+<p>In 2012, Google changed its search indexing tools to demote sites that had been accused of <a href="./Online_piracy" title="Online piracy">piracy</a>. In October 2016, Gary Illyes, a webmaster trends analyst with Google, announced that the search engine would be making a separate, primary web index dedicated for mobile devices, with a secondary, less up-to-date index for desktop use. The change was a response to the continued growth in mobile usage, and a push for web developers to adopt a mobile-friendly version of their websites. In December 2017, Google began rolling out the change, having already done so for multiple websites.</p>
+<h3>"Caffeine" search architecture upgrade</h3>
+<p>In August 2009, Google invited web developers to test a new search architecture, codenamed "Caffeine", and give their feedback. The new architecture provided no visual differences in the user interface, but added significant speed improvements and a new "under-the-hood" indexing infrastructure. The move was interpreted in some quarters as a response to <a href="./Microsoft" title="Microsoft">Microsoft</a>'s recent release of an upgraded version of its own search service, renamed <a href="./Bing_(search_engine)" title="Bing (search engine)">Bing</a>, as well as the launch of <a href="./Wolfram_Alpha" title="Wolfram Alpha">Wolfram Alpha</a>, a new search engine based on "computational knowledge". Google announced completion of "Caffeine" on June 8, 2010, claiming 50% fresher results due to continuous updating of its index.</p>
+<p>With "Caffeine", Google moved its back-end indexing system away from <a href="./MapReduce" title="MapReduce">MapReduce</a> and onto <a href="./Bigtable" title="Bigtable">Bigtable</a>, the company's distributed database platform.</p>
+<h3>"Medic" search algorithm update</h3>
+<p>In August 2018, <a href="./Danny_Sullivan_(technologist)" title="Danny Sullivan (technologist)">Danny Sullivan</a> from Google announced a broad core algorithm update. As per current analysis done by the industry leaders Search Engine Watch and Search Engine Land, the update was to drop down the medical and health-related websites that were not user friendly and were not providing good user experience. This is why the industry experts named it "Medic".</p>
+<p>Google reserves very high standards for YMYL (Your Money or Your Life) pages. This is because misinformation can affect users financially, physically, or emotionally. Therefore, the update targeted particularly those YMYL pages that have low-quality content and misinformation. This resulted in the algorithm targeting health and medical-related websites more than others. However, many other websites from other industries were also negatively affected.</p>
+<h2>Search results</h2>
+<h3>Ranking of results</h3>
+<p>By 2012, it handled more than 3.5 billion searches per day. In 2013 the <a href="./European_Commission" title="European Commission">European Commission</a> found that Google Search favored Google's own products, instead of the best result for consumers' needs. In February 2015 Google announced a major change to its mobile search <a href="./Algorithm" title="Algorithm">algorithm</a> which would favor mobile friendly over other <a href="./Websites" title="Websites">websites</a>. Nearly 60% of Google <a href="./Online_traffic" title="Online traffic">searches</a> come from mobile phones. Google says it wants users to have access to premium quality <a href="./Websites" title="Websites">websites</a>. Those websites which lack a mobile-friendly <a href="./Interface_(computing)" title="Interface (computing)">interface</a> would be ranked lower and it is expected that this update will cause a shake-up of <a href="./Page_rank" title="Page rank">ranks</a>[<em><a href="./Wikipedia:Manual_of_Style/Dates_and_numbers#Chronological_items" title="Wikipedia:Manual of Style/Dates and numbers">needs update</a></em>]. Businesses who fail to update their <a href="./Websites" title="Websites">websites</a> accordingly could see a dip in their regular websites traffic.</p>
+<h3>PageRank</h3>
+<p>Main article: <a href="./PageRank" title="PageRank">PageRank</a></p>
+<p>Google's rise was largely due to a patented <a href="./Algorithm" title="Algorithm">algorithm</a> called PageRank which helps rank web pages that match a given search string. When Google was a Stanford research project, it was nicknamed <a href="./BackRub" title="BackRub">BackRub</a> because the technology checks <a href="./Backlinks" title="Backlinks">backlinks</a> to determine a site's importance. Other keyword-based methods to rank search results, used by many search engines that were once more popular than Google, would check how often the search terms occurred in a page, or how strongly associated the search terms were within each resulting page. The PageRank algorithm instead analyzes human-generated <a href="./Hyperlink" title="Hyperlink">links</a> assuming that web pages linked from many important pages are also important. The algorithm computes a <a href="./Recursion" title="Recursion">recursive</a> score for pages, based on the weighted sum of other pages linking to them. PageRank is thought to <a href="./Correlation" title="Correlation">correlate</a> well with human concepts of importance. In addition to PageRank, Google, over the years, has added many other secret criteria for determining the ranking of resulting pages. This is reported to comprise over 250 different indicators, the specifics of which are kept secret to avoid difficulties created by scammers and help Google maintain an edge over its competitors globally.</p>
+<p>PageRank was influenced by a similar page-ranking and site-scoring algorithm earlier used for <a href="./RankDex" title="RankDex">RankDex</a>, developed by <a href="./Robin_Li" title="Robin Li">Robin Li</a> in 1996. Larry Page's patent for PageRank filed in 1998 includes a citation to Li's earlier patent. Li later went on to create the Chinese search engine <a href="./Baidu" title="Baidu">Baidu</a> in 2000.</p>
+<p>In a potential hint of Google's future direction of their Search algorithm, Google's then chief executive <a href="./Eric_Schmidt" title="Eric Schmidt">Eric Schmidt</a>, said in a 2007 interview with the <em><a href="./Financial_Times" title="Financial Times">Financial Times</a></em>: "The goal is to enable Google users to be able to ask the question such as 'What shall I do tomorrow?' and 'What job shall I take?'". Schmidt reaffirmed this during a 2010 interview with <em><a href="./The_Wall_Street_Journal" title="The Wall Street Journal">The Wall Street Journal</a></em>: "I actually think most people don't want Google to answer their questions, they want Google to tell them what they should be doing next."</p>
+<h3>Google optimization</h3>
+<p>Main article: <a href="./Search_engine_optimization" title="Search engine optimization">Search engine optimization</a></p>
+<p>Because Google is the most popular <a href="./Web_search_engine" title="Web search engine">search engine</a>, many <a href="./Webmaster" title="Webmaster">webmasters</a> attempt to influence their website's Google rankings. An industry of consultants has arisen to help websites increase their rankings on Google and other search engines. This field, called search engine optimization, attempts to discern patterns in search engine listings, and then develop a methodology for improving rankings to draw more searchers to their clients' sites. Search engine optimization encompasses both "on page" factors (like body copy, title elements, H1 heading elements and image <a href="./Alt_attribute" title="Alt attribute">alt attribute</a> values) and Off Page Optimization factors (like <a href="./Anchor_text" title="Anchor text">anchor text</a> and PageRank). The general idea is to affect Google's relevance algorithm by incorporating the keywords being targeted in various places "on page", in particular the title element and the body copy (note: the higher up in the page, presumably the better its keyword prominence and thus the ranking). Too many occurrences of the keyword, however, cause the page to look suspect to Google's spam checking algorithms. Google has published guidelines for website owners who would like to raise their rankings when using legitimate optimization consultants. It has been hypothesized, and, allegedly, is the opinion of the owner of one business about which there have been numerous complaints, that negative publicity, for example, numerous consumer complaints, may serve as well to elevate page rank on Google Search as favorable comments. The particular problem addressed in <em><a href="./The_New_York_Times" title="The New York Times">The New York Times</a></em> article, which involved <a href="./DecorMyEyes" title="DecorMyEyes">DecorMyEyes</a>, was addressed shortly thereafter by an undisclosed fix in the Google algorithm. According to Google, it was not the frequently published consumer complaints about DecorMyEyes which resulted in the high ranking but mentions on news websites of events which affected the firm such as legal actions against it. <a href="./Google_Search_Console" title="Google Search Console">Google Search Console</a> helps to check for websites that use duplicate or copyright content.</p>
+<h3>"Hummingbird" search algorithm upgrade</h3>
+<p>Main article: <a href="./Google_Hummingbird" title="Google Hummingbird">Google Hummingbird</a></p>
+<p>In 2013, Google significantly upgraded its search algorithm with "Hummingbird". Its name was derived from the speed and accuracy of the <a href="./Hummingbird" title="Hummingbird">hummingbird</a>. The change was announced on September 26, 2013, having already been in use for a month. "Hummingbird" places greater emphasis on <a href="./Natural_language" title="Natural language">natural language</a> queries, considering context and meaning over individual keywords. It also looks deeper at content on individual pages of a website, with improved ability to lead users directly to the most appropriate page rather than just a website's homepage. The upgrade marked the most significant change to Google search in years, with more "human" search interactions and a much heavier focus on conversation and meaning. Thus, web developers and writers were encouraged to <a href="./Search_engine_optimization" title="Search engine optimization">optimize their sites</a> with natural writing rather than forced keywords, and make effective use of technical web development for on-site navigation.</p>
+<h3>Search results quality</h3>
+<p>In 2023, drawing on internal Google documents disclosed as part of the <a href="./United_States_v._Google_LLC_(2020)" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a> antitrust case, technology reporters claimed that Google Search was "bloated and overmonetized" and that the "semantic matching" of search queries put advertising profits before quality. <em><a href="./Wired_(magazine)" title="Wired (magazine)">Wired</a></em> withdrew Megan Gray's piece after Google complained about alleged inaccuracies, while the author reiterated that «As stated in court, "A goal of Project Mercury was to increase commercial queries"».</p>
+<p>In March 2024, Google announced a significant update to its core search algorithm and spam targeting, which is expected to wipe out 40 percent of all spam results. On March 20th, it was confirmed that the roll out of the spam update was complete.</p>
+<h3>Shopping search</h3>
+<p>On September 10, 2024, the European-based <a href="./EU_Court_of_Justice" title="EU Court of Justice">EU Court of Justice</a> found that Google held an illegal monopoly with the way the company showed favoritism to its shopping search, and could not avoid paying €2.4 billion. The EU Court of Justice referred to Google's treatment of rival shopping searches as "discriminatory" and in violation of the <a href="./Digital_Markets_Act" title="Digital Markets Act">Digital Markets Act</a>.</p>
+<h2>Interface</h2>
+<h3>Page layout</h3>
+<p>At the top of the search page, the approximate result count and the response time two digits behind decimal is noted. Of search results, page titles and URLs, dates, and a preview text snippet for each result appears. Along with web search results, sections with images, news, and videos may appear. The length of the previewed text snipped was experimented with in 2015 and 2017.</p>
+<h3>Universal search</h3>
+<p>"Universal search" was launched by Google on May 16, 2007, as an idea that merged the results from different kinds of search types into one. Prior to Universal search, a standard Google search would consist of links only to websites. Universal search, however, incorporates a wide variety of sources, including websites, news, pictures, maps, blogs, videos, and more, all shown on the same search results page. <a href="./Marissa_Mayer" title="Marissa Mayer">Marissa Mayer</a>, then-vice president of search products and user experience, described the goal of Universal search as "we're attempting to break down the walls that traditionally separated our various search properties and integrate the vast amounts of information available into one simple set of search results.</p>
+<p>In June 2017, Google expanded its search results to cover available job listings. The data is aggregated from various major job boards and collected by analyzing company homepages. Initially only available in English, the feature aims to simplify finding jobs suitable for each user.</p>
+<h3>Rich snippets</h3>
+<p>In May 2009, Google announced that they would be parsing website <a href="./Microformat" title="Microformat">microformats</a> to populate search result pages with "Rich snippets". Such snippets include additional details about results, such as displaying reviews for restaurants and social media accounts for individuals.</p>
+<p>In May 2016, Google expanded on the "Rich snippets" format to offer "Rich cards", which, similarly to snippets, display more information about results, but shows them at the top of the mobile website in a swipeable carousel-like format. Originally limited to movie and recipe websites in the United States only, the feature expanded to all countries globally in 2017.</p>
+<h3>Knowledge Graph</h3>
+<p>Main article: <a href="./Knowledge_Graph_(Google)" title="Knowledge Graph (Google)">Knowledge Graph (Google)</a></p>
+<p>The Knowledge Graph is a knowledge base used by Google to enhance its search engine's results with information gathered from a variety of sources. This information is presented to users in a box to the right of search results. Knowledge Graph boxes were added to Google's search engine in May 2012, starting in the United States, with international expansion by the end of the year. The information covered by the Knowledge Graph grew significantly after launch, tripling its original size within seven months, and being able to answer "roughly one-third" of the 100 billion monthly searches Google processed in May 2016. The information is often used as a spoken answer in <a href="./Google_Assistant" title="Google Assistant">Google Assistant</a> and <a href="./Google_Home_(platform)" title="Google Home (platform)">Google Home</a> searches. The Knowledge Graph has been criticized for providing answers without source attribution.</p>
+<h3>Google Knowledge Panel</h3>
+<p>A Google Knowledge Panel is a feature integrated into Google search engine result pages, designed to present a structured overview of entities such as individuals, organizations, locations, or objects directly within the search interface. This feature leverages data from Google's Knowledge Graph, a database that organizes and interconnects information about entities, enhancing the retrieval and presentation of relevant content to users.</p>
+<p>The content within a Knowledge Panel is derived from various sources, including <a href="./Wikipedia" title="Wikipedia">Wikipedia</a> and other structured databases, ensuring that the information displayed is both accurate and contextually relevant. For instance, querying a well-known public figure may trigger a Knowledge Panel displaying essential details such as biographical information, birthdate, and links to social media profiles or official websites.</p>
+<p>The primary objective of the Google Knowledge Panel is to provide users with immediate, factual answers, reducing the need for extensive navigation across multiple web pages.</p>
+<h3>Personal tab</h3>
+<p>In May 2017, Google enabled a new "Personal" tab in Google Search, letting users search for content in their Google accounts' various services, including email messages from <a href="./Gmail" title="Gmail">Gmail</a> and photos from <a href="./Google_Photos" title="Google Photos">Google Photos</a>.</p>
+<h3>Google Discover</h3>
+<p>Google Discover, previously known as Google Feed, is a personalized stream of articles, videos, and other news-related content. The feed contains a "mix of cards" which show topics of interest based on users' interactions with Google, or topics they choose to follow directly. Cards are based on what Google expects you to be interested in at the moment. They include links to news stories, YouTube videos, sports scores, and recipes. Users can also tell Google when they are not interested in certain topics to avoid seeing future updates.</p>
+<p>Google Discover launched in December 2016 and received a major update in July 2017. Another major update was released in September 2018, which renamed the app from Google Feed to Google Discover, updated the design, and added more features.</p>
+<p>Discover can be found on a tab in the Google app and by swiping left on the home screen of certain Android devices. As of 2019, Google does not allow <a href="./Political_campaign" title="Political campaign">political campaigns</a> worldwide to target their advertisement to people to make them vote.</p>
+<h3>AI Overviews</h3>
+<p>Main article: <a href="./AI_Overviews" title="AI Overviews">AI Overviews</a></p>
+<p>At the 2023 <a href="./Google_I/O" title="Google I/O">Google I/O</a> event in May, Google unveiled Search Generative Experience (SGE), an experimental feature in Google Search available through <a href="./Google_Labs" title="Google Labs">Google Labs</a> which produces <a href="./AI-generated" title="AI-generated">AI-generated</a> summaries in response to search prompts. This was part of Google's wider efforts to counter the unprecedented rise of generative AI technology, ushered by <a href="./OpenAI" title="OpenAI">OpenAI</a>'s launch of <a href="./ChatGPT" title="ChatGPT">ChatGPT</a>, which sent Google executives to a panic due to its potential threat to Google Search. Google added the ability to generate images in October. At I/O in 2024, the feature was upgraded and renamed AI Overviews.</p>
+<p>AI Overviews was rolled out to users in the United States in May 2024. The feature faced public criticism in the first weeks of its rollout after errors from the tool went viral online. These included results suggesting users add glue to pizza or eat rocks, or incorrectly claiming <a href="./Barack_Obama" title="Barack Obama">Barack Obama</a> is Muslim. Google described these viral errors as "isolated examples", maintaining that most AI Overviews provide accurate information. Two weeks after the rollout of AI Overviews, Google made technical changes and scaled back the feature, pausing its use for some health-related queries and limiting its reliance on social media posts. <em><a href="./Scientific_American" title="Scientific American">Scientific American</a></em> has criticised the system on environmental grounds, as such a search uses 30 times more energy than a conventional one. It has also been criticized for condensing information from various sources, making it less likely for people to view full articles and websites. When it was announced in May 2024, Danielle Coffey, CEO of the News/Media Alliance was quoted as saying "This will be catastrophic to our traffic, as marketed by Google to further satisfy user queries, leaving even less incentive to click through so that we can monetize our content."</p>
+<p>In August 2024, AI Overviews were rolled out in the UK, India, Japan, Indonesia, Mexico and Brazil, with local language support. On October 28, 2024, AI Overviews was rolled out to 100 more countries, including Australia and New Zealand.</p>
+<h3>AI Mode</h3>
+<p>Main article: <a href="./AI_Mode" title="AI Mode">AI Mode</a></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./File:Question_book-new.svg">icon</a></td>
+<td>This section <strong>does not <a href="./Wikipedia:Citing_sources" title="Wikipedia:Citing sources">cite</a> any <a href="./Wikipedia:Verifiability" title="Wikipedia:Verifiability">sources</a></strong>. Please help <a href="./Special:EditPage/Google_Search" title="Special:EditPage/Google Search">improve this section</a> by <a href="./Help:Referencing_for_beginners" title="Help:Referencing for beginners">adding citations to reliable sources</a>. Unsourced material may be challenged and <a href="./Wikipedia:Verifiability#Burden_of_evidence" title="Wikipedia:Verifiability">removed</a>. <em>(October 2025)</em> <em>(<a href="./Help:Maintenance_template_removal" title="Help:Maintenance template removal">Learn how and when to remove this message</a>)</em></td>
+</tr>
+</tbody>
+</table>
+<p>In March 2025, Google introduced an experimental "AI Mode" within its Search platform, enabling users to input complex, multi-part queries and receive comprehensive, AI-generated responses. This feature uses Google's advanced <a href="./Gemini_(chatbot)" title="Gemini (chatbot)">Gemini</a> 2.0 model, which enhances the system's reasoning capabilities and supports multimodal inputs, including text, images, and voice.</p>
+<p>Initially, AI Mode was available to <a href="./Google_One" title="Google One">Google One</a> AI Premium subscribers in the United States, who could access it through the Search Labs platform. This phased rollout allowed Google to gather user feedback and refine the feature before a broader release.</p>
+<h3>Redesigns</h3>
+<p>In late June 2011, Google introduced a new look to the Google homepage in order to boost the use of the Google+ social tools.</p>
+<p>One of the major changes was replacing the classic navigation bar with a black one. Google's digital creative director Chris Wiggins explains: "We're working on a project to bring you a new and improved Google experience, and over the next few months, you'll continue to see more updates to our look and feel." The new navigation bar has been negatively received by a vocal minority.</p>
+<p>In November 2013, Google started testing yellow labels for advertisements displayed in search results, to improve user experience. The new labels, highlighted in yellow color, and aligned to the left of each sponsored link help users differentiate between organic and sponsored results.</p>
+<p>On December 15, 2016, Google rolled out a new desktop search interface that mimics their modular mobile user interface. The mobile design consists of a tabular design that highlights search features in boxes and works by imitating the desktop Knowledge Graph real estate, which appears in the right-hand rail of the search engine result page, these featured elements frequently feature Twitter carousels, People Also Search For, and Top Stories (vertical and horizontal design) modules. The Local Pack and Answer Box were two of the original features of the Google <a href="./Search_engine_results_page" title="Search engine results page">SERP</a> that were primarily showcased in this manner, but this new layout creates a previously unseen level of design consistency for Google results.</p>
+<h3>Smartphone apps</h3>
+<p>Google offers a "Google Search" <a href="./Mobile_app" title="Mobile app">mobile app</a> for <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> and <a href="./IOS" title="IOS">iOS</a> devices. The mobile apps exclusively feature Google Discover and a "Collections" feature, in which the user can save for later perusal any type of search result like images, bookmarks or map locations into groups. Android devices were introduced to a preview of the feed, perceived as related to <a href="./Google_Now" title="Google Now">Google Now</a>, in December 2016, while it was made official on both Android and iOS in July 2017.</p>
+<p>In April 2016, Google updated its Search app on Android to feature "Trends"; search queries gaining popularity appeared in the autocomplete box along with normal query autocompletion. The update received significant backlash, due to encouraging search queries unrelated to users' interests or intentions, prompting the company to issue an update with an opt-out option. In September 2017, the Google Search app on iOS was updated to feature the same functionality.</p>
+<p>In December 2017, Google released "Google Go", an app designed to enable use of Google Search on physically smaller and lower-spec devices in multiple languages. A Google blog post about designing "India-first" products and features explains that it is "tailor-made for the millions of people in [India and Indonesia] coming online for the first time".</p>
+<h2>Performing a search</h2>
+<p>Google Search consists of a series of <a href="./Website_localization" title="Website localization">localized websites</a>. The largest of those, the <a href="https://www.google.com/?safe=active&amp;ssui=on">google.com site</a>, is the top most-visited website in the world. Some of its features include a definition link for most searches including dictionary words, the number of results you got on your search, links to other searches (e.g. for words that Google believes to be misspelled, it provides a link to the search results using its proposed spelling), the ability to filter results to a date range, and many more.</p>
+<h3>Search syntax</h3>
+<p>Google search accepts queries as normal text, as well as individual keywords. It <a href="./Autocorrection" title="Autocorrection">automatically corrects</a> apparent misspellings by default (while offering to use the original spelling as a selectable alternative), and provides the same results regardless of capitalization. For more customized results, one can use a wide variety of <a href="./Operator_(computer_programming)" title="Operator (computer programming)">operators</a>, including, but not limited to:</p>
+<ul>
+<li><code>OR</code> or <code>|</code> – Search for webpages containing one of two similar queries, such as <em>marathon OR race</em></li>
+<li><code>AND</code> – Search for webpages containing two similar queries, such as <em>marathon AND runner</em></li>
+<li><code>-</code> (minus sign) – Exclude a word or a phrase, so that <em>"apple -tree"</em> searches where word <em>"tree"</em> is not used</li>
+<li><code>-ai</code> – Exclude <a href="./AI-generated_content" title="AI-generated content">AI-generated content</a> from webpages, including Google AI Overviews.</li>
+<li><code>""</code> – Force inclusion of a word or a phrase, such as <em>"tallest building"</em></li>
+<li><code>*</code> – Placeholder symbol allowing for any substitute words in the context of the query, such as <em>"largest * in the world"</em></li>
+<li><code>..</code> – Search within a range of numbers, such as <em>"camera $50..$100"</em></li>
+<li><code>site:</code> – Search within a specific website, such as <em>"site:<a href="./YouTube" title="YouTube">youtube.com</a>"</em></li>
+<li><code>-site:</code> – Do not display search results from within a specific website, such as <em>"-site:<a href="./YouTube" title="YouTube">youtube.com</a>"</em></li>
+<li><code>define:</code> – Search for definitions for a word or phrase, such as <em>"define:phrase"</em></li>
+<li><code>stocks:</code> – See the stock price of investments, such as <em>"stocks:googl"</em></li>
+<li><code>related:</code> – Find web pages related to specific <a href="./URL" title="URL">URL</a> addresses, such as <em>"related:www.wikipedia.org"</em></li>
+<li><code>( )</code> – Group operators and searches, such as <em>(marathon OR race) AND shoes</em></li>
+<li><code>filetype:</code> or <code>ext:</code> – Search for specific file types, such as <em>filetype:gif</em></li>
+<li><code>before:</code> – Search for before a specific date, such as spacex <em>before:2020-08-11</em></li>
+<li><code>after:</code> – Search for after a specific date, such as iphone <em>after:2007-06-29</em></li>
+<li><code>@</code> – Search for the search term on a specific social media site, such as <em>"@<a href="./Twitter" title="Twitter">twitter</a>"</em></li>
+</ul>
+<p>Google also offers a <strong>Google Advanced Search</strong> page with a web interface to access the advanced features without needing to remember the special operators.</p>
+<p>As of 2024 Google no longer displays cached versions of webpages.<br>
+Previously the command <code>cache:</code> would present a cached version of a webpage with the search term highlighted, e.g. <em>"cache:www.google.com xxx"</em> showed cached content with word "xxx" highlighted.</p>
+<p>Unlike other search engines, when searching for exact phrases, Google Search only takes words that are on the same line into account.</p>
+<h4>Query expansion</h4>
+<p>Google applies <a href="./Query_expansion" title="Query expansion">query expansion</a> to submitted search queries, using techniques to deliver results that it considers "smarter" than the query users actually submitted. This technique involves several steps, including:</p>
+<ul>
+<li>Word <a href="./Stemming" title="Stemming">stemming</a> – Certain words can be reduced so other, similar terms, are also found in results, so that <em>"translator"</em> can also search for <em>"translation"</em></li>
+<li><a href="./Acronym" title="Acronym">Acronyms</a> – Searching for abbreviations can also return results about the name in its full length, so that <em>"<a href="./NATO" title="NATO">NATO</a>"</em> can show results for <em>"North Atlantic Treaty Organization"</em></li>
+<li>Misspellings – Google will often suggest correct spellings for misspelled words</li>
+<li><a href="./Synonym" title="Synonym">Synonyms</a> – In most cases where a word is incorrectly used in a phrase or sentence, Google search will show results based on the correct synonym</li>
+<li>Translations – The search engine can, in some instances, suggest results for specific words in a different language</li>
+<li>Ignoring words – When search queries contain extraneous or insignificant words, Google search may drop those specific words from the query</li>
+<li>Location sensitivity – Google may consider users' geographical location to deliver more relevant results.</li>
+</ul>
+<p>In 2008, Google started to give users <a href="./Autocomplete" title="Autocomplete">autocompleted</a> <a href="./Search_suggest_drop-down_list" title="Search suggest drop-down list">search suggestions</a> in a list below the search bar while typing, originally with the approximate result count previewed for each listed search suggestion.</p>
+<h3>"I'm Feeling Lucky"</h3>
+<p>"I'm Feeling Lucky" redirects here. For the 2011 book by Douglas Edwards, see <a href="./I'm_Feeling_Lucky_(book)" title="I'm Feeling Lucky (book)"><em>I'm Feeling Lucky</em> (book)</a>.</p>
+<p>Google's homepage used to show a button labeled "I'm Feeling Lucky". This feature originally allowed users to type in their search query, click the button and be taken directly to the first result, bypassing the search results page. Clicking it while leaving the search box empty opens Google's archive of <a href="./Google_Doodle" title="Google Doodle">Doodles</a>. With the 2010 announcement of <a href="./Google_Search#Instant_search">Google Instant</a>, an automatic feature that immediately displays relevant results as users are typing in their query, the "I'm Feeling Lucky" button disappears, requiring that users opt-out of Instant results through search settings to keep using the "I'm Feeling Lucky" functionality. In 2012, "I'm Feeling Lucky" was changed to serve as an advertisement for Google services; users hover their computer mouse over the button, it spins and shows an emotion ("I'm Feeling Puzzled" or "I'm Feeling Trendy", for instance), and, when clicked, takes users to a Google service related to that emotion.</p>
+<p><a href="./Tom_Chavez?action=edit&amp;redlink=1" title="Tom Chavez">Tom Chavez</a> of "Rapt", a firm helping to determine a website's advertising worth, estimated in 2007 that Google lost $110 million in revenue per year due to use of the button, which bypasses the advertisements found on the search results page.</p>
+<h3>Special interactive features</h3>
+<p>See also: <a href="./List_of_Google_Easter_eggs#Embedded_tools" title="List of Google Easter eggs">List of Google Easter eggs § Embedded tools</a></p>
+<p>Besides the main text-based search-engine function of Google search, it also offers multiple quick, interactive features. These include, but are not limited to:</p>
+<ul>
+<li><a href="./List_of_Google_Easter_eggs#Calculator" title="List of Google Easter eggs">Calculator</a></li>
+<li>Time zone, currency, and unit conversions</li>
+<li>Word translations</li>
+<li>Flight status</li>
+<li>Local film showings</li>
+<li>Weather forecasts</li>
+<li>Population and unemployment rates</li>
+<li>Package tracking</li>
+<li>Word definitions</li>
+<li>Metronome</li>
+<li>Roll a die</li>
+<li>"Do a barrel roll" (search page spins)</li>
+<li>"Askew" (results show up sideways)</li>
+</ul>
+<h3>"OK Google" conversational search</h3>
+<p>See also: <a href="./Google_Now" title="Google Now">Google Now</a> and <a href="./Google_Assistant" title="Google Assistant">Google Assistant</a></p>
+<p>During Google's developer conference, <a href="./Google_I/O" title="Google I/O">Google I/O</a>, in May 2013, the company announced that users on <a href="./Google_Chrome" title="Google Chrome">Google Chrome</a> and <a href="./ChromeOS" title="ChromeOS">ChromeOS</a> would be able to have the browser initiate an audio-based search by saying "OK Google", with no button presses required. After having the answer presented, users can follow up with additional, contextual questions; an example include initially asking "OK Google, will it be sunny in Santa Cruz this weekend?", hearing a spoken answer, and reply with "how far is it from here?" An update to the Chrome browser with <a href="./Voice_search" title="Voice search">voice-search</a> functionality rolled out a week later, though it required a button press on a microphone icon rather than "OK Google" voice activation. Google released a browser extension for the Chrome browser, named with a "<a href="./Beta_software" title="Beta software">beta</a>" tag for unfinished development, shortly thereafter. In May 2014, the company officially added "OK Google" into the browser itself; they removed it in October 2015, citing low usage, though the microphone icon for activation remained available. In May 2016, 20% of search queries on mobile devices were done through voice.</p>
+<h2>Operations</h2>
+<h3>Search products</h3>
+<p>Main article: <a href="./List_of_Google_products" title="List of Google products">List of Google products</a></p>
+<p>"Google Videos" redirects here. For other uses, see <a href="./Google_Videos_(disambiguation)" title="Google Videos (disambiguation)">Google Videos (disambiguation)</a>.</p>
+<p>In addition to its tool for searching <a href="./Webpage" title="Webpage">web pages</a>, Google also provides services for searching images (<a href="./Google_Images" title="Google Images">Google Images</a>), <a href="./Usenet" title="Usenet">Usenet</a> <a href="./Newsgroup" title="Newsgroup">newsgroups</a>, news websites, videos (<strong>Google Videos</strong>), <a href="./Local_search_(Internet)" title="Local search (Internet)">searching by locality</a>, maps, and items for sale online. <strong>Google Videos</strong> allows searching the <a href="./World_Wide_Web" title="World Wide Web">World Wide Web</a> for video clips. The service evolved from <a href="./Google_Video" title="Google Video">Google Video</a>, Google's discontinued video hosting service that also allowed to search the web for video clips.</p>
+<p>In 2012, Google has indexed over 30 trillion web pages, and received 100 billion queries per month. It also <a href="./Web_cache" title="Web cache">caches</a> much of the content that it <a href="./Web_indexing" title="Web indexing">indexes</a>. Google operates other tools and services including <a href="./Google_News" title="Google News">Google News</a>, <a href="./Google_Shopping" title="Google Shopping">Google Shopping</a>, <a href="./Google_Maps" title="Google Maps">Google Maps</a>, <a href="./Google_Custom_Search" title="Google Custom Search">Google Custom Search</a>, <a href="./Google_Earth" title="Google Earth">Google Earth</a>, <a href="./Google_Docs" title="Google Docs">Google Docs</a>, <a href="./Picasa" title="Picasa">Picasa</a> (discontinued), <a href="./Panoramio" title="Panoramio">Panoramio</a> (discontinued), <a href="./YouTube" title="YouTube">YouTube</a>, <a href="./Google_Translate" title="Google Translate">Google Translate</a>, <a href="./Google_Blog" title="Google Blog">Google Blog</a> Search, and <a href="./Google_Desktop" title="Google Desktop">Google Desktop</a> Search (discontinued).</p>
+<p>There are also products available from Google that are not directly search-related. <a href="./Gmail" title="Gmail">Gmail</a>, for example, is a <a href="./Webmail" title="Webmail">webmail</a> application, but still includes search features; <a href="./Google_Browser_Sync" title="Google Browser Sync">Google Browser Sync</a> does not offer any search facilities, although it aims to organize your browsing time.</p>
+<h3>Energy consumption</h3>
+<p>In 2009, Google claimed that a search query requires altogether about 1 <a href="./Joule" title="Joule">kJ</a> or 0.0003 <a href="./Kilowatt_hours" title="Kilowatt hours">kW·h</a>, which is enough to raise the temperature of one liter of water by 0.24 °C. According to green search engine <a href="./Ecosia" title="Ecosia">Ecosia</a>, the industry standard for search engines is estimated to be about 0.2 grams of CO2 emission per search. Google's 40,000 searches per second translate to 8 kg CO2 per second or over 252 million kilos of CO2 per year.</p>
+<h3>Google Doodles</h3>
+<p>Main article: <a href="./Google_Doodle" title="Google Doodle">Google Doodle</a></p>
+<p>On certain occasions, the <a href="./Google_logo" title="Google logo">logo</a> on Google's webpage will change to a special version, known as a "Google Doodle". This is a picture, drawing, animation, or interactive game that includes the logo. It is usually done for a special event or day although not all of them are well known. Clicking on the Doodle links to a string of Google search results about the topic. The first was a reference to the <a href="./Burning_Man_Festival" title="Burning Man Festival">Burning Man Festival</a> in 1998, and others have been produced for the birthdays of notable people like <a href="./Albert_Einstein" title="Albert Einstein">Albert Einstein</a>, historical events like the interlocking <a href="./Lego" title="Lego">Lego</a> block's 50th anniversary and holidays like <a href="./Valentine's_Day" title="Valentine's Day">Valentine's Day</a>. Some Google Doodles have interactivity beyond a simple search, such as the famous "Google Pac-Man" version that appeared on May 21, 2010.</p>
+<h2>Criticism</h2>
+<h3>Privacy</h3>
+<p>Main article: <a href="./Privacy_concerns_regarding_Google" title="Privacy concerns regarding Google">Privacy concerns regarding Google</a></p>
+<p>In 2012, the US <a href="./Federal_Trade_Commission" title="Federal Trade Commission">Federal Trade Commission</a> fined Google <a href="./US$" title="US$">US$</a>22.5 million for violating their agreement not to violate the privacy of users of Apple's <a href="./Safari_(web_browser)" title="Safari (web browser)">Safari web browser</a>. The FTC was also continuing to investigate if Google's favoring of their own services in their search results violated antitrust regulations.</p>
+<p>Since 2012, Google Inc. has globally introduced encrypted connections for most of its clients to bypass governative blockings of commercial and IT services.</p>
+<p>Google has been criticized for placing long-term <a href="./HTTP_cookie" title="HTTP cookie">cookies</a> on users' machines to store preferences, a tactic which also enables them to track a user's search terms and retain the data for more than a year. Google searches have also triggered <a href="./Reverse_search_warrant#Keyword_warrant" title="Reverse search warrant">keyword warrants</a> and <a href="./Geofence_warrant" title="Geofence warrant">geofence warrants</a> in which information is shared with law enforcement, leading to a criminal case. Investigators can request Google to disclose everyone who searched a keyword or query or every phone in a particular place at a certain time. In 2023, the <a href="./Colorado_Supreme_Court" title="Colorado Supreme Court">Colorado Supreme Court</a> upheld the use of search history requests to identify suspects in a 2020 arson, later stating that it is not a "broad proclamation" and noted that the warrant did not have an individualized probable cause.</p>
+<p>To solve these concerns privacy-focused alternatives have cropped up as alternatives to Google Search, such as <a href="./DuckDuckGo" title="DuckDuckGo">DuckDuckGo</a> or <a href="./Startpage" title="Startpage">StartPage</a>, that refrain from collecting or storing personal data such as IP addresses, search histories, user profiles or cookies.</p>
+<h3>Complaints about indexing</h3>
+<p>In 2003, <em><a href="./The_New_York_Times" title="The New York Times">The New York Times</a></em> complained about Google's <a href="./Search_engine_indexing" title="Search engine indexing">indexing</a>, claiming that Google's <a href="./Web_cache" title="Web cache">caching</a> of content on its site infringed its copyright for the content. In both <em><a href="./Field_v._Google" title="Field v. Google">Field v. Google</a></em> and <em>Parker v. Google</em>, the United States <a href="./Nevada_District_Courts" title="Nevada District Courts">District Court of Nevada</a> ruled in favor of Google.</p>
+<h3>Child sexual abuse</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./File:Wiki_letter_w_cropped.svg">[icon]</a></td>
+<td>This section <strong>needs expansion</strong>. You can help by <a href="https://en.wikipedia.org/w/index.php?title=Talk%3AGoogle_Search&amp;preload=Template%3ASubmit+an+edit+request%2Fpreload&amp;action=edit&amp;section=new&amp;editintro=Template%3AEdit+fully-protected%2Feditintro&amp;preloadtitle=Protected+edit+request+on+13+April+2026&amp;preloadparams%5B%5D=edit+fully-protected&amp;preloadparams%5B%5D=Google+Search">making an edit request</a><a href="https://en.wikipedia.org/w/index.php?title=Google_Search&amp;action=edit&amp;section=">adding missing information</a>. <em>(May 2024)</em></td>
+</tr>
+</tbody>
+</table>
+<p>A 2019 <em>New York Times</em> article on Google Search showed that images of <a href="./Child_sexual_abuse" title="Child sexual abuse">child sexual abuse</a> had been found on Google and that the company had been reluctant at times to remove them.</p>
+<h3>January 2009 malware bug</h3>
+<p>Google flags search results with the message "This site may harm your computer" if the site is known to install malicious software in the background or otherwise surreptitiously. For approximately 40 minutes on January 31, 2009, all search results were mistakenly classified as <a href="./Malware" title="Malware">malware</a> and could therefore not be clicked; instead a warning message was displayed and the user was required to enter the requested URL manually. The bug was caused by human error. The <a href="./URL" title="URL">URL</a> of "/" (which expands to all URLs) was mistakenly added to the malware patterns file.</p>
+<h3>Possible misuse of search results</h3>
+<p>In 2007, a group of researchers observed a tendency for users to rely exclusively on Google Search for finding information, writing that "With the Google interface the user gets the impression that the search results imply a kind of totality. In fact, one only sees a small part of what one could see if one also integrates other research tools."</p>
+<p>In 2011, Google Search query results have been shown by Internet activist <a href="./Eli_Pariser" title="Eli Pariser">Eli Pariser</a> to be tailored to users, effectively isolating users in what he defined as a <a href="./Filter_bubble" title="Filter bubble">filter bubble</a>. Pariser holds algorithms used in search engines such as Google Search responsible for catering "a personal ecosystem of information". Although contrasting views have mitigated the potential threat of "informational dystopia" and questioned the scientific nature of Pariser's claims, filter bubbles have been mentioned to account for the surprising results of the <a href="./2016_United_States_elections" title="2016 United States elections">U.S. presidential election in 2016</a> alongside <a href="./Fake_news" title="Fake news">fake news</a> and <a href="./Echo_chamber_(media)" title="Echo chamber (media)">echo chambers</a>, suggesting that <a href="./Facebook" title="Facebook">Facebook</a> and Google have designed personalized online realities in which "we only see and hear what we like".</p>
+<p>In 2023, <a href="./Cory_Doctorow" title="Cory Doctorow">Cory Doctorow</a> also observed that the <a href="./Enshittification#Google_Search" title="Enshittification">declining quality of Google's search results</a> had benefitted its advertising customers.</p>
+<h3>Payments to Apple</h3>
+<p>In a November 2023 disclosure, during the ongoing antitrust trial against Google, an economics professor at the <a href="./University_of_Chicago" title="University of Chicago">University of Chicago</a> revealed that Google pays Apple 36% of all search advertising revenue generated when users access Google through the Safari browser. This revelation reportedly caused Google's lead attorney to cringe visibly. The revenue generated from Safari users has been kept confidential, but the 36% figure suggests that it is likely in the tens of billions of dollars.</p>
+<p>Both Apple and Google have argued that disclosing the specific terms of their search default agreement would harm their competitive positions. However, the court ruled that the information was relevant to the antitrust case and ordered its disclosure. This revelation has raised concerns about the dominance of Google in the search engine market and the potential anticompetitive effects of its agreements with Apple.</p>
+<h3>Big data and human bias</h3>
+<p>Google <a href="./Web_search_engine" title="Web search engine">search engine</a> robots are programmed to use <a href="./Algorithm" title="Algorithm">algorithms</a> that understand and predict human <a href="./Behavior" title="Behavior">behavior</a>. The book, <em>Race After Technology: Abolitionist Tools for the New Jim Code</em> by <a href="./Ruha_Benjamin" title="Ruha Benjamin">Ruha Benjamin</a> talks about human <a href="./Bias" title="Bias">bias</a> as a behavior that the Google search engine can recognize. In 2016, some users Google searched "three Black teenagers" and images of criminal <a href="./Mug_shot" title="Mug shot">mugshots</a> of young African American teenagers came up. Then, the users searched "three White teenagers" and were presented with photos of smiling, happy teenagers. They also searched for "three Asian teenagers", and very revealing photos of Asian girls and women appeared. Benjamin concluded that these results reflect human <a href="./Prejudice" title="Prejudice">prejudice</a> and views on different <a href="./Ethnic_group" title="Ethnic group">ethnic groups</a>. A group of analysts explained the concept of a <a href="./Racism" title="Racism">racist</a> computer program: "The idea here is that computers, unlike people, can't be racist but we're increasingly learning that they do in fact take after their makers ... Some experts believe that this problem might stem from the hidden biases in the massive piles of <a href="./Data" title="Data">data</a> that the algorithms process as they learn to recognize patterns ... reproducing our worst values".</p>
+<h3>Monopoly ruling</h3>
+<p>On August 5, 2024, Google lost a <a href="./United_States_v._Google_LLC_(2020)" title="United States v. Google LLC (2020)">lawsuit which started in 2020</a> in <a href="./D.C._Circuit_Court" title="D.C. Circuit Court">D.C. Circuit Court</a>, with Judge <a href="./Amit_Mehta" title="Amit Mehta">Amit Mehta</a> finding that the company had an illegal monopoly over Internet search. This monopoly was held to be in violation of Section 2 of the <a href="./Sherman_Act" title="Sherman Act">Sherman Act</a>. Google has said it will appeal the ruling, though they did propose to loosen search deals with Apple and others requiring them to set Google as the default search engine.</p>
+<h2>Trademark</h2>
+<p>Main article: <a href="./Google_(verb)" title="Google (verb)">Google (verb)</a></p>
+<p>As people talk about "googling" rather than searching, the company has taken some steps to defend its trademark, in an effort to prevent it from becoming a <a href="./Generic_trademark" title="Generic trademark">generic trademark</a>. This has led to lawsuits, threats of lawsuits, and the use of euphemisms, such as calling Google Search a famous web search engine.</p>
+<h2>Discontinued features</h2>
+<h3>Translate foreign pages</h3>
+<p>Until May 2013, Google Search had offered a feature to <a href="./Cross-language_information_retrieval" title="Cross-language information retrieval">translate search queries into other languages</a>. A Google spokesperson told <em><a href="./Search_Engine_Land" title="Search Engine Land">Search Engine Land</a></em> that "Removing features is always tough, but we do think very hard about each decision and its implications for our users. Unfortunately, this feature never saw much pick up".</p>
+<h3>Instant search</h3>
+<p>Instant search was announced in September 2010 as a feature that <a href="./Incremental_search" title="Incremental search">displayed suggested results while the user typed in their search query</a>, initially only in select countries or to registered users. The primary advantage of the new system was its ability to save time, with <a href="./Marissa_Mayer" title="Marissa Mayer">Marissa Mayer</a>, then-vice president of search products and user experience, proclaiming that the feature would save 2–5 seconds per search, elaborating that "That may not seem like a lot at first, but it adds up. With Google Instant, we estimate that we'll save our users 11 hours with each passing second!" Matt Van Wagner of <em><a href="./Search_Engine_Land" title="Search Engine Land">Search Engine Land</a></em> wrote that "Personally, I kind of like Google Instant and I think it represents a natural evolution in the way search works", and also praised Google's efforts in <a href="./Public_relations" title="Public relations">public relations</a>, writing that "With just a press conference and a few well-placed interviews, Google has parlayed this relatively minor speed improvement into an attention-grabbing front-page news story". The upgrade also became notable for the company switching Google Search's underlying technology from <a href="./HTML" title="HTML">HTML</a> to <a href="./Ajax_(programming)" title="Ajax (programming)">AJAX</a>.</p>
+<p>Instant Search could be disabled via Google's "preferences" menu for those who didn't want its functionality.</p>
+<p>The publication <em><a href="./2600:_The_Hacker_Quarterly" title="2600: The Hacker Quarterly">2600: The Hacker Quarterly</a></em> compiled a list of words that Google Instant did not show suggested results for, with a Google spokesperson giving the following statement to <em><a href="./Mashable" title="Mashable">Mashable</a></em>:</p>
+<blockquote>
+<p>There are several reasons you may not be seeing search queries for a particular topic. Among other things, we apply a narrow set of removal policies for pornography, violence, and hate speech. It's important to note that removing queries from Autocomplete is a hard problem, and not as simple as blacklisting particular terms and phrases.</p>
+<p>In search, we get more than one billion searches each day. Because of this, we take an algorithmic approach to removals, and just like our search algorithms, these are imperfect. We will continue to work to improve our approach to removals in Autocomplete, and are listening carefully to feedback from our users.</p>
+<p>Our algorithms look not only at specific words, but compound queries based on those words, and across all languages. So, for example, if there's a bad word in Russian, we may remove a compound word including the transliteration of the Russian word into English. We also look at the search results themselves for given queries. So, for example, if the results for a particular query seem pornographic, our algorithms may remove that query from Autocomplete, even if the query itself wouldn't otherwise violate our policies. This system is neither perfect nor instantaneous, and we will continue to work to make it better.</p>
+</blockquote>
+<p><em><a href="./PC_Magazine" title="PC Magazine">PC Magazine</a></em> discussed the inconsistency in how some forms of the same topic are allowed; for instance, "lesbian" was blocked, while "gay" was not, and "cocaine" was blocked, while "crack" and "heroin" were not. The report further stated that seemingly normal words were also blocked due to pornographic innuendos, most notably "scat", likely due to having two completely separate contextual meanings, one for music and one for a sexual practice.</p>
+<p>On July 26, 2017, Google removed Instant results, due to a growing number of searches on mobile devices, where interaction with search, as well as screen sizes, differ significantly from a computer.</p>
+<h3>Instant previews</h3>
+<p>"Instant previews" allowed previewing screenshots of search results' web pages without having to open them. Clicking on the magnifying glass beside the search-result links will show a screenshot of the web page and highlight the image's relevant text. Google said that the feature "helps people find information faster by showing a visual preview of each result." The snapshots of web pages are stored on Google's servers. The feature was introduced in November 2010 to the desktop website and removed in April 2013, citing low usage.</p>
+<h3>Dedicated encrypted search page</h3>
+<p>Various search engines provide encrypted Web search facilities. In May 2010 Google rolled out SSL-encrypted web search. The encrypted search was accessed at <code>encrypted.google.com</code> However, the web search is encrypted via <a href="./Transport_Layer_Security" title="Transport Layer Security">Transport Layer Security</a> (TLS) by default today, thus every search request should be automatically encrypted if TLS is supported by the web browser. On its support website, Google announced that the address <code>encrypted.google.com</code> would be turned off April 30, 2018, stating that all Google products and most new browsers use HTTPS connections as the reason for the discontinuation.</p>
+<h3>Real-Time Search</h3>
+<p>Google Real-Time Search was a feature of Google Search in which search results also sometimes included <a href="./Real-time_computing" title="Real-time computing">real-time</a> information from sources such as <a href="./Twitter" title="Twitter">Twitter</a>, <a href="./Facebook" title="Facebook">Facebook</a>, <a href="./Blog" title="Blog">blogs</a>, and news websites. The feature was introduced on December 7, 2009, and went offline on July 2, 2011, after the deal with Twitter expired. Real-Time Search included <a href="./Facebook" title="Facebook">Facebook</a> status updates beginning on February 24, 2010. A feature similar to Real-Time Search was already available on <a href="./Microsoft" title="Microsoft">Microsoft</a>'s <a href="./Bing_(search_engine)" title="Bing (search engine)">Bing search engine</a>, which showed results from <a href="./Twitter" title="Twitter">Twitter</a> and Facebook. The interface for the engine showed a live, descending "river" of posts in the main region (which could be paused or resumed), while a <a href="./Bar_chart" title="Bar chart">bar chart</a> metric of the frequency of posts containing a certain search term or hashtag was located on the right hand corner of the page above a list of most frequently reposted posts and outgoing links. <a href="./Hashtag" title="Hashtag">Hashtag</a> search links were also supported, as were "promoted" tweets hosted by Twitter (located persistently on top of the river) and thumbnails of retweeted image or video links.</p>
+<p>In January 2011, geolocation links of posts were made available alongside results in Real-Time Search. In addition, posts containing syndicated or attached shortened links were made searchable by the <em>link:</em> query option. In July 2011, Real-Time Search became inaccessible, with the Real-Time link in the Google sidebar disappearing and a custom 404 error page generated by Google returned at its former URL. Google originally suggested that the interruption was temporary and related to the launch of <a href="./Google+" title="Google+">Google+</a>; they subsequently announced that it was due to the expiry of a commercial arrangement with Twitter to provide access to tweets.</p>
+<h2>See also</h2>
+<ul>
+<li>
+<p><a href="./File:Crystal_Clear_app_linneighborhood.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Crystal_Clear_app_linneighborhood.svg/40px-Crystal_Clear_app_linneighborhood.svg.png"></a><a href="./Portal:Internet" title="Portal:Internet">Internet portal</a></p>
+</li>
+<li>
+<p><a href="./List_of_search_engines_by_popularity" title="List of search engines by popularity">List of search engines by popularity</a> – Software system for finding relevant information on the WebPages displaying short descriptions of redirect targets</p>
+</li>
+<li><a href="./Timeline_of_Google_Search" title="Timeline of Google Search">Timeline of Google Search</a></li>
+<li><a href="./Censorship_by_Google#Google_Search" title="Censorship by Google">Censorship by Google § Google Search</a></li>
+<li><a href="./Google_(verb)" title="Google (verb)">Google (verb)</a> – Transitive verb, to search using Google</li>
+<li><a href="./DeGoogle" title="DeGoogle">DeGoogle</a> – Campaign to stop using Google products</li>
+<li><a href="./Dragonfly_(search_engine)" title="Dragonfly (search engine)">Dragonfly (search engine)</a> – Google search engine prototype for China</li>
+<li><a href="./DuckDuckGo" title="DuckDuckGo">DuckDuckGo</a> – Privacy-focused online search engine</li>
+<li><a href="./Google_bombing" title="Google bombing">Google bombing</a> – Practice that causes a webpage to have a high rank in Google</li>
+<li><a href="./Google_Panda" title="Google Panda">Google Panda</a> – Change to Google's search results ranking algorithm</li>
+<li><a href="./Google_Penguin" title="Google Penguin">Google Penguin</a> – Google search engine algorithm update</li>
+<li><a href="./Googlewhack" title="Googlewhack">Googlewhack</a> – Contest to find a Google Search query that returns a single result</li>
+<li><a href="./Halalgoogling" title="Halalgoogling">Halalgoogling</a> – Islamic search engine blocking haram content</li>
+<li><a href="./Prabhakar_Raghavan" title="Prabhakar Raghavan">Prabhakar Raghavan</a> – American computer scientist</li>
+<li><a href="./Reunion_(advertisement)" title="Reunion (advertisement)">Reunion (advertisement)</a> – Google India advertisement for Google Search</li>
+<li><a href="./List_of_search_engines" title="List of search engines">List of search engines</a></li>
+<li><a href="./Comparison_of_web_search_engines" title="Comparison of web search engines">Comparison of web search engines</a></li>
+<li><a href="./History_of_Google" title="History of Google">History of Google</a></li>
+<li><a href="./List_of_Google_products" title="List of Google products">List of Google products</a></li>
+</ul>
+<h2>References</h2>
+<h2>Further reading</h2>
+<ul>
+<li><em><a href="./Google_Hacks" title="Google Hacks">Google Hacks</a></em> from <a href="./O'Reilly_Media" title="O'Reilly Media">O'Reilly</a> is a book containing tips about using Google effectively. Now in its third edition (2006). <a href="./ISBN_(identifier)" title="ISBN (identifier)">ISBN</a> <a href="./Special:BookSources/0-596-52706-3" title="Special:BookSources/0-596-52706-3">0-596-52706-3</a>.</li>
+<li><em>Google: The Missing Manual</em> by Sarah Milstein and Rael Dornfest (O'Reilly, 2004). <a href="./ISBN_(identifier)" title="ISBN (identifier)">ISBN</a> <a href="./Special:BookSources/0-596-00613-6" title="Special:BookSources/0-596-00613-6">0-596-00613-6</a></li>
+<li><em>How to Do Everything with Google</em> by Fritz Schneider, <a href="./Nancy_Blachman" title="Nancy Blachman">Nancy Blachman</a>, and Eric Fredricksen (McGraw-Hill Osborne Media, 2003). <a href="./ISBN_(identifier)" title="ISBN (identifier)">ISBN</a> <a href="./Special:BookSources/0-07-223174-2" title="Special:BookSources/0-07-223174-2">0-07-223174-2</a></li>
+<li><em>Google Power</em> by Chris Sherman (McGraw-Hill Osborne Media, 2005). <a href="./ISBN_(identifier)" title="ISBN (identifier)">ISBN</a> <a href="./Special:BookSources/0-07-225787-3" title="Special:BookSources/0-07-225787-3">0-07-225787-3</a></li>
+<li>Barroso, Luiz Andre; Dean, Jeffrey; Hölzle, Urs (2003). "Web Search for a Planet: The Google Cluster Architecture". <em><a href="./IEEE_Micro" title="IEEE Micro">IEEE Micro</a></em>. <strong>23</strong> (2): 22–28. <a href="./Bibcode_(identifier)" title="Bibcode (identifier)">Bibcode</a>:<a href="https://ui.adsabs.harvard.edu/abs/2003IMicr..23b..22B">2003IMicr..23b..22B</a>. <a href="./Doi_(identifier)" title="Doi (identifier)">doi</a>:<a href="https://doi.org/10.1109%2FMM.2003.1196112">10.1109/MM.2003.1196112</a>. <a href="./ISSN_(identifier)" title="ISSN (identifier)">ISSN</a> <a href="https://search.worldcat.org/issn/0272-1732">0272-1732</a>. <a href="./S2CID_(identifier)" title="S2CID (identifier)">S2CID</a> <a href="https://api.semanticscholar.org/CorpusID:15886858">15886858</a>.</li>
+<li>Broderick, Ryan (August 28, 2023). <a href="https://www.theverge.com/23846048/google-search-memes-images-pagerank-altavista-seo-keywords">"The end of the Googleverse"</a>. <em><a href="./The_Verge" title="The Verge">The Verge</a></em>. <a href="https://web.archive.org/web/20230828140520/https://www.theverge.com/23846048/google-search-memes-images-pagerank-altavista-seo-keywords">Archived</a> from the original on August 28, 2023. Retrieved August 30, 2023.</li>
+<li>Belanger, Ashley (October 27, 2023). <a href="https://arstechnica.com/tech-policy/2023/10/google-paid-26b-for-default-contracts-in-2021-google-exec-testified/">"Google loses fight to hide 2021 money pit: $26B in default contracts"</a>. <em><a href="./Ars_Technica" title="Ars Technica">Ars Technica</a></em>. Retrieved October 28, 2023.</li>
+</ul>
+<h2>External links</h2>
+<ul>
+<li><a href="https://google.com">Official website</a> <a href="https://www.wikidata.org/wiki/Q9366#P856" title="Edit this at Wikidata"><img alt="Edit this at Wikidata" src="//upload.wikimedia.org/wikipedia/en/thumb/8/8a/OOjs_UI_icon_edit-ltr-progressive.svg/20px-OOjs_UI_icon_edit-ltr-progressive.svg.png"></a></li>
+<li><a href="https://search.google/">Google Search home</a></li>
+<li><a href="https://trends.google.com/trends/">Google Trends home</a></li>
+</ul>
+<p><a href="./File:Commons-logo.svg"><img alt="Wikimedia Commons logo" src="//upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/40px-Commons-logo.svg.png"></a></p>
+<p>Wikimedia Commons has media related to <a href="https://commons.wikimedia.org/wiki/Category:Google%20Search" title="commons:Category:Google Search">Google Search</a>.</p>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_Search_navbox" title="Template:Google Search navbox">v</a> - <a href="./Template_talk:Google_Search_navbox" title="Template talk:Google Search navbox">t</a> - <a href="./Special:EditPage/Template:Google_Search_navbox" title="Special:EditPage/Template:Google Search navbox">e</a>  <a href="./Google_Search">Google Search</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Timeline_of_Google_Search" title="Timeline of Google Search">Timeline of Google Search</a></td>
+<td></td>
+</tr>
+<tr>
+<td>Features</td>
+<td>- <a href="./AI_Overviews" title="AI Overviews">AI Overviews</a> - <a href="./Google_AI_Mode" title="Google AI Mode">AI Mode</a> - <a href="./Knowledge_Graph_(Google)" title="Knowledge Graph (Google)">Knowledge Graph</a> - <a href="./SafeSearch" title="SafeSearch">SafeSearch</a> - <a href="./Google_SearchWiki" title="Google SearchWiki">SearchWiki</a> - <a href="./Google_Voice_Search" title="Google Voice Search">Voice Search</a> - <a href="./Google_Personalized_Search" title="Google Personalized Search">Google Personalized Search</a></td>
+</tr>
+<tr>
+<td>Component algorithms and updates</td>
+<td>- <a href="./Googlebot" title="Googlebot">Googlebot</a> - <a href="./Google_Hummingbird" title="Google Hummingbird">Hummingbird</a> - <a href="./Mobilegeddon" title="Mobilegeddon">Mobilegeddon</a> - <a href="./PageRank" title="PageRank">PageRank</a>   - <a href="./Google_matrix" title="Google matrix">Matrix</a> - <a href="./Google_Panda" title="Google Panda">Panda</a> - <a href="./Google_Penguin" title="Google Penguin">Penguin</a> - <a href="./Google_Pigeon" title="Google Pigeon">Pigeon</a> - <a href="./RankBrain" title="RankBrain">RankBrain</a></td>
+</tr>
+<tr>
+<td>Special purpose search engines</td>
+<td>- <a href="./Google_Dataset_Search" title="Google Dataset Search">Google Dataset Search</a> - <a href="./Google_Books" title="Google Books">Google Books</a> - <a href="./Google_Images" title="Google Images">Google Images</a> - <a href="./Google_Finance" title="Google Finance">Google Finance</a> - <a href="./Google_News" title="Google News">Google News</a>   - <a href="./Google_News_Archive" title="Google News Archive">Google News Archive</a> - <a href="./Google_Scholar" title="Google Scholar">Google Scholar</a> - <a href="./Google_Shopping" title="Google Shopping">Google Shopping</a>  - <a href="./Dragonfly_(search_engine)" title="Dragonfly (search engine)">Dragonfly</a> - <a href="./Google_Blog_Search" title="Google Blog Search">Google Blog Search</a> - <a href="./Google_Code_Search" title="Google Code Search">Google Code Search</a></td>
+</tr>
+<tr>
+<td>Data insights</td>
+<td>- <a href="./Google_Books_Ngram_Viewer" title="Google Books Ngram Viewer">Google Books Ngram Viewer</a> - <a href="./Google_Trends" title="Google Trends">Google Trends</a>   - <a href="./Google_Insights_for_Search" title="Google Insights for Search">Google Insights for Search</a> - <a href="./List_of_Year_in_Search_top_searches" title="List of Year in Search top searches">Year in Search</a></td>
+</tr>
+<tr>
+<td>Developer and business tools</td>
+<td>- <a href="./Google_Programmable_Search_Engine" title="Google Programmable Search Engine">Google Programmable Search Engine</a> - <a href="./Google_Search_Console" title="Google Search Console">Google Search Console</a> - <a href="./Google_Get_Your_Business_Online" title="Google Get Your Business Online">Get Your Business Online</a></td>
+</tr>
+<tr>
+<td>Related</td>
+<td>- "<a href="./Reunion_(advertisement)" title="Reunion (advertisement)">Reunion</a>" - <a href="./Google_Search_Appliance" title="Google Search Appliance">Google Search Appliance</a> - <a href="./FairSearch" title="FairSearch">FairSearch</a></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products" title="List of Google products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Alphabet_Inc." title="Template:Alphabet Inc.">v</a> - <a href="./Template_talk:Alphabet_Inc." title="Template talk:Alphabet Inc.">t</a> - <a href="./Special:EditPage/Template:Alphabet_Inc." title="Special:EditPage/Template:Alphabet Inc.">e</a>  <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc.</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Subsidiaries</td>
+<td></td>
+</tr>
+<tr>
+<td>People</td>
+<td></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Alphabet_Inc." title="Category:Alphabet Inc.">Category</a> - <a href="./Portal:Companies" title="Portal:Companies">Companies portal</a> - <a href="./File:Crystal_Clear_app_linneighborhood.svg">icon</a> <a href="./Portal:Internet" title="Portal:Internet">Internet portal</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Android_(operating_system)" title="Template:Android (operating system)">v</a> - <a href="./Template_talk:Android_(operating_system)" title="Template talk:Android (operating system)">t</a> - <a href="./Special:EditPage/Template:Android_(operating_system)" title="Special:EditPage/Template:Android (operating system)">e</a>  <a href="./Android_(operating_system)" title="Android (operating system)">Android</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>- <a href="./Android_Go" title="Android Go">Android Go</a>   - <a href="./Comparison_of_Android_Go_products" title="Comparison of Android Go products">Comparison of products</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Android_software_development" title="Android software development">Software development</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Android_version_history" title="Android version history">Releases</a></td>
+<td>- <a href="./Android_Cupcake" title="Android Cupcake">Cupcake (1.5)</a> - <a href="./Android_Donut" title="Android Donut">Donut (1.6)</a> - <a href="./Android_Eclair" title="Android Eclair">Eclair (2.0–2.1)</a> - <a href="./Android_Froyo" title="Android Froyo">Froyo (2.2)</a> - <a href="./Android_Gingerbread" title="Android Gingerbread">Gingerbread (2.3)</a> - <a href="./Android_Honeycomb" title="Android Honeycomb">Honeycomb (3.x)</a> - <a href="./Android_Ice_Cream_Sandwich" title="Android Ice Cream Sandwich">Ice Cream Sandwich (4.0)</a> - <a href="./Android_Jelly_Bean" title="Android Jelly Bean">Jelly Bean (4.1–4.3)</a> - <a href="./Android_KitKat" title="Android KitKat">KitKat (4.4)</a> - <a href="./Android_Lollipop" title="Android Lollipop">Lollipop (5.x)</a> - <a href="./Android_Marshmallow" title="Android Marshmallow">Marshmallow (6.x)</a> - <a href="./Android_Nougat" title="Android Nougat">Nougat (7.x)</a> - <a href="./Android_Oreo" title="Android Oreo">Oreo (8.x)</a> - <a href="./Android_Pie" title="Android Pie">Pie (9)</a> - <a href="./Android_10" title="Android 10">10</a> - <a href="./Android_11" title="Android 11">11</a> - <a href="./Android_12" title="Android 12">12</a> - <a href="./Android_13" title="Android 13">13</a> - <a href="./Android_14" title="Android 14">14</a> - <a href="./Android_15" title="Android 15">15</a> - <a href="./Android_16" title="Android 16">16</a></td>
+</tr>
+<tr>
+<td>Derivatives</td>
+<td>- <a href="./Android_Automotive" title="Android Automotive">Android Automotive</a> - <a href="./Android_Things" title="Android Things">Android Things</a> - <a href="./Android_TV" title="Android TV">TV</a>   - <a href="./List_of_Android_TV_devices" title="List of Android TV devices">devices</a> - <a href="./Android_XR" title="Android XR">Android XR</a> - <a href="./Wear_OS" title="Wear OS">Wear OS</a></td>
+</tr>
+<tr>
+<td>Devices</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./List_of_custom_Android_distributions" title="List of custom Android distributions">Custom distributions</a></td>
+<td>- <a href="./AliOS" title="AliOS">AliOS</a> - <a href="./Android-x86" title="Android-x86">Android-x86</a>   - <a href="./Remix_OS" title="Remix OS">Remix OS</a> - <a href="./AOKP" title="AOKP">AOKP</a> - <a href="./Baidu_Yi" title="Baidu Yi">Baidu Yi</a> - <a href="./Barnes_&amp;_Noble_Nook" title="Barnes &amp; Noble Nook">Barnes &amp; Noble Nook</a> - <a href="./CalyxOS" title="CalyxOS">CalyxOS</a> - <a href="./ColorOS" title="ColorOS">ColorOS</a>   - <a href="./OxygenOS" title="OxygenOS">OxygenOS</a>   - <a href="./Realme" title="Realme">realme UI</a> - <a href="./CopperheadOS" title="CopperheadOS">CopperheadOS</a> - <a href="./EMUI" title="EMUI">EMUI</a>   - <a href="./Honor_(brand)" title="Honor (brand)">MagicOS</a> - <a href="./Fire_OS" title="Fire OS">Fire OS</a> - <a href="./Meizu#Flyme" title="Meizu">Flyme OS</a> - <a href="./GrapheneOS" title="GrapheneOS">GrapheneOS</a> - <a href="./LeWa_OS" title="LeWa OS">LeWa OS</a> - <a href="./LineageOS" title="LineageOS">LineageOS</a>   - <a href=".//e/_(operating_system)" title="/e/ (operating system)">/e/</a>   - <a href="./CrDroid" title="CrDroid">CrDroid</a>   - <a href="./CyanogenMod" title="CyanogenMod">CyanogenMod</a>   - <a href="./DivestOS" title="DivestOS">DivestOS</a>   - <a href="./IodéOS" title="IodéOS">iodéOS</a>   - <a href="./Kali_NetHunter" title="Kali NetHunter">Kali NetHunter</a> - <a href="./LiteOS" title="LiteOS">LiteOS</a> - <a href="./Meta_Horizon_OS" title="Meta Horizon OS">Meta Horizon OS</a> - <a href="./MicroG" title="MicroG">MicroG</a> - <a href="./Nokia_X_family#Nokia_X_software_platform" title="Nokia X family">Nokia X software platform</a> - <a href="./OmniROM" title="OmniROM">OmniROM</a> - <a href="./OPhone" title="OPhone">OPhone</a> - <a href="./PixelExperience" title="PixelExperience">PixelExperience</a> - <a href="./Google_Pixel#Pixel_UI_(Pixel_Launcher)" title="Google Pixel">Pixel UI</a> - <a href="./Replicant_(operating_system)" title="Replicant (operating system)">Replicant</a> - <a href="./Resurrection_Remix_OS" title="Resurrection Remix OS">Resurrection Remix OS</a> - <a href="./SlimRoms" title="SlimRoms">SlimRoms</a> - <a href="./TCL_Technology" title="TCL Technology">TCL UI</a> - <a href="./Ubuntu_Touch#Ubuntu_for_Android" title="Ubuntu Touch">Ubuntu for Android</a> - <a href="./Xiaomi_HyperOS" title="Xiaomi HyperOS">Xiaomi HyperOS</a>   - <a href="./MIUI" title="MIUI">MIUI</a> - <a href="./XobotOS" title="XobotOS">XobotOS</a> - <a href="./Lenovo_smartphones" title="Lenovo smartphones">ZUI</a></td>
+</tr>
+<tr>
+<td>Booting and recovery</td>
+<td>- <a href="./Booting_process_of_Android_devices" title="Booting process of Android devices">Booting process</a> - <a href="./Android_recovery_mode" title="Android recovery mode">Recovery mode</a>   - <a href="./TWRP_(software)" title="TWRP (software)">TWRP</a>   - <a href="./ClockworkMod" title="ClockworkMod">ClockworkMod</a> - <a href="./Fastboot" title="Fastboot">Fastboot</a></td>
+</tr>
+<tr>
+<td><a href="./API" title="API">APIs</a></td>
+<td>- <a href="./Google_Maps" title="Google Maps">Google Maps</a> - <a href="./Google_Play_Services" title="Google Play Services">Google Play Services</a>   - <a href="./SafetyNet" title="SafetyNet">SafetyNet/Play Integrity API</a> - <a href="./Google_Search">Google Search</a></td>
+</tr>
+<tr>
+<td>Alternative <a href="./User_interface" title="User interface">UIs</a></td>
+<td>- <a href="./Cherry_OS_(operating_system)" title="Cherry OS (operating system)">Cherry OS</a> - <a href="./ColorOS" title="ColorOS">ColorOS</a> - <a href="./EMUI" title="EMUI">EMUI</a> - <a href="./Funtouch_OS" title="Funtouch OS">Funtouch OS</a> - <a href="./Meizu#Flyme" title="Meizu">Flyme OS</a> - <a href="./HiOS" title="HiOS">HiOS</a> - <a href="./Hive_UI" title="Hive UI">Hive UI (XOLO Hive)</a> - <a href="./HTC_Sense" title="HTC Sense">HTC Sense</a> - <a href="./LG_UX" title="LG UX">LG UX</a>   - <a href="./Optimus_UI" title="Optimus UI">Optimus UI</a> - <a href="./Motoblur" title="Motoblur">Motoblur</a> - <a href="./Nothing_OS" title="Nothing OS">Nothing OS</a> - <a href="./One_UI" title="One UI">One UI</a>   - <a href="./Samsung_Experience" title="Samsung Experience">Experience</a>   - <a href="./TouchWiz" title="TouchWiz">TouchWiz</a> - <a href="./Origin_OS" title="Origin OS">Origin OS</a> - <a href="./OxygenOS" title="OxygenOS">OxygenOS</a> - <a href="./Google_Pixel#Pixel_UI_(Pixel_Launcher)" title="Google Pixel">Pixel UI</a> - <a href="./XOS_(operating_system)" title="XOS (operating system)">XOS</a> - Xperia UI - <a href="./Asus_ZenFone#ZenUI_interface" title="Asus ZenFone">ZenUI</a></td>
+</tr>
+<tr>
+<td><a href="./Rooting_(Android)" title="Rooting (Android)">Rooting</a></td>
+<td>- <a href="./SuperSU" title="SuperSU">SuperSU</a> - <a href="./Magisk_(software)" title="Magisk (software)">Magisk</a> - <a href="./Kingo_Root" title="Kingo Root">Kingo Root</a> - <a href="./Kernel_Assisted_Superuser" title="Kernel Assisted Superuser">Kernel Assisted Superuser</a></td>
+</tr>
+<tr>
+<td>Lists</td>
+<td>- <a href="./List_of_custom_Android_distributions" title="List of custom Android distributions">Custom distributions</a> - <a href="./List_of_features_in_Android" title="List of features in Android">Features</a> - <a href="./List_of_free_and_open-source_Android_applications" title="List of free and open-source Android applications">Free and open-source applications</a> - <a href="./List_of_Android_apps_by_Google" title="List of Android apps by Google">Google apps</a> - <a href="./List_of_Android_launchers" title="List of Android launchers">Launchers</a></td>
+</tr>
+<tr>
+<td>Related topics</td>
+<td>- <a href="./Index_of_Android_OS_articles" title="Index of Android OS articles">Index of articles</a> - <a href="./Androidland" title="Androidland">Androidland</a> - <a href="./Chromecast" title="Chromecast">Chromecast</a> - <a href="./Google" title="Google">Google</a> - <a href="./Comparison_of_Java_and_Android_API" title="Comparison of Java and Android API">Java vs. Android API</a> - <a href="./Android_lawn_statues" title="Android lawn statues">Lawn statues</a> - <a href="./BlueStacks" title="BlueStacks">BlueStacks</a> - Legal issues   - <em><a href="./Google_LLC_v._Oracle_America,_Inc." title="Google LLC v. Oracle America, Inc.">Google v. Oracle</a></em>   - <a href="./Smartphone_patent_wars" title="Smartphone patent wars">smartphone patent wars</a> - <a href="./Google_App_Runtime_for_Chrome" title="Google App Runtime for Chrome">Android Runtime for Chrome</a></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Android_(operating_system)_development_software" title="Category:Android (operating system) development software">Category:Android development</a> - <a href="./Category:Mobile_telecommunications" title="Category:Mobile telecommunications">Category:Mobile telecommunications</a> - <a href="./Portal:Software" title="Portal:Software">Software portal</a> - <a href="./Portal:Telecommunication" title="Portal:Telecommunication">Telecommunication portal</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Web_search_engines" title="Template:Web search engines">v</a> - <a href="./Template_talk:Web_search_engines" title="Template talk:Web search engines">t</a> - <a href="./Special:EditPage/Template:Web_search_engines" title="Special:EditPage/Template:Web search engines">e</a>  <a href="./Search_engine" title="Search engine">Web search engines</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Active</td>
+<td></td>
+</tr>
+<tr>
+<td>Defunct or Inactive</td>
+<td>- <a href="./123people" title="123people">123people</a> - <a href="./A9.com" title="A9.com">A9.com</a> - <a href="./Aliweb" title="Aliweb">Aliweb</a> - <a href="./AlltheWeb" title="AlltheWeb">AlltheWeb</a> - <a href="./AltaVista" title="AltaVista">AltaVista</a> - <a href="./Blekko" title="Blekko">Blekko</a> - <a href="./Chorki_(search_engine)" title="Chorki (search engine)">Chorki</a> - <a href="./Cuil" title="Cuil">Cuil</a> - <a href="./Empas" title="Empas">Empas</a> - <a href="./Forestle" title="Forestle">Forestle</a> - <a href="./GenieKnows" title="GenieKnows">GenieKnows</a> - <a href="./Gigablast" title="Gigablast">Gigablast</a> - <a href="./Go.com" title="Go.com">Go.com</a> - <a href="./HotBot" title="HotBot">HotBot</a> - <a href="./Infoseek" title="Infoseek">Infoseek</a> - <a href="./Inktomi" title="Inktomi">Inktomi</a> - <a href="./JumpStation" title="JumpStation">JumpStation</a> - <a href="./LeapFish" title="LeapFish">LeapFish</a> - <a href="./Mullvad_Leta" title="Mullvad Leta">Mullvad Leta</a> - <a href="./Neeva" title="Neeva">Neeva</a> - <a href="./Northern_Light_Group" title="Northern Light Group">Northern Light</a> - <a href="./Pipilika" title="Pipilika">Pipilika</a> - <a href="./Powerset_(company)" title="Powerset (company)">Powerset</a> - <a href="./Scroogle" title="Scroogle">Scroogle</a> - <a href="./SearchMe" title="SearchMe">SearchMe</a> - <a href="./Searx" title="Searx">Searx</a> - <a href="./Soso_(search_engine)" title="Soso (search engine)">Soso</a> - <a href="./Sputnik_(search_engine)" title="Sputnik (search engine)">Sputnik</a> - <a href="./Teoma" title="Teoma">Teoma</a> - <a href="./Viewzi" title="Viewzi">Viewzi</a> - <a href="./Vivisimo" title="Vivisimo">Vivisimo</a> - <a href="./Volunia" title="Volunia">Volunia</a> - <a href="./W3Catalog" title="W3Catalog">W3Catalog</a> - <a href="./Wikiseek" title="Wikiseek">Wikiseek</a> - <a href="./Yebol" title="Yebol">Yebol</a> - <a href="./Yippy" title="Yippy">Yippy</a> - <a href="./Yooz" title="Yooz">Yooz</a></td>
+</tr>
+<tr>
+<td>- <a href="./Comparison_of_search_engines" title="Comparison of search engines">Comparison</a> - <a href="./List_of_search_engines" title="List of search engines">Complete list</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><a href="./Help:Authority_control" title="Help:Authority control">Authority control databases</a> <a href="https://www.wikidata.org/wiki/Q9366#identifiers" title="Edit this at Wikidata">Edit this at Wikidata</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>International</td>
+<td>- <a href="https://viaf.org/viaf/185028838">VIAF</a> - <a href="https://d-nb.info/gnd/4726597-8">GND</a> - <a href="https://id.worldcat.org/fast/1398583">FAST</a></td>
+</tr>
+<tr>
+<td>National</td>
+<td>- <a href="https://id.loc.gov/authorities/nr2003021731">United States</a> - <a href="https://catalogue.bnf.fr/ark:/12148/cb14502591k">France</a> - <a href="https://data.bnf.fr/ark:/12148/cb14502591k">BnF data</a> - <a href="https://aleph.nkp.cz/F/?func=find-c&amp;local_base=aut&amp;ccl_term=ica=ph290654&amp;CON_LNG=ENG">Czech Republic</a> - <a href="https://authority.bibsys.no/authority/rest/authorities/html/13024830">Norway</a> - <a href="https://www.nli.org.il/en/authorities/987007289161105171">Israel</a></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

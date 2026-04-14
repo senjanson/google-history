@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Google Glass</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link active" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Google Glass</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Google_Glass<br>
+Category: products_hardware<br>
+Depth: 1</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Google Glass, or simply Glass, is a discontinued brand of smart glasses developed by Google's X Development, with a mission of producing a ubiquitous computer. Google Glass displays information to the wearer using a head-up display. Wearers communicate with the Internet via natural language voice commands.</p>
+<h2>Images</h2>
+<p><img alt="Google_Glass_photo" src="../images/Google_Glass_photo.JPG"><br>
+<img alt="330px-Google_Glass_photo" src="../images/330px-Google_Glass_photo.JPG"><br>
+<img alt="250px-Google_Glass_photo" src="../images/250px-Google_Glass_photo.JPG"><br>
+<img alt="250px-Google_Glass_detail" src="../images/250px-Google_Glass_detail.jpg"><br>
+<img alt="250px-A_Google_Glass_wearer" src="../images/250px-A_Google_Glass_wearer.jpg"><br>
+<img alt="250px-Google_Glass_with_frame" src="../images/250px-Google_Glass_with_frame.jpg"><br>
+<img alt="250px-SmallWorldSocial_BreastfeedingSupportProject_GeorgiawithBabyEve" src="../images/250px-SmallWorldSocial_BreastfeedingSupportProject_GeorgiawithBabyEve.jpg"><br>
+<img alt="250px-Google_Glass_Explorer_Optics_Schematic" src="../images/250px-Google_Glass_Explorer_Optics_Schematic.png"></p>
+<h2>Full Article</h2>
+<p>Optical head-mounted computer glasses</p>
+<p>Not to be confused with <a href="./Google_Goggles" title="Google Goggles">Google Goggles</a>.</p>
+<p><strong>Google Glass</strong>, or simply <strong>Glass</strong>, is a discontinued brand of <a href="./Smart_glasses" title="Smart glasses">smart glasses</a> developed by <a href="./Google" title="Google">Google</a>'s <a href="./X_Development" title="X Development">X Development</a> (formerly Google X), with a mission of producing a <a href="./Ubiquitous_computing" title="Ubiquitous computing">ubiquitous computer</a>. Google Glass displays information to the wearer using a <a href="./Head-up_display" title="Head-up display">head-up display</a>. Wearers communicate with the Internet via <a href="./Natural_language_processing" title="Natural language processing">natural language</a> voice commands.</p>
+<p>Google started selling a <a href="./Prototype" title="Prototype">prototype</a> of Google Glass to qualified "Glass Explorers" in the US on June 27, 2012, for a limited period for $1,500, (with distribution of those purchases beginning on April 16, 2013), before it became available to the public on April 15, 2014. It has an integrated 5 <a href="./Megapixel" title="Megapixel">megapixel</a> still/<a href="./720p" title="720p">720p</a> video camera. The headset received a great deal of criticism amid concerns that its use could violate existing privacy laws.</p>
+<p>On January 15, 2015, Google announced that it would stop producing the Google Glass prototype. The prototype was succeeded by two Enterprise Editions, whose sales were suspended on March 15, 2023. More than a decade later, Google would return to the <a href="./Extended_reality" title="Extended reality">extended reality</a> space with <a href="./Android_XR" title="Android XR">Android XR</a>, an operating system that will power headsets and smartglasses.</p>
+<h2>Development and release</h2>
+<p>Google Glass was developed by <a href="./Google_X" title="Google X">Google X</a>, the facility within Google devoted to technological advancements such as <a href="./Driverless_cars" title="Driverless cars">driverless cars</a>.</p>
+<p>The Google Glass prototype resembled standard <a href="./Glasses" title="Glasses">eyeglasses</a> with the lens replaced by a <a href="./Head-up_display" title="Head-up display">head-up display</a>. In mid-2011, Google engineered a prototype that weighed 8 pounds (3.6 kg); by 2013 they were lighter than the average pair of sunglasses.</p>
+<p>The product was publicly announced in April 2012. Google co-founder <a href="./Sergey_Brin" title="Sergey Brin">Sergey Brin</a> wore a prototype of the Glass to an April 5, 2012, <a href="./Foundation_Fighting_Blindness" title="Foundation Fighting Blindness">Foundation Fighting Blindness</a> event in San Francisco. In May 2012, Google demonstrated for the first time how Google Glass could be used to shoot videos.</p>
+<p>In a demo presented by Brin at the <a href="./Google_I/O" title="Google I/O">Google I/O</a> conference in June 2012, four skydivers wearing Google Glass jumped from a blimp and landed on the roof of the <a href="./Moscone_Center" title="Moscone Center">Moscone Center</a> (where the conference was taking place), with the glasses livestreaming their descent for the audience. It was announced that the beta version of the glasses, dubbed the "Explorer Edition" would be made available exclusively for pre-order for the developers and programmers in attendance for $1,500.</p>
+<p>In February 2013, interested potential Glass users were invited to submit an entry via Twitter or Google+, with hashtag #IfIHadGlass, to qualify for a chance to win access to purchase Google Glass Explorer Edition. The 8,000 selected qualifiers, dubbed "Glass Explorers," were notified in March 2013, and would be required to visit one of three Google pop-up shops (referred to as "basecamps") in Los Angeles, New York, or San Francisco to purchase the glasses, still priced at $1,500, following "fitting" and training from Google Glass guides.</p>
+<p>The purchases of this prototype version, both those from the conference and those from the contest, began distribution on April 16, 2013.</p>
+<p>In January of 2014, Google introduced four frame choices for prescription lenses for an additional $225 each. In March, Google also entered in a partnership with <a href="./Luxottica" title="Luxottica">Luxottica</a>, the Italian eyeware company which owns <a href="./Ray-Ban" title="Ray-Ban">Ray-Ban</a>, <a href="./Oakley,_Inc." title="Oakley, Inc.">Oakley</a>, and other brands, to offer additional frame designs.</p>
+<p>Google briefly opened purchase of Google Glass to the general public in the US, first on April 15, 2014, reporting that the relatively limited stock sold out in a single day, and then again a month later on May 14. In June, Google Glass was also made available for consumers in the <a href="./United_Kingdom" title="United Kingdom">United Kingdom</a>, priced at £1,000.</p>
+<p>In January 2015, Google announced the end of the Google Glass Explorer beta program and halted sales of the product. In February 2015, <em><a href="./The_New_York_Times" title="The New York Times">The New York Times</a></em> reported that Google Glass was being redesigned by former <a href="./Apple_Inc." title="Apple Inc.">Apple</a> executive <a href="./Tony_Fadell" title="Tony Fadell">Tony Fadell</a>, and that it would not be released until he deemed it to be "perfect".</p>
+<p>In July 2017, it was announced that the second iteration, the Google Glass Enterprise Edition, which had been deployed for testing in factories of US companies such as <a href="./Boeing" title="Boeing">Boeing</a> and <a href="./General_Electric" title="General Electric">GE</a>, would now be available for other companies. The new edition also featured several significant upgraded features, such as higher camera resolution and longer battery life. Google Glass Enterprise Edition has reportedly been successfully used by Dr. Ned Sahin to help children with autism learn social skills.</p>
+<p>In May 2019, Google announced the Google Glass Enterprise Edition 2. Google also announced a partnership with <a href="./Smith_Optics" title="Smith Optics">Smith Optics</a> to develop Glass-compatible safety frames.</p>
+<h2>Features</h2>
+<ul>
+<li>Touchpad: A touchpad, similar to that of one on a laptop, is located on the side of Google Glass, allowing users to control the device by swiping through a timeline-like interface displayed on the screen. Sliding backward shows current events, such as weather, and sliding forward shows past events, such as phone calls, photos, and <a href="./Google+" title="Google+">circle updates</a>.</li>
+<li>Camera: Google Glass has the ability to take 5 MP photos and record 720p HD video. Glass Enterprise Edition 2 has an improved 8MP 80° FOV camera.</li>
+<li>Display: The Explorer version of Google Glass uses a <a href="./Liquid_crystal_on_silicon" title="Liquid crystal on silicon">liquid crystal on silicon</a> (based on an LCoS chip from <a href="./Himax" title="Himax">Himax</a>), <a href="./Field-sequential_color_system" title="Field-sequential color system">field-sequential color system</a>, <a href="./Light-emitting_diode" title="Light-emitting diode">LED</a> illuminated display. The display's LED illumination is first <a href="./Polarization_(waves)#s_and_p_designations" title="Polarization (waves)">P-polarized</a> and then shines through the in-coupling <a href="./Polarizing_beam_splitter" title="Polarizing beam splitter">polarizing beam splitter</a> (PBS) to the LCoS panel. The panel reflects the light and alters it to S-polarization at <a href="./Active_pixel_sensor" title="Active pixel sensor">active pixel sensor</a> sites. The in-coupling PBS then reflects the S-polarized areas of light at 45° through the out-coupling beam splitter to a <a href="./Collimator" title="Collimator">collimating reflector</a> at the other end. Finally, the out-coupling beam splitter (which is a partially reflecting mirror, not a polarizing beam splitter) reflects the collimated light another 45° and into the wearer's eye.</li>
+</ul>
+<h2>Software</h2>
+<p>Main article: <a href="./Glass_OS" title="Glass OS">Glass OS</a></p>
+<h3>Applications</h3>
+<p>Google Glass applications are free applications built by third-party developers. Glass also uses many existing Google applications, such as <a href="./Google_Maps" title="Google Maps">Google Maps</a> and <a href="./Gmail" title="Gmail">Gmail</a>. Many developers and companies built applications for Glass, including news apps, <a href="./Facial_recognition_system" title="Facial recognition system">facial recognition</a>, exercise, photo manipulation, translation, and sharing to social networks, such as <a href="./Facebook" title="Facebook">Facebook</a> and <a href="./Twitter" title="Twitter">Twitter</a>. Third-party applications announced at <a href="./South_by_Southwest" title="South by Southwest">South by Southwest</a> (SXSW) include <a href="./Evernote" title="Evernote">Evernote</a>, <a href="./Plasq#Skitch" title="Plasq">Skitch</a>, <em><a href="./The_New_York_Times" title="The New York Times">The New York Times</a></em>, and <a href="./Path_(social_network)" title="Path (social network)">Path</a>.</p>
+<p>On March 23, 2013, Google released the Mirror API, allowing developers to start making apps for Glass. In the terms of service, it was stated that developers may not put ads in their apps or charge fees; a Google representative told The Verge that this might change in the future.</p>
+<p>On May 16, 2013, Google announced the release of seven new programs, including reminders from Evernote, fashion news from <em>Elle</em>, and news alerts from <a href="./CNN" title="CNN">CNN</a>. Following Google's XE7 Glass Explorer Edition update in early July 2013, evidence of a "Glass Boutique", a store that will allow synchronization to Glass of <a href="./Google_Glassware" title="Google Glassware">Glassware</a> and <a href="./APK_(file_format)" title="APK (file format)">APKs</a>, was noted.</p>
+<p>Version XE8 made a debut for Google Glass on August 12, 2013. It brings an integrated video player with playback controls, the ability to post an update to Path, and lets users save notes to Evernote. Several other minute improvements include volume controls, improved voice recognition, and several new Google Now cards.</p>
+<p>On November 19, 2013, Google unveiled its Glass Development Kit, showcasing the translation tool <a href="./Word_Lens" title="Word Lens">Word Lens</a>, the cooking program AllTheCooks, and the exercise program <a href="./Strava" title="Strava">Strava</a> among others as successful examples. Google announced three news programs in May 2014—TripIt, FourSquare and OpenTable—in order to entice travelers. On June 25, 2014, Google announced that notifications from <a href="./Android_Wear" title="Android Wear">Android Wear</a> would be sent to Glass.</p>
+<p>The <a href="./European_University_Press" title="European University Press">European University Press</a> published the first book to be read with Google Glass on October 8, 2014, as introduced at the <a href="./Frankfurt_Book_Fair" title="Frankfurt Book Fair">Frankfurt Book Fair</a>. The book can be read as a normal paper book or—enriched with multimedia elements—with Google Glass, Kindle, on Smartphone and Pads on the platforms iOS and Android.</p>
+<h3>MyGlass</h3>
+<p>Google offered a companion Android and iOS app called MyGlass, which allowed the user to configure and manage the device. It was removed from the Play Store on February 22, 2020.</p>
+<h3>Voice activation</h3>
+<p>Other than the touchpad, Google Glass can be controlled using just "voice actions". To activate Glass, wearers tilt their heads 30° upward (which can be altered for preference) or simply tap the touchpad, and say "O.K., Glass." Once Glass is activated, wearers can say an action, such as "Take a picture", "Record a video", "Hangout with [person/Google+ circle]", "Google 'What year was Wikipedia founded?'", "Give me directions to the Eiffel Tower", and "Send a message to John" (many of these commands can be seen in a product video released in February 2013). For search results that are read back to the user, the voice response is relayed using <a href="./Bone_conduction" title="Bone conduction">bone conduction</a> through a transducer that sits beside the ear, thereby rendering the sound almost inaudible to other people.</p>
+<h2>Use in medicine</h2>
+<h3>In hospitals</h3>
+<p>Augmedix developed an app for the wearable device that allows physicians to live-stream the patient visit and claims it will eliminate <a href="./Electronic_health_record" title="Electronic health record">electronic health record</a> problems, possibly saving them up to 15 hours a week and improving record quality. The video stream is passed to remote <a href="./Scribes" title="Scribes">scribes</a> in <a href="./HIPAA" title="HIPAA">HIPAA</a> secure rooms where the doctor-patient interaction is transcribed, ultimately allowing physicians to focus on the patient. Hundreds of users were evaluating the app as of mid-2015.</p>
+<p>In July 2013, <a href="./Lucien_Engelen" title="Lucien Engelen">Lucien Engelen</a> commenced research on the usability and impact of Google Glass in the <a href="./Health_care" title="Health care">health care</a> field. As of August 2013, Engelen, based at <a href="./Singularity_University" title="Singularity University">Singularity University</a> and in Europe at <a href="./Radboud_University_Nijmegen_Medical_Centre" title="Radboud University Nijmegen Medical Centre">Radboud University Nijmegen Medical Centre</a>, was the first healthcare professional in Europe to participate in the Glass Explorer program. His research on Google Glass (starting August 9, 2013) was conducted in operating rooms, ambulances, a trauma helicopter, general practice, and home care as well as the use in public transportation for visually or physically impaired. Research included taking pictures, videos streaming to other locations, dictating operative log, having students watch the procedures and tele-consultation through <a href="./Google_Hangout" title="Google Hangout">Hangout</a>. Engelen documented his findings in blogs, videos, pictures, on <a href="./Twitter" title="Twitter">Twitter</a>, and on <a href="./Google+" title="Google+">Google+</a>, with research ongoing as of that date.</p>
+<p>In June 2014, Google Glass' ability to acquire images of a patient's retina ("Glass <a href="./Fundoscopy" title="Fundoscopy">Fundoscopy</a>") was publicly demonstrated for the first time at the Wilmer Clinical Meeting at Johns Hopkins University School of Medicine by Dr. Aaron Wang and Dr. Allen Eghrari. This technique was featured on the cover of the Journal for Mobile Technology in Medicine for January 2015. Doctors Phil Haslam and Sebastian Mafeld demonstrated the first application of Google Glass in the field of interventional radiology. They demonstrated how Google Glass could assist a liver <a href="./Biopsy" title="Biopsy">biopsy</a> and fistulaplasty, and the pair stated that Google Glass has the potential to improve patient safety, operator comfort, and procedure efficiency in the field of interventional radiology.</p>
+<p>In 2015, IOS Press published "Clinical and Surgical Applications of Smart Glasses" a research article written by a team at the Columbia University Medical Center Department of Neurosurgery's Cerebrovascular Laboratory. Under Neurosurgeon Dr. Sander E. Connolly, Stefan Mitrasinovic, Elvis Camacho, Nirali Trivedi, and others analyzed Google Glass's useful applications including hands-free photo and video documentation, telemedicine, Electronic Health Record retrieval and input, rapid diagnostic test analysis, education, and live broadcasting.</p>
+<p>In 2017, Swiss researchers assessed in a randomized controlled trial the adherence of emergency team leaders to the American Heart Association's (AHA) Pediatric Advanced Life Support (PALS) guidelines by adapting and displaying them in Google Glasses during simulation-based pediatric cardiac arrest scenarios.</p>
+<h3>In surgical procedures</h3>
+<p>On June 20, 2013, Rafael J. Grossmann, a Venezuelan doctor practicing in the U.S., was the first surgeon to demonstrate the use of Google Glass during a live surgical procedure. In August 2013, Google Glass was used at <a href="./Wexner_Medical_Center_at_Ohio_State_University" title="Wexner Medical Center at Ohio State University">Wexner Medical Center at Ohio State University</a>. Surgeon Dr. Christopher Kaeding used Google Glass to consult with a distant colleague in <a href="./Columbus,_Ohio" title="Columbus, Ohio">Columbus, Ohio</a>. A group of students at The Ohio State University College of Medicine also observed the operation on their laptop computers. Following the procedure, Kaeding stated, "To be honest, once we got into the surgery, I often forgot the device was there. It just seemed very intuitive and fit seamlessly."</p>
+<p>On June 21, 2013, doctor Pedro Guillen, chief of trauma service of Clínica CEMTRO of Madrid, also broadcast a surgery using Google Glass. In July 2014, the <a href="./Startup_company" title="Startup company">startup company</a> Surgery Academy, in <a href="./Milan" title="Milan">Milan</a>, Italy, launched a remote training platform for medical students. The platform is a <a href="./MOOC" title="MOOC">MOOC</a> that allows students to join any <a href="./Operating_theater" title="Operating theater">operating theater</a> thanks to Google Glass worn by surgeon. Also in July 2014, This Place released an app, <a href="./MindRDR" title="MindRDR">MindRDR</a>, to connect Glass to a <a href="./Neurosky" title="Neurosky">Neurosky</a> <a href="./EEG" title="EEG">EEG</a> monitor to allow people to take photos and share them to <a href="./Twitter" title="Twitter">Twitter</a> or <a href="./Facebook" title="Facebook">Facebook</a> using brain signals. It is hoped this will allow people with severe physical disabilities to engage with social media.</p>
+<h3>In lactation consultation</h3>
+<p>In Australia, in January 2014, Melbourne tech startup <a href="./Small_World_Social" title="Small World Social">Small World Social</a> collaborated with the <a href="./Australian_Breastfeeding_Association" title="Australian Breastfeeding Association">Australian Breastfeeding Association</a> (ABA) to create the first hands-free <a href="./Breastfeeding" title="Breastfeeding">breastfeeding</a> Google Glass application for new mothers. The application, named Breastfeeding Through Glass, allowed mothers to nurse their baby while viewing instructions about common breastfeeding issues (latching on, posture) or call a lactation consultant via a secure Google Hangout, who could view the issue through the mother's Google Glass camera.</p>
+<p>The trial lasted 7 weeks, commencing on March 1 and ending on April 13, 2014. There were five mothers and their newborn babies in the trial, fifteen volunteer counselors from ABA, and seven project team members from Small World Social. The counselors were located in five States across Australia. The counselors were certified in lactation consultation, and located as far from the mothers as <a href="./Perth" title="Perth">Perth</a>, Western Australia, 3,500 kilometres away. While physically distant from the mothers, the counselors provided support using video calls with Google Glass, live on demand.</p>
+<p>According to media commentary, the breastfeeding project demonstrated the potential of wearable devices for communities to deliver health and family support services across vast distances. The demonstrated positive uses of wearable devices contrasted some of the widespread criticism over privacy concerns that such devices have received. An article on <em><a href="./Vice_(magazine)" title="Vice (magazine)">Motherboard</a></em> stated, "Google Glass, whether warranted or not, endures its fair share of criticism, largely because a lot of initial use cases have been, well, kinda creepy. So it's great to see instead Glass being used for uniquely positive ends, as it is with the Australian Breastfeeding Association's Breastfeeding Support Project." Other journalists and commentators also called the trial beneficial and an innovative application wearable technologies. <a href="./Australian_Broadcasting_Corporation" title="Australian Broadcasting Corporation">ABC</a> journalist/presenter Penny Johnston of the radio program <em>Babytalk</em> remarked:</p>
+<blockquote>
+<p>The Google Glass if you think about it, is perfect to coach someone in breast feeding: if you are holding or feeding a baby, imagine a camera mounted on your glasses and look down. There you have the world's best view for checking the baby's latch and your breastfeeding technique!</p>
+</blockquote>
+<p>In May 2014, Small World Social and ABA won the Gold Questar Award in the Emerging Media: App section, for the Breastfeeding with Google Glass App. In June 2014, Small World Social's Breastfeeding Support Project was awarded the Questar Best of Category Grand Prize For Emerging Media, which is given to the top 5% of entries.</p>
+<p>ABA is optimistic about the future of wearable technologies supporting their work. Small World Social commenced a trial in the US in June 2014.</p>
+<h2>Media coverage</h2>
+<h3>Journalism</h3>
+<p>In 2014, <a href="./Voice_of_America" title="Voice of America">Voice of America</a> Television Correspondent <a href="./Carolyn_Presutti" title="Carolyn Presutti">Carolyn Presutti</a> and Electronics Engineer Jose Vega began a web project called VOA &amp; Google Glass, which explored the technology's potential uses in journalism. This series of news stories examined the technology's live reporting applications, including conducting interviews and covering stories from the reporter's point of view. On March 29, 2014, American <a href="./A_cappella" title="A cappella">a cappella</a> group <a href="./Pentatonix" title="Pentatonix">Pentatonix</a> partnered with Voice of America when lead singer Scott Hoying wore Glass in the band's performance at <a href="./DAR_Constitution_Hall" title="DAR Constitution Hall">DAR Constitution Hall</a> in Washington, D.C., during the band's worldwide tour—the first use of Glass by a lead singer in a professional concert.</p>
+<p>In the fall of 2014, The <a href="./University_of_Southern_California" title="University of Southern California">University of Southern California</a> conducted a course called Glass Journalism, which explored the device's application in journalism.</p>
+<p>The <a href="./World_Wildlife_Fund" title="World Wildlife Fund">WWF</a> as of mid-2014 used Google Glass and <a href="./Unmanned_aerial_vehicle" title="Unmanned aerial vehicle">UAVs</a> to track various animals and birds in the jungle, which may be the first use of the device by a non-profit, non-governmental organization (NGO).</p>
+<p>As of 2022 the product has been viewed as a failure, having been once slated as the next big thing in tech. While they no longer exist, the technology lives on in future products.</p>
+<h3>Public events</h3>
+<p>In 2014, the International Olympic Committee Young Reporters program took Google Glass to the Nanjing 2014 Youth Olympic Games and put them on a number of athletes from different disciplines to explore novel point of view filmmaking.</p>
+<p>A visually impaired dancer, Benjamin Yonattan, used Google Glass to overcome his chronic vision condition. In 2015, Yonattan performed on the reality television program <em><a href="./America's_Got_Talent" title="America's Got Talent">America's Got Talent</a></em>.</p>
+<h3>Education</h3>
+<p>In early 2013, American educator <a href="./Andrew_Vanden_Heuvel" title="Andrew Vanden Heuvel">Andrew Vanden Heuvel</a> used Google Glass to take students on a virtual trip to the <a href="./Large_Hadron_Collider" title="Large Hadron Collider">Large Hadron Collider</a> at <a href="./CERN" title="CERN">CERN</a>. The trip was an early example of an Explorer Story promoted by the Google Glass marketing team.</p>
+<h2>Criticism</h2>
+<h3>Privacy concerns</h3>
+<p>Concerns have been raised by various sources regarding the intrusion on privacy, and the <a href="./Etiquette" title="Etiquette">etiquette</a> and <a href="./Ethics" title="Ethics">ethics</a> of using the device in public and recording people without their permission. Google co-founder, Sergey Brin, claims that Glass could be seen as a way to become even more isolated in public, but the intent was quite the opposite: Brin views checking social media as a constant "nervous tic", which is why Glass can notify the user of important notifications and updates and does not obstruct the line of sight.</p>
+<p>Additionally, there is controversy that Google Glass would cause <a href="./Security" title="Security">security</a> problems and violate <a href="./Privacy" title="Privacy">privacy</a> rights. Organizations like the <a href="./FTC_Fair_Information_Practice" title="FTC Fair Information Practice">FTC Fair Information Practice</a> work to uphold privacy rights through Fair Information Practice Principles (FIPPS), which are guidelines representing concepts that concern fair information practice in an electronic marketplace.</p>
+<p>Privacy advocates are concerned that people wearing such eyewear may be able to identify strangers in public using facial recognition, or surreptitiously record and broadcast private conversations. The "Find my Face" feature on Google+ functions to create a model of your face, and of people you know, in order to simplify tagging photos.</p>
+<p>Some companies in the US have posted anti-Google Glass signs in their establishments. In July 2013, prior to the official release of the product, Stephen Balaban, co-founder of software company Lambda Labs, circumvented Google's facial recognition app block by building his own, non-Google-approved operating system. Balaban then installed face-scanning Glassware that creates a summary of commonalities shared by the scanned person and the Glass wearer, such as mutual friends and interests. Also created was <a href="./Winky_(software)?action=edit&amp;redlink=1" title="Winky (software)">Winky</a>, a program that allows a Google Glass user to take a photo with a wink of an eye, while <a href="./Marc_Rogers_(security_researcher)" title="Marc Rogers (security researcher)">Marc Rogers</a>, a principal security researcher at Lookout, discovered that Glass can be hijacked if a user could be tricked into taking a picture of a malicious QR code, demonstrating the potential to be used as a weapon in <a href="./Cyberwarfare" title="Cyberwarfare">cyberwarfare</a>.</p>
+<p>In February 2013, a Google+ user noticed legal issues with Glass and posted in the Glass Explorers community about the issues, stating that the device may be illegal to use according to the current legislation in Russia and Ukraine, which prohibits use of spy gadgets that can record video, audio or take photographs in an inconspicuous manner.</p>
+<p>Concerns were also raised in regard to the privacy and security of Glass users in the event that the device is stolen or lost, an issue that was raised by a US congressional committee. As part of its response to the committee, Google stated that a locking system for the device is in development. Google also reminded users that Glass can be remotely reset. Police in various states have also warned Glass wearers to watch out for muggers and street robbers.</p>
+<p>Lisa A. Goldstein, a freelance journalist who was born deaf, tested the product on behalf of people with disabilities and published a review on August 6, 2013. In her review, Goldstein states that Google Glass does not accommodate hearing aids and is not suitable for people who cannot understand speech. Goldstein also explained the limited options for customer support, as telephone contact was her only means of communication.</p>
+<p>Several facilities have banned the use of Google Glass before its release to the general public, citing concerns over potential privacy-violating capabilities. Other facilities, such as <a href="./Las_Vegas_Valley" title="Las Vegas Valley">Las Vegas</a> casinos, banned Google Glass, citing their desire to comply with Nevada state law and common gaming regulations that ban the use of recording devices near gambling areas. On October 29, 2014, the Motion Picture Association of America and the National Association of Theatre Owners announced a ban on wearable technology including Google Glass, placing it under the same rules as mobile phones and video cameras.</p>
+<p>There have also been concerns over potential eye pain caused by users new to Glass. These concerns were validated by Google's optometry advisor Dr. Eli Peli of <a href="./Harvard" title="Harvard">Harvard</a>, though he later partly backtracked due to the controversy that ensued from his remarks.</p>
+<p>Concerns have been raised by cyber forensics experts at the <a href="./University_of_Massachusetts" title="University of Massachusetts">University of Massachusetts</a> who have developed a way to steal smartphone and tablet passwords using Google Glass. The specialists developed a software program that uses Google Glass to track finger shadows as someone types in their password. Their program then converts the touchpoints into the keys they were touching, allowing them to catch the passcodes.</p>
+<p>Another concern regarding the camera application raises controversy over personal privacy. Some people are concerned that the product can record conversations. The device sets off a light to indicate that it is recording but many speculate that there will be an app to disable this.</p>
+<p>The name "Glassholes" has been derisively given to users who "constantly interact with their Glass, ignoring the outside world".</p>
+<h3>Safety considerations</h3>
+<p>Concerns have also been raised on operating motor vehicles while wearing the device. On July 31, 2013, it was reported that driving while wearing Google Glass was likely to be banned in the UK, being deemed careless driving, therefore a fixed penalty offense, following a decision by the <a href="./Department_for_Transport" title="Department for Transport">Department for Transport</a>.</p>
+<p>In the US, West Virginia state representative <a href="./Gary_Howell_(West_Virginia_politician)" title="Gary Howell (West Virginia politician)">Gary G. Howell</a> introduced an amendment in March 2013 to the state's law against texting while driving that would include bans against "using a wearable computer with head mounted display". In an interview, Howell stated, "The primary thing is a safety concern, it [the glass headset] could project text or video into your field of vision. I think there's a lot of potential for distraction."</p>
+<p>In October 2013, a driver in California was ticketed for "driving with monitor visible to driver (Google Glass)" after being pulled over for speeding by a <a href="./San_Diego_Police_Department" title="San Diego Police Department">San Diego Police Department</a> officer. The driver was reportedly the first to be fined for driving while wearing a Google Glass. While the judge noted that "Google Glass fell under 'the purview and intent' of the ban on driving with a monitor", the case was thrown out of court due to lack of proof the device was on at the time.</p>
+<p>In February 2014, a woman wearing Google Glass claimed she was verbally and physically assaulted at a bar in San Francisco after a patron confronted her while she was showing off the device, allegedly leading a man accompanying her to physically retaliate. Witnesses suggested that patrons were upset over the possibility of being recorded.</p>
+<p>In November 2014 the results of comparative study in a <a href="./Driving_simulator" title="Driving simulator">driving simulator</a> were published by Sawyer et al. of the <a href="./University_of_Central_Florida" title="University of Central Florida">University of Central Florida</a> and the US <a href="./Air_Force_Research_Laboratory" title="Air Force Research Laboratory">Air Force Research Laboratory</a>, were published in the journal <em><a href="./Human_Factors_(journal)" title="Human Factors (journal)">Human Factors</a></em>. Subjects were asked to use either a smartphone or Google Glass to receive a message and were then presented with a situation where emergency braking was required. The messages delivered by Google Glass were less distracting than those delivered via text, but the problem was not eliminated. Both devices impaired driving abilities while receiving messages, and the Google Glass users also experienced some impairment even when not actively using the device.</p>
+<h3>Terms of service</h3>
+<p>Under the Google Glass terms of service for the Glass Explorer pre-public release program, it specifically states, "You may not resell, loan, transfer, or give your device to any other person. If you resell, loan, transfer, or give your device to any other person without Google's authorization, Google reserves the right to deactivate the device, and neither you nor the unauthorized person using the device will be entitled to any refund, product support, or product warranty."<br>
+<em><a href="./Wired_(website)" title="Wired (website)">Wired</a></em> commented on this policy of a company claiming ownership of its product after it had been sold, saying: "Welcome to the New World, one in which companies are retaining control of their products even after consumers purchase them." Others pointed out that Glass was not for public sale at all, but rather in private testing for selected developers, and that not allowing developers in a closed beta to sell to the public is not the same as banning consumers from reselling a publicly released device.</p>
+<h2>Technical specifications</h2>
+<h3>Google Glass Explorer</h3>
+<h4>Explorer Version 1</h4>
+<p>For the developer Explorer units version 1:</p>
+<ul>
+<li><a href="./Android_KitKat" title="Android KitKat">Android 4.4 (KitKat)</a></li>
+<li>640×360 Himax HX7309 LCoS display</li>
+<li>5-megapixel camera, capable of 720p video recording</li>
+<li>Wi-Fi 802.11b/g</li>
+<li>Bluetooth</li>
+<li>16 GB storage (12 GB available)</li>
+<li>Texas Instruments OMAP 4430 SoC 1.2 GHz Dual (ARMv7)</li>
+<li>1 GB RAM</li>
+<li>3 axis gyroscope, 3 axis accelerometer and 3 axis magnetometer (compass)</li>
+<li>Ambient light sensing and proximity sensor</li>
+<li><a href="./Bone_conduction" title="Bone conduction">Bone conduction</a> audio transducer</li>
+</ul>
+<h4>Explorer Version 2</h4>
+<p>For the developer Explorer units version 2, RAM was expanded to 2 GB and prescription frames were made available:</p>
+<ul>
+<li>all of the features from the Explorer version 1 plus:</li>
+<li>2 GB RAM</li>
+<li>Prescription frames available</li>
+</ul>
+<h3>Google Glass Enterprise Edition</h3>
+<p>The Google Glass Enterprise Edition improves upon previous editions with the following specifications:</p>
+<ul>
+<li><a href="./Intel_Atom" title="Intel Atom">Intel Atom</a> TG100 processor</li>
+<li>Dual-band 802.11n/ac wifi,</li>
+<li>Assisted GPS &amp; GLONASS</li>
+<li>Barometer</li>
+<li>16 GB of storage</li>
+<li>780 mAh battery</li>
+<li><a href="./Loudspeaker#Driver_design:_dynamic_loudspeakers" title="Loudspeaker">Dynamic driver speaker</a> instead of <a href="./Bone_conduction" title="Bone conduction">bone conduction</a> audio transducer</li>
+</ul>
+<h4>Google Glass Enterprise Edition 2</h4>
+<p>The Google Glass Enterprise Edition 2 improves upon previous editions with the following specifications:</p>
+<ul>
+<li><a href="./Qualcomm_Snapdragon" title="Qualcomm Snapdragon">Qualcomm Snapdragon</a> XR1 quad core, up to 1.7 GHz, 10 nm</li>
+<li><a href="./Android_Oreo" title="Android Oreo">Android Oreo</a> with Android Enterprise Mobile Device Management</li>
+<li>3 GB LPDDR4</li>
+<li>Bluetooth 5.x AoA</li>
+<li>8MP 80° FOV camera</li>
+<li>3 beam-forming microphones</li>
+<li>USB Type-C port supporting USB 2.0 480 Mbit/s</li>
+<li>820 mAh battery with fast charge</li>
+<li>6-axis accelerometer/gyroscope</li>
+<li>On-head detection sensor and Eye-on-screen sensor for power-saving features</li>
+<li>Water and dust resistant</li>
+<li>~46g weight</li>
+</ul>
+<h2>Discontinuation</h2>
+<p>Google stopped production and sale of the Google Glass Enterprise Edition on March 15, 2023, with support for the device continuing until September 15, 2023.</p>
+<h2>See also</h2>
+<ul>
+<li><a href="./Apple_Vision_Pro" title="Apple Vision Pro">Apple Vision Pro</a></li>
+<li><a href="./Augmented_reality" title="Augmented reality">Augmented reality</a></li>
+<li><a href="./Google_Contact_Lens" title="Google Contact Lens">Google Contact Lens</a></li>
+<li><a href="./Google_Cardboard" title="Google Cardboard">Google Cardboard</a></li>
+<li><a href="./Google_Daydream" title="Google Daydream">Google Daydream</a></li>
+<li><a href="./Microsoft_HoloLens" title="Microsoft HoloLens">Microsoft HoloLens</a></li>
+<li><a href="./Tango_(platform)" title="Tango (platform)">Project Tango</a></li>
+<li><a href="./Q-Warrior" title="Q-Warrior">Q-Warrior</a></li>
+<li><a href="./Samsung_Gear_VR" title="Samsung Gear VR">Samsung Gear VR</a></li>
+<li><a href="./Snow_Crash#Metaverse" title="Snow Crash">Snow Crash</a></li>
+<li><a href="./Ray-Ban_Meta" title="Ray-Ban Meta">Ray-Ban Meta</a></li>
+</ul>
+<h2>References</h2>
+<h2>Further reading</h2>
+<ul>
+<li>"Doctors among Early Adopters of Google Glass", <em>Canadian Medical Association Journal,</em> September 30, 2013. Web. October 11, 2014.</li>
+<li>"Evaluation of Google Glass Technical Limitations on Their Integration in Medical Systems", 'Sensors' 2016, 16(12), 2142; <a href="./Doi_(identifier)" title="Doi (identifier)">doi</a>:<a href="https://doi.org/10.3390%2Fs16122142">10.3390/s16122142</a></li>
+</ul>
+<h2>External links</h2>
+<p><a href="./File:Commons-logo.svg"><img alt="Wikimedia Commons logo" src="//upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/40px-Commons-logo.svg.png"></a></p>
+<p>Wikimedia Commons has media related to <a href="https://commons.wikimedia.org/wiki/Category:Google%20Glass" title="c:Category:Google Glass"><strong><em>Google Glass</em></strong></a>.</p>
+<ul>
+<li><a href="https://www.google.com/glass/start">Google Glass</a> – official site</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products" title="List of Google products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Android_other" title="Template:Android other">v</a> - <a href="./Template_talk:Android_other" title="Template talk:Android other">t</a> - <a href="./Special:EditPage/Template:Android_other" title="Special:EditPage/Template:Android other">e</a>  Other <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> devices</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gaming</td>
+<td></td>
+</tr>
+<tr>
+<td>Media</td>
+<td></td>
+</tr>
+<tr>
+<td>Photography</td>
+<td><a href="./Nikon" title="Nikon">Nikon</a>  <a href="./Nikon_Coolpix_S800c" title="Nikon Coolpix S800c">S800c</a>  <a href="./Panasonic" title="Panasonic">Panasonic</a>  <a href="./Panasonic_Lumix_DMC-CM1" title="Panasonic Lumix DMC-CM1">DMC-CM1</a>  <a href="./Panasonic_Lumix_DMC-CM10?action=edit&amp;redlink=1" title="Panasonic Lumix DMC-CM10">DMC-CM10</a>  <a href="./Samsung" title="Samsung">Samsung</a>  <a href="./Samsung_Galaxy" title="Samsung Galaxy">Galaxy</a> <a href="./Samsung_Galaxy_Camera" title="Samsung Galaxy Camera">Camera</a>  <a href="./Samsung_Galaxy_Camera_2" title="Samsung Galaxy Camera 2">Camera 2</a>  <a href="./Samsung_Galaxy_K_Zoom" title="Samsung Galaxy K Zoom">K Zoom</a>  <a href="./Samsung_Galaxy_NX" title="Samsung Galaxy NX">NX</a>  <a href="./Samsung_Galaxy_S4_Zoom" title="Samsung Galaxy S4 Zoom">S4 Zoom</a></td>
+</tr>
+<tr>
+<td>Wearables</td>
+<td></td>
+</tr>
+<tr>
+<td>Others</td>
+<td>HardKernel  <a href="./ODROID" title="ODROID">Odroid</a>  Smart Fridge  <a href="./Samsung_T9000" title="Samsung T9000">Samsung T9000</a>  <a href="./LG_LFX31995ST?action=edit&amp;redlink=1" title="LG LFX31995ST">LG LFX31995ST</a>  Emulators &amp; Subsystems  <a href="./Windows_Subsystem_for_Android" title="Windows Subsystem for Android">Windows Subsystem for Android</a>  <a href="./BlueStacks" title="BlueStacks">BlueStacks</a>  <a href="./Nox_Player?action=edit&amp;redlink=1" title="Nox Player">Nox Player</a>  <a href="./Anbox" title="Anbox">Anbox</a>  <a href="./App_Runtime_for_Chrome" title="App Runtime for Chrome">App Runtime for Chrome</a>  <a href="./Genymotion?action=edit&amp;redlink=1" title="Genymotion">Genymotion</a>  Online emulators  <a href="./Appetize.io?action=edit&amp;redlink=1" title="Appetize.io">Appetize.io</a>  Ports to unofficial devices  <a href="./OpeniBoot" title="OpeniBoot">OpeniBoot</a>  <a href="./Project_Sandcastle" title="Project Sandcastle">Project Sandcastle</a>  <a href="./Android-x86" title="Android-x86">Android-x86</a></td>
+</tr>
+<tr>
+<td>- <a href="./List_of_Android_smartphones" title="List of Android smartphones">Android smartphones</a> - <a href="./Template:Android_tablets" title="Template:Android tablets">Android tablets</a> - <a href="./List_of_features_in_Android" title="List of features in Android">List of features in Android</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><a href="./Help:Authority_control" title="Help:Authority control">Authority control databases</a> <a href="https://www.wikidata.org/wiki/Q575092#identifiers" title="Edit this at Wikidata">Edit this at Wikidata</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>International</td>
+<td>- <a href="https://d-nb.info/gnd/1057020958">GND</a></td>
+</tr>
+<tr>
+<td>National</td>
+<td>- <a href="https://id.loc.gov/authorities/sh2015001202">United States</a> - <a href="https://www.nli.org.il/en/authorities/987007410969105171">Israel</a></td>
+</tr>
+<tr>
+<td>Other</td>
+<td>- <a href="https://lux.collections.yale.edu/view/concept/5bff17fc-b38f-4611-875b-14401c926cbb">Yale LUX</a></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

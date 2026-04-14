@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bard (chatbot)</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link active" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Bard (chatbot)</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Google_Gemini<br>
+Category: products_cloud_and_ai<br>
+Depth: 1</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Gemini is a generative artificial intelligence chatbot and virtual assistant developed by Google. It is powered by the large language model (LLM) of the same name, after previously being based on LaMDA and PaLM 2.</p>
+<h2>Images</h2>
+<p><img alt="Google_Gemini_Screenshot__282026_29" src="../images/Google_Gemini_Screenshot__282026_29.png"><br>
+<img alt="330px-Google_Gemini_Screenshot__282026_29" src="../images/330px-Google_Gemini_Screenshot__282026_29.png"><br>
+<img alt="330px-Google_Gemini_Screenshot__282026_29" src="../images/330px-Google_Gemini_Screenshot__282026_29.png"><br>
+<img alt="250px-Schmidt-Brin-Page-20080520__28cropped_29" src="../images/250px-Schmidt-Brin-Page-20080520__28cropped_29.jpg"><br>
+<img alt="120px-Google_Bard_logo.svg" src="../images/120px-Google_Bard_logo.svg.png"><br>
+<img alt="250px-Google_Gemini_Android" src="../images/250px-Google_Gemini_Android.png"><br>
+<img alt="250px-Diverse_US_senators_from_the_1800s_-_Gemini" src="../images/250px-Diverse_US_senators_from_the_1800s_-_Gemini.png"></p>
+<h2>Full Article</h2>
+<p>Chatbot developed by Google</p>
+<p>This article is about the chatbot. For the language model, see <a href="./Gemini_(language_model)" title="Gemini (language model)">Gemini (language model)</a>.</p>
+<p><strong>Gemini</strong> (also known as <strong>Google Gemini</strong> and formerly known as <strong>Bard</strong>) is a <a href="./Generative_artificial_intelligence" title="Generative artificial intelligence">generative artificial intelligence</a> <a href="./Chatbot" title="Chatbot">chatbot</a> and <a href="./Virtual_assistant" title="Virtual assistant">virtual assistant</a> developed by <a href="./Google" title="Google">Google</a>. It is powered by the <a href="./Large_language_model" title="Large language model">large language model</a> (LLM) <a href="./Gemini_(language_model)" title="Gemini (language model)">of the same name</a>, after previously being based on <a href="./LaMDA" title="LaMDA">LaMDA</a> and <a href="./PaLM_2" title="PaLM 2">PaLM 2</a>.</p>
+<p>The Gemini architecture is trained natively on multiple data types, allowing the models to process and generate text, computer code, images, audio, and video simultaneously. Google distributes the technology in varying capacities, ranging from efficient on-device versions ("Nano") and cost-effective, high-throughput variants ("Flash") to high-compute models designed for complex reasoning ("Pro" and "Ultra"). The 1.5 and 3 model generations introduced extended context windows, enabling the analysis of large datasets such as entire codebases, long-form videos, or extensive document archives in a single prompt.</p>
+<p>Gemini was first announced on December 6, 2023, and replaced existing Google branding for AI services. In February 2024, the Bard chatbot was renamed Gemini, and the "Duet AI" branding for <a href="./Google_Cloud_Platform" title="Google Cloud Platform">Google Cloud</a> and Workspace was retired in favor of the Gemini identifier. The models integrate into the Google ecosystem through the Gemini mobile app, which functions as an overlay assistant on Android devices, and through the Vertex AI platform for third-party developers.</p>
+<p>The release of Gemini has generated technical praise and public controversy. Commentators have highlighted the models' benchmarks in coding and retrieval tasks as competitive with <a href="./OpenAI" title="OpenAI">OpenAI</a>'s <a href="./GPT-4" title="GPT-4">GPT-4</a> and <a href="./GPT-5" title="GPT-5">GPT-5</a>. However, the product launch faced criticism regarding the reliability of its outputs. In early 2024, Google suspended the model's ability to generate images of people after users reported historical inaccuracies and bias in its depictions of human subjects. Subsequent updates, including the Gemini 1.5 and 3 series released throughout 2025, focused on reducing <a href="./Hallucination_(artificial_intelligence)" title="Hallucination (artificial intelligence)">hallucinations</a>, improving latency, and enhancing agentic capabilities for autonomous research and software development.</p>
+<h2>History</h2>
+<h3>Background</h3>
+<p>Further information: <a href="./LaMDA#History" title="LaMDA">LaMDA § History</a></p>
+<p>In November 2022, <a href="./OpenAI" title="OpenAI">OpenAI</a> launched <a href="./ChatGPT" title="ChatGPT">ChatGPT</a>, a chatbot based on the <a href="./GPT-3" title="GPT-3">GPT-3</a> family of <a href="./Large_language_models" title="Large language models">large language models</a> (LLMs). ChatGPT gained worldwide attention, becoming a <a href="./Viral_phenomenon" title="Viral phenomenon">viral Internet sensation</a>. Alarmed by ChatGPT's potential threat to <a href="./Google_Search" title="Google Search">Google Search</a>, <a href="./Google" title="Google">Google</a> executives issued a "code red" alert, reassigning several teams to assist in the company's <a href="./Artificial_intelligence" title="Artificial intelligence">artificial intelligence</a> (AI) efforts. <a href="./Sundar_Pichai" title="Sundar Pichai">Sundar Pichai</a>, the CEO of Google and parent company <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a>, was widely reported to have issued the alert, but Pichai later denied this to <em><a href="./The_New_York_Times" title="The New York Times">The New York Times</a></em>. In a rare move, Google co-founders <a href="./Larry_Page" title="Larry Page">Larry Page</a> and <a href="./Sergey_Brin" title="Sergey Brin">Sergey Brin</a>, who had stepped down from their roles as co-CEOs of Alphabet in 2019, attended emergency meetings with company executives to discuss Google's response to ChatGPT. Brin requested access to Google's code in February 2023, for the first time in years.</p>
+<p>Google had unveiled <a href="./LaMDA" title="LaMDA">LaMDA</a>, a prototype LLM, earlier in 2021, but it was not released to the public. When asked by employees at an all-hands meeting whether LaMDA was a missed opportunity for Google to compete with ChatGPT, Pichai and <a href="./Google_AI" title="Google AI">Google AI</a> chief <a href="./Jeff_Dean" title="Jeff Dean">Jeff Dean</a> said that while the company's chatbot had similar capabilities to ChatGPT, there were risks to introducing an LLM that might spread false information, so they decided to wait.</p>
+<p>In January 2023, <a href="./Google_Brain" title="Google Brain">Google Brain</a>'s sister company <a href="./DeepMind" title="DeepMind">DeepMind</a> CEO <a href="./Demis_Hassabis" title="Demis Hassabis">Demis Hassabis</a> hinted at plans for a ChatGPT rival, and Google employees were instructed to accelerate progress on a ChatGPT competitor, intensively testing "Apprentice Bard" and other chatbots. Pichai assured investors during Google's quarterly earnings <a href="./Investor_call" title="Investor call">investor call</a> in February that the company had plans to expand LaMDA's availability and applications.</p>
+<h3>Bard</h3>
+<h4>Announcement</h4>
+<p>On February 6, 2023, Google announced Bard, a <a href="./Generative_artificial_intelligence" title="Generative artificial intelligence">generative artificial intelligence</a> chatbot powered by LaMDA. Bard was first rolled out to a select group of 10,000 "trusted testers", before a wide release scheduled at the end of the month. The project was overseen by product lead Jack Krawczyk, who described the product as a "collaborative AI service" rather than a <a href="./Search_engine" title="Search engine">search engine</a>, while Pichai detailed how Bard would be integrated into Google Search. <a href="./Reuters" title="Reuters">Reuters</a> calculated that adding ChatGPT-like features to Google Search could cost the company $6 billion in additional expenses by 2024, while research and <a href="./Consulting_firm" title="Consulting firm">consulting firm</a> SemiAnalysis calculated that it would cost Google $3 billion. The technology was developed under the codename "Atlas", with the name "Bard" in reference to <a href="./Bard" title="Bard">the Celtic term for a storyteller</a> and chosen to "reflect the creative nature of the algorithm underneath".</p>
+<p>Multiple media outlets and financial analysts described Google as "rushing" Bard's announcement to preempt rival <a href="./Microsoft" title="Microsoft">Microsoft</a>'s planned February 7 event unveiling its partnership with OpenAI to integrate ChatGPT into its <a href="./Microsoft_Bing" title="Microsoft Bing">Bing</a> search engine in the form of Bing AI (later rebranded as <a href="./Microsoft_Copilot" title="Microsoft Copilot">Microsoft Copilot</a>), as well as to avoid playing "catch-up" to Microsoft. Microsoft CEO <a href="./Satya_Nadella" title="Satya Nadella">Satya Nadella</a> told <em><a href="./The_Verge" title="The Verge">The Verge</a></em>: "I want people to know that we made them dance." Tom Warren of <em>The Verge</em> and <a href="./Davey_Alba" title="Davey Alba">Davey Alba</a> of <a href="./Bloomberg_News" title="Bloomberg News">Bloomberg News</a> noted that this marked the beginning of another clash between the two <a href="./Big_Tech" title="Big Tech">Big Tech</a> companies over "the future of search", after <a href="./Scroogled" title="Scroogled">their six-year "truce"</a> expired in 2021; Chris Stokel-Walker of <em><a href="./The_Guardian" title="The Guardian">The Guardian</a></em>, Sara Morrison of <em><a href="./Recode" title="Recode">Recode</a></em>, and analyst Dan Ives of investment firm <a href="./Wedbush_Securities" title="Wedbush Securities">Wedbush Securities</a> labeled this an AI <a href="./Arms_race" title="Arms race">arms race</a> between the two.</p>
+<p>After an "underwhelming" February 8 livestream in Paris showcasing Bard, Google's stock fell eight percent, equivalent to a $100 billion loss in <a href="./Market_value" title="Market value">market value</a>, and the <a href="./YouTube" title="YouTube">YouTube</a> video of the livestream was made private. Many viewers also pointed out an error during the demo in which Bard gives inaccurate information about the <a href="./James_Webb_Space_Telescope" title="James Webb Space Telescope">James Webb Space Telescope</a> in response to a query. Google employees criticized Pichai's "rushed" and "botched" announcement of Bard on Memegen, the company's internal forum, while Maggie Harrison of <em><a href="./Singularity_Group" title="Singularity Group">Futurism</a></em> called the rollout "chaos". Pichai defended his actions by saying that Google had been "deeply working on AI for a long time", rejecting the notion that Bard's launch was a <a href="./Knee-jerk_reaction" title="Knee-jerk reaction">knee-jerk reaction</a>.</p>
+<p>A week after the Paris livestream, Pichai had 80,000 employees dedicate two to four hours to <a href="./Dogfooding" title="Dogfooding">dogfood testing</a> Bard, while Google executive <a href="./Prabhakar_Raghavan" title="Prabhakar Raghavan">Prabhakar Raghavan</a> had employees correct any errors Bard made. In the following weeks, Google employees criticized Bard in internal messages, citing safety and ethical concerns and calling on company leaders not to launch the service. Google executives launched the product, overruling a negative <a href="./Risk_assessment" title="Risk assessment">risk assessment</a> report conducted by its AI ethics team. After Pichai suddenly <a href="./Laid_off" title="Laid off">laid off</a> 12,000 employees later that month due to slowing revenue growth, remaining workers shared memes and snippets of their humorous exchanges with Bard soliciting its "opinion" on the layoffs. Google employees began testing a more sophisticated version of Bard with larger parameters, dubbed "Big Bard", in mid-March.</p>
+<h4>Launch</h4>
+<p>Google opened up early access for Bard on March 21, 2023, in a limited capacity, allowing users in the US and the UK to join a waitlist. Unlike Microsoft's approach with Bing Chat, Bard was launched as a standalone <a href="./Web_application" title="Web application">web application</a> featuring a <a href="./Text_box" title="Text box">text box</a> and a disclaimer that the chatbot "may display inaccurate or offensive information that doesn't represent Google's views". Three responses are then provided to each question, with users prompted to submit feedback on the usefulness of each answer. Google vice presidents Sissie Hsiao and Eli Collins framed Bard as a complement to Google Search and stated that the company had not determined how to make the service profitable. Among those granted early access were those enrolled in Google's "Pixel Superfans" <a href="./Loyalty_program" title="Loyalty program">loyalty program</a>, users of its <a href="./Google_Pixel" title="Google Pixel">Pixel</a> and <a href="./Google_Nest" title="Google Nest">Nest</a> devices, and <a href="./Google_One" title="Google One">Google One</a> subscribers.</p>
+<p>Bard is trained by third-party contractors hired by Google, including <a href="./Appen_(company)" title="Appen (company)">Appen</a> and <a href="./Accenture" title="Accenture">Accenture</a> workers, whom <em><a href="./Business_Insider" title="Business Insider">Business Insider</a></em> and Bloomberg News reported were placed under extreme pressure, overworked, and underpaid. Bard is also trained on data from publicly available sources, which Google disclosed by amending its <a href="./Privacy_policy" title="Privacy policy">privacy policy</a>. Shortly after Bard's initial launch, Google reorganized the team behind <a href="./Google_Assistant" title="Google Assistant">Google Assistant</a>, the company's <a href="./Virtual_assistant" title="Virtual assistant">virtual assistant</a>, to focus on Bard instead.<br>
+Google researcher Jacob Devlin resigned from the company after claiming that Bard had surreptitiously leveraged data from ChatGPT; Google denied the allegations.</p>
+<p>Meanwhile, a senior software engineer at the company published an internal memo warning that Google was falling behind in the AI "arms race", not to OpenAI but to independent researchers in <a href="./Open-source_software" title="Open-source software">open-source</a> communities. Pichai revealed on March 31 that the company intended to "upgrade" Bard by basing it on <a href="./PaLM" title="PaLM">PaLM</a>, a newer and more powerful LLM from Google, rather than LaMDA.</p>
+<p>The same day, Krawczyk announced that Google had added "math and logic capabilities" to Bard. Bard gained the ability to assist in coding in April, being compatible with more than 20 programming languages at launch. Microsoft also began running advertisements in the <a href="./Address_bar" title="Address bar">address bar</a> of a developer build of the <a href="./Microsoft_Edge" title="Microsoft Edge">Edge</a> browser, urging users to try Bing whenever they visit the Bard web app. <em><a href="./9to5Google" title="9to5Google">9to5Google</a></em> reported that Google was working to integrate Bard into its <a href="./ChromeOS" title="ChromeOS">ChromeOS</a> operating system and Pixel devices.</p>
+<h4>Updates</h4>
+<p>Bard took center stage during the annual <a href="./Google_I/O" title="Google I/O">Google I/O</a> keynote in May 2023, with Pichai and Hsiao announcing a series of updates to Bard, including the adoption of PaLM 2, integration with other <a href="./Google_products" title="Google products">Google products</a> and third-party services, expansion to 180 countries, support for additional languages, and new features. In stark contrast to previous years, the Google Assistant was barely mentioned during the event. The expanded rollout did not include any nations in the <a href="./European_Union" title="European Union">European Union</a> (EU), possibly reflecting concerns about compliance with the <a href="./General_Data_Protection_Regulation" title="General Data Protection Regulation">General Data Protection Regulation</a>. Those with <a href="./Google_Workspace" title="Google Workspace">Google Workspace</a> accounts also gained access to the service.</p>
+<p>In June, Google attempted to launch Bard in the EU but was blocked by the Irish <a href="./Data_Protection_Commission" title="Data Protection Commission">Data Protection Commission</a>, who requested a "data protection impact assessment" from the company. In July, Bard was launched in the EU and Brazil, adding support for dozens of new languages and introducing personalization and productivity features. An invite-only chatroom ("<a href="./Discord_server" title="Discord server">server</a>") on <a href="./Discord" title="Discord">Discord</a> was created in July, consisting of users who heavily used Bard. Over the next few months, the chatroom was flooded with comments questioning the usefulness of Bard.</p>
+<p>Google released a major update to the chatbot in September, integrating it into many of its products through "extensions", adding a button to attempt to <a href="./Fact-check" title="Fact-check">fact-check</a> AI-generated responses through Google Search, and allowing users to share conversation threads. Google also introduced the "Google-Extended" <a href="./Web_crawler" title="Web crawler">web crawler</a> as part of its search engine's <a href="./Robots.txt" title="Robots.txt">robots.txt</a> indexing file to allow <a href="./Web_publishers" title="Web publishers">web publishers</a> to opt-out of allowing Bard to scan them for training. Online users later discovered that Google Search was <a href="./Search_engine_indexing" title="Search engine indexing">indexing</a> Bard conversation threads on which users had enabled sharing; Google stated that this was an error which was corrected.</p>
+<p>In October, during the company's annual <a href="./Made_by_Google" title="Made by Google">Made by Google</a> event, Hsiao unveiled "Assistant with Bard", an upgraded version of the Google Assistant which was integrated with Bard. When the <a href="./U.S._Copyright_Office" title="U.S. Copyright Office">U.S. Copyright Office</a> solicited public comment on potential new regulation on generative AI technologies, Google joined with OpenAI and Microsoft in arguing that the responsibility for <a href="./Copyright_infringement" title="Copyright infringement">generating copyrighted material</a> lay with the user, not the developer. Accenture contractors voted to join the <a href="./Alphabet_Workers_Union" title="Alphabet Workers Union">Alphabet Workers Union</a> in November, in protest of suboptimal working conditions, while the company filed a lawsuit in the <a href="./U.S._District_Court_for_the_Northern_District_of_California" title="U.S. District Court for the Northern District of California">U.S. District Court for the Northern District of California</a> against a group of unidentified scammers who had been advertising <a href="./Malware" title="Malware">malware</a> disguised as a downloadable version of Bard.</p>
+<h3>Gemini</h3>
+<h4>Rebranding</h4>
+<ul>
+<li>App and <a href="./Favicon" title="Favicon">Favicon</a> in 2025 ...</li>
+<li>... and in 2023-2025</li>
+</ul>
+<p>Further information: <a href="./Gemini_(language_model)#History" title="Gemini (language model)">Gemini (language model) § History</a></p>
+<p>On December 6, 2023, Google announced <a href="./Gemini_(language_model)" title="Gemini (language model)">Gemini</a>, a larger, <a href="./Multimodal_learning" title="Multimodal learning">multimodal</a> LLM. A specially tuned version of the mid-tier Gemini Pro was integrated into Bard, while the larger Gemini Ultra was used for "Bard Advanced" in 2024. <em><a href="./The_Wall_Street_Journal" title="The Wall Street Journal">The Wall Street Journal</a></em> reported that Bard was then averaging around 220 million monthly visitors. Google ended its contract with Appen in January 2024, while image generation was added to Bard the next month, using Google Brain's <a href="./Imagen_(text-to-image_model)" title="Imagen (text-to-image model)">Imagen 2</a> <a href="./Text-to-image_model" title="Text-to-image model">text-to-image model</a>.</p>
+<p>On February 8, 2024, Bard and Duet AI were unified under the Gemini brand, with a mobile app launched on <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> and the service integrated into the Google app on <a href="./IOS" title="IOS">iOS</a>. On Android, users who downloaded the app saw Gemini replace Assistant as their device's default virtual assistant, though Assistant remained a standalone service. Google also launched "Gemini Advanced with Ultra 1.0", available via a "Google One AI Premium" subscription, incorporated Gemini into its <a href="./Google_Messages" title="Google Messages">Messages</a> app on Android, and announced a partnership with <a href="./Stack_Overflow" title="Stack Overflow">Stack Overflow</a>.</p>
+<p>Gemini again took center stage at the 2024 Google I/O keynote. Google announced that Gemini would be integrated into several products, including Android, <a href="./Google_Chrome" title="Google Chrome">Chrome</a>, <a href="./Google_Photos" title="Google Photos">Photos</a>, and Workspace. Gemini Advanced was upgraded to the "Gemini 1.5 Pro" language model, with Google previewing Gemini Live, a voice chat mode, and Gems, the ability to create custom chatbots.</p>
+<h3>Model generations</h3>
+<p>Further information: <a href="./Gemini_(language_model)#Nano_Banana" title="Gemini (language model)">Gemini (language model) § Nano Banana</a></p>
+<p>Following the Gemini 1.0 launch in December 2023, Google released successive generations of the underlying model at an accelerating pace. In February 2024, Google introduced Gemini 1.5 Pro in a limited preview, notable for its one-million-token context window, which allowed it to process roughly an hour of video, 11 hours of audio, or 30,000 lines of code in a single prompt. Gemini 1.5 Flash, a faster and more cost-efficient variant aimed at developers, was announced at Google I/O in May 2024 alongside the expansion of Gemini Advanced.</p>
+<p>On December 11, 2024, Google announced Gemini 2.0 Flash as the first model in the Gemini 2.0 generation, framing it as the beginning of an "agentic era" in which AI models could take autonomous multi-step actions. Unlike previous Gemini models, 2.0 Flash supported native multimodal outputs, including generated images and text-to-speech audio, in addition to multimodal inputs. It also introduced Deep Research for Gemini Advanced users, enabling the model to autonomously browse and synthesize information across sources. Gemini 2.0 Flash became generally available on February 5, 2025, alongside an experimental release of Gemini 2.0 Pro and the budget-oriented Gemini 2.0 Flash-Lite.</p>
+<p>Gemini 2.5 Pro Experimental was released on March 25, 2025, as Google's first explicitly designated "thinking model", capable of reasoning through steps before responding using chain-of-thought techniques. It debuted at the top of the LMArena leaderboard, a benchmark measuring human preference for AI responses, where it remained for several months. Gemini 2.5 Flash was unveiled at Google I/O in May 2025 and reached general availability in June 2025 alongside the cost-optimized Gemini 2.5 Flash-Lite.</p>
+<p>On November 18, 2025, Google launched Gemini 3 Pro, describing it as its most intelligent model to date and marking a departure from the company's previous staged release patterns, with the model made immediately available across the Gemini app, Google Search, Google AI Studio, and Vertex AI on launch day. A more capable "Deep Think" reasoning mode began rolling out to Google AI Ultra subscribers in the weeks that followed. Gemini 3 Flash, a speed-optimized variant, followed in December 2025, becoming the new default model in the Gemini app.</p>
+<p>In February 2026, Google released a major upgrade to Gemini 3 Deep Think, which it described as targeting practical applications in science, research, and engineering. On February 19, 2026, Google launched Gemini 3.1 Pro in preview, characterizing it as a step forward in core reasoning. The model achieved an ARC-AGI-2 score of 77.1 percent, more than double that of Gemini 3 Pro, and 80.6 percent on SWE-Bench Verified, a benchmark for autonomous software engineering tasks.</p>
+<h3>Consumer features and updates</h3>
+<p>Originally introduced by Google in August 2024, Gemini Live debuted on the <a href="./Pixel_9" title="Pixel 9">Pixel 9</a> series as the default virtual assistant, replacing the Google Assistant on those devices. It was later rolled out to Samsung Galaxy devices beginning with the <a href="./Samsung_Galaxy_S25" title="Samsung Galaxy S25">Galaxy S25</a> series in July 2025, and subsequently expanded to models including the <a href="./Samsung_Galaxy_Z_Fold_7" title="Samsung Galaxy Z Fold 7">Z Fold 7</a> and <a href="./Samsung_Galaxy_Z_Flip_7" title="Samsung Galaxy Z Flip 7">Z Flip 7</a>, where it became part of the <a href="./Galaxy_AI" title="Galaxy AI">Galaxy AI</a> suite.</p>
+<p>In February 2025, Google introduced a feature for Gemini Advanced subscribers that enables the assistant to recall and reference past conversations.</p>
+<p>In June 2025, Google announced Gemini CLI, an open-source AI agent for use in computer terminals. At the same time, Google introduced a new Gemini logo with more rounded sparkles and a color scheme aligned with the updated <a href="./Google_logo" title="Google logo">Google logo</a>.</p>
+<h2>Reception</h2>
+<h3>Early responses</h3>
+<p>Gemini received mixed reviews upon its initial release in March 2023. James Vincent of <em>The Verge</em> found it faster than ChatGPT and Bing Chat, but noted that the lack of Bing-esque footnotes was "both a blessing and a curse", encouraging Google to be bolder when experimenting with AI. His colleague David Pierce was unimpressed by its uninteresting and sometimes inaccurate responses, adding that despite Google's insistence that Gemini was not a search engine, its <a href="./User_interface" title="User interface">user interface</a> resembled that of one, which could cause problems for Google. Cade Metz of <em>The New York Times</em> described Gemini as "more cautious" than ChatGPT, while Shirin Ghaffary of <em><a href="./Vox_(website)" title="Vox (website)">Vox</a></em> called it "dry and uncontroversial" due to the reserved nature of its responses.</p>
+<p><em>The Washington Post</em> columnist Geoffrey A. Fowler found Gemini a mixed bag, noting that it acted cautiously but could show Internet-influenced bias. Writing for <a href="./ZDNET" title="ZDNET">ZDNET</a>, Sabrina Ortiz believed ChatGPT and Bing Chat were "more capable overall" in comparison to Gemini, while <em>Wired</em> journalist Lauren Goode found her conversation with Gemini "the most bizarre" of the three. After the introduction of extensions, <em>The New York Times</em>' <a href="./Kevin_Roose" title="Kevin Roose">Kevin Roose</a> found the update underwhelming and "a bit of a mess", while <em>Business Insider</em>'s Lakshmi Varanasi found that Gemini often leaned more into flattery than facts.</p>
+<p>In a <em><a href="./60_Minutes" title="60 Minutes">60 Minutes</a></em> conversation with Hsiao, Google senior vice president <a href="./James_Manyika" title="James Manyika">James Manyika</a>, and Pichai, <a href="./CBS_News" title="CBS News">CBS News</a> correspondent <a href="./Scott_Pelley" title="Scott Pelley">Scott Pelley</a> found Gemini "unsettling". Associate professor Ethan Mollick of the <a href="./Wharton_School" title="Wharton School">Wharton School</a> of the <a href="./University_of_Pennsylvania" title="University of Pennsylvania">University of Pennsylvania</a> was underwhelmed by its artistic ineptitude. The <em>New York Times</em> conducted a test with ChatGPT and Gemini regarding their ability to handle tasks expected of human assistants, and concluded that ChatGPT's performance was vastly superior to that of Gemini. <a href="./NewsGuard" title="NewsGuard">NewsGuard</a>, a tool that rates the credibility of news articles, found that Gemini was more skilled at debunking known conspiracy theories than ChatGPT. A report published by the <a href="./Associated_Press" title="Associated Press">Associated Press</a> cautioned that Gemini and other chatbots were prone to generate "false and misleading information that threaten[ed] to disenfranchise voters".</p>
+<h3>Image generation controversy</h3>
+<p>See also: <a href="./Artificial_intelligence_controversies" title="Artificial intelligence controversies">Artificial intelligence controversies</a></p>
+<p>In February 2024, social media users reported that Gemini was generating images that featured <a href="./People_of_color" title="People of color">people of color</a> and women in historically inaccurate contexts—such as <a href="./Vikings" title="Vikings">Vikings</a>, <a href="./Nazi_soldiers" title="Nazi soldiers">Nazi soldiers</a>, and the <a href="./Founding_Fathers_of_the_United_States" title="Founding Fathers of the United States">Founding Fathers</a>—and refusing <a href="./Prompt_engineering" title="Prompt engineering">prompts</a> to generate images of white people. These images were derided on social media, including by <a href="./Conservatism_in_the_United_States" title="Conservatism in the United States">conservatives</a> who cited them as evidence of Google's "<a href="./Wokeness" title="Wokeness">wokeness</a>". The business magnate <a href="./Elon_Musk" title="Elon Musk">Elon Musk</a>, whose company <a href="./XAI_(company)" title="XAI (company)">xAI</a> operates the chatbot <a href="./Grok_(chatbot)" title="Grok (chatbot)">Grok</a>, was among those who criticized Google, denouncing its <a href="./List_of_Google_products" title="List of Google products">suite of products</a> as biased and racist. Musk and other users targeted Jack Krawczyk, resurfacing his past comments discussing race, leading Krawczyk to withdraw from <a href="./X_(social_network)" title="X (social network)">X</a> and <a href="./LinkedIn" title="LinkedIn">LinkedIn</a>. The conservative-leaning tabloid <em><a href="./New_York_Post" title="New York Post">New York Post</a></em> ran a cover story on the incident in the print edition of its newspaper.</p>
+<p>In response, Krawczyk said that Google was "working to improve these kinds of depictions immediately", and Google paused Gemini's ability to generate images of people. <a href="./Prabhakar_Raghavan" title="Prabhakar Raghavan">Raghavan</a> released a lengthy statement addressing the controversy, explaining that Gemini had "overcompensate[d]" amid its efforts to strive for diversity and acknowledging that the images were "embarrassing and wrong". In an internal memo to employees, Pichai called the debacle offensive and unacceptable, promising structural and technical changes. Several employees in Google's trust and safety team were laid off days later. Hassabis stated that Gemini's ability to generate images of people would be restored within two weeks; it was ultimately relaunched in late August, powered by its new Imagen 3 model.</p>
+<p>The market reacted negatively, with Google's stock falling by 4.4 percent. Pichai faced growing calls to resign, including from technology analysts <a href="./Ben_Thompson_(analyst)" title="Ben Thompson (analyst)">Ben Thompson</a> and <a href="./Om_Malik" title="Om Malik">Om Malik</a>. <a href="./House_Republicans" title="House Republicans">House Republicans</a> led by <a href="./Jim_Jordan" title="Jim Jordan">Jim Jordan</a> subpoenaed Google, accusing the company of colluding with the <a href="./Biden_administration" title="Biden administration">Biden administration</a> to censor speech. In light of the fiasco and Google's overall response to OpenAI, <em>Business Insider</em>'s Hugh Langley and Lara O'Reilly declared that Google was fast going "from vanguard to dinosaur". Bloomberg columnist <a href="./Parmy_Olson" title="Parmy Olson">Parmy Olson</a> suggested that Google's "rushed" rollout of Gemini was the cause of its woes, not "wokeness".</p>
+<p>Martin Peers, writing for <em><a href="./The_Information_(website)" title="The Information (website)">The Information</a></em>, opined that Google needed a leader like <a href="./Mark_Zuckerberg" title="Mark Zuckerberg">Mark Zuckerberg</a> to defuse the situation. <a href="./Hugging_Face" title="Hugging Face">Hugging Face</a> scientist <a href="./Sasha_Luccioni" title="Sasha Luccioni">Sasha Luccioni</a> and <a href="./Surrey_University" title="Surrey University">Surrey University</a> professor <a href="./Alan_Woodward_(computer_scientist)" title="Alan Woodward (computer scientist)">Alan Woodward</a> believed that the incident had "deeply embedded" roots in Gemini's training corpus and algorithms, making it difficult to rectify. Jeremy Kahn of <em><a href="./Fortune_(magazine)" title="Fortune (magazine)">Fortune</a></em> called for researchers focused on safety and responsibility to work together to develop better guardrails. <em><a href="./New_York_(magazine)" title="New York (magazine)">New York</a></em> magazine contributor John Herrman wrote: "It's a spectacular unforced error, a slapstick rake-in-the-face moment, and a testament to how panicked Google must be by the rise of OpenAI and the threat of AI to its search business."</p>
+<h3>Advertisements</h3>
+<p>During the <a href="./2024_Summer_Olympics" title="2024 Summer Olympics">2024 Summer Olympics</a> in July, Google aired a commercial for Gemini entitled "Dear Sydney" depicting a father asking the chatbot to generate a <a href="./Fan_letter" title="Fan letter">fan letter</a> to the star athlete <a href="./Sydney_McLaughlin-Levrone" title="Sydney McLaughlin-Levrone">Sydney McLaughlin-Levrone</a> for his young daughter. Similar to <a href="./Apple_Inc." title="Apple Inc.">Apple</a>'s "<a href="./Crush!" title="Crush!">Crush!</a>" commercial for the <a href="./IPad_Pro_(7th_generation)" title="IPad Pro (7th generation)">seventh-generation iPad Pro</a>, the advertisement drew heavy backlash online, with criticism for replacing authentic human expression and creativity with a computer; <em>The Washington Post</em> columnist <a href="./Alexandra_Petri" title="Alexandra Petri">Alexandra Petri</a> lambasted the commercial as "missing the point". As a result, Google withdrew the commercial from <a href="./NBC" title="NBC">NBC</a>'s rotation.</p>
+<p>Google aired two <a href="./Super_Bowl_commercials" title="Super Bowl commercials">commercials</a> during <a href="./Super_Bowl_LIX" title="Super Bowl LIX">Super Bowl LIX</a> in February 2025, both promoting Gemini. The first, entitled "50 States, 50 Stories", consisted of a national spot and 50 regional spots showcasing how <a href="./Small_businesses" title="Small businesses">small businesses</a> in each <a href="./U.S._state" title="U.S. state">U.S. state</a> leverage Gemini in Google Workspace. Social media users noticed a factual error in <a href="./Wisconsin" title="Wisconsin">Wisconsin</a>'s spot regarding <a href="./Gouda_cheese" title="Gouda cheese">gouda cheese</a>, prompting Google to edit out the incorrect statistic, while <em>The Verge</em> claimed that Google had "faked" some of Gemini's output in the same commercial by plagiarizing text on the web.</p>
+<p>Garett Sloane of <em><a href="./Ad_Age" title="Ad Age">Ad Age</a></em> commented that these blunders illustrated the risks of advertising AI technology. The other commercial was entitled "Dream Job" and featured a father using Gemini on his Pixel 9 to prepare for a job interview; Google also ran a third commercial entitled "Party Blitz" online, in which a man "attempts to impress his girlfriend's family by using Gemini [on his Pixel 9] to become a football expert".</p>
+<p>In 2022, <a href="./McLaren" title="McLaren">McLaren Racing</a> announced a multi-year partnership with Google. As part of Google's partnership extension with McLaren in 2024, Gemini was advertised on the McLaren <a href="./Formula_One" title="Formula One">Formula One</a> car, including racing a special livery based on Gemini's color palette for the <a href="./2025_United_States_Grand_Prix" title="2025 United States Grand Prix">2025 United States Grand Prix</a>.</p>
+<h3>Other incidents</h3>
+<p>In the aftermath of the image generation controversy, some users began accusing Gemini's text responses of being biased toward the <a href="./Liberalism_in_the_United_States" title="Liberalism in the United States">political left</a>. In one such example that circulated online, Gemini said that it was "difficult to say definitively" whether Musk or the Nazi dictator <a href="./Adolf_Hitler" title="Adolf Hitler">Adolf Hitler</a> had more negatively affected society. Other users reported that Gemini tended to promote left-wing politicians and causes such as <a href="./Affirmative_action" title="Affirmative action">affirmative action</a> and <a href="./Abortion_rights" title="Abortion rights">abortion rights</a> while refusing to promote right-wing figures, <a href="./Ethics_of_eating_meat" title="Ethics of eating meat">meat consumption</a>, and <a href="./Fossil_fuels" title="Fossil fuels">fossil fuels</a>. <em>The Wall Street Journal</em>'s <a href="./Editorial_board" title="Editorial board">editorial board</a> wrote that Gemini's "apparently ingrained woke biases" were "fueling a backlash toward AI on the political right, which is joining the left in calling for more <a href="./Regulation_of_artificial_intelligence" title="Regulation of artificial intelligence">regulation</a>."</p>
+<p>Indian <a href="./Ministry_of_Electronics_and_Information_Technology" title="Ministry of Electronics and Information Technology">Ministry of Electronics and Information Technology</a> junior minister <a href="./Rajeev_Chandrasekhar" title="Rajeev Chandrasekhar">Rajeev Chandrasekhar</a> alleged that Google had violated the country's <a href="./Information_Technology_Rules,_2021" title="Information Technology Rules, 2021">Information Technology Rules</a> by refusing to summarize an article by the right-wing news website <em><a href="./OpIndia" title="OpIndia">OpIndia</a>,</em> and for saying that some experts described Prime Minister <a href="./Narendra_Modi" title="Narendra Modi">Narendra Modi</a>'s policies as fascist. In France, Google was fined €250 million by the <a href="./Competition_regulator" title="Competition regulator">competition regulator</a> <em><a href="./Autorité_de_la_concurrence" title="Autorité de la concurrence">Autorité de la concurrence</a></em> under the <a href="./Directive_on_Copyright_in_the_Digital_Single_Market" title="Directive on Copyright in the Digital Single Market">Directive on Copyright in the Digital Single Market</a>, in part due to its cited failure to inform local news publishers of when their content was used for Gemini's training. <a href="./Voice_of_America" title="Voice of America">Voice of America</a> accused Gemini of "parroting" <a href="./Chinese_propaganda" title="Chinese propaganda">Chinese propaganda</a>.</p>
+<p>In November 2024, CBS News reported that Gemini had responded to a college student in <a href="./Michigan" title="Michigan">Michigan</a> asking for help with homework in a threatening manner, calling the student "a burden on society" and saying "Please die. Please." A statement issued by Google said "This response violated our policies and we've taken action to prevent similar outputs from occurring."</p>
+<p>In March 2026, the parents of Jonathan Gavalas filed a <a href="./Wrongful_death" title="Wrongful death">wrongful death</a> lawsuit alleging that Gemini told their son to kill himself.</p>
+<h2>See also</h2>
+<ul>
+<li><a href="./Google_AI_Studio" title="Google AI Studio">Google AI Studio</a> – Web-based IDE for prototyping with Google's generative AI models</li>
+</ul>
+<h2>References</h2>
+<h2>Further reading</h2>
+<ul>
+<li>Knight, Will; Goode, Lauren (October 4, 2023). <a href="https://www.wired.com/story/google-assistant-multi-modal-upgrade-bard-generative-ai/">"Google Assistant Finally Gets a Generative AI Glow-Up"</a>. <em><a href="./Wired_(magazine)" title="Wired (magazine)">Wired</a></em>. <a href="https://web.archive.org/web/20231005030038/https://www.wired.com/story/google-assistant-multi-modal-upgrade-bard-generative-ai/">Archived</a> from the original on October 5, 2023. Retrieved November 13, 2023.</li>
+<li>Krasnoff, Barbara (June 12, 2024). <a href="https://www.theverge.com/24176860/google-gemini-explained-ai-assistant">"Google Gemini, explained"</a>. <em><a href="./The_Verge" title="The Verge">The Verge</a></em>. <a href="https://web.archive.org/web/20240612145304/https://www.theverge.com/24176860/google-gemini-explained-ai-assistant">Archived</a> from the original on June 12, 2024. Retrieved August 13, 2024.</li>
+</ul>
+<h2>External links</h2>
+<p><a href="./File:Commons-logo.svg"><img alt="Wikimedia Commons logo" src="//upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/40px-Commons-logo.svg.png"></a></p>
+<p>Wikimedia Commons has media related to <a href="https://commons.wikimedia.org/wiki/Category:Gemini%20(chatbot)" title="commons:Category:Gemini (chatbot)">Gemini (chatbot)</a>.</p>
+<ul>
+<li><a href="https://gemini.google.com/">Official website</a> <a href="https://www.wikidata.org/wiki/Q116698014#P856" title="Edit this at Wikidata"><img alt="Edit this at Wikidata" src="//upload.wikimedia.org/wikipedia/en/thumb/8/8a/OOjs_UI_icon_edit-ltr-progressive.svg/20px-OOjs_UI_icon_edit-ltr-progressive.svg.png"></a></li>
+<li><a href="https://gemini.google/about">About page</a></li>
+<li><a href="https://play.google.com/store/apps/details?id=com.google.android.apps.bard">Google Gemini</a> on <a href="./Google_Play" title="Google Play">Google Play</a> <a href="https://www.wikidata.org/wiki/Q116698014#P3418" title="Edit this at Wikidata"><img alt="Edit this at Wikidata" src="//upload.wikimedia.org/wikipedia/en/thumb/8/8a/OOjs_UI_icon_edit-ltr-progressive.svg/20px-OOjs_UI_icon_edit-ltr-progressive.svg.png"></a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_AI" title="Template:Google AI">v</a> - <a href="./Template_talk:Google_AI" title="Template talk:Google AI">t</a> - <a href="./Special:EditPage/Template:Google_AI" title="Special:EditPage/Template:Google AI">e</a>  <a href="./Google_AI" title="Google AI">Google AI</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>- <a href="./Google" title="Google">Google</a> - <a href="./Google_Brain" title="Google Brain">Google Brain</a> - <a href="./Google_DeepMind" title="Google DeepMind">Google DeepMind</a></td>
+<td></td>
+</tr>
+<tr>
+<td>Computer  programs</td>
+<td></td>
+</tr>
+<tr>
+<td>Machine  learning</td>
+<td></td>
+</tr>
+<tr>
+<td>Generative  AI</td>
+<td></td>
+</tr>
+<tr>
+<td>See also</td>
+<td>- "<a href="./Attention_Is_All_You_Need" title="Attention Is All You Need">Attention Is All You Need</a>" - <a href="./Future_of_Go_Summit" title="Future of Go Summit">Future of Go Summit</a> - <a href="./Generative_pre-trained_transformer" title="Generative pre-trained transformer">Generative pre-trained transformer</a> - <a href="./Google_Labs" title="Google Labs">Google Labs</a> - <a href="./Google_Pixel" title="Google Pixel">Google Pixel</a> - <a href="./Google_Workspace" title="Google Workspace">Google Workspace</a> - <a href="./Robot_Constitution" title="Robot Constitution">Robot Constitution</a></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Google_DeepMind" title="Category:Google DeepMind">Category</a> - <a href="https://commons.wikimedia.org/wiki/Category:DeepMind" title="commons:Category:DeepMind">Commons</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products" title="List of Google products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Generative_AI_chatbots" title="Template:Generative AI chatbots">v</a> - <a href="./Template_talk:Generative_AI_chatbots" title="Template talk:Generative AI chatbots">t</a> - <a href="./Special:EditPage/Template:Generative_AI_chatbots" title="Special:EditPage/Template:Generative AI chatbots">e</a>  <a href="./Generative_artificial_intelligence" title="Generative artificial intelligence">Generative AI</a> <a href="./Chatbot" title="Chatbot">chatbots</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>- <a href="./Arena_(AI_platform)" title="Arena (AI platform)">Arena</a> - <a href="./List_of_chatbots" title="List of chatbots">List of chatbots</a> - <a href="./List_of_large_language_models" title="List of large language models">List of LLMs</a></td>
+<td></td>
+</tr>
+<tr>
+<td>- <a href="./Apertus_(LLM)" title="Apertus (LLM)">Apertus</a> - <a href="./Brave_Leo" title="Brave Leo">Brave Leo</a> - <a href="./Character.ai" title="Character.ai">Character.ai</a> - <a href="./ChatGPT" title="ChatGPT">ChatGPT</a> - <a href="./Claude_(language_model)" title="Claude (language model)">Claude</a> - <a href="./Microsoft_Copilot" title="Microsoft Copilot">Copilot</a> - <a href="./DeepSeek_(chatbot)" title="DeepSeek (chatbot)">DeepSeek</a> - <a href="./DuckDuckGo#Duck.ai" title="DuckDuckGo">Duck.ai</a> - <a href="./Ernie_Bot" title="Ernie Bot">Ernie</a> - <a href="./Google_Gemini">Gemini</a> - <a href="./Z.ai#History" title="Z.ai">GLM</a> - <a href="./Grok_(chatbot)" title="Grok (chatbot)">Grok</a> - <a href="./HKChat" title="HKChat">HKChat</a> - <a href="./Lumo_(AI_assistant)" title="Lumo (AI assistant)">Lumo</a> - <a href="./Kimi_(chatbot)" title="Kimi (chatbot)">Kimi</a> - <a href="./Le_Chat_(AI)" title="Le Chat (AI)">Le Chat</a> - <a href="./Llama_(language_model)" title="Llama (language model)">Llama</a> - <a href="./MiniMax_(company)#Technology" title="MiniMax (company)">MiniMax</a> - <a href="./Mistral_AI" title="Mistral AI">Mistral</a> - <a href="./Perplexity_AI" title="Perplexity AI">Perplexity</a> - <a href="./Quora#Poe" title="Quora">Poe</a> - <a href="./Qwen" title="Qwen">Qwen</a> - <a href="./Velvet_AI" title="Velvet AI">Velvet</a> - <a href="./You.com" title="You.com">You.com</a></td>
+<td></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Chatbots" title="Category:Chatbots">Category</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Generative_AI" title="Template:Generative AI">v</a> - <a href="./Template_talk:Generative_AI" title="Template talk:Generative AI">t</a> - <a href="./Special:EditPage/Template:Generative_AI" title="Special:EditPage/Template:Generative AI">e</a>  <a href="./Generative_AI" title="Generative AI">Generative AI</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Concepts</td>
+<td>- <a href="./Autoencoder" title="Autoencoder">Autoencoder</a> - <a href="./Deep_learning" title="Deep learning">Deep learning</a> - <a href="./Fine-tuning_(deep_learning)" title="Fine-tuning (deep learning)">Fine-tuning</a> - <a href="./Foundation_model" title="Foundation model">Foundation model</a> - <a href="./Generative_adversarial_network" title="Generative adversarial network">Generative adversarial network</a> - <a href="./Generative_pre-trained_transformer" title="Generative pre-trained transformer">Generative pre-trained transformer</a> - <a href="./Large_language_model" title="Large language model">Large language model</a> - <a href="./Model_Context_Protocol" title="Model Context Protocol">Model Context Protocol</a> - <a href="./Neural_network_(machine_learning)" title="Neural network (machine learning)">Neural network</a> - <a href="./Prompt_engineering" title="Prompt engineering">Prompt engineering</a> - <a href="./Reinforcement_learning_from_human_feedback" title="Reinforcement learning from human feedback">Reinforcement learning from human feedback</a> - <a href="./Retrieval-augmented_generation" title="Retrieval-augmented generation">Retrieval-augmented generation</a> - <a href="./Self-supervised_learning" title="Self-supervised learning">Self-supervised learning</a> - <a href="./AI_slop" title="AI slop">Slop</a> - <a href="./Stochastic_parrot" title="Stochastic parrot">Stochastic parrot</a> - <a href="./Synthetic_data" title="Synthetic data">Synthetic data</a> - <a href="./Top-p_sampling" title="Top-p sampling">Top-p sampling</a> - <a href="./Transformer_(deep_learning_architecture)" title="Transformer (deep learning architecture)">Transformer</a> - <a href="./Variational_autoencoder" title="Variational autoencoder">Variational autoencoder</a> - <a href="./Vibe_coding" title="Vibe coding">Vibe coding</a> - <a href="./Vision_transformer" title="Vision transformer">Vision transformer</a> - <a href="./Word_embedding" title="Word embedding">Word embedding</a></td>
+</tr>
+<tr>
+<td>Models</td>
+<td></td>
+</tr>
+<tr>
+<td>Products</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./List_of_artificial_intelligence_companies" title="List of artificial intelligence companies">Companies</a></td>
+<td>- <a href="./Adobe_Inc." title="Adobe Inc.">Adobe</a> - <a href="./Aleph_Alpha" title="Aleph Alpha">Aleph Alpha</a> - <a href="./Anthropic" title="Anthropic">Anthropic</a> - <a href="./Anysphere" title="Anysphere">Anysphere</a> - <a href="./Baichuan" title="Baichuan">Baichuan</a> - <a href="./Canva" title="Canva">Canva</a> - <a href="./Cognition_AI" title="Cognition AI">Cognition AI</a> - <a href="./Cohere" title="Cohere">Cohere</a> - <a href="./Contextual_AI" title="Contextual AI">Contextual AI</a> - <a href="./DeepSeek" title="DeepSeek">DeepSeek</a> - <a href="./DeepL_Translator" title="DeepL Translator">DeepL</a> - <a href="./EleutherAI" title="EleutherAI">EleutherAI</a> - <a href="./ElevenLabs" title="ElevenLabs">ElevenLabs</a> - <a href="./Google_DeepMind" title="Google DeepMind">Google DeepMind</a> - <a href="./HeyGen" title="HeyGen">HeyGen</a> - <a href="./Hugging_Face" title="Hugging Face">Hugging Face</a> - <a href="./Inflection_AI" title="Inflection AI">Inflection AI</a> - <a href="./Kuaishou" title="Kuaishou">Kuaishou</a> - <a href="./Lightricks" title="Lightricks">Lightricks</a> - <a href="./Lovable_(company)" title="Lovable (company)">Lovable</a> - <a href="./Luma_Labs" title="Luma Labs">Luma Labs</a> - <a href="./Meta_AI" title="Meta AI">Meta AI</a> - <a href="./MiniMax_(company)" title="MiniMax (company)">MiniMax</a> - <a href="./Mistral_AI" title="Mistral AI">Mistral AI</a> - <a href="./Moonshot_AI" title="Moonshot AI">Moonshot AI</a> - <a href="./OpenAI" title="OpenAI">OpenAI</a> - <a href="./Perplexity_AI" title="Perplexity AI">Perplexity AI</a> - <a href="./Runway_(company)" title="Runway (company)">Runway</a> - <a href="./Safe_Superintelligence_Inc." title="Safe Superintelligence Inc.">Safe Superintelligence</a> - <a href="./Sakana_AI" title="Sakana AI">Sakana AI</a> - <a href="./Salesforce" title="Salesforce">Salesforce</a> - <a href="./Scale_AI" title="Scale AI">Scale AI</a> - <a href="./ServiceNow" title="ServiceNow">ServiceNow</a> - <a href="./SoundHound" title="SoundHound">SoundHound</a> - <a href="./Stability_AI" title="Stability AI">Stability AI</a> - <a href="./StepFun" title="StepFun">StepFun</a> - <a href="./Synthesia_(company)" title="Synthesia (company)">Synthesia</a> - <a href="./Thinking_Machines_Lab" title="Thinking Machines Lab">Thinking Machines Lab</a> - <a href="./Upstage_(company)" title="Upstage (company)">Upstage</a> - <a href="./XAI_(company)" title="XAI (company)">xAI</a> - <a href="./Xiaomi" title="Xiaomi">Xiaomi</a> - <a href="./Z.ai" title="Z.ai">Z.ai</a></td>
+</tr>
+<tr>
+<td><a href="./Artificial_intelligence_controversies" title="Artificial intelligence controversies">Controversies</a></td>
+<td>- <a href="./Generative_AI_pornography" title="Generative AI pornography">Generative AI pornography</a>   - <a href="./Deepfake_pornography" title="Deepfake pornography">Deepfake pornography</a>     - <a href="./Grok_sexual_deepfake_scandal" title="Grok sexual deepfake scandal">on Grok</a>     - <a href="./Taylor_Swift_deepfake_pornography_controversy" title="Taylor Swift deepfake pornography controversy">of Taylor Swift</a> - <a href="./Google_Gemini_image_generation_controversy" title="Google Gemini image generation controversy">Google Gemini image generation</a> - <a href="./Pause_Giant_AI_Experiments:_An_Open_Letter" title="Pause Giant AI Experiments: An Open Letter">Pause Giant AI Experiments</a> - <a href="./Removal_of_Sam_Altman_from_OpenAI" title="Removal of Sam Altman from OpenAI">Removal of Sam Altman from OpenAI</a> - <a href="./Statement_on_AI_Risk" title="Statement on AI Risk">Statement on AI Risk</a> - <a href="./Tay_(chatbot)" title="Tay (chatbot)">Tay (chatbot)</a> - <em><a href="./Théâtre_D'opéra_Spatial" title="Théâtre D'opéra Spatial">Théâtre D'opéra Spatial</a></em> - <a href="./Voiceverse_NFT_plagiarism_scandal" title="Voiceverse NFT plagiarism scandal">Voiceverse NFT plagiarism</a></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Generative_AI" title="Category:Generative AI">Category</a> - <a href="https://commons.wikimedia.org/wiki/Category:Generative%20artificial%20intelligence" title="commons:Category:Generative artificial intelligence">Commons</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Virtual_assistants" title="Template:Virtual assistants">v</a> - <a href="./Template_talk:Virtual_assistants" title="Template talk:Virtual assistants">t</a> - <a href="./Special:EditPage/Template:Virtual_assistants" title="Special:EditPage/Template:Virtual assistants">e</a>  <a href="./Virtual_assistant" title="Virtual assistant">Virtual assistants</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Active</td>
+<td>- <a href="./AliGenie" title="AliGenie">AliGenie</a> - <a href="./Amazon_Alexa" title="Amazon Alexa">Alexa</a> - <a href="./Alice_(virtual_assistant)" title="Alice (virtual assistant)">Alice</a> - <a href="./Bixby_(software)" title="Bixby (software)">Bixby</a>   - <a href="./Viv_(software)" title="Viv (software)">Viv</a> - <a href="./Braina" title="Braina">Braina</a> - <a href="./Celia_(virtual_assistant)" title="Celia (virtual assistant)">Celia</a> - <a href="./Clova_(virtual_assistant)" title="Clova (virtual assistant)">Clova</a> - <a href="./Google_Assistant" title="Google Assistant">Google Assistant</a> - <a href="./Huawei_HiCar" title="Huawei HiCar">Huawei HiCar</a> - <a href="./Maluuba" title="Maluuba">Maluuba</a> - <a href="./Siri" title="Siri">Siri</a> - <a href="./Voice_Mate" title="Voice Mate">Voice Mate</a> - <a href="./IBM_Watson" title="IBM Watson">Watson</a> - <a href="./WolframAlpha" title="WolframAlpha">WolframAlpha</a> - <a href="./Xiaoice" title="Xiaoice">Xiaoice</a></td>
+</tr>
+<tr>
+<td>Discontinued</td>
+<td>- <a href="./BlackBerry_10" title="BlackBerry 10">BlackBerry Assistant</a> - <a href="./Cortana_(virtual_assistant)" title="Cortana (virtual assistant)">Cortana</a> - <a href="./Google_Now" title="Google Now">Google Now</a> - <a href="./M_(virtual_assistant)" title="M (virtual assistant)">M</a> - <a href="./Microsoft_Agent" title="Microsoft Agent">Microsoft Agent</a> - <a href="./Microsoft_Bob" title="Microsoft Bob">Microsoft Bob</a> - <a href="./Microsoft_Voice_Command" title="Microsoft Voice Command">Microsoft Voice Command</a> - <a href="./Ms._Dewey" title="Ms. Dewey">Ms. Dewey</a> - <a href="./Mya_(program)" title="Mya (program)">Mya</a> - <a href="./Mycroft_(software)" title="Mycroft (software)">Mycroft</a> - <a href="./Office_Assistant" title="Office Assistant">Office Assistant</a> (Clippy) - <a href="./S_Voice" title="S Voice">S Voice</a> - <a href="./Assistant_(by_Speaktoit)" title="Assistant (by Speaktoit)">Speaktoit Assistant</a> - <a href="./Tafiti" title="Tafiti">Tafiti</a> - <a href="./Vlingo" title="Vlingo">Vlingo</a></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Help:Authority_control" title="Help:Authority control">Authority control databases</a>: Artists <a href="https://www.wikidata.org/wiki/Q116698014#identifiers" title="Edit this at Wikidata">Edit this at Wikidata</a></td>
+<td>- <a href="https://musicbrainz.org/artist/bb426607-fc5e-4e26-8d1b-0cccd733977e">MusicBrainz</a></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

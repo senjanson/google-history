@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Google Analytics</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link active" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Google Analytics</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Google_Analytics<br>
+Category: company__depth2<br>
+Depth: 2</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Google Analytics is a web analytics service offered by Google that tracks and reports website traffic and mobile app traffic and events, currently as a platform inside the Google Marketing Platform brand. Google launched the service in November 2005 after acquiring Urchin.</p>
+<h2>Images</h2>
+<p><img alt="2025-05-26_Google_Analytics_dashboard" src="../images/2025-05-26_Google_Analytics_dashboard.png"><br>
+<img alt="330px-2025-05-26_Google_Analytics_dashboard" src="../images/330px-2025-05-26_Google_Analytics_dashboard.png"><br>
+<img alt="120px-GAnalytics.svg" src="../images/120px-GAnalytics.svg.png"><br>
+<img alt="250px-2025-05-26_Google_Analytics_dashboard" src="../images/250px-2025-05-26_Google_Analytics_dashboard.png"></p>
+<h2>Full Article</h2>
+<p>Web analytics service from Google</p>
+<p><strong>Google Analytics</strong> is a <a href="./Web_analytics" title="Web analytics">web analytics</a> service offered by <a href="./Google" title="Google">Google</a> that tracks and reports <a href="./Website_traffic" title="Website traffic">website traffic</a> and mobile app traffic and events, currently as a platform inside the Google Marketing Platform brand. Google launched the service in November 2005 after acquiring <a href="./Urchin_(software)" title="Urchin (software)">Urchin</a>.</p>
+<p>As of 2019, Google Analytics is the most widely used web analytics service on the web. Google Analytics provides an <a href="./Software_development_kit" title="Software development kit">SDK</a> that allows gathering usage data from <a href="./IOS" title="IOS">iOS</a> and <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> <a href="./Mobile_app" title="Mobile app">apps</a>, known as <em>Google Analytics for Mobile Apps</em>.</p>
+<p>Google Analytics has undergone many updates since its inception and is currently on its 4th iteration—GA4. GA4 is the default Google Analytics installation and is the renamed version for the (App + Web) Property that Google released in 2019 in a Beta form. GA4 has also replaced Universal Analytics (UA). One notable feature of GA4 is a natural integration with Google's <a href="./BigQuery" title="BigQuery">BigQuery</a>—a feature previously only available with the enterprise GA 360. This move indicates efforts by Google to integrate GA and its free users into their wider cloud offering.</p>
+<p>As of July 1, 2023, Universal Analytics ceased collecting new data, with Google Analytics 4 succeeding it as the primary analytics platform. <a href="./Google" title="Google">Google</a> had previously announced this change in March 2022. While users had the ability to use Universal Analytics up to the July 2023 deadline, no new data has been added to UA since its sunset. On July 1, 2024, all users, including GA 360, will lose access to all Universal Analytics properties.</p>
+<h2>Features</h2>
+<p>Google Analytics is used to <a href="./Web_tracking" title="Web tracking">track</a> website activity such as <a href="./Session_(web_analytics)" title="Session (web analytics)">session</a> duration, pages per session and the engagement rate of individuals using the site, along with the information on the source of the traffic. It can be integrated with <a href="./Google_Ads" title="Google Ads">Google Ads</a>, with which users can create and review online campaigns by tracking <a href="./Landing_page" title="Landing page">landing page</a> quality and <a href="./Conversion_(marketing)" title="Conversion (marketing)">conversions</a> (key events). Goals might include sales, lead generation, viewing a specific page, or downloading a particular file. Google Analytics' approach is to show high-level, <a href="./Dashboard_(business)" title="Dashboard (business)">dashboard</a>-type data for the casual user, and more in-depth data further into the report set. Google Analytics analysis can identify poorly performing pages with techniques such as funnel visualization, where visitors came from (<a href="./Referrer" title="Referrer">referrers</a>), how long they stayed on the website and their geographical position. It also provides more advanced features, including custom visitor segmentation. Google Analytics <a href="./E-commerce" title="E-commerce">e-commerce</a> reporting can track sales activity and performance. The e-commerce reports show a site's transactions, revenue, and many other commerce-related metrics.</p>
+<p>On September 29, 2011, Google Analytics launched Real-Time analytics, enabling a user to have insights about visitors currently on the site. A user can have 100 site profiles. Each profile generally corresponds to one <a href="./Website" title="Website">website</a>. It is limited to sites that have online traffic of fewer than 5 million page views per month (roughly 2 page-views per second) unless the site is linked to a Google Ads campaign. Google Analytics includes <a href="./Google_Website_Optimizer" title="Google Website Optimizer">Google Website Optimizer</a>, re-branded as <em>Google Analytics Content Experiments</em>. Google Analytics' <a href="./Cohort_analysis" title="Cohort analysis">Cohort analysis</a> helps in understanding the behavior of component groups of users apart from your user population. It is beneficial to marketers and analysts for the successful implementation of a <a href="./Marketing_strategy" title="Marketing strategy">marketing strategy</a>.</p>
+<p>The latest version of Google Analytics, commonly referred as GA4, encompasses additional features focusing on predictions, customizability, and privacy. Some of these features can be listed as:</p>
+<ul>
+<li>A new concept to allow the same property to be used both for website and mobile app,</li>
+<li>AI-powered predictive metrics supported by machine learning,</li>
+<li>A customizable, easy-to-navigate homepage,</li>
+<li>An Explore section to provide completely custom reports for specific business needs,</li>
+<li>A built-in DebugView to analyze and debug the upcoming data instantly,</li>
+<li>Anomaly detection,</li>
+<li>Improved <a href="./E-commerce" title="E-commerce">e-commerce</a> reports.</li>
+<li>Has feature to analysis user journey from behavior analysis section.</li>
+</ul>
+<h2>History</h2>
+<p>Google acquired Urchin Software Corp. in April 2005. Google's service was developed from <a href="./Urchin_(software)" title="Urchin (software)">Urchin on Demand</a>. The system also brings ideas from Adaptive Path, whose product, Measure Map, was acquired and used in the redesign of Google Analytics in 2006. Google continued to sell the standalone, installable Urchin WebAnalytics Software through a network of <a href="./Value-added_reseller" title="Value-added reseller">value-added resellers</a> until discontinuation on March 28, 2012. The Google-branded version was rolled out in November 2005 to anyone who wished to sign up. However, due to extremely high demand for the service, new sign-ups were suspended a week later. As capacity was added to the system, Google began using a <a href="./Lottery" title="Lottery">lottery</a>-type invitation-code model. Before August 2006, Google was sending out batches of invitation codes as server availability permitted; since mid-August 2006 the service has been fully available to all users – whether they use Google for advertising or not.</p>
+<p>The newer version of Google Analytics tracking code is known as the asynchronous tracking code, which Google claims is more sensitive and accurate, and is able to track very short activities on the website. The previous version delayed page loading, and so, for performance reasons, it was generally placed just before the <code>&lt;/body&gt;</code> body close HTML tag. The new code can be placed between the <code>&lt;head&gt; ... &lt;/head&gt;</code> HTML head tags because, once triggered, it runs in parallel with page loading. In April 2011 Google announced the availability of a new version of Google Analytics featuring multiple dashboards, more custom report options, and a new interface design. This version was later updated with some other features such as real-time analytics and <a href="./Goal" title="Goal">goal</a> flow charts. Instead of being "hit-based," like Universal Analytics, GA4 is "event-based."</p>
+<p>In October 2012 another new version of Google Analytics was announced, called <em>Universal Analytics.</em> The key differences from the previous versions were: cross-platform tracking, flexible tracking code to collect data from any device, and the introduction of custom dimensions and custom metrics.</p>
+<p>In March 2016, Google released <em>Google Analytics 360</em>, which is a <a href="./Software_suite" title="Software suite">software suite</a> that provides analytics on <a href="./Return_on_investment" title="Return on investment">return on investment</a> and other marketing indicators. Google Analytics 360 includes seven main products: Analytics, Tag Manager, Optimize, Data Studio, Surveys, Attribution, and Audience Center.</p>
+<p>In October 2017 a new methodology to collect data for Google Analytics was announced, called <em>Global Site Tag</em>, or gTag.js. Its stated purpose was to unify the tagging system to simplify implementation. This new tag type is an alternative to the existing Analytics.js tag type or Google Tag Manager.</p>
+<p>In June 2018, Google introduced <a href="./Google_Marketing_Platform" title="Google Marketing Platform">Google Marketing Platform</a>, an <a href="./Online_advertising" title="Online advertising">online advertisement</a> and <a href="./Online_analytical_processing" title="Online analytical processing">analytics</a> brand. It consists of two former brands of Google, <a href="./DoubleClick" title="DoubleClick">DoubleClick Digital Marketing</a> and Google Analytics 360.</p>
+<p>In October 2020, Google released Google Analytics 4, under the acronym GA4.</p>
+<p>As of July 1, 2023, Universal Analytics ceased collecting new data, with Google Analytics 4 succeeding it as the primary analytics platform. Google had previously announced this transition in March 2022. While users had the option to use Universal Analytics up to the July 2023 deadline, no new data has been added to UA since its discontinuation.</p>
+<p>July 1, 2024: Standard Universal Analytics properties completely stopped processing data and users lost access to the interface and API. There is a one-time exception for Google Analytics 360 customers, whose access ends on that date as well.</p>
+<h2>Technology</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./File:Question_book-new.svg">icon</a></td>
+<td>This section <strong>needs additional citations for <a href="./Wikipedia:Verifiability" title="Wikipedia:Verifiability">verification</a></strong>. Please help <a href="./Special:EditPage/Google_Analytics" title="Special:EditPage/Google Analytics">improve this article</a> by <a href="./Help:Referencing_for_beginners" title="Help:Referencing for beginners">adding citations to reliable sources</a> in this section. Unsourced material may be challenged and removed. <em>(November 2007)</em> <em>(<a href="./Help:Maintenance_template_removal" title="Help:Maintenance template removal">Learn how and when to remove this message</a>)</em></td>
+</tr>
+</tbody>
+</table>
+<p>Google Analytics is implemented with "<a href="./Web_beacon" title="Web beacon">page tags</a>", in this case, called the Google Analytics Tracking Code, which is a snippet of <a href="./JavaScript" title="JavaScript">JavaScript</a> code that the website owner adds to every page of the website. The tracking code runs in the client browser when the client browses the page (if JavaScript is enabled in the browser) and collects visitor data and sends it to a Google data collection <a href="./Server_(computing)" title="Server (computing)">server</a> as part of a request for a <a href="./Web_beacon" title="Web beacon">web beacon</a>.</p>
+<p>The tracking code loads a larger <a href="./JavaScript" title="JavaScript">JavaScript</a> file from the <a href="./Google_web_server" title="Google web server">Google web server</a> and then sets variables with the user's account number. The larger file (currently known as ga.js) was typically 40 kb as of May 2018.</p>
+<p>The file does not usually have to be loaded, however, due to browser caching. Assuming caching is enabled in the browser, it downloads ga.js only once at the start of the visit.</p>
+<p>In addition to transmitting information to a Google server, the tracking code sets a <a href="./Web_analytics#Problems_with_cookies" title="Web analytics">first party cookie</a> (If <a href="./HTTP_cookie" title="HTTP cookie">cookies</a> are enabled in the browser) on each visitor's computer. This cookie stores anonymous information called the ClientId. Before the launch of Universal Analytics, there were several cookies storing information such as whether the visitor had been to the site before (new or returning visitor), the <a href="./Timestamp" title="Timestamp">timestamp</a> of the current visit, and the <a href="./Referrer" title="Referrer">referrer</a> site or campaign that directed the visitor to the page (e.g., <a href="./Web_search_engine" title="Web search engine">search engine</a>, keywords, banner, or <a href="./Email" title="Email">email</a>).</p>
+<p>If the visitor arrived at the site by clicking on a link tagged with <a href="./UTM_parameters" title="UTM parameters">UTM parameters</a> (Urchin Tracking Module) such as:</p>
+<pre><code> https://www.example.com/page?utm_content=buffercf3b2&amp;utm_medium=social&amp;utm_source=facebook.com&amp;utm_campaign=buffer
+</code></pre>
+<p>then the tag values are passed to the database too.</p>
+<h3>Limitations</h3>
+<p>In addition, Google Analytics for Mobile Package allows Google Analytics to be applied to mobile websites. The Mobile Package contains <a href="./Server-side_tracking" title="Server-side tracking">server-side tracking</a> codes that use <a href="./PHP" title="PHP">PHP</a>, <a href="./JavaServer_Pages" title="JavaServer Pages">JavaServer Pages</a>, <a href="./ASP.NET" title="ASP.NET">ASP.NET</a>, or <a href="./Perl" title="Perl">Perl</a> for its server-side language. However, many <a href="./Ad_filtering" title="Ad filtering">ad filtering</a> programs and extensions such as <a href="./Firefox" title="Firefox">Firefox</a>'s Enhanced Tracking Protection, the browser extension <a href="./NoScript" title="NoScript">NoScript</a> and the mobile phone app <a href="./Disconnect_Mobile" title="Disconnect Mobile">Disconnect Mobile</a> can block the Google Analytics Tracking Code. This prevents some traffic and users from being tracked and leads to holes in the collected data. Also, privacy networks like <a href="./Tor_(anonymity_network)" title="Tor (anonymity network)">Tor</a> will mask the user's actual location and present inaccurate geographical data. A small fraction of users do not have JavaScript-enabled/capable browsers or turn this feature off. These limitations, mainly ad filtering programs, can allow a significant number—sometimes the majority—of visitors to avoid the tracker.</p>
+<p>One potential impact on data accuracy comes from users deleting or blocking Google Analytics cookies. Without cookies being set, Google Analytics cannot collect data. Any individual web user can block or delete cookies resulting in the <a href="./Data_loss" title="Data loss">data loss</a> of those visits for Google Analytics users. Website owners can encourage users not to disable cookies by, for example, making visitors more comfortable using the site through posting a <a href="./Privacy_policy" title="Privacy policy">privacy policy</a>. As a user navigates between web pages, Google Analytics provides website owners JavaScript tags (libraries) to record information about the page a user has seen, for example the URL of the page. Google analytics JavaScript libraries uses HTTP cookies, with which it remembers what a user has done on previous pages and his interactions.</p>
+<p>Another limitation of Google Analytics for large websites is the use of <a href="./Sampling_(statistics)" title="Sampling (statistics)">sampling</a> in the generation of many of its reports. To reduce the load on their servers and to provide users with a relatively quick response to their query, Google Analytics limits reports to 500,000 randomly sampled sessions at the profile level for its calculations. While <a href="./Margin_of_error" title="Margin of error">margins of error</a> are indicated for the visits metric, margins of error are not provided for any other metrics in the Google Analytics reports. For small segments of data, the margin of error can be very large.</p>
+<p>One of the biggest limitation of Google Analytics, is its inability to track and attribute offline conversions. Offline conversion tracking is required to measure the impact of online marketing campaigns in "offline" environments, such as Point of Sale, Call Centers, Affiliate Networks, or payment gateways. Since Google Analytics is a JavaScript tag set on a website, when the visitor switch from the website environment to a phone conversation, the tracking is lost, and the "call center" activity can not be directly linked to the initial visit or visitor. Third-party tools integrated with Google Analytics, are now capable of tracking customer journey from online to offline environments.</p>
+<p>The retention period for user-level data and for event data used in Explorations is limited to 2 months by default and can be extended to a maximum of 14 months in the standard product. The retention setting does not affect standard aggregated reports in GA4. Google Analytics 360 offers longer options, up to 50 months.</p>
+<h2>Performance</h2>
+<p>There have been several online discussions about the impact of Google Analytics on site performance. However, Google introduced asynchronous JavaScript code in December 2009 to reduce the risk of slowing the loading of pages tagged with the ga.js script.</p>
+<h2>Privacy</h2>
+<p>Main articles: <a href="./Browser_security" title="Browser security">Browser security</a> and <a href="./Privacy_concerns_regarding_Google" title="Privacy concerns regarding Google">Privacy concerns regarding Google</a></p>
+<p>Due to its ubiquity, Google Analytics raises some privacy concerns. Whenever someone visits a website that uses Google Analytics, Google tracks that visit via the user's <a href="./IP_address" title="IP address">IP address</a> in order to determine the user's approximate geographic location. To meet German legal requirements, Google Analytics can anonymize the IP address. Google has also released a browser plug-in that turns off data about a page visit being sent to Google, however, this <a href="./Browser_extension" title="Browser extension">browser extension</a> is not available for mobile browsers. Since this plug-in is produced and distributed by Google itself, it has met much discussion and criticism. Furthermore, the realization of Google scripts tracking user behavior has spawned the production of multiple, often <a href="./Open-source_software" title="Open-source software">open-source</a>, browser plug-ins to reject tracking cookies. These plug-ins allow users to block Google Analytics and similar sites from tracking their activities. Many browsers allow users to reject third-party cookies and tracking scripts, in some cases this is the default option.</p>
+<p>It has been anecdotally reported that errors can occur behind proxy servers and multiple firewalls, changing timestamps and registering invalid searches. Webmasters who seek to mitigate Google Analytics' specific privacy issues can employ a number of <a href="./List_of_web_analytics_software#Free_/_Open_source_(FLOSS)" title="List of web analytics software">alternatives having their backends hosted on their own machines</a>. Until its discontinuation, an example of such a product was <a href="./Urchin_(software)" title="Urchin (software)">Urchin WebAnalytics Software</a> from Google itself. On January 20, 2015, the <a href="./Associated_Press" title="Associated Press">Associated Press</a> reported that <a href="./HealthCare.gov" title="HealthCare.gov">HealthCare.gov</a> was providing access to enrollees' personal data to private companies that specialized in <a href="./Advertising" title="Advertising">advertising</a>, mentioning Google Analytics specifically. Additionally, in 2022, countries such as Austria, France, and Italy have prohibited the service which lets webmaster tools track and analyze their site traffic. The government stated in its decisions that information are collected via cookies and transmitted to the United States could potentially be seen by third parties and the government which could breach GDPR as users are not ensured due process for redress.</p>
+<p>The new version of Google Analytics, also known as GA4, is equipped with deeper anonymization of user data through which the GA4 anonymizes IP addresses of all users by default, meaning it's not possible to perform any changes for this setting.</p>
+<h2>Support and training</h2>
+<p>Google offers training for Google Analytics 4 (GA4) through its Skillshop platform, which includes four courses and a certification as of August 2024. For developers and those seeking in-depth technical details, Google provides detailed GA4 documentation. Announcements related to updates and new features for GA4 are made on the Google Marketing Platform Blog. Support for enterprise-level users is accessible via the Google Enterprise Marketing Portal. The official Google Analytics YouTube channel also hosts a range of video tutorials and insights.</p>
+<h2>Third-party support</h2>
+<p>The Google Analytics API is used by third parties to build custom applications such as reporting tools. Many such applications exist. One was built to run on <a href="./IOS" title="IOS">iOS</a> (Apple) devices and is featured in Apple's <a href="./App_Store_(iOS)" title="App Store (iOS)">app store</a>. There are some third-party products that also provide Google Analytics-based tracking. The Management API, Core Reporting API, MCF Reporting API, and Real Time Reporting API are subject to limits and quotas.</p>
+<h2>Popularity</h2>
+<p>Google Analytics is the most widely used website statistics service. In May 2008, <a href="./Pingdom" title="Pingdom">Pingdom</a> released a survey stating that 161 of the 500 (32%) biggest sites globally according to their Alexa rank were using Google Analytics.</p>
+<p>A later piece of market share analysis claimed that Google Analytics was used by around 49.95% of the top 1,000,000 websites (as ranked in 2010 by <a href="./Alexa_Internet" title="Alexa Internet">Alexa Internet</a>).</p>
+<p>In 2012, its use was around 55% of the 10,000 most popular websites. And as of April 2022, Google Analytics was used by 73.7% of the 10,000 most popular websites ordered by popularity, as reported by BuiltWith.</p>
+<p>As of August 2023, the newer version, Google Analytics 4 (GA4), is used by approximately 13.5 million websites.</p>
+<p>Website builders such as <a href="./Wix.com" title="Wix.com">Wix</a>, <a href="./Squarespace" title="Squarespace">Squarespace</a>, <a href="./Readymag" title="Readymag">Readymag</a> and <a href="./Webflow" title="Webflow">Webflow</a> offer integration with Google Analytics, either by directly entering a tracking ID or by using <a href="./Google_Tag_Manager" title="Google Tag Manager">Google Tag Manager</a>. On Wix, users can connect Google Analytics through the site's dashboard or embed it using Tag Manager. Squarespace allows users to install Google Tag Manager to manage Analytics and other tags. Redyamg allows it for projects with custom domains thru enhanced measurement feature. Similarly, Webflow users can implement Google Analytics by configuring Tag Manager in their project settings.</p>
+<h2>See also</h2>
+<ul>
+<li><a href="./Google_Search_Console" title="Google Search Console">Google Search Console</a> – Web service from Google for webmasters</li>
+<li><a href="./Google_Trends" title="Google Trends">Google Trends</a> – Popularity analysis of search queries</li>
+<li><a href="./List_of_web_analytics_software" title="List of web analytics software">List of web analytics software</a></li>
+</ul>
+<h2>References</h2>
+<h2>External links</h2>
+<ul>
+<li><a href="https://www.google.com/analytics/">Official website</a></li>
+<li><a href="http://analytics.blogspot.com/">Official blog</a></li>
+<li><a href="https://marketingplatform.google.com/">Google marketing platform</a></li>
+<li><a href="https://support.google.com/analytics/#topic=3544906">Google analytics help</a></li>
+<li><a href="https://analytics.google.com/analytics/academy/">Google Analytics Academy</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_Ads_navbox" title="Template:Google Ads navbox">v</a> - <a href="./Template_talk:Google_Ads_navbox" title="Template talk:Google Ads navbox">t</a> - <a href="./Special:EditPage/Template:Google_Ads_navbox" title="Special:EditPage/Template:Google Ads navbox">e</a>  <a href="./Google_Ads" title="Google Ads">Google Ads</a></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Web</td>
+<td>- <a href="./Google_Ad_Manager" title="Google Ad Manager">Google Ad Manager</a> - <a href="./Google_AdSense" title="Google AdSense">Google AdSense</a> - <a href="./Google_Marketing_Platform" title="Google Marketing Platform">Google Marketing Platform</a></td>
+<td><a href="./File:Google_Ads_logo.svg" title="Google Ads marker">Google Ads marker</a></td>
+</tr>
+<tr>
+<td>Mobile</td>
+<td>- <a href="./AdMob" title="AdMob">AdMob</a> - <a href="./Adscape" title="Adscape">Adscape</a></td>
+<td></td>
+</tr>
+<tr>
+<td>Other</td>
+<td>- <a href="./DoubleClick" title="DoubleClick">DoubleClick</a> - <a href="./Google_Analytics">Google Analytics</a> - <a href="./Google_Contributor" title="Google Contributor">Google Contributor</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><a href="./Help:Authority_control" title="Help:Authority control">Authority control databases</a> <a href="https://www.wikidata.org/wiki/Q220577#identifiers" title="Edit this at Wikidata">Edit this at Wikidata</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>International</td>
+<td>- <a href="https://d-nb.info/gnd/7670251-0">GND</a></td>
+</tr>
+<tr>
+<td>National</td>
+<td>- <a href="https://aleph.nkp.cz/F/?func=find-c&amp;local_base=aut&amp;ccl_term=ica=ph507299&amp;CON_LNG=ENG">Czech Republic</a></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

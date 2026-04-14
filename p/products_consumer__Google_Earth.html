@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Google Earth</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link active" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Google Earth</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Google_Earth<br>
+Category: products_consumer<br>
+Depth: 1</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Google Earth is a web and computer program created by Google that renders a 3D representation of Earth based primarily on satellite imagery. The program maps the Earth by superimposing satellite images, aerial photography, and GIS data onto a 3D globe, allowing users to see cities and landscapes from various angles. Users can explore the globe by entering addresses and coordinates, or by using a keyboard or mouse. The program can also be downloaded on a smartphone or tablet, using a touch screen or stylus to navigate. Users may use the program to add their own data using Keyhole Markup Language and upload them through various sources, such as forums or blogs. Google Earth is able to show various kinds of images overlaid on the surface of the Earth and is also a Web Map Service client. In 2019, Google revealed that Google Earth covers more than 97 percent of the world.</p>
+<h2>Images</h2>
+<p><img alt="960px-Google_Earth_icon.svg" src="../images/960px-Google_Earth_icon.svg.png"><br>
+<img alt="330px-Google_Earth_icon.svg" src="../images/330px-Google_Earth_icon.svg.png"><br>
+<img alt="250px-Google_Earth_icon.svg" src="../images/250px-Google_Earth_icon.svg.png"><br>
+<img alt="330px-Google_Earth_Pro_screenshot" src="../images/330px-Google_Earth_Pro_screenshot.png"><br>
+<img alt="330px-Google_Earth_on_Chrome_screenshot" src="../images/330px-Google_Earth_on_Chrome_screenshot.png"><br>
+<img alt="120px-Logo_of_Keyhole_Inc.svg" src="../images/120px-Logo_of_Keyhole_Inc.svg.png"><br>
+<img alt="500px-3D_locations_in_Google_Earth.svg" src="../images/500px-3D_locations_in_Google_Earth.svg.png"><br>
+<img alt="330px-Google_Earth__28Android_29_-_3D_Mode_at_Wisconsin_Dells_Great_Wolf_Lodge" src="../images/330px-Google_Earth__28Android_29_-_3D_Mode_at_Wisconsin_Dells_Great_Wolf_Lodge.png"><br>
+<img alt="250px-Google_Earth_Mars" src="../images/250px-Google_Earth_Mars.png"><br>
+<img alt="250px-Google_Earth_Sky" src="../images/250px-Google_Earth_Sky.png"><br>
+<img alt="250px-Google_Earth_Pro__28Moon_mode_29_screenshot_2C_Apollo_11" src="../images/250px-Google_Earth_Pro__28Moon_mode_29_screenshot_2C_Apollo_11.png"><br>
+<img alt="250px-Toronto_downtown" src="../images/250px-Toronto_downtown.png"><br>
+<img alt="330px-Google_Earth" src="../images/330px-Google_Earth.png"><br>
+<img alt="500px-Forest_Landscape_Integrity_Index_map_of_Earth_2C_2019__28forest_condition_by_degree_of_anthropogenic_modification_29" src="../images/500px-Forest_Landscape_Integrity_Index_map_of_Earth_2C_2019__28forest_condition_by_degree_of_anthropogenic_modification_29.png"><br>
+<img alt="250px-Royal_Stables" src="../images/250px-Royal_Stables.jpg"></p>
+<h2>Full Article</h2>
+<p>3D Internet global map program</p>
+<p><strong>Google Earth</strong> is a <a href="./Web_mapping" title="Web mapping">web</a> and <a href="./Computer_program" title="Computer program">computer program</a> created by <a href="./Google" title="Google">Google</a> that renders a <a href="./3D_computer_graphics" title="3D computer graphics">3D</a> representation of <a href="./Earth" title="Earth">Earth</a> based primarily on <a href="./Satellite_imagery" title="Satellite imagery">satellite imagery</a>. The program maps the Earth by <a href="./Superimposition" title="Superimposition">superimposing</a> satellite images, <a href="./Aerial_photography" title="Aerial photography">aerial photography</a>, and <a href="./Geographic_information_system" title="Geographic information system">GIS data</a> onto a 3D <a href="./Globe" title="Globe">globe</a>, allowing users to see cities and landscapes from various angles. Users can explore the globe by entering addresses and coordinates, or by using a <a href="./Computer_keyboard" title="Computer keyboard">keyboard</a> or <a href="./Computer_mouse" title="Computer mouse">mouse</a>. The program can also be downloaded on a <a href="./Smartphone" title="Smartphone">smartphone</a> or <a href="./Tablet_computer" title="Tablet computer">tablet</a>, using a <a href="./Touch_screen" title="Touch screen">touch screen</a> or <a href="./Stylus" title="Stylus">stylus</a> to navigate. Users may use the program to add their own data using <a href="./Keyhole_Markup_Language" title="Keyhole Markup Language">Keyhole Markup Language</a> and upload them through various sources, such as forums or <a href="./Blog" title="Blog">blogs</a>. Google Earth is able to show various kinds of images overlaid on the surface of the Earth and is also a <a href="./Web_Map_Service" title="Web Map Service">Web Map Service</a> client. In 2019, Google revealed that Google Earth covers more than 97 percent of the world.</p>
+<p>In addition to Earth navigation, Google Earth provides a series of other tools through the desktop application, including a measure distance tool. Additional globes for the <a href="./Moon" title="Moon">Moon</a> and <a href="./Mars" title="Mars">Mars</a> are available, as well as a tool for viewing the <a href="./Night_sky" title="Night sky">night sky</a>. A <a href="./Flight_simulator" title="Flight simulator">flight simulator</a> game is also included. Other features allow users to view photos from various places uploaded to <a href="./Panoramio" title="Panoramio">Panoramio</a>, information provided by <a href="./Wikipedia" title="Wikipedia">Wikipedia</a> on some locations, and Street View imagery. The web-based version of Google Earth also includes Voyager, a feature that periodically adds in-program tours, often presented by scientists and documentarians.</p>
+<p>Google Earth has been viewed by some as a threat to <a href="./Privacy" title="Privacy">privacy</a> and <a href="./National_security" title="National security">national security</a>, leading to the program being banned in multiple countries. Some countries have requested that certain areas be obscured in Google's satellite images, usually areas containing military facilities.</p>
+<h2>Background</h2>
+<p>The core <a href="./Technology" title="Technology">technology</a> behind Google Earth was originally developed at Intrinsic Graphics in the late 1990s. At the time, the company was developing 3D gaming software libraries. As a demo of their 3D software, they created a spinning globe that could be zoomed into, similar to the <em><a href="./Powers_of_Ten_(film)" title="Powers of Ten (film)">Powers of Ten</a></em> film. The demo was popular, but the board of Intrinsic wanted to remain focused on gaming, so in 1999, they created Keyhole Corporation, headed by <a href="./John_Hanke" title="John Hanke">John Hanke</a>. Keyhole then developed a way to stream large databases of mapping data over the internet to client software, a key part of the technology, and acquired patchworks of mapping data from governments and other sources. The product, called "Keyhole EarthViewer", was sold on CDs for use in fields such as <a href="./Real_estate" title="Real estate">real estate</a>, <a href="./Urban_planning" title="Urban planning">urban planning</a>, <a href="./War" title="War">defense</a>, and <a href="./Intelligence_assessment" title="Intelligence assessment">intelligence</a>; users paid a yearly fee for the service. Despite making several capital deals with <a href="./Nvidia" title="Nvidia">Nvidia</a> and <a href="./Sony" title="Sony">Sony</a>, the small company was struggling to pay and retain employees.</p>
+<p>Fortunes for the company changed in early 2003 during the <a href="./2003_invasion_of_Iraq" title="2003 invasion of Iraq">2003 invasion of Iraq</a>, when Dave Lorenzini (Director at Keyhole) enticed <a href="./CNN" title="CNN">CNN</a>, <a href="./American_Broadcasting_Company" title="American Broadcasting Company">ABC</a>, <a href="./CBS" title="CBS">CBS</a> and other major news networks to use their sophisticated 3D flyby imagery to illustrate Baghdad activities for viewers, in exchange for on-air attribution. During the invasion, It was used extensively by <a href="./Miles_O'Brien_(journalist)" title="Miles O'Brien (journalist)">Miles O'Brien</a> and other on-air broadcasters, allowing CNN and millions of viewers to follow the progress of the war in a way that had never been seen before. Public interest in the software exploded and Keyhole servers were not able to keep up with demand. Keyhole was soon contacted by the <a href="./Central_Intelligence_Agency" title="Central Intelligence Agency">Central Intelligence Agency</a>'s venture capital firm, <a href="./In-Q-Tel" title="In-Q-Tel">In-Q-Tel</a>, and the <a href="./National_Geospatial-Intelligence_Agency" title="National Geospatial-Intelligence Agency">National Geospatial-Intelligence Agency</a>, for use with defense mapping databases, which gave Keyhole a much-needed cash infusion. Intrinsic Graphics was sold in 2003 to <a href="./Vicarious_Visions" title="Vicarious Visions">Vicarious Visions</a> after its gaming libraries did not sell well, and its core group of engineers and management including Brian McClendon and Michael Jones transitioned to Keyhole with Hanke remaining at the head.</p>
+<h2>History</h2>
+<p>Around 2004, Google was finding that over 25% of its searches were of a geospatial character, including searches for maps and directions.</p>
+<p>In October 2004, Google acquired Keyhole as part of a strategy to better serve its users. Keyhole's Earth Viewer was the foundation for what became Google Earth in 2005 while other aspects of its core technology were integrated into <a href="./Google_Maps" title="Google Maps">Google Maps</a>.</p>
+<p>In 2021, Google replaced its layers feature with a new one on its Google Earth software.[<em><a href="./Wikipedia:Please_clarify" title="Wikipedia:Please clarify">clarification needed</a></em>] This replacement consolidated some layers, but also removed some layers and features.</p>
+<p>Google Earth is featured prominently in the 2021 German miniseries <em><a href="./The_Billion_Dollar_Code" title="The Billion Dollar Code">The Billion Dollar Code</a></em>, which serves as a fictionalized account of a 2014 patent infringement lawsuit brought against Google by the German creators of <a href="./Terravision_(computer_program)" title="Terravision (computer program)">Terravision</a>. The series, which was shown on Netflix, is prefaced by an episode of interviews with the ART+COM developers of Terravision and their legal representative. One of the co-founders of Keyhole has published a first-hand account claiming to debunk the origins, timelines, and interpretations depicted in the fictionalized miniseries. Not shown in the mini-series was that the patent owned by ART+COM and used to challenge Google was completely invalidated after it was shown that another so-called TerraVision, this one at the Stanford Research Institute, predated ART+COM's ideas by several years.</p>
+<p>Version history</p>
+<table>
+<thead>
+<tr>
+<th>Version</th>
+<th>Release date</th>
+<th>Changes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.0</td>
+<td>June 10, 2001</td>
+<td></td>
+</tr>
+<tr>
+<td>1.4</td>
+<td>January 2002</td>
+<td></td>
+</tr>
+<tr>
+<td>1.6</td>
+<td>February 2003</td>
+<td></td>
+</tr>
+<tr>
+<td>1.7.2</td>
+<td>October 2003</td>
+<td>- Last version for <a href="./Windows_95" title="Windows 95">Windows 95</a> and <a href="./Windows_NT_4.0" title="Windows NT 4.0">Windows NT 4.0</a></td>
+</tr>
+<tr>
+<td>2.2</td>
+<td>August 2004</td>
+<td>- Last version for <a href="./Windows_98" title="Windows 98">Windows 98</a> and <a href="./Windows_Me" title="Windows Me">Windows Me</a></td>
+</tr>
+<tr>
+<td>3.0</td>
+<td>June 2005</td>
+<td>- The first version was released after Google acquired Keyhole Corporation</td>
+</tr>
+<tr>
+<td>4.0</td>
+<td>June 2006</td>
+<td></td>
+</tr>
+<tr>
+<td>4.1</td>
+<td>May 2007</td>
+<td></td>
+</tr>
+<tr>
+<td>4.2</td>
+<td>August 2007</td>
+<td>- Google Sky was introduced - A flight simulator was added</td>
+</tr>
+<tr>
+<td>4.3</td>
+<td>April 2008</td>
+<td>- First release to implement KML version 2.2 - Google Street View was added - Last version for <a href="./Windows_2000" title="Windows 2000">Windows 2000</a> - Last version for <a href="./Mac_OS_X_Panther" title="Mac OS X Panther">Mac OS X Panther</a> (PPC)</td>
+</tr>
+<tr>
+<td>5.0</td>
+<td>May 2009</td>
+<td>- Google Ocean was introduced - Historical Imagery was introduced</td>
+</tr>
+<tr>
+<td>5.1</td>
+<td>November 2009</td>
+<td></td>
+</tr>
+<tr>
+<td>5.2</td>
+<td>July 2010</td>
+<td>- Last version for <a href="./Mac_OS_X_Tiger" title="Mac OS X Tiger">Mac OS X Tiger</a> (PPC &amp; Intel) and <a href="./Mac_OS_X_Leopard" title="Mac OS X Leopard">Leopard</a> (PPC)</td>
+</tr>
+<tr>
+<td>6.0</td>
+<td>March 2011</td>
+<td>- 3D Trees were added</td>
+</tr>
+<tr>
+<td>6.1</td>
+<td>October 2011</td>
+<td></td>
+</tr>
+<tr>
+<td>6.2</td>
+<td>April 2012</td>
+<td>- Last version for <a href="./Mac_OS_X_Leopard" title="Mac OS X Leopard">Mac OS X Leopard</a> (Intel)</td>
+</tr>
+<tr>
+<td>7.0</td>
+<td>December 2012</td>
+<td>- Support for 3D Imagery data was introduced - Tour Guide was introduced</td>
+</tr>
+<tr>
+<td>7.1</td>
+<td>April 2013</td>
+<td>- Last version for <a href="./Mac_OS_X_Snow_Leopard" title="Mac OS X Snow Leopard">Mac OS X Snow Leopard</a> and <a href="./OS_X_Lion" title="OS X Lion">Mac OS X Lion</a> - Last version for <a href="./Windows_XP" title="Windows XP">Windows XP</a> and <a href="./Windows_Vista" title="Windows Vista">Windows Vista</a></td>
+</tr>
+<tr>
+<td>7.3</td>
+<td>July 2017</td>
+<td>- Google Earth Pro became the standard version of the desktop program. (A free license key was also publicly provided by Google for all the earlier Pro versions.) - The desktop application continues to be Google Earth Pro 7.3, with infrequent updates.</td>
+</tr>
+<tr>
+<td>8.0</td>
+<td>October 2014</td>
+<td>- Android-only update with new 3D rendering engine and feature to import KML files from Google Drive.</td>
+</tr>
+<tr>
+<td>9.0</td>
+<td>April 2017</td>
+<td>- Redesign of the mobile and web apps featuring Voyager, "I'm Feeling Lucky" button, and 3D mode. - iOS received update in August 2017.</td>
+</tr>
+<tr>
+<td>10.0</td>
+<td>September 2023</td>
+<td>- Mobile and web apps updated to latest <a href="./Material_Design" title="Material Design">Material Design</a> theme with support for project creation. Voyager was removed from app.</td>
+</tr>
+</tbody>
+</table>
+<h2>Imagery</h2>
+<p>Google Earth's imagery is displayed on a digital <a href="./Globe" title="Globe">globe</a>, which displays the planet's surface using a single composited image from a far distance. After zooming in far enough, the imagery transitions into different imagery of the same area with finer detail, which varies in date and time from one area to the next. The imagery is retrieved from <a href="./Satellite" title="Satellite">satellites</a> or <a href="./Aircraft" title="Aircraft">aircraft</a>. Before the launch of <a href="./NASA" title="NASA">NASA</a> and the <a href="./United_States_Geological_Survey" title="United States Geological Survey">USGS's</a> <a href="./Landsat_8" title="Landsat 8">Landsat 8</a> satellite, Google relied partially on imagery from <a href="./Landsat_7" title="Landsat 7">Landsat 7</a>, which suffered from a hardware malfunction that left diagonal gaps in images. In 2013, Google used <a href="./Datamining" title="Datamining">datamining</a> to remedy the issue, providing what was described as a successor to the <a href="./Blue_Marble" title="Blue Marble">Blue Marble</a> image of Earth, with a single large image of the entire planet. This was achieved by combining multiple sets of imagery taken from Landsat 7 to eliminate clouds and diagonal gaps, creating a single "mosaic" image. Google has since used myriad sources to provide imagery in a higher quality and with greater frequency. Imagery is hosted on Google's servers, which are contacted by the application when opened, requiring an Internet connection.</p>
+<p>Imagery resolution ranges from 0.15 to 15 meters (0.49 to 49.21 ft) except for the <a href="./Ocean_floor" title="Ocean floor">ocean floor</a>, which ranges from 100 to 1,000 meters (330 to 3,280 ft). For much of the Earth, Google Earth uses <a href="./Digital_elevation_model" title="Digital elevation model">digital elevation model</a> data collected by <a href="./NASA" title="NASA">NASA</a>'s <a href="./Shuttle_Radar_Topography_Mission" title="Shuttle Radar Topography Mission">Shuttle Radar Topography Mission</a>. This creates the impression of <a href="./Three-dimensional_space" title="Three-dimensional space">three-dimensional</a> terrain, even where the imagery is only <a href="./Two-dimensional_space" title="Two-dimensional space">two-dimensional</a>.</p>
+<p>Google asserts that every image created from Google Earth using satellite data provided by Google Earth is a <a href="./Copyright" title="Copyright">copyrighted</a> map. Any derivative from Google Earth is made from data that Google claims copyright under <a href="./United_States_Copyright_Law" title="United States Copyright Law">United States Copyright Law</a>. Google grants license to this data allowing, among other things, non-commercial personal use of the images (e.g., on a personal website or blog) as long as copyrights and attributions are preserved. By contrast, images created with NASA's globe software <a href="./NASA_WorldWind" title="NASA WorldWind">WorldWind</a> use <em><a href="./The_Blue_Marble#Subsequent_Blue_Marble_images" title="The Blue Marble">The Blue Marble</a></em>, <a href="./Landsat" title="Landsat">Landsat</a>, or USGS imagery, each of which is in the <a href="./Public_domain" title="Public domain">public domain</a>.</p>
+<p>In version 5.0, Google introduced Historical Imagery, allowing users to view earlier imagery. Clicking the <a href="./Clock" title="Clock">clock</a> icon in the toolbar opens a time slider, which marks the time of available imagery from the past. This feature allows for observation of an area's changes over time. Utilizing the timelapse feature allows for the ability to view a zoom-able video as far back as 38 years.</p>
+<h3>3D imagery</h3>
+<p>Google Earth shows <a href="./3D_computer_graphics" title="3D computer graphics">3D</a> <a href="./Building_model" title="Building model">building models</a> in some cities, including photorealistic 3D imagery made using <a href="./Photogrammetry" title="Photogrammetry">photogrammetry</a>. The first 3D buildings in Google Earth were created using <a href="./3D_modeling" title="3D modeling">3D modeling</a> applications such as <a href="./SketchUp" title="SketchUp">SketchUp</a> and, beginning in 2009, <a href="./Google_Building_Maker" title="Google Building Maker">Building Maker</a>, and were uploaded to Google Earth via the <a href="./3D_Warehouse" title="3D Warehouse">3D Warehouse</a>. In June 2012, Google announced that it would be replacing user-generated 3D buildings with an auto-generated <a href="./3D_mesh" title="3D mesh">3D mesh</a>. This would be phased in, starting with select larger cities, with the notable exception of cities such as <a href="./London" title="London">London</a> and <a href="./Toronto" title="Toronto">Toronto</a> which required more time to process detailed imagery of their vast number of buildings. The reason given is to have greater uniformity in 3D buildings and to compete with <a href="./Here_(company)" title="Here (company)">Nokia Here</a> and <a href="./Apple_Maps" title="Apple Maps">Apple Maps</a>, which were already using this technology. The coverage began that year in 21 cities in four countries. By early 2016, 3D imagery had been expanded to hundreds of cities in over 40 countries, including every <a href="./U.S._state" title="U.S. state">U.S. state</a> and encompassing every continent except Antarctica.</p>
+<p>In 2009, in a collaboration between <a href="./Google" title="Google">Google</a> and the <a href="./Museo_del_Prado" title="Museo del Prado">Museo del Prado</a> in <a href="./Madrid" title="Madrid">Madrid</a>, the museum selected 14 of its paintings to be photographed and displayed at the resolution of 14,000 <a href="./Megapixel" title="Megapixel">megapixels</a> inside the 3D version of the Prado in Google Earth and <a href="./Google_Maps" title="Google Maps">Google Maps</a>.</p>
+<h3>Street View</h3>
+<p>Main article: <a href="./Google_Street_View" title="Google Street View">Google Street View</a></p>
+<p>On April 15, 2008, with version 4.3, Google fully integrated <a href="./Google_Street_View" title="Google Street View">Street View</a> into Google Earth. Street View displays 360° panoramic street-level photos of select cities and their surroundings. The photos were taken by cameras mounted on automobiles, can be viewed at different scales and from many angles, and are navigable by arrow icons imposed on them.</p>
+<p>Using Street View on Google Earth, users can visit and explore 30 UNESCO <a href="./World_Heritage_Sites" title="World Heritage Sites">World Heritage Sites</a> with historical context and pins for each. The sites include the <a href="./Great_Pyramid" title="Great Pyramid">Great Pyramid</a>, the <a href="./Taj_Mahal" title="Taj Mahal">Taj Mahal</a>, <a href="./Sagrada_Família" title="Sagrada Família">Sagrada Família</a>, the <a href="./Dolomites" title="Dolomites">Dolomites</a>, the <a href="./Royal_Botanic_Gardens,_Kew" title="Royal Botanic Gardens, Kew">Royal Botanic Gardens, Kew</a>, and the <a href="./Great_Sphinx" title="Great Sphinx">Great Sphinx</a>.</p>
+<p>In 2019, <a href="./Walt_Disney_World" title="Walt Disney World">Walt Disney World</a> and <a href="./Pixar" title="Pixar">Pixar</a> partnered with Google to create Pixar Street View. An activation that enabled viewers to search for hidden Pixar Easter eggs inside Toy Story Land at <a href="./Disney's_Hollywood_Studios" title="Disney's Hollywood Studios">Disney's Hollywood Studios</a> through street view.</p>
+<h3>Water and ocean</h3>
+<p>Introduced in Google Earth 5.0 in 2009, the Google Ocean feature allows users to zoom below the surface of the ocean and view the 3D <a href="./Bathymetry" title="Bathymetry">bathymetry</a>. Supporting over 20 content layers, it contains information from leading scientists and <a href="./Oceanography" title="Oceanography">oceanographers</a>. On April 14, 2009, Google added bathymetric data for the <a href="./Great_Lakes" title="Great Lakes">Great Lakes</a>.</p>
+<p>In June 2011, Google increased the resolution of some deep ocean floor areas from 1-kilometer grids to 100 meters. The high-resolution features were developed by oceanographers at Columbia University's Lamont–Doherty Earth Observatory from scientific data collected on research cruises. The sharper focus is available for about 5 percent of the oceans. This can be seen in the Hudson off New York City, the Wini Seamount near Hawaii, and the <a href="./Mendocino_fracture_zone" title="Mendocino fracture zone">Mendocino Ridge</a> off the U.S. Pacific coast.</p>
+<h2>Outer space</h2>
+<p>Google has programs and features, including within Google Earth, allowing exploration of <a href="./Mars" title="Mars">Mars</a>, the <a href="./Moon" title="Moon">Moon</a>, the view of the sky from Earth and <a href="./Outer_space" title="Outer space">outer space</a>, including the surfaces of various objects in the <a href="./Solar_System" title="Solar System">Solar System</a>.</p>
+<h3>Google Sky</h3>
+<p>Google Sky is a feature that was introduced in Google Earth 4.2 on August 22, 2007, in a browser-based application on March 13, 2008, and to <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> <a href="./Smartphone" title="Smartphone">smartphones</a>, with <a href="./Augmented_reality" title="Augmented reality">augmented reality</a> features. <a href="./Google_Sky_Map" title="Google Sky Map">Google Sky</a> allows users to view <a href="./Star" title="Star">stars</a> and other celestial bodies. It was produced by <a href="./Google" title="Google">Google</a> through a partnership with the <a href="./Space_Telescope_Science_Institute" title="Space Telescope Science Institute">Space Telescope Science Institute</a> (STScI) in Baltimore, the science operations center for the <a href="./Hubble_Space_Telescope" title="Hubble Space Telescope">Hubble Space Telescope</a>. <a href="./Alberto_Conti" title="Alberto Conti">Alberto Conti</a> and his co-developer Carol Christian of STScI planned to add the public images from 2007, as well as color images of all of the archived data from Hubble's Advanced Camera for Surveys. Then-newly released Hubble pictures were added to the Google Sky program as soon as they were issued.</p>
+<p>New features such as multi-wavelength data, positions of major satellites and their <a href="./Orbits" title="Orbits">orbits</a> as well as educational resources are provided to the Google Earth community and also through Christian and Conti's website for Sky. Also visible on Sky mode are <a href="./Constellation" title="Constellation">constellations</a>, <a href="./Star" title="Star">stars</a>, <a href="./Galaxies" title="Galaxies">galaxies</a>, and animations depicting the planets in their orbits. A real-time Google Sky <a href="./Mashup_(web_application_hybrid)" title="Mashup (web application hybrid)">mashup</a> of recent astronomical transients, using the <a href="./VOEvent" title="VOEvent">VOEvent</a> protocol, is provided by the VOEventNet collaboration. Other programs similar to <a href="./Google_Sky_Map" title="Google Sky Map">Google Sky</a> include <a href="./Microsoft_WorldWide_Telescope" title="Microsoft WorldWide Telescope">Microsoft WorldWide Telescope</a> and <a href="./Stellarium_(software)" title="Stellarium (software)">Stellarium</a>.</p>
+<h3>Google Mars</h3>
+<p>Google Mars is an application within Google Earth that is a version of the program for imagery of the planet Mars. Google also operates a browser-based version, although the maps are of a much higher resolution within Google Earth, and include 3D terrain, as well as <a href="./Infrared" title="Infrared">infrared</a> imagery and elevation data. There are also some extremely high-resolution images from the <a href="./Mars_Reconnaissance_Orbiter" title="Mars Reconnaissance Orbiter">Mars Reconnaissance Orbiter</a>'s <a href="./HiRISE" title="HiRISE">HiRISE</a> camera that are of a similar resolution to those of the cities on Earth. Finally, there are many high-resolution panoramic images from various Mars landers, such as the <a href="./Mars_Exploration_Rovers" title="Mars Exploration Rovers">Mars Exploration Rovers</a>, <em><a href="./Spirit_Rover" title="Spirit Rover">Spirit</a></em> and <em><a href="./Opportunity_Rover" title="Opportunity Rover">Opportunity</a></em>, that can be viewed in a similar way to <a href="./Google_Street_View" title="Google Street View">Google Street View</a>.</p>
+<p>Mars also has a small application found near the <a href="./Face_on_Mars" title="Face on Mars">face on Mars</a>. It is called Meliza, a robot character the user can speak with.</p>
+<h3>Google Moon</h3>
+<p>Originally a browser application, Google Moon was a feature that allows exploration of the Moon. Google brought the feature to Google Earth for the 40th anniversary of the <a href="./Apollo_11" title="Apollo 11">Apollo 11</a> mission on July 20, 2009. It was announced and demonstrated to a group of invited guests by Google along with <a href="./Buzz_Aldrin" title="Buzz Aldrin">Buzz Aldrin</a> at the <a href="./Newseum" title="Newseum">Newseum</a> in <a href="./Washington,_D.C." title="Washington, D.C.">Washington, D.C.</a> Google Moon includes several tours, including one for the <a href="./Apollo_program" title="Apollo program">Apollo missions</a>, incorporating maps, videos, and Street View-style panoramas, all provided by <a href="./NASA" title="NASA">NASA</a>.</p>
+<h2>Other features</h2>
+<p>Google Earth has numerous features that allow the user to learn about specific places. These are called "layers", and include different forms of media, including photo and video. Some layers include tours, which guide the user between specific places in a set order. Layers are created using the <a href="./Keyhole_Markup_Language" title="Keyhole Markup Language">Keyhole Markup Language</a>, or KML, which users can also use to create customized layers. Locations can be marked with placemarks and organized in folders; For example, a user can use placemarks to list interesting landmarks around the globe, then provide a description with photos and videos, which can be viewed by clicking on the placemarks while viewing the new layer in the application.</p>
+<p>In December 2006, Google Earth added a new integration with <a href="./Wikipedia" title="Wikipedia">Wikipedia</a> and <a href="./Panoramio" title="Panoramio">Panoramio</a>. For the Wikipedia layer, entries are <a href="./Web_scraping" title="Web scraping">scraped</a> for coordinates via the <a href="./Template:Coord" title="Template:Coord">Coord templates</a>. There is also a community layer from the project <a href="https://de.wikipedia.org/wiki/Wikipedia:WikiProjekt%20Georeferenzierung/Wikipedia-World/en" title="de:Wikipedia:WikiProjekt Georeferenzierung/Wikipedia-World/en">Wikipedia-World</a>. More coordinates are used, different types are in the display, and different languages are supported than the built-in Wikipedia layer. The Panoramio layer features pictures uploaded by Panoramio users, placed in Google Earth based on user-provided location data. In addition to flat images, Google Earth also includes a layer for user-submitted panoramic photos, navigable in a similar way to Street View.</p>
+<p>Google Earth includes multiple features that allow the user to monitor current events. In 2007, Google began offering users the ability to monitor traffic data provided by <a href="./Google_Traffic" title="Google Traffic">Google Traffic</a> in real-time, based on information <a href="./Crowdsourcing" title="Crowdsourcing">crowdsourced</a> from the GPS-identified locations of cell phone users.</p>
+<h3>Flight simulators</h3>
+<p>In Google Earth 4.2, a <a href="./Flight_simulator" title="Flight simulator">flight simulator</a> was added to the application. It was originally a <a href="./Easter_egg_(media)#Software" title="Easter egg (media)">hidden feature</a> when introduced in 2007, but starting with 4.3, it was given a labeled option in the menu. In addition to keyboard control, the simulator can be controlled with a mouse or joystick. The simulator also runs with animation, allowing objects such as planes to animate while on the simulator.</p>
+<p>Another flight simulator, GeoFS, was created under the name GEFS-Online using the Google Earth Plug-in <a href="./API" title="API">API</a> to operate within a <a href="./Web_browser" title="Web browser">web browser</a>. As of September 1, 2015, the program now uses the open-source program CesiumJS due to the Google Earth Plug-in being discontinued.</p>
+<h3>Liquid Galaxy</h3>
+<p>Main article: <a href="./Liquid_Galaxy" title="Liquid Galaxy">Liquid Galaxy</a></p>
+<p>Liquid Galaxy is a cluster of computers running Google Earth creating an <a href="./Immersive_technology" title="Immersive technology">immersive experience</a>. On September 30, 2010, Google made the configuration and schematics for their rigs public, placing code and setup guides on the Liquid Galaxy wiki. Liquid Galaxy has also been used as a panoramic photo viewer using KRpano, as well as a Google Street View viewer using Peruse-a-Rue Peruse-a-Rue is a method for synchronizing multiple <a href="./Google_Maps#Google_Maps_API" title="Google Maps">Maps API</a> clients.</p>
+<h2>Variants</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./File:Wiki_letter_w.svg">icon</a></td>
+<td>This article <strong>is missing information</strong> about the specific versions and their respective differences. Please expand the article to include this information. Further details may exist on the <a href="./Talk:Google_Earth" title="Talk:Google Earth">talk page</a>. <em>(January 2023)</em></td>
+</tr>
+</tbody>
+</table>
+<p>Google Earth has been released on <a href="./MacOS" title="MacOS">macOS</a>, <a href="./Linux" title="Linux">Linux</a>, <a href="./IOS" title="IOS">iOS</a>, and <a href="./Android_(operating_system)" title="Android (operating system)">Android</a>. The Linux version began with the version 4 beta of Google Earth, as a native port using the <a href="./Qt_(software)" title="Qt (software)">Qt toolkit</a>. The <a href="./Free_Software_Foundation" title="Free Software Foundation">Free Software Foundation</a> considers the development of a free compatible client for Google Earth to be a <a href="./High_Priority_Free_Software_Projects" title="High Priority Free Software Projects">High Priority Free Software Project</a>. Google Earth was released for Android on February 22, 2010, and on iOS on October 27, 2008. The mobile versions of Google Earth can make use of <a href="./Multi-touch" title="Multi-touch">multi-touch</a> interfaces to move on the globe, zoom or rotate the view, and allow to select the current location. An automotive version of Google Earth was made available in the 2010 <a href="./Audi_A8" title="Audi A8">Audi A8</a>. On February 27, 2020, Google opened up its web-based version of Earth to browsers like Firefox, Edge, and Opera.</p>
+<h3>Google Earth Pro</h3>
+<p>Google Earth Pro was originally the business-oriented upgrade to Google Earth, with features such as a movie maker and data importer. Up until late January 2015, it was available for $399/year, though Google decided to make it free to the public. Google Earth Pro is currently the standard version of the Google Earth desktop application as of version 7.3. The Pro version includes add-on software for movie making, advanced printing, and precise measurements, and is available for <a href="./Windows" title="Windows">Windows</a>, <a href="./MacOS" title="MacOS">macOS</a>, and <a href="./Linux" title="Linux">Linux</a>.</p>
+<h3>Google Earth Plus</h3>
+<p>Discontinued in December 2008, Google Earth Plus was a paid subscription upgrade to Google Earth that provided customers with the following features, most of which have become available in the free Google Earth. One such feature was GPS integration, which allowed users to read tracks and waypoints from a <a href="./Global_Positioning_System" title="Global Positioning System">GPS</a> device. A variety of third-party applications have been created which provide this functionality using the basic version of Google Earth by generating KML or KMZ files based on user-specified or user-recorded waypoints.</p>
+<h3>Google Earth Enterprise</h3>
+<p>Google Earth Enterprise is designed for use by organizations whose businesses could take advantage of the program's capabilities, for example by having a globe that holds company data available for anyone in that company. As of March 20, 2015, Google has retired the Google Earth Enterprise product, with support ended on March 22, 2017. Google Earth Enterprise allowed developers to create maps and 3D globes for private use, and host them through the platform. GEE Fusion, GEE Server, and GEE Portable Server source code was published on GitHub under the Apache2 license in March 2017.</p>
+<h3>Google Earth Studio</h3>
+<p>Google Earth Studio is a web-based version of Google Earth used for animations using Google Earth's 3D imagery. As of June 2021, it is preview-only and requires signing up to use it. It features keyframe animation, presets called "Quick-Start Projects", and 3D camera export.</p>
+<h3>Google Earth 9</h3>
+<p>Google Earth 9 is a version of Google Earth first released on April 18, 2017, having been in development for two years. The main feature of this version was the launching of a new web version of Google Earth. This version added the "Voyager" feature, whereby users can view a portal page containing guided tours led by scientists and documentarians. The version also added an "I'm Feeling Lucky" button, represented by a dice, which takes the user to a random location on Earth along with showing them a "Knowledge Card" containing a short excerpt from the location's Wikipedia article.</p>
+<h3>Google Earth Plug-in</h3>
+<p>The Google Earth API was a free beta service, allowing users to place a version of Google Earth into web pages. The API enabled sophisticated 3D map applications to be built. At its unveiling at Google's 2008 I/O developer conference, the company showcased potential applications such as a game where the player controlled a milktruck atop a Google Earth surface. The Google Earth API has been deprecated as of December 15, 2014, and remained supported until December 15, 2015. Google Chrome ended support for the <a href="./NPAPI" title="NPAPI">Netscape Plugin API</a> (which the Google Earth API relies on) by the end of 2016.</p>
+<h3>Google Earth VR</h3>
+<p>On November 16, 2016, Google released a <a href="./Virtual_reality" title="Virtual reality">virtual reality</a> version of Google Earth for <a href="./Valve_Corporation" title="Valve Corporation">Valve</a>'s <a href="./Steam_(service)" title="Steam (service)">Steam</a> computer gaming platform. Google Earth VR allows users to navigate using VR controllers, and is currently compatible with the <a href="./Oculus_Rift" title="Oculus Rift">Oculus Rift</a> and <a href="./HTC_Vive" title="HTC Vive">HTC Vive</a> <a href="./Virtual_reality_headset" title="Virtual reality headset">virtual reality headsets</a>. On September 14, 2017, as part of Google Earth VR's 1.4 update, Google added Street View support.</p>
+<h2>Google Earth Engine</h2>
+<p><strong>Google Earth Engine</strong> is a <a href="./Cloud_computing" title="Cloud computing">cloud computing</a> platform for processing <a href="./Satellite_imagery" title="Satellite imagery">satellite imagery</a> and other geospatial and observation data. It provides access to a large database of satellite imagery and the computational power needed to analyze those images. Google Earth Engine allows observation of dynamic changes in agriculture, natural resources, and climate using geospatial data from the <a href="./Landsat" title="Landsat">Landsat</a> satellite program, which <a href="./Ground_track" title="Ground track">passes over</a> the same places on the Earth every sixteen days. Google Earth Engine has become a platform that makes Landsat and <a href="./Sentinel-2" title="Sentinel-2">Sentinel-2</a> data easily accessible to researchers in collaboration with the Google Cloud Storage. Google Earth Engine provides a data catalog along with computers for analysis; this allows scientists to collaborate using data, algorithms, and visualizations. The platform provides Python and JavaScript application programming interfaces for making requests to the servers, and includes a graphical user interface for developing applications.</p>
+<p>An early prototype of Earth Engine, based on the <a href="./Carnegie_Mellon_University" title="Carnegie Mellon University">Carnegie Institute for Science's</a> CLASlite system and <a href="./Imazon" title="Imazon">Imazon</a>'s Sistema de Alerta de Desmatamento (SAD) was demonstrated in 2009 at <a href="./2009_United_Nations_Climate_Change_Conference" title="2009 United Nations Climate Change Conference">COP15</a>, and Earth Engine was officially launched in 2010 at <a href="./2010_United_Nations_Climate_Change_Conference" title="2010 United Nations Climate Change Conference">COP16</a>, along with maps of the water in the <a href="./Congo_Basin" title="Congo Basin">Congo Basin</a> and forests in Mexico produced by researchers using the tool.</p>
+<p>In 2013, researchers from <a href="./University_of_Maryland" title="University of Maryland">University of Maryland</a> produced the first high-resolution global forest cover and loss maps using Earth Engine, reporting an overall loss in global forest cover. Other early applications using Earth Engine spanned a diverse variety of topics, including: Tiger Habitat Monitoring, Malaria Risk Mapping, Global Surface Water, increases in vegetation around Mount Everest, and the annual <a href="./Forest_Landscape_Integrity_Index" title="Forest Landscape Integrity Index">Forest Landscape Integrity Index</a>. Since then, Earth Engine has been used in the production of hundreds of scientific journal articles in many fields including: forestry and agriculture, hydrology, water quality monitoring and assessment, natural disaster monitoring and assessment, urban mapping, atmospheric and climate sciences and soil mapping.</p>
+<p>Earth Engine has been free for academic and research purposes since its launch, but commercial use was prohibited until 2021, when Google announced a preview of Earth Engine as a commercial cloud offering and early adopters that included Unilever, USDA and Climate Engine.</p>
+<h2>Controversy and criticism</h2>
+<p>Further information: <a href="./List_of_satellite_map_images_with_missing_or_unclear_data" title="List of satellite map images with missing or unclear data">List of satellite map images with missing or unclear data</a></p>
+<p>The software has been criticized by a number of <a href="./Special_interest_group" title="Special interest group">special interest groups</a>, including national officials, as being an <a href="./Invasion_of_privacy" title="Invasion of privacy">invasion of privacy</a> or posing a threat to <a href="./National_security" title="National security">national security</a>. The typical argument is that the software provides information about military or other critical installations that could be used by terrorists. Google Earth has been blocked by Google in Iran and Sudan since 2007, due to United States government export restrictions. The program has also been blocked in Morocco since 2006 by Maroc Telecom, a major service provider in the country.</p>
+<p>In the academic realm, increasing attention has been devoted to both Google Earth and its place in the development of digital globes. In particular, <em>the International Journal of Digital Earth</em> features multiple articles evaluating and comparing the development of Google Earth and its differences when compared to other professional, scientific, and governmental platforms. Google Earth's role in the expansion of "Earth observing media" has been examined to understand how it is shaping a shared cultural consciousness regarding climate change and humanity's capacity to treat the Earth as an engineerable object.</p>
+<h3>Defense</h3>
+<ul>
+<li>In 2006, one user spotted a large topographical replica in a remote region of China. The model is a small-scale (1/500) version of the <a href="./Karakoram" title="Karakoram">Karakoram</a> Mountain Range, which is under the control of China but claimed by India. When later confirmed as a replica of this region, spectators began entertaining military implications.</li>
+<li>In July 2007, it was reported that a new <a href="./People's_Liberation_Army_Navy" title="People's Liberation Army Navy">Chinese Navy</a> <a href="./Jin-class_submarine" title="Jin-class submarine"><em>Jin</em>-class</a> <a href="./Nuclear_weapon" title="Nuclear weapon">nuclear</a> <a href="./Ballistic_missile" title="Ballistic missile">ballistic missile</a> <a href="./Submarine" title="Submarine">submarine</a> was photographed at the Xiaopingdao Submarine Base south of <a href="./Dalian" title="Dalian">Dalian</a>.</li>
+<li><a href="./Hamas" title="Hamas">Hamas</a> and the <a href="./Al-Aqsa_Martyrs'_Brigades" title="Al-Aqsa Martyrs' Brigades">al-Aqsa Martyrs' Brigades</a> have reportedly used Google Earth to plan <a href="./Qassam_rocket" title="Qassam rocket">Qassam rocket</a> attacks on Israel from Gaza. (See: <a href="./Palestinian_rocket_attacks_on_Israel" title="Palestinian rocket attacks on Israel">Palestinian rocket attacks on Israel</a>)</li>
+<li>On February 13, 2019, 3D imagery was launched in four of <a href="./Taiwan" title="Taiwan">Taiwan</a>'s <a href="./List_of_administrative_divisions_of_Taiwan" title="List of administrative divisions of Taiwan">cities</a>: <a href="./Taipei" title="Taipei">Taipei</a>, <a href="./New_Taipei_City" title="New Taipei City">New Taipei</a>, <a href="./Taoyuan,_Taiwan" title="Taoyuan, Taiwan">Taoyuan</a>, and <a href="./Taichung" title="Taichung">Taichung</a>. This has caused concerns from Taiwanese officials, such as Taiwan's <a href="./Ministry_of_National_Defense_(Republic_of_China)" title="Ministry of National Defense (Republic of China)">Defense Minister</a> <a href="./Yen_Teh-fa" title="Yen Teh-fa">Yen Teh-fa</a>, saying that the 3D imagery exposed some of its <a href="./MIM-104_Patriot" title="MIM-104 Patriot">Patriot</a> missile sites. Ten days later on February 23, Google confirmed that it would be removing all of its 3D imagery from Taiwan.</li>
+</ul>
+<h3>National security</h3>
+<ul>
+<li>Former <a href="./President_of_India" title="President of India">president of India</a> <a href="./A._P._J._Abdul_Kalam" title="A. P. J. Abdul Kalam">A. P. J. Abdul Kalam</a> expressed concern over the availability of high-resolution pictures of sensitive locations in India. Google subsequently agreed to censor such sites.</li>
+<li>The <a href="./Indian_Space_Research_Organisation" title="Indian Space Research Organisation">Indian Space Research Organisation</a> said Google Earth poses a security threat to India and seeks dialogue with Google officials.</li>
+<li>The <a href="./South_Korea" title="South Korea">South Korean</a> government expressed concern that the software offers images of the <a href="./Blue_House" title="Blue House">presidential palace</a> and various military installations that could possibly be used by its hostile neighbor <a href="./North_Korea" title="North Korea">North Korea</a>.</li>
+<li>In 2006, Google Earth began offering detailed images of classified areas in Israel. The images showed <a href="./Israel_Defense_Forces" title="Israel Defense Forces">Israel Defense Forces</a> bases, including secret <a href="./Israeli_Air_Force" title="Israeli Air Force">Israeli Air Force</a> facilities, Israel's <a href="./Arrow_(Israeli_missile)" title="Arrow (Israeli missile)">Arrow missile</a> defense system, military headquarters and Defense Ministry compound in <a href="./Tel_Aviv" title="Tel Aviv">Tel Aviv</a>, a top-secret power station near <a href="./Ashkelon" title="Ashkelon">Ashkelon</a>, and the <a href="./Negev_Nuclear_Research_Center" title="Negev Nuclear Research Center">Negev Nuclear Research Center</a>. Also shown was the alleged headquarters of <a href="./Mossad" title="Mossad">Mossad</a>, Israel's foreign intelligence service, whose location is highly classified.</li>
+<li>As a result of pressure from the <a href="./United_States_government" title="United States government">United States government</a>, the residence of the <a href="./Vice_President_of_the_United_States" title="Vice President of the United States">vice president</a> at <a href="./Number_One_Observatory_Circle" title="Number One Observatory Circle">Number One Observatory Circle</a> was obscured through <a href="./Pixelization" title="Pixelization">pixelization</a> in Google Earth and <a href="./Google_Maps" title="Google Maps">Google Maps</a> in 2006, but this restriction has since been lifted. The usefulness of this downgrade is questionable, as high-resolution photos and aerial surveys of the property are readily available on the Internet elsewhere. <a href="./Capitol_Hill" title="Capitol Hill">Capitol Hill</a> also used to be pixelized in this way. The Royal Stables in <a href="./The_Hague" title="The Hague">The Hague</a>, Netherlands, also used to be pixelized. This is also true for airports in Greece.</li>
+<li>The lone surviving gunman involved in the <a href="./2008_Mumbai_attacks" title="2008 Mumbai attacks">2008 Mumbai attacks</a> admitted to using Google Earth to familiarise himself with the locations of buildings used in the attacks.</li>
+<li><a href="./Michael_Finton" title="Michael Finton">Michael Finton</a>, aka Talib Islam, used Google Earth in planning his attempted September 24, 2009, bombing of the Paul Findley Federal Building and the adjacent offices of Congressman <a href="./Aaron_Schock" title="Aaron Schock">Aaron Schock</a> in <a href="./Springfield,_Illinois" title="Springfield, Illinois">Springfield, Illinois</a>.</li>
+</ul>
+<h3>Other concerns</h3>
+<ul>
+<li>Operators of the <a href="./Open-pool_Australian_lightwater_reactor" title="Open-pool Australian lightwater reactor">Lucas Heights nuclear reactor</a> in <a href="./Sydney" title="Sydney">Sydney</a>, <a href="./New_South_Wales" title="New South Wales">New South Wales</a>, Australia, asked Google to censor high-resolution pictures of the facility. They later withdrew the request.</li>
+<li>In 2009, Google superimposed old woodblock prints of maps from 18th- and 19th-century Japan over Japan today. These maps marked areas inhabited by the <em><a href="./Burakumin" title="Burakumin">burakumin</a></em> caste, formerly known as <strong>eta</strong> (穢多), literally "abundance of defilement", who were considered "non-humans" for their "dirty" occupations, including <a href="./Leather_tanning" title="Leather tanning">leather tanning</a> and <a href="./Butchery" title="Butchery">butchery</a>. Descendants of members of the burakumin caste still face discrimination today and many Japanese people feared that some would use these areas, labeled <em>etamura</em> (穢多村 "eta village"), to target current inhabitants of them. These maps are still visible on Google Earth, but with the label removed where necessary.</li>
+<li>Late 2000s versions of Google Earth require a software component running in the background that will automatically download and install updates. Several users expressed concerns that there is not an easy way to disable this updater, as it runs without the permission of the user.</li>
+<li>In February 2014, the Berlin-based ART+COM charged that Google Earth products infringe U.S. Patent No. RE44,550, entitled "Method and Device for Pictorial Representation of Space-related Data" and had remarkable similarity to <a href="./Terravision_(computer_program)" title="Terravision (computer program)">Terravision</a> which was developed by ART+COM in 1993 and patented in 1995. The court decided against Art+Com both at trial and on appeal because trial testimony showed that Art+Com was aware of an existing, substantially similar invention that it failed to mention as "prior art" in its patent application, thereby invalidating their patent. Stephen Lau, a former employee of federally funded, not-for-profit Stanford Research Institute ("SRI") testified that he helped develop SRI Terravision, an earth visualization application, and that he wrote 89% of the code. He further testified that he shared and discussed SRI Terravision code with Art+Com. Both systems used a multi-resolution pyramid of imagery to let users zoom from high to low altitudes, and both were called Terravision. Art+Com agreed to rename their product because SRI's came first. Stephen Lau died from COVID-19 in March 2020.</li>
+</ul>
+<h2>See also</h2>
+<ul>
+<li><a href="./Elevation" title="Elevation">Elevation</a></li>
+<li><a href="./Esri" title="Esri">Esri</a>, publisher of ArcGIS Earth</li>
+<li><a href="./Flyover_(Apple_Maps)" title="Flyover (Apple Maps)">Flyover (Apple Maps)</a>, similar 3D feature on <a href="./Apple_Maps" title="Apple Maps">Apple Maps</a></li>
+<li><a href="./List_of_space_flight_simulation_games" title="List of space flight simulation games">List of space flight simulation games</a></li>
+<li><a href="./Planetarium_software" title="Planetarium software">Planetarium software</a></li>
+<li><a href="./List_of_observatory_software" title="List of observatory software">List of observatory software</a></li>
+<li><a href="./Orthophotomap" title="Orthophotomap">Orthophotomap</a>, the type of aerial and satellite imagery present in Google Earth</li>
+<li><a href="./Virtual_globe" title="Virtual globe">Virtual globe</a>, the category of software that includes Google Earth</li>
+<li><a href="./Web_mapping" title="Web mapping">Web mapping</a></li>
+</ul>
+<h2>References</h2>
+<h2>External links</h2>
+<p><a href="./File:Commons-logo.svg"><img alt="Wikimedia Commons logo" src="//upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/40px-Commons-logo.svg.png"></a></p>
+<p>Wikimedia Commons has media related to <a href="https://commons.wikimedia.org/wiki/Category:Google%20Earth" title="commons:Category:Google Earth">Google Earth</a>.</p>
+<p><strong>Map all coordinates using</strong> <a href="https://tools.wmflabs.org/osm4wiki/cgi-bin/wiki/wiki-osm.pl?project=en&amp;article=Google_Earth">OpenStreetMap</a></p>
+<p><strong>Download coordinates as:</strong></p>
+<ul>
+<li><a href="https://tools.wmflabs.org/kmlexport?article=Google_Earth">KML</a></li>
+<li><a href="https://geoexport.toolforge.org/gpx?project=en.wikipedia.org&amp;coprimary=all&amp;titles=Google_Earth">GPX (all coordinates)</a></li>
+<li><a href="https://geoexport.toolforge.org/gpx?project=en.wikipedia.org&amp;coprimary=primary&amp;titles=Google_Earth">GPX (primary coordinates)</a></li>
+<li>
+<p><a href="https://geoexport.toolforge.org/gpx?project=en.wikipedia.org&amp;coprimary=secondary&amp;titles=Google_Earth">GPX (secondary coordinates)</a></p>
+</li>
+<li>
+<p><a href="https://earth.google.com/">Official website</a> <a href="https://www.wikidata.org/wiki/Q42274#P856" title="Edit this at Wikidata"><img alt="Edit this at Wikidata" src="//upload.wikimedia.org/wikipedia/en/thumb/8/8a/OOjs_UI_icon_edit-ltr-progressive.svg/20px-OOjs_UI_icon_edit-ltr-progressive.svg.png"></a></p>
+</li>
+<li><a href="https://www.blog.google/products/maps/">Official Google Maps and Earth blog</a></li>
+<li><a href="https://www.google.com/earth/outreach/index.html">Google Earth Outreach</a></li>
+<li><a href="https://earth.google.com/web/data=ClUSUxIgZDY1OGRjYWIzNjlhMTFlOGFjNmU2OWJjN2I2ZDI2Y2EaGjNEIEltYWdlcnkgaW4gR29vZ2xlIEVhcnRoIhNsYXllcl8zZGNvdmVyX3BhbmVs">Map of 3D-imagery coverage in Google Earth</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products" title="List of Google products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_Maps_navbox" title="Template:Google Maps navbox">v</a> - <a href="./Template_talk:Google_Maps_navbox" title="Template talk:Google Maps navbox">t</a> - <a href="./Special:EditPage/Template:Google_Maps_navbox" title="Special:EditPage/Template:Google Maps navbox">e</a>  <a href="./Google_Maps" title="Google Maps">Google Maps</a></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Related products</td>
+<td>- <a href="./Waze" title="Waze">Waze</a> - <a href="./Google_Arts_&amp;_Culture" title="Google Arts &amp; Culture">Arts &amp; Culture</a></td>
+<td></td>
+</tr>
+<tr>
+<td>Views and mapping sites</td>
+<td>- <a href="./Google_Earth">Earth</a> - <a href="./Google_Street_View" title="Google Street View">Street View</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Google_Street_View" title="Google Street View">Street View</a></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Other</td>
+<td>- <a href="./Historypin" title="Historypin">Historypin</a> - <a href="./Google_Maps_pin" title="Google Maps pin">Google Maps pin</a> - <em><a href="./Google_Maps_Road_Trip" title="Google Maps Road Trip">Google Maps Road Trip</a></em> - <a href="./Argleton" title="Argleton">Argleton</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Android_(operating_system)" title="Template:Android (operating system)">v</a> - <a href="./Template_talk:Android_(operating_system)" title="Template talk:Android (operating system)">t</a> - <a href="./Special:EditPage/Template:Android_(operating_system)" title="Special:EditPage/Template:Android (operating system)">e</a>  <a href="./Android_(operating_system)" title="Android (operating system)">Android</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>- <a href="./Android_Go" title="Android Go">Android Go</a>   - <a href="./Comparison_of_Android_Go_products" title="Comparison of Android Go products">Comparison of products</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Android_software_development" title="Android software development">Software development</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Android_version_history" title="Android version history">Releases</a></td>
+<td>- <a href="./Android_Cupcake" title="Android Cupcake">Cupcake (1.5)</a> - <a href="./Android_Donut" title="Android Donut">Donut (1.6)</a> - <a href="./Android_Eclair" title="Android Eclair">Eclair (2.0–2.1)</a> - <a href="./Android_Froyo" title="Android Froyo">Froyo (2.2)</a> - <a href="./Android_Gingerbread" title="Android Gingerbread">Gingerbread (2.3)</a> - <a href="./Android_Honeycomb" title="Android Honeycomb">Honeycomb (3.x)</a> - <a href="./Android_Ice_Cream_Sandwich" title="Android Ice Cream Sandwich">Ice Cream Sandwich (4.0)</a> - <a href="./Android_Jelly_Bean" title="Android Jelly Bean">Jelly Bean (4.1–4.3)</a> - <a href="./Android_KitKat" title="Android KitKat">KitKat (4.4)</a> - <a href="./Android_Lollipop" title="Android Lollipop">Lollipop (5.x)</a> - <a href="./Android_Marshmallow" title="Android Marshmallow">Marshmallow (6.x)</a> - <a href="./Android_Nougat" title="Android Nougat">Nougat (7.x)</a> - <a href="./Android_Oreo" title="Android Oreo">Oreo (8.x)</a> - <a href="./Android_Pie" title="Android Pie">Pie (9)</a> - <a href="./Android_10" title="Android 10">10</a> - <a href="./Android_11" title="Android 11">11</a> - <a href="./Android_12" title="Android 12">12</a> - <a href="./Android_13" title="Android 13">13</a> - <a href="./Android_14" title="Android 14">14</a> - <a href="./Android_15" title="Android 15">15</a> - <a href="./Android_16" title="Android 16">16</a></td>
+</tr>
+<tr>
+<td>Derivatives</td>
+<td>- <a href="./Android_Automotive" title="Android Automotive">Android Automotive</a> - <a href="./Android_Things" title="Android Things">Android Things</a> - <a href="./Android_TV" title="Android TV">TV</a>   - <a href="./List_of_Android_TV_devices" title="List of Android TV devices">devices</a> - <a href="./Android_XR" title="Android XR">Android XR</a> - <a href="./Wear_OS" title="Wear OS">Wear OS</a></td>
+</tr>
+<tr>
+<td>Devices</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./List_of_custom_Android_distributions" title="List of custom Android distributions">Custom distributions</a></td>
+<td>- <a href="./AliOS" title="AliOS">AliOS</a> - <a href="./Android-x86" title="Android-x86">Android-x86</a>   - <a href="./Remix_OS" title="Remix OS">Remix OS</a> - <a href="./AOKP" title="AOKP">AOKP</a> - <a href="./Baidu_Yi" title="Baidu Yi">Baidu Yi</a> - <a href="./Barnes_&amp;_Noble_Nook" title="Barnes &amp; Noble Nook">Barnes &amp; Noble Nook</a> - <a href="./CalyxOS" title="CalyxOS">CalyxOS</a> - <a href="./ColorOS" title="ColorOS">ColorOS</a>   - <a href="./OxygenOS" title="OxygenOS">OxygenOS</a>   - <a href="./Realme" title="Realme">realme UI</a> - <a href="./CopperheadOS" title="CopperheadOS">CopperheadOS</a> - <a href="./EMUI" title="EMUI">EMUI</a>   - <a href="./Honor_(brand)" title="Honor (brand)">MagicOS</a> - <a href="./Fire_OS" title="Fire OS">Fire OS</a> - <a href="./Meizu#Flyme" title="Meizu">Flyme OS</a> - <a href="./GrapheneOS" title="GrapheneOS">GrapheneOS</a> - <a href="./LeWa_OS" title="LeWa OS">LeWa OS</a> - <a href="./LineageOS" title="LineageOS">LineageOS</a>   - <a href=".//e/_(operating_system)" title="/e/ (operating system)">/e/</a>   - <a href="./CrDroid" title="CrDroid">CrDroid</a>   - <a href="./CyanogenMod" title="CyanogenMod">CyanogenMod</a>   - <a href="./DivestOS" title="DivestOS">DivestOS</a>   - <a href="./IodéOS" title="IodéOS">iodéOS</a>   - <a href="./Kali_NetHunter" title="Kali NetHunter">Kali NetHunter</a> - <a href="./LiteOS" title="LiteOS">LiteOS</a> - <a href="./Meta_Horizon_OS" title="Meta Horizon OS">Meta Horizon OS</a> - <a href="./MicroG" title="MicroG">MicroG</a> - <a href="./Nokia_X_family#Nokia_X_software_platform" title="Nokia X family">Nokia X software platform</a> - <a href="./OmniROM" title="OmniROM">OmniROM</a> - <a href="./OPhone" title="OPhone">OPhone</a> - <a href="./PixelExperience" title="PixelExperience">PixelExperience</a> - <a href="./Google_Pixel#Pixel_UI_(Pixel_Launcher)" title="Google Pixel">Pixel UI</a> - <a href="./Replicant_(operating_system)" title="Replicant (operating system)">Replicant</a> - <a href="./Resurrection_Remix_OS" title="Resurrection Remix OS">Resurrection Remix OS</a> - <a href="./SlimRoms" title="SlimRoms">SlimRoms</a> - <a href="./TCL_Technology" title="TCL Technology">TCL UI</a> - <a href="./Ubuntu_Touch#Ubuntu_for_Android" title="Ubuntu Touch">Ubuntu for Android</a> - <a href="./Xiaomi_HyperOS" title="Xiaomi HyperOS">Xiaomi HyperOS</a>   - <a href="./MIUI" title="MIUI">MIUI</a> - <a href="./XobotOS" title="XobotOS">XobotOS</a> - <a href="./Lenovo_smartphones" title="Lenovo smartphones">ZUI</a></td>
+</tr>
+<tr>
+<td>Booting and recovery</td>
+<td>- <a href="./Booting_process_of_Android_devices" title="Booting process of Android devices">Booting process</a> - <a href="./Android_recovery_mode" title="Android recovery mode">Recovery mode</a>   - <a href="./TWRP_(software)" title="TWRP (software)">TWRP</a>   - <a href="./ClockworkMod" title="ClockworkMod">ClockworkMod</a> - <a href="./Fastboot" title="Fastboot">Fastboot</a></td>
+</tr>
+<tr>
+<td><a href="./API" title="API">APIs</a></td>
+<td>- <a href="./Google_Maps" title="Google Maps">Google Maps</a> - <a href="./Google_Play_Services" title="Google Play Services">Google Play Services</a>   - <a href="./SafetyNet" title="SafetyNet">SafetyNet/Play Integrity API</a> - <a href="./Google_Search" title="Google Search">Google Search</a></td>
+</tr>
+<tr>
+<td>Alternative <a href="./User_interface" title="User interface">UIs</a></td>
+<td>- <a href="./Cherry_OS_(operating_system)" title="Cherry OS (operating system)">Cherry OS</a> - <a href="./ColorOS" title="ColorOS">ColorOS</a> - <a href="./EMUI" title="EMUI">EMUI</a> - <a href="./Funtouch_OS" title="Funtouch OS">Funtouch OS</a> - <a href="./Meizu#Flyme" title="Meizu">Flyme OS</a> - <a href="./HiOS" title="HiOS">HiOS</a> - <a href="./Hive_UI" title="Hive UI">Hive UI (XOLO Hive)</a> - <a href="./HTC_Sense" title="HTC Sense">HTC Sense</a> - <a href="./LG_UX" title="LG UX">LG UX</a>   - <a href="./Optimus_UI" title="Optimus UI">Optimus UI</a> - <a href="./Motoblur" title="Motoblur">Motoblur</a> - <a href="./Nothing_OS" title="Nothing OS">Nothing OS</a> - <a href="./One_UI" title="One UI">One UI</a>   - <a href="./Samsung_Experience" title="Samsung Experience">Experience</a>   - <a href="./TouchWiz" title="TouchWiz">TouchWiz</a> - <a href="./Origin_OS" title="Origin OS">Origin OS</a> - <a href="./OxygenOS" title="OxygenOS">OxygenOS</a> - <a href="./Google_Pixel#Pixel_UI_(Pixel_Launcher)" title="Google Pixel">Pixel UI</a> - <a href="./XOS_(operating_system)" title="XOS (operating system)">XOS</a> - Xperia UI - <a href="./Asus_ZenFone#ZenUI_interface" title="Asus ZenFone">ZenUI</a></td>
+</tr>
+<tr>
+<td><a href="./Rooting_(Android)" title="Rooting (Android)">Rooting</a></td>
+<td>- <a href="./SuperSU" title="SuperSU">SuperSU</a> - <a href="./Magisk_(software)" title="Magisk (software)">Magisk</a> - <a href="./Kingo_Root" title="Kingo Root">Kingo Root</a> - <a href="./Kernel_Assisted_Superuser" title="Kernel Assisted Superuser">Kernel Assisted Superuser</a></td>
+</tr>
+<tr>
+<td>Lists</td>
+<td>- <a href="./List_of_custom_Android_distributions" title="List of custom Android distributions">Custom distributions</a> - <a href="./List_of_features_in_Android" title="List of features in Android">Features</a> - <a href="./List_of_free_and_open-source_Android_applications" title="List of free and open-source Android applications">Free and open-source applications</a> - <a href="./List_of_Android_apps_by_Google" title="List of Android apps by Google">Google apps</a> - <a href="./List_of_Android_launchers" title="List of Android launchers">Launchers</a></td>
+</tr>
+<tr>
+<td>Related topics</td>
+<td>- <a href="./Index_of_Android_OS_articles" title="Index of Android OS articles">Index of articles</a> - <a href="./Androidland" title="Androidland">Androidland</a> - <a href="./Chromecast" title="Chromecast">Chromecast</a> - <a href="./Google" title="Google">Google</a> - <a href="./Comparison_of_Java_and_Android_API" title="Comparison of Java and Android API">Java vs. Android API</a> - <a href="./Android_lawn_statues" title="Android lawn statues">Lawn statues</a> - <a href="./BlueStacks" title="BlueStacks">BlueStacks</a> - Legal issues   - <em><a href="./Google_LLC_v._Oracle_America,_Inc." title="Google LLC v. Oracle America, Inc.">Google v. Oracle</a></em>   - <a href="./Smartphone_patent_wars" title="Smartphone patent wars">smartphone patent wars</a> - <a href="./Google_App_Runtime_for_Chrome" title="Google App Runtime for Chrome">Android Runtime for Chrome</a></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Android_(operating_system)_development_software" title="Category:Android (operating system) development software">Category:Android development</a> - <a href="./Category:Mobile_telecommunications" title="Category:Mobile telecommunications">Category:Mobile telecommunications</a> - <a href="./Portal:Software" title="Portal:Software">Software portal</a> - <a href="./Portal:Telecommunication" title="Portal:Telecommunication">Telecommunication portal</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Astronomy_software" title="Template:Astronomy software">v</a> - <a href="./Template_talk:Astronomy_software" title="Template talk:Astronomy software">t</a> - <a href="./Special:EditPage/Template:Astronomy_software" title="Special:EditPage/Template:Astronomy software">e</a>  Astronomy software</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Open source</td>
+<td>- <a href="./Cartes_du_Ciel" title="Cartes du Ciel">Cartes du Ciel</a> - <a href="./Celestia" title="Celestia">Celestia</a> - <a href="./NASA_World_Wind" title="NASA World Wind">NASA World Wind</a> - <a href="./Stellarium_(software)" title="Stellarium (software)">Stellarium</a> - <a href="./WorldWide_Telescope" title="WorldWide Telescope">WorldWide Telescope</a></td>
+</tr>
+<tr>
+<td>Freeware</td>
+<td>- <a href="./Google_Mars" title="Google Mars">Google Mars</a> - <a href="./Google_Moon" title="Google Moon">Google Moon</a> - <a href="./Google_Sky" title="Google Sky">Google Sky</a></td>
+</tr>
+<tr>
+<td>Proprietary</td>
+<td>- <a href="./SpaceEngine" title="SpaceEngine">SpaceEngine</a></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Earth" title="Template:Earth">v</a> - <a href="./Template_talk:Earth" title="Template talk:Earth">t</a> - <a href="./Special:EditPage/Template:Earth" title="Special:EditPage/Template:Earth">e</a>  <a href="./Earth" title="Earth">Earth</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>- <a href="./Outline_of_Earth" title="Outline of Earth">Outline</a> - <a href="./History_of_Earth" title="History of Earth">History</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Atmosphere_of_Earth" title="Atmosphere of Earth">Atmosphere</a></td>
+<td>- <a href="./Atmosphere_of_Earth" title="Atmosphere of Earth">Atmosphere of Earth</a> - <a href="./Prebiotic_atmosphere" title="Prebiotic atmosphere">Prebiotic atmosphere</a> - <a href="./Troposphere" title="Troposphere">Troposphere</a> - <a href="./Stratosphere" title="Stratosphere">Stratosphere</a> - <a href="./Mesosphere" title="Mesosphere">Mesosphere</a> - <a href="./Thermosphere" title="Thermosphere">Thermosphere</a> - <a href="./Exosphere" title="Exosphere">Exosphere</a> - <a href="./Weather" title="Weather">Weather</a></td>
+</tr>
+<tr>
+<td><a href="./Climate" title="Climate">Climate</a></td>
+<td>- <a href="./Climate_system" title="Climate system">Climate system</a> - <a href="./Earth's_energy_budget" title="Earth's energy budget">Energy balance</a> - <a href="./Climate_change" title="Climate change">Climate change</a> - <a href="./Climate_variability_and_change" title="Climate variability and change">Climate variability and change</a> - <a href="./Climatology" title="Climatology">Climatology</a> - <a href="./Paleoclimatology" title="Paleoclimatology">Paleoclimatology</a></td>
+</tr>
+<tr>
+<td><a href="./Continent" title="Continent">Continents</a></td>
+<td>- <a href="./Africa" title="Africa">Africa</a> - <a href="./Antarctica" title="Antarctica">Antarctica</a> - <a href="./Asia" title="Asia">Asia</a> - <a href="./Australia_(continent)" title="Australia (continent)">Australia</a> - <a href="./Europe" title="Europe">Europe</a> - <a href="./North_America" title="North America">North America</a> - <a href="./South_America" title="South America">South America</a></td>
+</tr>
+<tr>
+<td><a href="./Earth_in_culture" title="Earth in culture">Culture and society</a></td>
+<td>- <a href="./List_of_sovereign_states" title="List of sovereign states">List of sovereign states</a>   - <a href="./Dependent_territory" title="Dependent territory">dependent territories</a> - <a href="./Earth_in_culture" title="Earth in culture">In culture</a> - <a href="./Earth_Day" title="Earth Day">Earth Day</a> - <a href="./Flag_of_Earth" title="Flag of Earth">Flag</a> - <a href="./Earth_symbol" title="Earth symbol">Symbol</a> - <a href="./World_economy" title="World economy">World economy</a> - <a href="./Earth#Etymology" title="Earth">Etymology</a> - <a href="./Human_history" title="Human history">World history</a> - <a href="./Time_zone" title="Time zone">Time zones</a> - <a href="./World" title="World">World</a></td>
+</tr>
+<tr>
+<td><a href="./Natural_environment" title="Natural environment">Environment</a></td>
+<td>- <a href="./Biome" title="Biome">Biome</a> - <a href="./Biosphere" title="Biosphere">Biosphere</a> - <a href="./Biogeochemical_cycle" title="Biogeochemical cycle">Biogeochemical cycles</a> - <a href="./Ecology" title="Ecology">Ecology</a> - <a href="./Ecosystem" title="Ecosystem">Ecosystem</a> - <a href="./Human_impact_on_the_environment" title="Human impact on the environment">Human impact on the environment</a> - <a href="./History_of_life" title="History of life">Evolutionary history of life</a> - <a href="./Nature" title="Nature">Nature</a></td>
+</tr>
+<tr>
+<td><a href="./Geodesy" title="Geodesy">Geodesy</a></td>
+<td>- <a href="./Cartography" title="Cartography">Cartography</a>   - <a href="./Computer_cartography" title="Computer cartography">Computer cartography</a> - <a href="./Earth's_orbit" title="Earth's orbit">Earth's orbit</a> - <a href="./Geodetic_astronomy" title="Geodetic astronomy">Geodetic astronomy</a> - <a href="./Geomatics" title="Geomatics">Geomatics</a> - <a href="./Gravity_of_Earth" title="Gravity of Earth">Gravity</a> - <a href="./Navigation" title="Navigation">Navigation</a> - <a href="./Remote_Sensing" title="Remote Sensing">Remote Sensing</a> - <a href="./Geopositioning" title="Geopositioning">Geopositioning</a> - <a href="./Virtual_globe" title="Virtual globe">Virtual globe</a></td>
+</tr>
+<tr>
+<td><a href="./Geophysics" title="Geophysics">Geophysics</a></td>
+<td>- <a href="./Internal_structure_of_Earth" title="Internal structure of Earth">Earth structure</a> - <a href="./Geophysical_fluid_dynamics" title="Geophysical fluid dynamics">Fluid dynamics</a> - <a href="./Earth's_magnetic_field" title="Earth's magnetic field">Geomagnetism</a> - <a href="./Magnetosphere" title="Magnetosphere">Magnetosphere</a> - <a href="./Mineral_physics" title="Mineral physics">Mineral physics</a> - <a href="./Seismology" title="Seismology">Seismology</a> - <a href="./Plate_tectonics" title="Plate tectonics">Plate tectonics</a> - <a href="./Signal_processing" title="Signal processing">Signal processing</a> - <a href="./Geophysical_imaging" title="Geophysical imaging">Tomography</a></td>
+</tr>
+<tr>
+<td><a href="./Geology" title="Geology">Geology</a></td>
+<td>- <a href="./Age_of_Earth" title="Age of Earth">Age of Earth</a> - <a href="./Earth_science" title="Earth science">Earth science</a> - <a href="./Extremes_on_Earth" title="Extremes on Earth">Extremes on Earth</a> - <a href="./Future_of_Earth" title="Future of Earth">Future</a> - <a href="./Geological_history_of_Earth" title="Geological history of Earth">Geological history</a>   - <a href="./Geologic_time_scale" title="Geologic time scale">Geologic time scale</a> - <a href="./Geologic_record" title="Geologic record">Geologic record</a> - <a href="./History_of_Earth" title="History of Earth">History of Earth</a></td>
+</tr>
+<tr>
+<td><a href="./Ocean" title="Ocean">Oceans</a></td>
+<td>- <a href="./Southern_Ocean" title="Southern Ocean">Antarctic/Southern Ocean</a> - <a href="./Arctic_Ocean" title="Arctic Ocean">Arctic Ocean</a> - <a href="./Atlantic_Ocean" title="Atlantic Ocean">Atlantic Ocean</a> - <a href="./Indian_Ocean" title="Indian Ocean">Indian Ocean</a> - <a href="./Pacific_Ocean" title="Pacific Ocean">Pacific Ocean</a> - <a href="./Oceanography" title="Oceanography">Oceanography</a></td>
+</tr>
+<tr>
+<td><a href="./Planetary_science" title="Planetary science">Planetary science</a></td>
+<td>- <a href="./Moon" title="Moon">The Moon</a> - <a href="./Formation_and_evolution_of_the_Solar_System" title="Formation and evolution of the Solar System">Evolution of the Solar System</a> - <a href="./Geology_of_solar_terrestrial_planets" title="Geology of solar terrestrial planets">Geology of solar terrestrial planets</a> - <a href="./Location_of_Earth" title="Location of Earth">Location in the Universe</a> - <a href="./Solar_System" title="Solar System">Solar System</a></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Earth" title="Category:Earth">Category</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><a href="./Wikipedia:Contents/Portals" title="Wikipedia:Contents/Portals">Portals</a>:</p>
+<ul>
+<li><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Terra.png/20px-Terra.png"> <a href="./Portal:Geography" title="Portal:Geography">Geography</a></li>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/0/00/Crab_Nebula.jpg/20px-Crab_Nebula.jpg"> <a href="./Portal:Astronomy" title="Portal:Astronomy">Astronomy</a></li>
+<li><a href="./File:He1523a.jpg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/5/5f/He1523a.jpg/20px-He1523a.jpg"></a> <a href="./Portal:Stars" title="Portal:Stars">Stars</a></li>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/8/83/Solar_system.jpg/20px-Solar_system.jpg"> <a href="./Portal:Solar_System" title="Portal:Solar System">Solar System</a></li>
+<li><a href="./File:Nuvola_apps_kalzium.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Nuvola_apps_kalzium.svg/20px-Nuvola_apps_kalzium.svg.png"></a> <a href="./Portal:Science" title="Portal:Science">Science</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th><a href="./Help:Authority_control" title="Help:Authority control">Authority control databases</a> <a href="https://www.wikidata.org/wiki/Q42274#identifiers" title="Edit this at Wikidata">Edit this at Wikidata</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>International</td>
+<td>- <a href="https://d-nb.info/gnd/7519118-0">GND</a></td>
+</tr>
+<tr>
+<td>National</td>
+<td>- <a href="https://id.loc.gov/authorities/n2006033376">United States</a> - <a href="https://aleph.nkp.cz/F/?func=find-c&amp;local_base=aut&amp;ccl_term=ica=ph825968&amp;CON_LNG=ENG">Czech Republic</a> - <a href="https://www.nli.org.il/en/authorities/987007381876405171">Israel</a></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

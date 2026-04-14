@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>List of Google products</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link active" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>List of Google products</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/List_of_Google_products<br>
+Category: company__depth2<br>
+Depth: 2</p>
+</blockquote>
+<h2>Summary</h2>
+<p>The following is a list of products, services, and apps provided by Google.</p>
+<h2>Full Article</h2>
+<p>The following is a list of products, services, and apps provided by <a href="./Google" title="Google">Google</a>.</p>
+<h2>Web-based products</h2>
+<table>
+<thead>
+<tr>
+<th>Product</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Search tools</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Google_Search" title="Google Search">Google Search</a></td>
+<td>A <a href="./Search_engine" title="Search engine">web search engine</a> and Google's core product.</td>
+</tr>
+<tr>
+<td><a href="./Google_Alerts" title="Google Alerts">Google Alerts</a></td>
+<td>An email notification service that sends alerts based on chosen search terms whenever it finds new results. Alerts include web results, Google Groups results, news, and videos.</td>
+</tr>
+<tr>
+<td><a href="./Google_Assistant" title="Google Assistant">Google Assistant</a></td>
+<td>A <a href="./Virtual_assistant" title="Virtual assistant">virtual assistant</a>.</td>
+</tr>
+<tr>
+<td><a href="./Gemini_(chatbot)" title="Gemini (chatbot)">Gemini</a></td>
+<td>A conversational <a href="./Generative_artificial_intelligence" title="Generative artificial intelligence">generative artificial intelligence</a> <a href="./Chatbot" title="Chatbot">chatbot</a>.</td>
+</tr>
+<tr>
+<td><a href="./Google_Books" title="Google Books">Google Books</a></td>
+<td>A search engine for books.</td>
+</tr>
+<tr>
+<td><a href="./Google_Dataset_Search" title="Google Dataset Search">Google Dataset Search</a></td>
+<td>Allows searching for datasets in data repositories and local and national government websites.</td>
+</tr>
+<tr>
+<td><a href="./Google_Flights" title="Google Flights">Google Flights</a></td>
+<td>A search engine for flight tickets.</td>
+</tr>
+<tr>
+<td><a href="./Google_Images" title="Google Images">Google Images</a></td>
+<td>A search engine for images online.</td>
+</tr>
+<tr>
+<td><a href="./Google_Shopping" title="Google Shopping">Google Shopping</a></td>
+<td>A search engine to search for products across online shops.</td>
+</tr>
+<tr>
+<td><a href="./Google_Travel" title="Google Travel">Google Travel</a></td>
+<td>A trip planner service.</td>
+</tr>
+<tr>
+<td><a href="./Google_Search#Google_Videos" title="Google Search">Google Videos</a></td>
+<td>A search engine for videos.</td>
+</tr>
+<tr>
+<td>Groupings of articles, creative works, documents, or media</td>
+<td></td>
+</tr>
+<tr>
+<td>Chrome Music Lab</td>
+<td>A website for experimenting or creating music through interactive learning.</td>
+</tr>
+<tr>
+<td><a href="./Google_Arts_&amp;_Culture" title="Google Arts &amp; Culture">Google Arts &amp; Culture</a></td>
+<td>An online platform to view artworks and cultural artifacts.</td>
+</tr>
+<tr>
+<td><a href="./Google_Books" title="Google Books">Google Books</a></td>
+<td>A website that lists published books and hosts a large, searchable selection of scanned books.</td>
+</tr>
+<tr>
+<td><a href="./Google_Finance" title="Google Finance">Google Finance</a></td>
+<td>Searchable US business news, opinions, and financial data.</td>
+</tr>
+<tr>
+<td><a href="./Google_News" title="Google News">Google News</a></td>
+<td>Automated news compilation service and search engine for news in more than 20 languages.</td>
+</tr>
+<tr>
+<td><a href="./Google_News_Lab" title="Google News Lab">Google News Lab</a></td>
+<td>A suite of tools for journalists, including Pinpoint, a platform to collect, categorize, and analyze documents relating to certain subjects.</td>
+</tr>
+<tr>
+<td><a href="./Google_Patents" title="Google Patents">Google Patents</a></td>
+<td>A search engine to search through millions of <a href="./Patent" title="Patent">patents</a>, each result with its own page, including drawings, claims, and citations.</td>
+</tr>
+<tr>
+<td><a href="./Google_Scholar" title="Google Scholar">Google Scholar</a></td>
+<td>A search engine for the full text of scholarly literature across an array of publishing formats and scholarly fields. Includes virtually all <a href="./Academic_journal" title="Academic journal">peer-reviewed journals</a>.</td>
+</tr>
+<tr>
+<td><a href="./YouTube" title="YouTube">YouTube</a></td>
+<td>A video hosting website.</td>
+</tr>
+<tr>
+<td>Advertising services</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./AdMob" title="AdMob">AdMob</a></td>
+<td>A mobile advertising network.</td>
+</tr>
+<tr>
+<td><a href="./Google_Ads" title="Google Ads">Google Ads</a></td>
+<td>An <a href="./Online_advertising" title="Online advertising">online advertising</a> platform.</td>
+</tr>
+<tr>
+<td><a href="./Google_AdSense" title="Google AdSense">Google AdSense</a></td>
+<td>A contextual advertising program for web publishers that delivers text-based advertisements that are relevant to site content pages.</td>
+</tr>
+<tr>
+<td><a href="./Google_Ad_Manager" title="Google Ad Manager">Google Ad Manager</a></td>
+<td>An advertisement exchange platform.</td>
+</tr>
+<tr>
+<td><a href="./Google_Marketing_Platform" title="Google Marketing Platform">Google Marketing Platform</a></td>
+<td>An online advertising and analytics platform.</td>
+</tr>
+<tr>
+<td><a href="https://tagmanager.google.com/">Google Tag Manager</a></td>
+<td>A <a href="./Tag_management_system" title="Tag management system">tag management system</a> to manage JavaScript and HTML tags, including <a href="./Web_beacon" title="Web beacon">web beacons</a>, for web tracking and analytics.</td>
+</tr>
+<tr>
+<td><a href="https://ads.google.com/intl/en_us/home/local-services-ads/">Local Service Ads</a></td>
+<td>An online advertising platform for lead generations that provide local businesses with a Google guaranteed green check mark.</td>
+</tr>
+<tr>
+<td>Communication and publishing tools</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Blogger_(service)" title="Blogger (service)">Blogger</a></td>
+<td>A <a href="./Blog" title="Blog">weblog</a> publishing tool.</td>
+</tr>
+<tr>
+<td><a href="./FeedBurner" title="FeedBurner">FeedBurner</a></td>
+<td>A tool in <a href="./Web_feed" title="Web feed">web feed</a> management services, including feed <a href="./Traffic_analysis" title="Traffic analysis">traffic analysis</a> and advertising facilities.</td>
+</tr>
+<tr>
+<td><a href="./Google_Chat" title="Google Chat">Google Chat</a></td>
+<td>An <a href="./Instant_messaging" title="Instant messaging">instant messaging</a> software with the capability of creating multi-user "rooms".</td>
+</tr>
+<tr>
+<td><a href="./Google_Classroom" title="Google Classroom">Google Classroom</a></td>
+<td>A <a href="./Content_management_system" title="Content management system">content management system</a> for schools that aids in the distribution and grading of assignments and provides in-class communication.</td>
+</tr>
+<tr>
+<td><a href="./Google_Contacts" title="Google Contacts">Google Contacts</a></td>
+<td>A <a href="./Contact_manager" title="Contact manager">contact management</a> service.</td>
+</tr>
+<tr>
+<td><a href="./Google_Fonts" title="Google Fonts">Google Fonts</a></td>
+<td>A <a href="./Web_typography" title="Web typography">webfont</a> hosting service.</td>
+</tr>
+<tr>
+<td><a href="./Google_Groups" title="Google Groups">Google Groups</a></td>
+<td>An online discussion service that also offers <a href="./Usenet" title="Usenet">Usenet</a> access.</td>
+</tr>
+<tr>
+<td><a href="./Google_Meet" title="Google Meet">Google Meet</a></td>
+<td>A video conferencing platform.</td>
+</tr>
+<tr>
+<td><a href="https://www.google.com/interests/saved">Google Saved</a></td>
+<td>A collections app.</td>
+</tr>
+<tr>
+<td><a href="./Google_Sites" title="Google Sites">Google Sites</a></td>
+<td>A <a href="./Web_page" title="Web page">webpage</a> creation and publication tool.</td>
+</tr>
+<tr>
+<td><a href="./Google_Voice" title="Google Voice">Google Voice</a></td>
+<td>A <a href="./Voice_over_IP" title="Voice over IP">VoIP</a> system that provides a phone number that can be forwarded to actual phone lines.</td>
+</tr>
+<tr>
+<td>Productivity tools</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Gmail" title="Gmail">Gmail</a></td>
+<td>An email service.</td>
+</tr>
+<tr>
+<td><a href="./Gmail_Drive" title="Gmail Drive">Gmail Drive</a></td>
+<td>A former Google service that allowed a user to access a virtual drive stored in a Gmail account.</td>
+</tr>
+<tr>
+<td><a href="./Google_Account" title="Google Account">Google Account</a></td>
+<td>Controls how a user appears and presents themselves on Google products.</td>
+</tr>
+<tr>
+<td><a href="./Google_Calendar" title="Google Calendar">Google Calendar</a></td>
+<td>An online calendar with <a href="./Gmail" title="Gmail">Gmail</a> integration, calendar sharing, and a "quick add" function to create events using natural language.</td>
+</tr>
+<tr>
+<td><a href="./Google_Charts" title="Google Charts">Google Charts</a></td>
+<td>An interactive, web-based chart image generation from user-supplied JavaScript.</td>
+</tr>
+<tr>
+<td><a href="./Google_Docs_Editors" title="Google Docs Editors">Google Docs Editors</a></td>
+<td>A productivity <a href="./Productivity_software" title="Productivity software">office suite</a> with document collaboration and publishing capabilities.</td>
+</tr>
+<tr>
+<td><a href="./Google_Drawings" title="Google Drawings">Google Drawings</a></td>
+<td>A <a href="./Diagram" title="Diagram">diagramming</a> software.</td>
+</tr>
+<tr>
+<td><a href="./Google_Drive" title="Google Drive">Google Drive</a></td>
+<td>A <a href="./File-hosting_service" title="File-hosting service">file hosting service</a> with <a href="./Synchronization_(computer_science)" title="Synchronization (computer science)">synchronisation</a> option; tightly integrated with Google Docs Editors.</td>
+</tr>
+<tr>
+<td><a href="./Google_Forms" title="Google Forms">Google Forms</a></td>
+<td>A <a href="./Surveying" title="Surveying">survey</a> software.</td>
+</tr>
+<tr>
+<td><a href="./Google_Keep" title="Google Keep">Google Keep</a></td>
+<td>A <a href="./Note-taking" title="Note-taking">note-taking</a> service.</td>
+</tr>
+<tr>
+<td><a href="./Google_Sheets" title="Google Sheets">Google Sheets</a></td>
+<td>A <a href="./Spreadsheet" title="Spreadsheet">spreadsheet</a> editing software.</td>
+</tr>
+<tr>
+<td><a href="./Google_Slides" title="Google Slides">Google Slides</a></td>
+<td>A <a href="./Presentation_program" title="Presentation program">presentation</a> editing software.</td>
+</tr>
+<tr>
+<td><a href="./Google_Tasks" title="Google Tasks">Google Tasks</a></td>
+<td>A task management service.</td>
+</tr>
+<tr>
+<td><a href="./Google_Translate" title="Google Translate">Google Translate</a></td>
+<td>A service that allows carrying out machine translation of any text or web page between pairs of languages.</td>
+</tr>
+<tr>
+<td><a href="./NotebookLM" title="NotebookLM">NotebookLM</a></td>
+<td>A research and note-taking online tool.</td>
+</tr>
+<tr>
+<td>Map-related products</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Google_Earth" title="Google Earth">Google Earth</a></td>
+<td>A virtual 3D globe that uses satellite imagery, aerial photography, <a href="./Geographic_information_system" title="Geographic information system">GIS</a> from Google's repository.</td>
+</tr>
+<tr>
+<td><a href="./Google_Maps" title="Google Maps">Google Maps</a></td>
+<td>A mapping service that indexes streets and displays satellite and street-level imagery, providing directions and local business search.</td>
+</tr>
+<tr>
+<td><a href="./Google_My_Maps" title="Google My Maps">Google My Maps</a></td>
+<td>A social custom map making tool based on Google Maps.</td>
+</tr>
+<tr>
+<td><a href="./Google_Santa_Tracker" title="Google Santa Tracker">Google Santa Tracker</a></td>
+<td>Simulates tracking <a href="./Santa_Claus" title="Santa Claus">Santa Claus</a> on Christmas Eve.</td>
+</tr>
+<tr>
+<td><a href="./Google_Street_View" title="Google Street View">Google Street View</a></td>
+<td>Provides <a href="./VR_photography" title="VR photography">interactive panoramas</a> from positions along many streets in the world.</td>
+</tr>
+<tr>
+<td>Statistical tools</td>
+<td></td>
+</tr>
+<tr>
+<td>Google Activity Report</td>
+<td>A monthly report, including statistics about a user's Google usage, such as sign-in, third party authentication changes, Gmail usage, calendar, search history and YouTube activity.</td>
+</tr>
+<tr>
+<td><a href="./Google_Analytics" title="Google Analytics">Google Analytics</a></td>
+<td>A <a href="./Web_analytics" title="Web analytics">web analytics</a> service that tracks and reports website traffic and also mobile app traffic and events, currently as a platform inside the Google Marketing Platform brand.</td>
+</tr>
+<tr>
+<td><a href="./Google_Books_Ngram_Viewer" title="Google Books Ngram Viewer">Google Ngram Viewer</a></td>
+<td>A search engine that charts year-by-year frequencies of any set of comma-delimited strings in Google's text corpora.</td>
+</tr>
+<tr>
+<td><a href="./Google_Public_Data_Explorer" title="Google Public Data Explorer">Google Public Data Explorer</a></td>
+<td>A public data and forecasts from international organizations and academic institutions, including the <a href="./World_Bank_Group" title="World Bank Group">World Bank</a>, <a href="./OECD" title="OECD">OECD</a>, <a href="./Eurostat" title="Eurostat">Eurostat</a> and the <a href="./University_of_Denver" title="University of Denver">University of Denver</a>.</td>
+</tr>
+<tr>
+<td><a href="./Google_Trends" title="Google Trends">Google Trends</a></td>
+<td>An online tool for analyzing the popularity of top search queries in Google Search, across various regions and languages. Graphs compare the search volume of different queries over a certain period of time.</td>
+</tr>
+<tr>
+<td><a href="./Looker_Studio" title="Looker Studio">Looker Studio</a></td>
+<td>An online tool for converting data into customizable informative reports and dashboards.</td>
+</tr>
+<tr>
+<td><a href="./TensorFlow" title="TensorFlow">TensorFlow</a></td>
+<td>A <a href="./Machine_learning" title="Machine learning">machine learning</a> service that simplifies designing neural networks in an easier and more visible fashion.</td>
+</tr>
+<tr>
+<td>Business-oriented products</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Google_Business_Profile" title="Google Business Profile">Google Business Profile</a></td>
+<td>A listing service that allows business owners to create and verify their own business data including address, phone number, business category and photos.</td>
+</tr>
+<tr>
+<td><a href="./Google_Workspace" title="Google Workspace">Google Workspace</a></td>
+<td>A suite of web applications for businesses, education providers and nonprofits that include customizable versions of several Google products, accessible through a custom <a href="./Domain_name" title="Domain name">domain name</a>.</td>
+</tr>
+<tr>
+<td>Google Opal</td>
+<td>A No-code development tool designed to help users build AI-powered applications with ease. It simplifies the app creation process by allowing users to integrate large language models without writing a single line of code, making AI more accessible to non-developers and domain experts alike.</td>
+</tr>
+<tr>
+<td>Healthcare related products</td>
+<td></td>
+</tr>
+<tr>
+<td>Google ARDA project</td>
+<td>An AI tool to help doctors detect retinal disease.</td>
+</tr>
+<tr>
+<td>Google Care Studio</td>
+<td>A tool for clinicians to search, browse and see highlights, across a patient's broader electronic health record.</td>
+</tr>
+<tr>
+<td><a href="./Google_Fit" title="Google Fit">Google Fit</a></td>
+<td>A health-tracking platform.</td>
+</tr>
+<tr>
+<td>Health Connect</td>
+<td>An Android platform, which helps health and fitness apps to use the same on-device data, within a unified ecosystem.</td>
+</tr>
+</tbody>
+</table>
+<h2>Developer tools</h2>
+<table>
+<thead>
+<tr>
+<th>Product</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Accelerated_Mobile_Pages" title="Accelerated Mobile Pages">Accelerated Mobile Pages (AMP)</a></td>
+<td>An open-source project and service to accelerate content on mobile devices. Provides a JavaScript library for developers and restricts the use of third-party JS.</td>
+</tr>
+<tr>
+<td><a href="./ARCore" title="ARCore">ARCore</a></td>
+<td>A software development kit for <a href="./Augmented_reality" title="Augmented reality">augmented reality</a> applications.</td>
+</tr>
+<tr>
+<td><a href="./Google_App_Engine" title="Google App Engine">Google App Engine</a></td>
+<td>Write and run web applications.</td>
+</tr>
+<tr>
+<td><a href="./Google_Developers" title="Google Developers">Google Developers</a></td>
+<td><a href="./Open-source_software" title="Open-source software">Open source</a> code and lists of <a href="./API" title="API">API</a> services. Provided project hosting for <a href="./Free_and_open_source_software" title="Free and open source software">free and open source software</a> until 2016.</td>
+</tr>
+<tr>
+<td><a href="./Material_Design" title="Material Design">Material Design</a></td>
+<td>A <a href="./Design_language" title="Design language">design language</a> created in 2014, that focuses on creating user interfaces with a consistent visual language.</td>
+</tr>
+<tr>
+<td><a href="./Dart_(programming_language)" title="Dart (programming language)">Dart</a></td>
+<td>A structured web programming language.</td>
+</tr>
+<tr>
+<td><a href="./Flutter_(software)" title="Flutter (software)">Flutter</a></td>
+<td>A mobile cross-platform development tool for <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> and <a href="./IOS" title="IOS">iOS</a>.</td>
+</tr>
+<tr>
+<td><a href="./Go_(programming_language)" title="Go (programming language)">Go</a></td>
+<td>A compiled, concurrent programming language.</td>
+</tr>
+<tr>
+<td><a href="./OpenSocial" title="OpenSocial">OpenSocial</a></td>
+<td>APIs for building social applications on many websites.</td>
+</tr>
+<tr>
+<td><a href="./Google_PageSpeed_Tools" title="Google PageSpeed Tools">Google PageSpeed Tools</a></td>
+<td>Optimize webpage performance.</td>
+</tr>
+<tr>
+<td><a href="./Google_Web_Toolkit" title="Google Web Toolkit">Google Web Toolkit</a></td>
+<td>An open source Java software development framework that allows web developers to create Ajax applications in Java.</td>
+</tr>
+<tr>
+<td><a href="./Google_Search_Console" title="Google Search Console">Google Search Console</a></td>
+<td>A web service that helps website owners, webmasters, and SEO professionals monitor and maintain a site's presence in Google Search results.</td>
+</tr>
+<tr>
+<td>GN</td>
+<td>Meta-build system generating <a href="./Ninja_(build_system)" title="Ninja (build system)">Ninja build configurations</a>. Replaced <a href="./GYP_(software)" title="GYP (software)">GYP</a> in <a href="./Chromium_(web_browser)" title="Chromium (web browser)">Chromium</a>.</td>
+</tr>
+<tr>
+<td><a href="./Gerrit_(software)" title="Gerrit (software)">Gerrit</a></td>
+<td>A code collaboration tool.</td>
+</tr>
+<tr>
+<td><a href="./Googletest" title="Googletest">Googletest</a></td>
+<td>Testing framework in <a href="./C++" title="C++">C++</a>.</td>
+</tr>
+<tr>
+<td><a href="./Bazel_(software)" title="Bazel (software)">Bazel</a></td>
+<td>A <a href="./Build_system" title="Build system">build system</a>.</td>
+</tr>
+<tr>
+<td><a href="./FlatBuffers" title="FlatBuffers">FlatBuffers</a></td>
+<td>A serialization library.</td>
+</tr>
+<tr>
+<td><a href="./Protocol_Buffers" title="Protocol Buffers">Protocol Buffers</a></td>
+<td>A serialization library similar to FlatBuffers.</td>
+</tr>
+<tr>
+<td>Shaderc</td>
+<td>Tools and library for compiling <a href="./High-Level_Shading_Language" title="High-Level Shading Language">HLSL</a> or <a href="./OpenGL_Shading_Language" title="OpenGL Shading Language">GLSL</a> into <a href="./Standard_Portable_Intermediate_Representation" title="Standard Portable Intermediate Representation">SPIRV</a>.</td>
+</tr>
+<tr>
+<td><a href="./American_fuzzy_lop_(fuzzer)" title="American fuzzy lop (fuzzer)">American fuzzy lop</a></td>
+<td>A security-oriented fuzzer.</td>
+</tr>
+<tr>
+<td><a href="./Google_Guava" title="Google Guava">Google Guava</a></td>
+<td>Core libraries for Java.</td>
+</tr>
+<tr>
+<td><a href="./Google_Closure_Tools" title="Google Closure Tools">Google Closure Tools</a></td>
+<td>JavaScript tools.</td>
+</tr>
+<tr>
+<td><a href="./Google_Colab" title="Google Colab">Google Colaboratory</a></td>
+<td>Write <a href="./Python_(programming_language)" title="Python (programming language)">Python</a> code using a <a href="./Project_Jupyter" title="Project Jupyter">Jupyter</a> notebook.</td>
+</tr>
+<tr>
+<td>Security Tools</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./ReCAPTCHA" title="ReCAPTCHA">reCAPTCHA</a></td>
+<td>A user-dialogue system used to prevent bots from accessing websites.</td>
+</tr>
+<tr>
+<td><a href="./Google_Safe_Browsing" title="Google Safe Browsing">Google Safe Browsing</a></td>
+<td>A blacklist service for web resources that contain malware or phishing content.</td>
+</tr>
+<tr>
+<td>Titan</td>
+<td>A security hardware chip.</td>
+</tr>
+<tr>
+<td>Titan Security Key</td>
+<td>A <a href="./Universal_2nd_Factor" title="Universal 2nd Factor">U2F</a> <a href="./Security_token" title="Security token">security token</a>.</td>
+</tr>
+<tr>
+<td>Titan M</td>
+<td>Used in <a href="./Google_Pixel" title="Google Pixel">Pixel</a> smartphones starting with the <a href="./Pixel_3" title="Pixel 3">Pixel 3</a>.</td>
+</tr>
+<tr>
+<td>Titan M2</td>
+<td>Successor starting with the <a href="./Pixel_6" title="Pixel 6">Pixel 6</a> based on <a href="./RISC-V" title="RISC-V">RISC-V</a>.</td>
+</tr>
+<tr>
+<td>Titan C</td>
+<td>Used in Google-made <a href="./Chromebook" title="Chromebook">Chromebooks</a> such as the <a href="./Pixel_Slate" title="Pixel Slate">Pixel Slate</a>.</td>
+</tr>
+</tbody>
+</table>
+<h2>Operating systems</h2>
+<table>
+<thead>
+<tr>
+<th>Product</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Android_(operating_system)" title="Android (operating system)">Android</a></td>
+<td>A Linux-based operating system for mobile devices such as smartphones and tablets, developed by Google and the <a href="./Open_Handset_Alliance" title="Open Handset Alliance">Open Handset Alliance</a>.</td>
+</tr>
+<tr>
+<td><a href="./Android_Auto" title="Android Auto">Android Auto</a></td>
+<td>A version of Android optimized for automobiles, offering enhanced connectivity and in-car experience.</td>
+</tr>
+<tr>
+<td><a href="./Android_TV" title="Android TV">Android TV</a></td>
+<td>A version of Android tailored for smart TVs, offering apps, games, and content streaming.</td>
+</tr>
+<tr>
+<td><a href="./ChromeOS" title="ChromeOS">ChromeOS</a></td>
+<td>A Linux-based operating system designed for web applications and lightweight devices.</td>
+</tr>
+<tr>
+<td><a href="./ChromiumOS" title="ChromiumOS">ChromiumOS</a></td>
+<td>A free and open-source Linux-based operating system designed for web applications and browsing the World Wide Web.</td>
+</tr>
+<tr>
+<td>Fitbit OS</td>
+<td>An operating system developed for <a href="./Fitbit" title="Fitbit">Fitbit</a> devices.</td>
+</tr>
+<tr>
+<td><a href="./Fuchsia_(operating_system)" title="Fuchsia (operating system)">Fuchsia</a></td>
+<td>An operating system based on the Zircon kernel.</td>
+</tr>
+<tr>
+<td><a href="./Google_Cast" title="Google Cast">Google Cast</a></td>
+<td>A version of <a href="./Google_Cast" title="Google Cast">Google Cast</a> powering some <a href="./Google_Nest" title="Google Nest">Google Nest</a> devices.</td>
+</tr>
+<tr>
+<td><a href="./Wear_OS" title="Wear OS">Wear OS</a></td>
+<td>A version of Android designed for smartwatches and other wearable items.</td>
+</tr>
+</tbody>
+</table>
+<h2>Desktop applications</h2>
+<table>
+<thead>
+<tr>
+<th>Product</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Android_Studio" title="Android Studio">Android Studio</a></td>
+<td>An <a href="./Integrated_development_environment" title="Integrated development environment">integrated development environment</a> (IDE) designed for Android app development.</td>
+</tr>
+<tr>
+<td><a href="./Chrome_Remote_Desktop" title="Chrome Remote Desktop">Chrome Remote Desktop</a></td>
+<td>A desktop and browser application enabling users to remotely access another Windows, Mac, or Linux system.</td>
+</tr>
+<tr>
+<td><a href="./Chromium_(web_browser)" title="Chromium (web browser)">Chromium</a></td>
+<td><a href="./Free_and_open-source_software" title="Free and open-source software">Free and open-source</a> <a href="./Web_browser" title="Web browser">web browser</a> primarily developed and maintained by Google.</td>
+</tr>
+<tr>
+<td>Google Ads Editor</td>
+<td>A desktop application to manage Google Ads accounts; enables users to make campaign changes offline before synchronizing with the online service.</td>
+</tr>
+<tr>
+<td><a href="./Google_Chrome" title="Google Chrome">Google Chrome</a></td>
+<td>A popular web browser developed by Google.</td>
+</tr>
+<tr>
+<td><a href="./Google_Drive#Google_Drive_for_desktop" title="Google Drive">Google Drive for desktop</a></td>
+<td>A desktop application for synchronizing files between a user’s computer and Google Drive.</td>
+</tr>
+<tr>
+<td><a href="./Google_Earth_Pro" title="Google Earth Pro">Google Earth Pro</a></td>
+<td>A desktop application with advanced features for visualizing and analyzing geospatial data, including GIS data import/export, high-resolution satellite imagery, and historical imagery.</td>
+</tr>
+<tr>
+<td><a href="./Google_IME" title="Google IME">Google IME</a></td>
+<td>An <a href="./Input_method_editor" title="Input method editor">input method editor</a> allowing users to enter text in supported languages using a Roman keyboard.</td>
+</tr>
+<tr>
+<td><a href="./Google_Japanese_Input" title="Google Japanese Input">Google Japanese Input</a></td>
+<td>A Japanese <a href="./Input_method_editor" title="Input method editor">input method editor</a>.</td>
+</tr>
+<tr>
+<td>Google Trends Screensaver</td>
+<td>A screensaver for <a href="./MacOS" title="MacOS">macOS</a> displaying the latest <a href="./Google_Trends" title="Google Trends">Google Trends</a> in a customizable, colorful grid.</td>
+</tr>
+<tr>
+<td><a href="./Google_Web_Designer" title="Google Web Designer">Google Web Designer</a></td>
+<td>A <a href="./WYSIWYG" title="WYSIWYG">WYSIWYG</a> editor for creating rich <a href="./HTML5" title="HTML5">HTML5</a> pages and ads optimized for various devices.</td>
+</tr>
+<tr>
+<td><a href="./Tilt_Brush" title="Tilt Brush">Tilt Brush</a></td>
+<td>A virtual reality painting application designed for the <a href="./HTC_Vive" title="HTC Vive">Vive</a> and <a href="./Oculus_Rift" title="Oculus Rift">Oculus Rift</a>.</td>
+</tr>
+</tbody>
+</table>
+<h2>Other</h2>
+<table>
+<thead>
+<tr>
+<th>Product</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Jigsaw_(company)" title="Jigsaw (company)">Jigsaw</a></td>
+<td>Google Jigsaw is a technology incubator that develops tools and strategies to address global security challenges, including combating online harassment, disinformation, and censorship, while promoting digital safety and open access to information.</td>
+</tr>
+<tr>
+<td>Google Trust Services</td>
+<td>A <a href="./Certificate_authority" title="Certificate authority">certificate authority</a>.</td>
+</tr>
+</tbody>
+</table>
+<h2>Mobile applications</h2>
+<p>Main article: <a href="./List_of_Android_apps_by_Google" title="List of Android apps by Google">List of Android apps by Google</a></p>
+<h2>Hardware</h2>
+<h3>Product families</h3>
+<ul>
+<li><a href="./Google_Pixel" title="Google Pixel">Google Pixel</a> – <a href="./Smartphone" title="Smartphone">smartphones</a>, <a href="./Tablet_computer" title="Tablet computer">tablets</a>, laptops, <a href="./Headphones" title="Headphones">earbuds</a>, and other accessories.</li>
+<li><a href="./Google_Nest" title="Google Nest">Google Nest</a> – <a href="./Home_automation" title="Home automation">smart home</a> products including <a href="./Smart_speaker" title="Smart speaker">smart speakers</a>, <a href="./Smart_displays" title="Smart displays">smart displays</a>, <a href="./Digital_media_player" title="Digital media player">digital media players</a>, <a href="./Smart_doorbell" title="Smart doorbell">smart doorbells</a>, <a href="./Smart_thermostat" title="Smart thermostat">smart thermostats</a>, <a href="./Smoke_detector" title="Smoke detector">smoke detectors</a>, and <a href="./Wireless_router" title="Wireless router">wireless routers</a>.</li>
+<li><a href="./Fitbit" title="Fitbit">Fitbit</a> – <a href="./Activity_tracker" title="Activity tracker">activity trackers</a>.</li>
+<li><a href="./Google_Stadia" title="Google Stadia">Stadia Controller</a> – <a href="./Game_controller" title="Game controller">game controller</a> for <a href="./Google_Stadia" title="Google Stadia">Stadia</a>.</li>
+</ul>
+<h2>Devices</h2>
+<table>
+<thead>
+<tr>
+<th>Product</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Nexus_One" title="Nexus One">Nexus One</a></td>
+<td>3.7" phone running <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> 2.3 "Gingerbread"</td>
+</tr>
+<tr>
+<td><a href="./Nexus_S" title="Nexus S">Nexus S</a></td>
+<td>4" phone running Android 4.1 "Jelly Bean"</td>
+</tr>
+<tr>
+<td><a href="./Nest_Learning_Thermostat" title="Nest Learning Thermostat">Nest Learning Thermostat</a> (first generation)</td>
+<td>Smart thermostat</td>
+</tr>
+<tr>
+<td><a href="./Galaxy_Nexus" title="Galaxy Nexus">Galaxy Nexus</a></td>
+<td>4.7" phone running Android 4.3 "Jelly Bean"</td>
+</tr>
+<tr>
+<td><a href="./Nexus_Q" title="Nexus Q">Nexus Q</a></td>
+<td>Media streaming entertainment device in the Google Nexus product family</td>
+</tr>
+<tr>
+<td><a href="./Nexus_7_(2012)" title="Nexus 7 (2012)">Nexus 7</a> (2012)</td>
+<td>7" tablet running Android 5.1 "Lollipop"</td>
+</tr>
+<tr>
+<td><a href="./Nexus_10" title="Nexus 10">Nexus 10</a></td>
+<td>10" tablet running Android 5.1 "Lollipop"</td>
+</tr>
+<tr>
+<td><a href="./Nest_Learning_Thermostat" title="Nest Learning Thermostat">Nest Learning Thermostat</a> (second generation)</td>
+<td>Smart thermostat</td>
+</tr>
+<tr>
+<td><a href="./Nexus_4" title="Nexus 4">Nexus 4</a></td>
+<td>4.7" phone running Android 5.1 "Lollipop"</td>
+</tr>
+<tr>
+<td><a href="./Chromebook_Pixel" title="Chromebook Pixel">Chromebook Pixel</a> (2013)</td>
+<td>Laptop running ChromeOS</td>
+</tr>
+<tr>
+<td><a href="./Nexus_7_(2013)" title="Nexus 7 (2013)">Nexus 7</a> (2013)</td>
+<td>7" tablet running Android 6.0 "Marshmallow"</td>
+</tr>
+<tr>
+<td><a href="./Nexus_5" title="Nexus 5">Nexus 5</a></td>
+<td>4.95" phone running Android 6.0 "Marshmallow"</td>
+</tr>
+<tr>
+<td><a href="./Nest_Protect" title="Nest Protect">Nest Protect</a> (first generation)</td>
+<td>Smoke alarm</td>
+</tr>
+<tr>
+<td><a href="./Nexus_6" title="Nexus 6">Nexus 6</a></td>
+<td>5.96" phone running Android 7.1.1 "Nougat"</td>
+</tr>
+<tr>
+<td><a href="./Nexus_9" title="Nexus 9">Nexus 9</a></td>
+<td>9" tablet running Android 7.1 "Nougat"</td>
+</tr>
+<tr>
+<td><a href="./Nexus_Player" title="Nexus Player">Nexus Player</a></td>
+<td>Streaming media player running Android 8.0 "Oreo"</td>
+</tr>
+<tr>
+<td><a href="./Chromebook_Pixel" title="Chromebook Pixel">Chromebook Pixel</a> (2015)</td>
+<td>Laptop running ChromeOS</td>
+</tr>
+<tr>
+<td><a href="./Nest_Cam_Indoor" title="Nest Cam Indoor">Nest Cam Indoor</a></td>
+<td>Security camera</td>
+</tr>
+<tr>
+<td><a href="./Nest_Protect" title="Nest Protect">Nest Protect</a> (second generation)</td>
+<td>Smoke alarm</td>
+</tr>
+<tr>
+<td><a href="./Nest_Learning_Thermostat" title="Nest Learning Thermostat">Nest Learning Thermostat</a> (third generation)</td>
+<td>Smart thermostat</td>
+</tr>
+<tr>
+<td><a href="./Nexus_5X" title="Nexus 5X">Nexus 5X</a></td>
+<td>5" phone running Android 8.1 "Oreo"</td>
+</tr>
+<tr>
+<td><a href="./Nexus_6P" title="Nexus 6P">Nexus 6P</a></td>
+<td>5.7" phone running Android 8.1 "Oreo"</td>
+</tr>
+<tr>
+<td><a href="./Pixel_C" title="Pixel C">Pixel C</a></td>
+<td>10.2" convertible tablet running Android 8.1 "Oreo"</td>
+</tr>
+<tr>
+<td><a href="./Nest_Cam_Outdoor" title="Nest Cam Outdoor">Nest Cam Outdoor</a></td>
+<td>Security camera</td>
+</tr>
+<tr>
+<td><a href="./Pixel_(smartphone)" title="Pixel (smartphone)">Pixel</a></td>
+<td>5" smartphone running Android 10</td>
+</tr>
+<tr>
+<td><a href="./Pixel_XL" title="Pixel XL">Pixel XL</a></td>
+<td>5.5" smartphone running Android 10</td>
+</tr>
+<tr>
+<td><a href="./Daydream_View" title="Daydream View">Daydream View</a> (first generation)</td>
+<td><a href="./Virtual_reality" title="Virtual reality">Virtual reality</a> headset for smartphones</td>
+</tr>
+<tr>
+<td><a href="./Google_Home_(smart_speaker)" title="Google Home (smart speaker)">Google Home</a></td>
+<td>Smart speaker</td>
+</tr>
+<tr>
+<td><a href="./Google_Wifi_(router)" title="Google Wifi (router)">Google Wifi</a></td>
+<td>Wireless router</td>
+</tr>
+<tr>
+<td><a href="./Nest_Cam_IQ_Indoor" title="Nest Cam IQ Indoor">Nest Cam IQ Indoor</a></td>
+<td>Security camera</td>
+</tr>
+<tr>
+<td><a href="./Nest_Thermostat_E" title="Nest Thermostat E">Nest Thermostat E</a></td>
+<td>Smart thermostat</td>
+</tr>
+<tr>
+<td><a href="./Nest_Hello" title="Nest Hello">Nest Hello</a></td>
+<td>Smart video doorbell</td>
+</tr>
+<tr>
+<td><a href="./Nest_Cam_IQ_Outdoor" title="Nest Cam IQ Outdoor">Nest Cam IQ Outdoor</a></td>
+<td>Security camera</td>
+</tr>
+<tr>
+<td><a href="./Nest_×_Yale" title="Nest × Yale">Nest × Yale</a></td>
+<td>Smart lock</td>
+</tr>
+<tr>
+<td><a href="./Pixel_2" title="Pixel 2">Pixel 2</a></td>
+<td>5" smartphone running Android 11</td>
+</tr>
+<tr>
+<td><a href="./Pixel_2_XL" title="Pixel 2 XL">Pixel 2 XL</a></td>
+<td>6" smartphone running Android 11</td>
+</tr>
+<tr>
+<td><a href="./Daydream_View" title="Daydream View">Daydream View</a> (second generation)</td>
+<td><a href="./Virtual_reality" title="Virtual reality">Virtual reality</a> headset for smartphones</td>
+</tr>
+<tr>
+<td><a href="./Home_Mini" title="Home Mini">Home Mini</a></td>
+<td>Smart speaker</td>
+</tr>
+<tr>
+<td><a href="./Google_Nest" title="Google Nest">Home Max</a></td>
+<td>Smart speaker</td>
+</tr>
+<tr>
+<td><a href="./Pixel_Buds" title="Pixel Buds">Pixel Buds</a> (first generation)</td>
+<td>Wireless earbuds</td>
+</tr>
+<tr>
+<td><a href="./Pixelbook" title="Pixelbook">Pixelbook</a></td>
+<td>Laptop running ChromeOS</td>
+</tr>
+<tr>
+<td><a href="./Pixel_3" title="Pixel 3">Pixel 3</a></td>
+<td>5.5" smartphone running Android 11</td>
+</tr>
+<tr>
+<td><a href="./Pixel_3_XL" title="Pixel 3 XL">Pixel 3 XL</a></td>
+<td>6.3" smartphone running Android 11</td>
+</tr>
+<tr>
+<td><a href="./Pixel_Slate" title="Pixel Slate">Pixel Slate</a></td>
+<td><a href="./2-in-1_PC" title="2-in-1 PC">2-in-1 PC</a> running ChromeOS</td>
+</tr>
+<tr>
+<td><a href="./Pixel_Stand" title="Pixel Stand">Pixel Stand</a></td>
+<td>Wireless charger</td>
+</tr>
+<tr>
+<td><a href="./Nest_Hub" title="Nest Hub">Nest Hub</a></td>
+<td>Smart display</td>
+</tr>
+<tr>
+<td><a href="./Stadia_Controller" title="Stadia Controller">Stadia Controller</a></td>
+<td>Gaming controller for Stadia</td>
+</tr>
+<tr>
+<td><a href="./Pixel_3a" title="Pixel 3a">Pixel 3a</a></td>
+<td>5.6" smartphone running Android 11</td>
+</tr>
+<tr>
+<td><a href="./Pixel_3a_XL" title="Pixel 3a XL">Pixel 3a XL</a></td>
+<td>6" smartphone running Android 11</td>
+</tr>
+<tr>
+<td><a href="./Nest_Hub_Max" title="Nest Hub Max">Nest Hub Max</a></td>
+<td>Smart display</td>
+</tr>
+<tr>
+<td><a href="./Pixel_4" title="Pixel 4">Pixel 4</a></td>
+<td>5.7" smartphone running Android 11</td>
+</tr>
+<tr>
+<td><a href="./Pixel_4" title="Pixel 4">Pixel 4 XL</a></td>
+<td>6.3" smartphone running Android 11</td>
+</tr>
+<tr>
+<td><a href="./Pixelbook_Go" title="Pixelbook Go">Pixelbook Go</a></td>
+<td>Laptop running ChromeOS</td>
+</tr>
+<tr>
+<td><a href="./Nest_Mini" title="Nest Mini">Nest Mini</a></td>
+<td>Smart speaker</td>
+</tr>
+<tr>
+<td><a href="./Nest_Wifi" title="Nest Wifi">Nest Wifi</a></td>
+<td>Wireless router</td>
+</tr>
+<tr>
+<td><a href="./Pixel_Buds" title="Pixel Buds">Pixel Buds</a> (second generation)</td>
+<td>Wireless earbuds</td>
+</tr>
+<tr>
+<td><a href="./Pixel_4a" title="Pixel 4a">Pixel 4a</a></td>
+<td>5.8" smartphone running Android 11</td>
+</tr>
+<tr>
+<td><a href="./Pixel_4a_(5G)" title="Pixel 4a (5G)">Pixel 4a (5G)</a></td>
+<td>6.2" smartphone running Android 11</td>
+</tr>
+<tr>
+<td><a href="./Pixel_5" title="Pixel 5">Pixel 5</a></td>
+<td>6" smartphone running Android 11</td>
+</tr>
+<tr>
+<td><a href="./Nest_Audio" title="Nest Audio">Nest Audio</a></td>
+<td>Smart speaker</td>
+</tr>
+<tr>
+<td><a href="./Nest_Thermostat" title="Nest Thermostat">Nest Thermostat</a></td>
+<td>Smart thermostat</td>
+</tr>
+<tr>
+<td><a href="./Pixel_Buds_A-Series" title="Pixel Buds A-Series">Pixel Buds A-Series</a></td>
+<td>Wireless earbuds</td>
+</tr>
+<tr>
+<td><a href="./Pixel_5a" title="Pixel 5a">Pixel 5a</a></td>
+<td>6.3" smartphone running Android 11</td>
+</tr>
+<tr>
+<td><a href="./Pixel_6" title="Pixel 6">Pixel 6</a></td>
+<td>6.4" smartphone running Android 12</td>
+</tr>
+<tr>
+<td><a href="./Pixel_6_Pro" title="Pixel 6 Pro">Pixel 6 Pro</a></td>
+<td>6.7" smartphone running Android 12</td>
+</tr>
+<tr>
+<td><a href="./Pixel_6a" title="Pixel 6a">Pixel 6a</a></td>
+<td>6.1" smartphone running Android 12</td>
+</tr>
+<tr>
+<td><a href="./Pixel_7" title="Pixel 7">Pixel 7</a></td>
+<td>6.3" smartphone running Android 13</td>
+</tr>
+<tr>
+<td><a href="./Pixel_7_Pro" title="Pixel 7 Pro">Pixel 7 Pro</a></td>
+<td>6.7" smartphone running Android 13</td>
+</tr>
+<tr>
+<td><a href="./Pixel_Watch" title="Pixel Watch">Pixel Watch</a></td>
+<td>Smartwatch</td>
+</tr>
+<tr>
+<td><a href="./Pixel_Tablet" title="Pixel Tablet">Pixel Tablet</a></td>
+<td>Tablet</td>
+</tr>
+<tr>
+<td><a href="./Pixel_7a" title="Pixel 7a">Pixel 7a</a></td>
+<td>6.1" smartphone running Android 13</td>
+</tr>
+<tr>
+<td><a href="./Pixel_Fold" title="Pixel Fold">Pixel Fold</a></td>
+<td>Foldable smartphone</td>
+</tr>
+<tr>
+<td><a href="./Pixel_8" title="Pixel 8">Pixel 8</a></td>
+<td>6.2" smartphone running Android 14</td>
+</tr>
+<tr>
+<td><a href="./Pixel_8" title="Pixel 8">Pixel 8 Pro</a></td>
+<td>6.7" smartphones running Android 14</td>
+</tr>
+<tr>
+<td><a href="./Pixel_Watch_2" title="Pixel Watch 2">Pixel Watch 2</a></td>
+<td>Smartwatch</td>
+</tr>
+<tr>
+<td><a href="./Pixel_8a" title="Pixel 8a">Pixel 8a</a></td>
+<td>6.1" smartphone running Android 14</td>
+</tr>
+<tr>
+<td><a href="./Pixel_9" title="Pixel 9">Pixel 9</a></td>
+<td>6.3" smartphone running Android 14</td>
+</tr>
+<tr>
+<td><a href="./Pixel_9_Pro" title="Pixel 9 Pro">Pixel 9 Pro</a></td>
+<td>6.3" smartphone running Android 14</td>
+</tr>
+<tr>
+<td><a href="./Pixel_9_Pro_XL" title="Pixel 9 Pro XL">Pixel 9 Pro XL</a></td>
+<td>6.8" smartphone running Android 14</td>
+</tr>
+<tr>
+<td><a href="./Pixel_9_Pro_Fold" title="Pixel 9 Pro Fold">Pixel 9 Pro Fold</a></td>
+<td>Foldable smartphone running Android 14</td>
+</tr>
+<tr>
+<td><a href="./Pixel_10" title="Pixel 10">Pixel 10</a></td>
+<td>6.3" smartphone running Android 16</td>
+</tr>
+<tr>
+<td><a href="./Pixel_10_Pro" title="Pixel 10 Pro">Pixel 10 Pro</a></td>
+<td>6.3" smartphone running Android 16</td>
+</tr>
+<tr>
+<td><a href="./Pixel_10_Pro_XL" title="Pixel 10 Pro XL">Pixel 10 Pro XL</a></td>
+<td>6.8" smartphone running Android 16</td>
+</tr>
+<tr>
+<td><a href="./Pixel_10_Pro_Fold" title="Pixel 10 Pro Fold">Pixel 10 Pro Fold</a></td>
+<td>Foldable smartphone running Android 16</td>
+</tr>
+<tr>
+<td><a href="./Pixel_Watch_3" title="Pixel Watch 3">Pixel Watch 3</a></td>
+<td>Smartwatch</td>
+</tr>
+<tr>
+<td><a href="./Pixel_Buds_Pro_2" title="Pixel Buds Pro 2">Pixel Buds Pro 2</a></td>
+<td>Wireless earbuds</td>
+</tr>
+</tbody>
+</table>
+<h2>Processors</h2>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Year</th>
+<th>Associated device</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Pixel_Visual_Core" title="Pixel Visual Core">Pixel Visual Core</a></td>
+<td>2017</td>
+<td><a href="./Pixel_2" title="Pixel 2">Pixel 2</a></td>
+</tr>
+<tr>
+<td><a href="./Titan_M" title="Titan M">Titan M</a></td>
+<td>2018</td>
+<td><a href="./Pixel_3" title="Pixel 3">Pixel 3</a></td>
+</tr>
+<tr>
+<td><a href="./Pixel_Neural_Core" title="Pixel Neural Core">Pixel Neural Core</a></td>
+<td>2019</td>
+<td><a href="./Pixel_4" title="Pixel 4">Pixel 4</a></td>
+</tr>
+<tr>
+<td><a href="./Titan_C" title="Titan C">Titan C</a></td>
+<td>2019</td>
+<td><a href="./Pixelbook_Go" title="Pixelbook Go">Pixelbook Go</a></td>
+</tr>
+<tr>
+<td><a href="./Titan_M2" title="Titan M2">Titan M2</a></td>
+<td>2021</td>
+<td><a href="./Pixel_6" title="Pixel 6">Pixel 6</a></td>
+</tr>
+<tr>
+<td><a href="./Google_Tensor" title="Google Tensor">Google Tensor</a></td>
+<td>2021</td>
+<td><a href="./Pixel_6" title="Pixel 6">Pixel 6</a></td>
+</tr>
+<tr>
+<td><a href="./Google_Tensor_G2" title="Google Tensor G2">Google Tensor G2</a></td>
+<td>2022</td>
+<td><a href="./Pixel_7" title="Pixel 7">Pixel 7</a></td>
+</tr>
+<tr>
+<td><a href="./Google_Tensor_G3" title="Google Tensor G3">Google Tensor G3</a></td>
+<td>2023</td>
+<td><a href="./Pixel_8" title="Pixel 8">Pixel 8</a></td>
+</tr>
+<tr>
+<td><a href="./Google_Tensor_G4" title="Google Tensor G4">Google Tensor G4</a></td>
+<td>2024</td>
+<td><a href="./Pixel_9" title="Pixel 9">Pixel 9</a></td>
+</tr>
+<tr>
+<td><a href="./Google_Tensor_G5" title="Google Tensor G5">Google Tensor G5</a></td>
+<td>2025</td>
+<td><a href="./Pixel_10" title="Pixel 10">Pixel 10</a></td>
+</tr>
+</tbody>
+</table>
+<h2>Services</h2>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Google_Cast" title="Google Cast">Google Cast</a></td>
+<td>A platform to display entertainment and apps from a phone, tablet, or laptop directly on a TV or speakers.</td>
+</tr>
+<tr>
+<td><a href="./Google_Cloud_Platform" title="Google Cloud Platform">Google Cloud Platform</a></td>
+<td>A modular cloud-based service for software development.</td>
+</tr>
+<tr>
+<td><a href="./Google_Crisis_Response" title="Google Crisis Response">Google Crisis Response</a></td>
+<td>A public project covering disasters, turmoils, and other emergencies with alerts.</td>
+</tr>
+<tr>
+<td><a href="./Google_Firebase" title="Google Firebase">Google Firebase</a></td>
+<td>A real-time database providing an <a href="./API" title="API">API</a> for developers to store and sync data across multiple clients.</td>
+</tr>
+<tr>
+<td><a href="./Google_Fi_Wireless" title="Google Fi Wireless">Google Fi Wireless</a></td>
+<td>A <a href="./Mobile_virtual_network_operator" title="Mobile virtual network operator">MVNO</a> offering simple plans and pricing.</td>
+</tr>
+<tr>
+<td><a href="./Google_Get_Your_Business_Online" title="Google Get Your Business Online">Google Get Your Business Online</a></td>
+<td>Aims to increase the web presence of small businesses and cities, offering advice on <a href="./Search_engine_optimization" title="Search engine optimization">search engine optimization</a> and maintaining updated business profiles.</td>
+</tr>
+<tr>
+<td><a href="./Google_Pay_(mobile_app)" title="Google Pay (mobile app)">Google Pay</a></td>
+<td>A <a href="./Digital_wallet" title="Digital wallet">digital wallet</a> platform and <a href="./E-commerce_payment_system" title="E-commerce payment system">online payment</a> system.</td>
+</tr>
+<tr>
+<td><a href="./Google_Person_Finder" title="Google Person Finder">Google Person Finder</a></td>
+<td>An open-source tool to help people reconnect with others after a disaster.</td>
+</tr>
+<tr>
+<td><a href="./Google_Public_DNS" title="Google Public DNS">Google Public DNS</a></td>
+<td>A publicly accessible <a href="./Domain_Name_System" title="Domain Name System">DNS</a> server.</td>
+</tr>
+<tr>
+<td><a href="./YouTube_TV" title="YouTube TV">YouTube TV</a></td>
+<td>An <a href="./Over-the-top_media_service" title="Over-the-top media service">over-the-top</a> internet television service offering live TV.</td>
+</tr>
+</tbody>
+</table>
+<h2>Scheduled to be discontinued</h2>
+<p>Applications that are no longer in development and scheduled to be discontinued in the future:</p>
+<h3>2026</h3>
+<ul>
+<li>
+<p>Google Fit API – Will become deprecated.</p>
+</li>
+<li>
+<p><a href="./Google_Assistant" title="Google Assistant">Google Assistant</a> – After continuously removing many features from Assistant since 2023 to focus more on <a href="./Gemini_(chatbot)" title="Gemini (chatbot)">Gemini</a>, Google Assistant has finally been scheduled to be retired for mobile, tablets, smartwatches, headphones and cars by the end of 2025. These devices will have Google Assistant replaced by Google Gemini in the future. Additionally, Google also recommends using Routines as an alternative to Assistant. However, the future of products such as the Google Home and Google Nest remain uncertain.</p>
+</li>
+</ul>
+<h2>Discontinued products and services</h2>
+<p>Google has retired many offerings, either because of obsolescence, integration into other Google products, or lack of interest. Google's discontinued offerings are colloquially referred to as Google Graveyard.</p>
+<h3>2026</h3>
+<ul>
+<li><a href="./Steam_(service)" title="Steam (service)">Steam</a> for <a href="./Chromebook" title="Chromebook">Chromebook</a> - Discontinued on January 1.</li>
+</ul>
+<h3>2025</h3>
+<ul>
+<li><a href="./Tables_(Google)" title="Tables (Google)">Google Tables</a> – A business workflow automation tool. Discontinued on December 16.</li>
+<li><a href="./Google_URL_Shortener" title="Google URL Shortener">Google URL Shortener</a> – <a href="./URL_shortening" title="URL shortening">URL shortening</a> service. Started to turn down support on March 30, 2018, was discontinued on March 30, 2019, and stopped working on August 25.</li>
+<li><a href="./Firebase_Dynamic_Links" title="Firebase Dynamic Links">Firebase Dynamic Links</a> – URL shortening service. Shut down on August 25.</li>
+</ul>
+<h3>2024</h3>
+<ul>
+<li><a href="./Jamboard" title="Jamboard">Jamboard</a> – Discontinued on December 31.</li>
+<li>Stack – An app that allowed users to scan and organize documents and receipts on their mobile devices. Shut down on September 23. Users were advised to switch to Google Drive's built-in document scanning features instead.</li>
+<li><a href="./Google_Mars" title="Google Mars">Google Mars</a> – Website that offered an imagery of Mars, using the Google Maps interface. Discontinued in August. Replaced by Google Maps in Space and Google Earth Pro.</li>
+<li><a href="./Google_Moon" title="Google Moon">Google Moon</a> – Website that offered a NASA imagery of the moon, using the Google Maps interface. Discontinued in August. Replaced by Google Maps in Space and Google Earth Pro.</li>
+<li><a href="./Google_Sky" title="Google Sky">Google Sky</a> – Website that offered the view of planets, stars and galaxies. Discontinued in August. Replaced by Google Maps in Space and Google Earth Pro.</li>
+<li><a href="./Chromecast" title="Chromecast">Chromecast</a> – Discontinued on August 6 and replaced by Google TV Streamer.</li>
+<li><a href="./Google_One" title="Google One">VPN by Google One</a> – Shut down on June 20, citing low usage.</li>
+<li><a href="./Google_Pay_(mobile_app)" title="Google Pay (mobile app)">Google Pay</a> (for US only) – Payment app developed by Google. Shut down on June 4 and replaced by <a href="./Google_Wallet" title="Google Wallet">Google Wallet</a>.</li>
+<li>People Cards – New profiles couldn't be created after April 7, but gave users the option to download or save content, until they were removed the following month. Google cited that the feature wasn't that useful, as they intended it to be.</li>
+<li><a href="./Dropcam" title="Dropcam">Dropcam</a> – Shut down on April 8.</li>
+<li><a href="./Google_Nest#Nest_Secure" title="Google Nest">Nest Secure</a> – Pulled from Google Store in October 2020. Shut down on April 8.</li>
+<li><a href="./Google_Podcasts" title="Google Podcasts">Google Podcasts</a> – Shut down on April 2 and replaced by <a href="./YouTube_Music" title="YouTube Music">YouTube Music</a>.</li>
+<li>Keen – Shut down on March 24 and the website is no longer accessible.</li>
+<li><a href="./Search_engine_cache#Google_Cache" title="Search engine cache">Google Search's Cache link</a> – Discontinued in February 2 as it was no longer necessary due to improved internet reliability.</li>
+<li>Google Earth View – Website with a collection of satellite-captured wallpapers and Chromecast backgrounds. Shut down in mid-January.</li>
+<li>Basic HTML View on Gmail – Discontinued in January.</li>
+</ul>
+<h3>2023</h3>
+<ul>
+<li><a href="./Google_Optimize" title="Google Optimize">Google Optimize</a> – Freemium web analytics and testing tool. Shut down on September 30.</li>
+<li><a href="./Google_Glass" title="Google Glass">Google Glass</a> (Enterprise Edition) – <a href="./Wearable_computer" title="Wearable computer">wearable computer</a> with an optical head-mounted display and camera that allows the wearer to interact with various applications and the Internet via natural language voice commands. Discontinued on September 15.</li>
+<li><a href="./Google_Duo" title="Google Duo">Google Duo</a> – Free high quality video calling service for mobiles and desktops.</li>
+<li><a href="./Google_Domains" title="Google Domains">Google Domains</a> – Shut down on September 7 after migrating to <a href="./Squarespace" title="Squarespace">Squarespace</a>.</li>
+<li>Google Pixel Pass – Discontinued on August 29.</li>
+<li>Google Cloud IoT Core Service – Shut down on August 16.</li>
+<li>Google Album Archive – Discontinued on July 19.</li>
+<li><a href="./Google_Code_Jam" title="Google Code Jam">Google Code Competitions</a> – Discontinued on July 1.</li>
+<li>Google Universal Analytics – Shut down on July 1 and replaced by Google Analytics 4.</li>
+<li>Conversational Actions – Extended the functionality of Google Assistant by allowing 3rd party developers to create custom experiences, or conversations, for users of Google Assistant. Shut down in June.</li>
+<li><a href="./Grasshopper_(mobile_app)" title="Grasshopper (mobile app)">Grasshopper</a> – Shut down on June 15.</li>
+<li>Google Now Launcher – Discontinued in May.</li>
+<li>Jacquard – Shut down in April 24.</li>
+<li><a href="./Google_Currents_(social_app)" title="Google Currents (social app)">Google Currents</a> – internal enterprise communication tool, formerly Google+ for G Suite. Shut down on March, with users migrated to Spaces in Google Chat.</li>
+<li><a href="./Google_Street_View" title="Google Street View">Google Street View (standalone app)</a> – Shut down on March 21. The Street View Studio app and the ability to use Street View in the main Google Maps app, rendered the Street View app redundant, however it is now required to purchase a <a href="./360_camera" title="360 camera">360 camera</a> to contribute to Street View, as the app allowed you to create photospheres with any supported smartphone camera. The "Photo Paths" feature, which allowed any smartphone to create a 2D capture of any road not yet covered by Street View was completely removed, requiring users to either purchase a 360 camera or migrate to a third-party service such as <a href="./Mapillary" title="Mapillary">Mapillary</a>.</li>
+<li><a href="./Google_Stadia" title="Google Stadia">Stadia</a> – Shut down on January 18.</li>
+</ul>
+<h3>2022</h3>
+<ul>
+<li><a href="./List_of_YouTube_Premium_original_programming" title="List of YouTube Premium original programming">YouTube Originals</a> – discontinued on December 31.</li>
+<li><a href="./Google_OnHub" title="Google OnHub">Google OnHub</a> – stopped receiving support on December 19.</li>
+<li><a href="./Google_Hangouts" title="Google Hangouts">Google Hangouts</a> – discontinued on November 1, after migrating all users to <a href="./Google_Chat" title="Google Chat">Google Chat</a>.</li>
+<li><a href="./Google_Surveys" title="Google Surveys">Google Surveys</a> – Market research tool. Discontinued on November 1.</li>
+<li>YouTube for Wii U – Shut down in October.</li>
+<li>YouTube Go – An app aimed at making YouTube easier to access on mobile devices in emerging markets through special features like downloading video on WiFi for viewing later. It was shut down in August.</li>
+<li>Google My Business – An app that allowed businesses to manage their Google Maps Business profiles. It was shut down in July.</li>
+<li>Android Auto for phone screens – An app that allowed the screen of the phone to be used as an Android Auto interface while driving, intended for vehicles that did not have a compatible screen built in. It was shut down in July.</li>
+<li>Kormo Jobs – A service that allowed users in primarily India, Indonesia, and Bangladesh to help them find jobs nearby that match their skills and interests. It was shut down on June 30.</li>
+<li>G Suite (Legacy Free Edition) – A free tier offering some of the services included in Google's productivity suite. Discontinued on June 27.</li>
+<li><a href="./Google_Chrome_App" title="Google Chrome App">Google Chrome Apps</a> – Apps hosted or packaged web applications that ran on the Google Chrome browser. Support for Windows and other Operating systems dropped in June and shut down on ChromeOS in January 2025. For ChromeOS devices enrolled in the LTS channel, Chrome apps will be supported until October 2028.</li>
+<li>Google Assistant Snapshot – The successor to <a href="./Google_Now" title="Google Now">Google Now</a> that provided predictive cards with information and daily updates in the Google app for Android and iOS.</li>
+<li>Cameos on Google – Cameos allowed celebrities, models and public figures to record video-based Q&amp;A. Shut down on February 16.</li>
+<li>Android Things – A part of Google <a href="./Internet_of_things" title="Internet of things">Internet of Things</a> (IoT). Shut down on January 5.</li>
+</ul>
+<h3>2021</h3>
+<ul>
+<li><a href="./AngularJS" title="AngularJS">AngularJS</a> – Open source web application framework. Shut down on December 31.</li>
+<li><a href="./Google_Clips" title="Google Clips">Google Clips</a> – a miniature clip-on camera device. Pulled from Google Store on October 15, 2019. Discontinued on December 31.</li>
+<li><a href="./Google_Toolbar" title="Google Toolbar">Google Toolbar</a> – web browser toolbar with features such as a Google Search box, pop-up blocker and ability for website owners to create buttons. Shut down on December 12.</li>
+<li>My Maps – an Android app that enabled users to create custom maps for personal use or sharing on their mobile device. Shut down on October 15 and users were asked to migrate to the mobile web version of the app.</li>
+<li>Backup and Sync – Desktop software that synchronized files between a user’s computer and Google Drive. Discontinued on October 1. Replaced by Google Drive for desktop.</li>
+<li><a href="./Google_Bookmarks" title="Google Bookmarks">Google Bookmarks</a> – Online <a href="./Internet_bookmark" title="Internet bookmark">bookmarking</a> service. Discontinued on September 30.</li>
+<li>Tour Builder – allowed users to create and share interactive tours inside Google Earth. Shut down in July, replaced by new creation tools in Google Earth.</li>
+<li><a href="./Poly_(website)" title="Poly (website)">Poly</a> – a service to browse, share and download <a href="./3D_modeling" title="3D modeling">3D models</a>. Shut down on June 30.</li>
+<li><a href="./Google_Expeditions" title="Google Expeditions">Google Expeditions</a> – <a href="./Virtual_reality" title="Virtual reality">virtual reality</a> (VR) platform designed for <a href="./Educational_institution" title="Educational institution">educational institutions</a>. Discontinued on June 30. The majority of Expedition's tours were migrated to <a href="./Google_Arts_&amp;_Culture" title="Google Arts &amp; Culture">Google Arts &amp; Culture</a>.</li>
+<li>Tour Creator – allowed users to create immersive, 360° guided tours in the Expeditions app that could be viewed with VR devices. Shut down on June 30.</li>
+<li>Timely – an Android app that provided alarm, stopwatch and timer functions with synchronization across devices. Timely servers were shut down on May 31.</li>
+<li>Google Go Links – a URL shortening service that also supported custom domain for customers of Google Workspace. Discontinued on April 1.</li>
+<li>Google Public Alerts – an online notification service that sent safety alerts to various countries. Shut down on March 31 and functions moved to Google Search and Google Maps.</li>
+<li>Google Crisis Map – a service that visualized crisis and weather-related data. Shut down March 30. Improvements to Google Search and Maps rendered this service redundant.</li>
+<li><a href="./Google_App_Maker" title="Google App Maker">Google App Maker</a> – allowed users to develop apps for businesses. Shut down on January 19 due to Google's acquisition of <a href="./AppSheet" title="AppSheet">AppSheet</a>.</li>
+</ul>
+<h3>2020</h3>
+<ul>
+<li><a href="./Google_Cloud_Print" title="Google Cloud Print">Google Cloud Print</a> – a cloud-based printing solution that has been in beta since 2010. Discontinued on December 31.</li>
+<li><a href="./Google_Play_Music" title="Google Play Music">Google Play Music</a> – Google's music streaming service. Discontinued on December 3 and replaced by <a href="./YouTube_Music" title="YouTube Music">YouTube Music</a> and <a href="./Google_Podcasts" title="Google Podcasts">Google Podcasts</a>.</li>
+<li><a href="./Google_Station" title="Google Station">Google Station</a> – service that allowed users to Spread Wi-Fi hotspots. Shut down on September 30.</li>
+<li>Hire by Google – applicant tracking system and recruiting software. Shut down on September 1.</li>
+<li>Password Checkup – an extension that warned of breached third-party logins. Shut down in July after it had been integrated with Chrome.</li>
+<li>Google Photos Print – a subscription service that automatically selected the best ten photos from the last thirty days which were mailed to users' homes. Shut down in June.</li>
+<li>Shoelace – an app used to find group activities with others who share your interests. Shut down in May.</li>
+<li>Neighbourly – an experimental mobile app designed to help you learn about your neighborhood by asking other residents. Shut down on May 12.</li>
+<li>Fabric – modular <a href="./Software_development_kit" title="Software development kit">SDK</a> platform launched by <a href="./Crashlytics" title="Crashlytics">Crashlytics</a> in 2014. Google acquired Crashlytics in 2017 and announced plans to migrate all of its features to <a href="./Firebase" title="Firebase">Firebase</a>. It was shut down on May 4.</li>
+<li>Material Theme Editor – plugin for Sketch app which allowed you to create a material-based design system for your app. Discontinued in March.</li>
+<li>YouTube For Wii U Browser</li>
+<li>Fiber TV – an IPTV service bundled with <a href="./Google_Fiber" title="Google Fiber">Google Fiber</a>. Discontinued on February 4.</li>
+<li>One Today – an app that allowed users to donate $1 to different organizations and discover how their donation would be used. Discontinued in January.</li>
+<li>Androidify – allowed users to create a custom Android avatar. Discontinued in January.</li>
+</ul>
+<h3>2019</h3>
+<ul>
+<li>YouTube Annotations – annotations that were displayed over videos on YouTube. On January 15, all existing annotations were removed from YouTube.</li>
+<li><a href="./Google_Pinyin" title="Google Pinyin">Google Pinyin</a> – Discontinued in March.</li>
+<li>Mr. Jingles – Google's notifications widget. Discontinued on March 7.</li>
+<li>Google Tasks canvas – A full-screen interface of <a href="./Google_Tasks" title="Google Tasks">Google Tasks</a> that was discontinued in April.</li>
+<li><a href="./Google_Allo" title="Google Allo">Google Allo</a> – Google's instant messaging app. Discontinued on March 12.</li>
+<li>Google Image Charts – a chart-making service that provided images of rendered chart data, accessed with <a href="./Representational_state_transfer" title="Representational state transfer">REST</a> calls. The service was deprecated in 2012, temporarily disabled in February 2019 and discontinued on March 18, 2019.</li>
+<li><a href="./Inbox_by_Gmail" title="Inbox by Gmail">Inbox by Gmail</a> – an email application for Android, iOS, and web platform that organized and automated to-do lists using email content. As of April 2, accessing the Inbox subdomain redirects to <a href="./Gmail" title="Gmail">Gmail</a> proper.</li>
+<li><a href="./Google+" title="Google+">Google+</a> – The consumer edition of Google's social media platform. As of April 2, users receive a message stating that "Google+ is no longer available for consumer (personal) and brand accounts".</li>
+<li>Google Jump – cloud-based video stitching service. Discontinued June 28.</li>
+<li><a href="./Google_Nest#Works_with_Nest" title="Google Nest">Works with Nest</a> – the <a href="./Smart_home" title="Smart home">smart home</a> platform of Google brand <a href="./Google_Nest" title="Google Nest">Nest</a>. Users were asked to migrate to the <a href="./Google_Assistant" title="Google Assistant">Google Assistant</a> platform. Support ended on August 31.</li>
+<li>YouTube for <a href="./Nintendo_3DS" title="Nintendo 3DS">Nintendo 3DS</a> – official app for Nintendo 3DS. Discontinued on September 3.</li>
+<li>YouTube Messages – direct messages on YouTube – discontinued after September 18.</li>
+<li>YouTube Leanback – a web application for control with a remote, intended for use with smart TVs and other similar devices. Discontinued on October 2.</li>
+<li><a href="./Google_Daydream#Second_generation_Daydream_View" title="Google Daydream">Google Daydream View</a> – Google's VR headset (first-gen in late 2016, second-gen in late 2017) was discontinued just after their "Made by Google" event in October The <a href="./Google_Daydream" title="Google Daydream">Google Daydream</a> platform itself is being retired as well.</li>
+<li>Touring Bird – Travel website which facilitated booking tours, tickets and activities in top locations. The service was shut down on November 17.</li>
+<li>Google Bulletin – "Hyperlocal" news service which allowed users to post news from their neighborhood. It was shut down on November 22.</li>
+<li><a href="./Google_Fusion_Tables" title="Google Fusion Tables">Google Fusion Tables</a> – A service for managing and visualizing data. The service was shut down on December 3.</li>
+<li><a href="./Google_Translator_Toolkit" title="Google Translator Toolkit">Google Translator Toolkit</a> – An online <a href="./Computer-assisted_translation" title="Computer-assisted translation">computer-assisted translation</a> <a href="./Comparison_of_computer-assisted_translation_tools" title="Comparison of computer-assisted translation tools">tool</a> designed to allow translators to edit the translations that are automatically generated by <a href="./Google_Translate" title="Google Translate">Google Translate</a>. It was shut down on December 4, citing declining usage and the availability of other similar tools.</li>
+<li>Google Correlate – finds search patterns which correspond with real-world trends. It was shut down on December 15, as a result of low usage.</li>
+<li><a href="./Google_Search_Appliance" title="Google Search Appliance">Google Search Appliance</a> – A rack mounted device used to index documents. Hardware sales ended in 2017 and initial shutdown occurred in 2018; and was ultimately shut down on December 31, 2019.</li>
+<li><a href="./Google_Native_Client" title="Google Native Client">Google Native Client</a> (NaCL/PNaCl) – sandboxing technology for running a subset of native code. It was discontinued on December 31.</li>
+<li>Datally – Lets users save mobile data. Removed from Play Store in October.</li>
+<li>Build with Chrome – an initiative between <a href="./Lego" title="Lego">Lego</a> and Google to build the world using Lego. It was discontinued in March.</li>
+<li>Google Game Builder – A prototype program that could develop video games in real time and was released on Steam for Windows and MacOS. It used card-based virtual programming and could import models from <a href="./Poly_(website)" title="Poly (website)">Google Poly</a>. The source code was released for free on GitHub.</li>
+</ul>
+<h3>2018</h3>
+<ul>
+<li>Blogger Web Comments (<a href="./Firefox" title="Firefox">Firefox</a> only) – displays related comments from other <a href="./Blogger_(service)" title="Blogger (service)">Blogger</a> users.</li>
+<li>City Tours – overlay to Maps that shows interesting tours within a city.</li>
+<li>Dashboard Widgets for Mac (<a href="./Mac_OS_X_Dashboard" title="Mac OS X Dashboard">Mac OS X Dashboard</a> Widgets) – suite of mini-applications including <a href="./Gmail" title="Gmail">Gmail</a>, <a href="./Blogger_(service)" title="Blogger (service)">Blogger</a> and Search History.</li>
+<li>Joga Bonito – soccer community site.</li>
+<li>Local – Local listings service, merged with Google Maps.</li>
+<li>MK-14 – 4U rack-mounted server for Google Radio Automation system. Google sold its Google Radio Automation business to WideOrbit Inc.</li>
+<li><a href="./Google_Trends" title="Google Trends">Google Music Trends</a> – music ranking of songs played with iTunes, Winamp, Windows Media Player and Yahoo Music. Trends were generated by <a href="./Google_Talk" title="Google Talk">Google Talk</a>'s "share your music status" feature.</li>
+<li><a href="./Google_Personalized_Search" title="Google Personalized Search">Google Personalized Search</a> – search results personalization, merged with Google Accounts and Web History.</li>
+<li>Photos Screensaver – slideshow <a href="./Screensaver" title="Screensaver">screensaver</a> as part of Google Pack, which displays images sourced from a <a href="./Hard_disk" title="Hard disk">hard disk</a>, or through <a href="./RSS" title="RSS">RSS</a> and <a href="./Atom_(standard)" title="Atom (standard)">Atom</a> Web feeds.</li>
+<li>Rebang (Google China) – search trend site, similar to Google Zeitgeist. As of 2010<a href="https://en.wikipedia.org/w/index.php?title=List_of_Google_products&amp;action=edit">[update]</a>, part of Google Labs.</li>
+<li><a href="./SpreadsheetML" title="SpreadsheetML">Spreadsheets</a> – spreadsheet management application, before it was integrated with Writely to form Google Docs &amp; Spreadsheets.</li>
+<li>University Search – search engine listing for university websites.</li>
+<li>U.S. Government Search – search engine and personalized homepage that exclusively draws from sites with a <a href="./.gov" title=".gov">.gov</a> <a href="./TLD" title="TLD">TLD</a>. Discontinued June 2006.</li>
+<li><a href="./Google_Video#Google_Video_Player" title="Google Video">Video Player</a> – view videos from Google Video.</li>
+<li><a href="./Google_Voice_Search" title="Google Voice Search">Voice Search</a> – automated voice system for web search using the telephone. Became Google Voice Local Search and integrated on the Google Mobile web site.</li>
+<li>Google X – redesigned Google search homepage. It appeared in Google Labs, but disappeared the following day for undisclosed reasons.</li>
+<li>Accessible Search – search engine for the visually impaired.</li>
+<li><a href="./Google_Quick_Search_Box" title="Google Quick Search Box">Quick Search Box</a> – search box, based on <a href="./Quicksilver_(software)" title="Quicksilver (software)">Quicksilver</a>, easing access to installed applications and online searches.</li>
+<li>Visigami – image search application screen saver that searches files from <a href="./Google_Images" title="Google Images">Google Images</a>, <a href="./Picasa" title="Picasa">Picasa</a> and <a href="./Flickr" title="Flickr">Flickr</a>.</li>
+<li><a href="./Google_WiFi#Wireless_access" title="Google WiFi">Wireless access</a> – <a href="./VPN" title="VPN">VPN</a> client for <a href="./Google_WiFi" title="Google WiFi">Google WiFi</a> users, whose equipment does not support <a href="./Wi-Fi_Protected_Access" title="Wi-Fi Protected Access">WPA</a> or <a href="./802.1X" title="802.1X">802.1X</a> protocols.</li>
+<li><a href="./Google_Play_Newsstand" title="Google Play Newsstand">Google Play Newsstand</a> – News publication and magazine store. Replaced by Google News on May 15, removed from Google Play on November 5, and magazines were no longer available on Google News since January 2020.</li>
+<li><a href="./Google_News_&amp;_Weather" title="Google News &amp; Weather">Google News &amp; Weather</a> – News publication app. Merged by Google News on May 15.</li>
+<li>Google global market finder.</li>
+<li>QPX Express API – flight search API.</li>
+<li><a href="./Google_Contact_Lens" title="Google Contact Lens">Google Contact Lens</a> – was a smart <a href="./Contact_lens" title="Contact lens">contact lens</a> project capable of monitoring the user's glucose level in tears. On November 16, <a href="./Verily" title="Verily">Verily</a> announced it has discontinued the project because of the lack of correlation between tear glucose and blood glucose.</li>
+</ul>
+<h3>2017</h3>
+<ul>
+<li><a href="./Google_Gesture_Search" title="Google Gesture Search">Google Gesture Search</a> – Gesture search is a software that draws letters composed of the name of a program, contact or setting, it can find the latter</li>
+<li><a href="./Google_Nexus" title="Google Nexus">Google Nexus</a> – Smartphone lineup, replaced by Google Pixel on October 4.</li>
+<li><a href="./Trendalyzer" title="Trendalyzer">Trendalyzer</a> – data trend viewing platform. Discontinued in September.</li>
+<li><a href="./Google_Swiffy" title="Google Swiffy">Google Swiffy</a> – convert <a href="./Adobe_Flash" title="Adobe Flash">Adobe Flash</a> files (<a href="./SWF" title="SWF">SWF</a>) into <a href="./HTML5" title="HTML5">HTML5</a>. Discontinued on July 1.</li>
+<li><a href="./Glass_OS" title="Glass OS">Glass OS</a> – an operating system for <a href="./Google_Glass" title="Google Glass">Google Glass</a>. Discontinued on June 20.</li>
+<li><a href="./Google_Spaces" title="Google Spaces">Google Spaces</a> – group discussions and messaging. Discontinued on April 17.</li>
+<li><a href="./Google_Map_Maker" title="Google Map Maker">Google Map Maker</a> – map editor with browser interface. Discontinued on April 1, replaced by Google Maps and Google Local Guides.</li>
+<li>Google Hands Free – retail checkout without using your phone or watch. Pilot started in the Bay area March 2016, but discontinued on February 8.</li>
+<li><a href="./Google_Maps_Engine?action=edit&amp;redlink=1" title="Google Maps Engine">Google Maps Engine</a> – develop geospatial applications. Discontinued on February 1.</li>
+<li>Free Search – embed site/web search into a user's website. Replaced by <a href="./Google_Custom_Search" title="Google Custom Search">Google Custom Search</a>.</li>
+<li>Google Maps for PS Vita – version of Google maps for the PS Vita, discontinued in January 2015, <a href="https://www.engadget.com/2015-01-28-sony-pulls-support-for-vitas-maps-youtube-apps.html">"Sony pulls support for Vita's Maps, YouTube apps"</a>. <em>Engadget</em>. Retrieved July 4, 2024.</li>
+<li>YouTube for PS Vita – discontinued in January 2015, <a href="https://www.engadget.com/2015-01-28-sony-pulls-support-for-vitas-maps-youtube-apps.html">"Sony pulls support for Vita's Maps, YouTube apps"</a>. <em>Engadget</em>. Retrieved July 4, 2024.</li>
+</ul>
+<h3>2016</h3>
+<ul>
+<li><a href="./Google_Developers#Google_Code" title="Google Developers">Google Code</a> – Open source code hosting. Discontinued on January 25 and renamed to Google Developers.</li>
+<li><a href="./Picasa" title="Picasa">Picasa</a> – photo organization and editing application. Closed March 15 and replaced by <a href="./Google_Photos" title="Google Photos">Google Photos</a>.</li>
+<li>Google Compare – comparison-shopping site for auto insurance, credit cards and mortgages</li>
+<li>Google Showtimes – movie showtime search engine. Discontinued on November 1.</li>
+<li><a href="./MyTracks" title="MyTracks">MyTracks</a> – GPS logging. Shut down April 30.</li>
+<li><a href="./Project_Ara" title="Project Ara">Project Ara</a> – an "initiative to build a phone with interchangeable modules for various components like cameras and batteries" was suspended to "streamline the company's seemingly disorganized product lineup". on September 2.</li>
+<li><a href="./Panoramio" title="Panoramio">Panoramio</a> – <a href="./Geotagging" title="Geotagging">geolocation-oriented</a> <a href="./Photo_sharing" title="Photo sharing">photo sharing</a> website. Discontinued on November 4. Google's Local Guides program as well as photo upload tools in Google Maps rendered Panoramio redundant.</li>
+<li>Google Feed API – download public <a href="./Atom_(web_standard)" title="Atom (web standard)">Atom</a> or <a href="./RSS" title="RSS">RSS</a> feeds using JavaScript. Deactivated on December 15.</li>
+</ul>
+<h3>2015</h3>
+<ul>
+<li>Wildfire by Google – social media marketing software</li>
+<li>Google Earth Plugin – an application service used to customize Google Earth. Discontinued on December 15.</li>
+<li><a href="./Google_Flu_Trends" title="Google Flu Trends">Google Flu Trends</a> – a web service to help predict outbreaks of flu activity. Discontinued on August 9.</li>
+<li><a href="./Google_Moderator" title="Google Moderator">Google Moderator</a> – rank user-submitted questions, suggestions and ideas via crowdsourcing. Discontinued on June 30.</li>
+<li><a href="./Google_Helpouts" title="Google Helpouts">Google Helpouts</a> – Hangout-based live video chat with experts. Discontinued on April 20.</li>
+<li>Google Earth Enterprise – Google Earth for enterprise use. Discontinued on March 20.</li>
+<li><a href="./BebaPay" title="BebaPay">BebaPay</a> – prepaid ticket payment system. Discontinued on March 15.</li>
+<li><a href="./Google_Glass" title="Google Glass">Google Glass</a> (Consumer Edition) – <a href="./Wearable_computer" title="Wearable computer">wearable computer</a> with an optical head-mounted display and camera that allows the wearer to interact with various applications and the Internet via natural language voice commands. Discontinued on January 19.</li>
+<li><a href="./Speak_To_Tweet" title="Speak To Tweet">Speak To Tweet</a> – telephone service created in 2011 in collaboration with <a href="./Twitter" title="Twitter">Twitter</a> and SayNow allowing users to phone a specific number and leave a <a href="./Voicemail" title="Voicemail">voicemail</a>; a tweet was automatically posted on X. Discontinued sometime during 2015.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>]</li>
+</ul>
+<h3>2014</h3>
+<ul>
+<li><a href="./Freebase_(database)" title="Freebase (database)">Freebase</a> – an open, <a href="./Creative_Commons" title="Creative Commons">Creative Commons</a>, attribution licensed collection of structured data, and a Freebase platform for accessing and manipulating that data via the Freebase <a href="./API" title="API">API</a>. Discontinued on December 16.</li>
+<li><a href="./Google_Questions_and_Answers" title="Google Questions and Answers">Google Questions and Answers</a> – community-driven <a href="./Knowledge_market" title="Knowledge market">knowledge market</a> website. Discontinued on December 1.</li>
+<li><a href="./Orkut" title="Orkut">Orkut</a> – social networking website. Discontinued on September 30.</li>
+<li>Google's "discussion search" option. Discontinued in July.</li>
+<li><a href="./Quickoffice" title="Quickoffice">Quickoffice</a> – productivity suite for mobile devices. Discontinued in June, merged into Google Drive.</li>
+<li><a href="./Google_TV_(operating_system)" title="Google TV (operating system)">Google TV</a> – smart TV platform based on Android. Discontinued and replaced by <a href="./Android_TV" title="Android TV">Android TV</a> in June.</li>
+<li><a href="./Google_Offers" title="Google Offers">Google Offers</a> – service offering discounts and coupons. Shut down on March 31.</li>
+<li><a href="./Google_Chrome_Frame" title="Google Chrome Frame">Google Chrome Frame</a> – plugin for Internet Explorer that allowed web pages to be viewed using WebKit and the V8 JavaScript engine. Discontinued on February 25.</li>
+<li><a href="./Google_Schemer" title="Google Schemer">Google Schemer</a> – social search to find local activities. Discontinued on February 7.</li>
+<li>YouTube My Speed – Discontinued in January, replaced by Google Video Quality Report.</li>
+<li>Google Notifier – alerted users to new messages in their Gmail account. Discontinued on January 31.</li>
+</ul>
+<h3>2013</h3>
+<ul>
+<li>My Maps, GIS tools for Google Maps.</li>
+<li><a href="./Google_Currents_(news_app)" title="Google Currents (news app)">Google Currents</a> – Magazine app. Merged into Google Play Newsstand on November 20.</li>
+<li><a href="./Google_Checkout" title="Google Checkout">Google Checkout</a> – online payment processing service, aimed at simplifying the process of paying for online purchases. Discontinued on November 20, merged into Google Wallet.</li>
+<li><a href="./IGoogle" title="IGoogle">iGoogle</a> – customisable homepage, which can contain <a href="./Web_feed" title="Web feed">web feeds</a> and Google Gadgets. Discontinued on November 1.</li>
+<li><a href="./Google_Latitude" title="Google Latitude">Google Latitude</a> – mobile geolocation tool that lets friends know where users are. Discontinued on August 9, with some functionality moved to Google+.</li>
+<li><a href="./Google_Reader" title="Google Reader">Google Reader</a> – web-based <a href="./News_aggregator" title="News aggregator">news aggregator</a>, capable of reading <a href="./Atom_(standard)" title="Atom (standard)">Atom</a> and <a href="./RSS_(file_format)" title="RSS (file format)">RSS</a> feeds. Discontinued on July 1.</li>
+<li><a href="./Meebo" title="Meebo">Meebo</a> – A social networking website discontinued on June 6.</li>
+<li><a href="./Google_Building_Maker" title="Google Building Maker">Google Building Maker</a> – web-based building and editing tool to create 3D buildings for Google Earth. Discontinued on June 4.</li>
+<li><a href="./Google_Talk" title="Google Talk">Google Talk</a> – instant messaging service that provided both text and voice communication. Replaced May 15 by <a href="./Google_Hangouts" title="Google Hangouts">Google Hangouts</a>. The service was discontinued by 2017 on all platforms.</li>
+<li>SMS Search – mobile phone <a href="./Short_message_service" title="Short message service">short message service</a>. Discontinued on May 10.</li>
+<li><a href="./Google_Cloud_Connect" title="Google Cloud Connect">Google Cloud Connect</a> – <a href="./Microsoft_Office" title="Microsoft Office">Microsoft Office</a> <a href="./Plug-in_(computing)" title="Plug-in (computing)">plugin</a> for automatically backing up Office documents upon saving onto Google Docs. Discontinued on April 30, in favor of Google Drive.</li>
+<li><a href="./Picnik" title="Picnik">Picnik</a> – online photo editor. Discontinued on April 19, and moved to Google+ photo manager.</li>
+<li>Google Calendar Sync – sync Microsoft Outlook email and calendar with Gmail and Google Calendar. Synchronization for existing installations stopped on August 1. Replaced with Google Sync, which does not synchronize <a href="./Outlook.com" title="Outlook.com">Outlook</a> calendars, but can sync email using <a href="./Internet_Message_Access_Protocol" title="Internet Message Access Protocol">IMAP</a> or POP3. Also, Google Apps for Business, Education, and Government customers can use Google Apps Sync for Microsoft Outlook.</li>
+</ul>
+<h3>2012</h3>
+<ul>
+<li>Picasa Web Albums Uploader – upload images to the "<a href="./Picasa" title="Picasa">Picasa</a> Web Albums" service. It consisted of an <a href="./IPhoto" title="IPhoto">iPhoto</a> plug-in and a stand-alone application.</li>
+<li><a href="./Google_Chart_API" title="Google Chart API">Google Chart API</a> – interactive Web-based chart image generator, deprecated in 2012 with service commitment to 2015 and turned off in 2019. Google promotes JavaScript-based <a href="./Google_Charts" title="Google Charts">Google Charts</a> as a replacement, which is not backwards-compatible with the Google Chart API's HTTP methods.</li>
+<li><a href="./Google_Workspace" title="Google Workspace">Google Apps</a> Standard Edition – Discontinued on December 6.</li>
+<li><a href="./Nexus_Q" title="Nexus Q">Nexus Q</a> – <a href="./Digital_media_player" title="Digital media player">digital media player</a> – Discontinued in November.</li>
+<li><a href="./OpenRefine" title="OpenRefine">Google Refine</a> – data cleansing and processing. It was spun off from Google on October 2, becoming open source; it is now <a href="./OpenRefine" title="OpenRefine">OpenRefine</a>.</li>
+<li>TV Ads – Method to place advertising on TV networks. Discontinued on August 30, with all remaining active campaigns ending December 16.</li>
+<li><a href="./Knol" title="Knol">Knol</a> – write authoritative articles related to various topics. Discontinued October 1.</li>
+<li>Yinyue (<em>Music</em>) (<a href="./Google_China" title="Google China">Google China</a>) –  site linking to a large archive of Chinese pop-music (principally <a href="./Cantopop" title="Cantopop">Cantopop</a> and <a href="./Mandopop" title="Mandopop">Mandopop</a>), including audio streaming over Google's own player, legal lyric downloads, and in most cases legal MP3 downloads. The archive was provided by Top100.cn (i.e., this service does not search the whole Internet) and was available in <a href="./Mainland_China" title="Mainland China">mainland China</a> only. Discontinued in September, users were given the option to download playlists until October 19.</li>
+<li><a href="./Google_Insights_for_Search" title="Google Insights for Search">Google Insights for Search</a> – insights into Google search term usage. Discontinued September 27, merged in Google Trends.</li>
+<li>Listen – subscribe to and stream podcasts and Web audio. Discontinued in August.</li>
+<li><a href="./BumpTop" title="BumpTop">BumpTop</a> – physics-based desktop application. Discontinued in August.</li>
+<li><a href="./Google_Video" title="Google Video">Google Video</a> – a free <a href="./Video_hosting_service" title="Video hosting service">video hosting service</a>. Shut down and migrated to YouTube (which Google acquired in 2006) on August 20.</li>
+<li><a href="./Google_Notebook" title="Google Notebook">Google Notebook</a> – online note-taking and web-clipping application. Discontinued in July.</li>
+<li><a href="./Google_Optimize" title="Google Optimize">Google Website Optimizer</a> – testing and optimization tool. Discontinued on August 1.</li>
+<li>Google Mini – reduced capacity, lower-cost version of the Google Search Appliance. Discontinued on July 31.</li>
+<li><a href="./Google_Wave" title="Google Wave">Google Wave</a> – online communication and <a href="./Collaborative_real-time_editor" title="Collaborative real-time editor">collaborative real-time editor</a> tool that bridge email and chat. Support ended on April 30.</li>
+<li><a href="./Max_Levchin#Slide" title="Max Levchin">Slide.com</a> – Discontinued on March 6.</li>
+<li><a href="./Google_Friend_Connect" title="Google Friend Connect">Google Friend Connect</a> – add social features to websites. Discontinued on March 1, replaced by <a href="./Google+" title="Google+">Google+</a>'s pages and off-site Page badges.</li>
+<li><a href="./Jaiku" title="Jaiku">Jaiku</a> – <a href="./Social_networking" title="Social networking">social networking</a>, <a href="./Microblogging" title="Microblogging">microblogging</a> and <a href="./Lifestreaming" title="Lifestreaming">lifestreaming</a> service comparable to Twitter. Shut down January 15.</li>
+<li><a href="./Google_Code_Search" title="Google Code Search">Google Code Search</a> – software search engine. Discontinued on January 15.</li>
+<li><a href="./Google_Health" title="Google Health">Google Health</a> – store, manage, and share personal health information in one place. Development ceased June 24, 2011; accessible until January 1, 2012; data available for download until January 1, 2013.</li>
+</ul>
+<h3>2011</h3>
+<ul>
+<li><a href="./Google_Buzz" title="Google Buzz">Google Buzz</a> – social networking service integrated with <a href="./Gmail" title="Gmail">Gmail</a> allowing users to share content immediately and make conversations. Discontinued in December and replaced by Google+.</li>
+<li><a href="./Google_Sidewiki" title="Google Sidewiki">Google Sidewiki</a> – browser sidebar and service that allowed contributing and reading helpful information alongside any web page. Discontinued in December.</li>
+<li><a href="./Gears_(software)" title="Gears (software)">Gears</a> – web browser features, enabling some new web applications. Removed from all platforms by November.</li>
+<li><a href="./Google_Squared" title="Google Squared">Squared</a> – creates tables of information about a subject from <a href="./Unstructured_data" title="Unstructured data">unstructured data</a>. Discontinued in September.</li>
+<li><a href="./Aardvark_(search_engine)" title="Aardvark (search engine)">Aardvark</a> – social search utility that allowed people to ask and answer questions within their social networks. It used people's claimed expertise to match 'askers' with good 'answerers'. Discontinued on September 30.</li>
+<li><a href="./Google_PowerMeter" title="Google PowerMeter">Google PowerMeter</a> – view building energy consumption. Discontinued on September 16.</li>
+<li><a href="./Google_Desktop" title="Google Desktop">Desktop</a> – <a href="./Desktop_environment" title="Desktop environment">desktop</a> search application that indexed emails, documents, music, photos, chats, Web history and other files. Discontinued on September 14.</li>
+<li><a href="./Google_Fast_Flip" title="Google Fast Flip">Google Fast Flip</a> – online news aggregator. Discontinued September 6.</li>
+<li><a href="./Google_Pack" title="Google Pack">Google Pack</a> – application suite. Discontinued on September 2.</li>
+<li><a href="./Google_Directory" title="Google Directory">Google Directory</a> – collection of links arranged into hierarchical subcategories. The links and their categorization were from the <a href="./Open_Directory_Project" title="Open Directory Project">Open Directory Project</a>, sorted using <a href="./PageRank" title="PageRank">PageRank</a>. Discontinued on July 20.</li>
+<li><a href="./Google_Blog_Search" title="Google Blog Search">Google Blog Search</a> – <a href="./Weblog" title="Weblog">weblog</a> search engine. Discontinued in July.</li>
+<li><a href="./Google_Labs" title="Google Labs">Google Labs</a> – test and demonstrate new Google products. Discontinued in July.</li>
+<li><a href="./Google_Image_Swirl" title="Google Image Swirl">Image Swirl</a> – an enhancement for an image-search tool in Google Labs. It was built on top of image search by grouping images with similar visual and semantic qualities. Shut down in July due to discontinuation of Google Labs.</li>
+<li>Google Sets – generates a list of items when users enter a few examples. For example, entering "Green, Purple, Red" emits the list "Green, Purple, Red, Blue, Black, White, Brown". Discontinued mid-year.</li>
+<li>Directory – navigation directory, specifically for Chinese users.</li>
+<li><a href="./Google_Maps" title="Google Maps">Hotpot</a> – local recommendation engine that allowed people to rate restaurants, hotels etc. and share them with friends. Moved to Google Places service in April.</li>
+<li>Real Estate – place real estate listings in Google Maps. Discontinued February 10.</li>
+</ul>
+<h3>2010</h3>
+<ul>
+<li><a href="./Google_Base" title="Google Base">Google Base</a> – submission database that enabled content owners to submit content, have it hosted and made searchable. Information was organized using attributes. Discontinued on December 17, replaced with Google Shopping APIs.</li>
+<li><a href="./GOOG-411" title="GOOG-411">GOOG-411</a> (also known as Voice Local Search) – <a href="./Directory_assistance" title="Directory assistance">directory assistance</a> service. Discontinued on November 12.</li>
+<li><a href="./Google_SearchWiki" title="Google SearchWiki">Google SearchWiki</a> – annotate and re-order search results. Discontinued March 3, replaced by Google Stars.</li>
+<li><a href="./Marratech" title="Marratech">Marratech e-Meeting</a> – <a href="./Web_conferencing" title="Web conferencing">web conferencing</a> software, used internally by Google's employees. Discontinued on February 19.</li>
+<li><a href="./Living_Stories" title="Living Stories">Living Stories</a> – collaboration with <a href="./The_New_York_Times" title="The New York Times">The New York Times</a> and <a href="./The_Washington_Post" title="The Washington Post">The Washington Post</a> for presenting news. Discontinued in February.</li>
+</ul>
+<h3>2009</h3>
+<ul>
+<li>Audio Ads – radio advertising program for US businesses. Discontinued on February 12.</li>
+<li>Catalogs – search engine for over 6,600 print catalogs, acquired through <a href="./Optical_character_recognition" title="Optical character recognition">optical character recognition</a>. Discontinued in January.</li>
+<li><a href="./Dodgeball_(service)" title="Dodgeball (service)">Dodgeball</a> – <a href="./Social_networking_service" title="Social networking service">social networking service</a>. Users could text their location to the service, which would then notify them of nearby people or events of interest. Replaced by <a href="./Google_Latitude" title="Google Latitude">Google Latitude</a>.</li>
+<li><a href="./Google_Mashup_Editor" title="Google Mashup Editor">Google Mashup Editor</a> – web mashup creation with publishing, syntax highlighting, debugging. Discontinued in July; migrated to Google App Engine.</li>
+<li>Google Ride Finder – taxi and shuttle search service, using real time position of vehicles in 14 U.S. cities. Used the <a href="./Google_Maps" title="Google Maps">Google Maps</a> interface and cooperated with any car service that wished to participate. Discontinued in October.</li>
+<li>Shared Stuff – web page sharing system, incorporating a <a href="./Bookmarklet" title="Bookmarklet">bookmarklet</a> to share pages, and a page to view the most popular shared items. Pages could be shared through third-party applications such as Delicious or Facebook. Discontinued on March 30.</li>
+</ul>
+<h3>2008</h3>
+<ul>
+<li><a href="./Google_Lively" title="Google Lively">Google Lively</a> – 3D animated chat. Discontinued December 31.</li>
+<li>SearchMash – search engine to "test innovative user interfaces". Discontinued on November 24.</li>
+<li><a href="./Google_Page_Creator" title="Google Page Creator">Google Page Creator</a> – webpage publishing program that could be used to create pages and to host them on Google servers. Discontinued on September 9, with all existing content gradually transferring to <a href="./Google_Sites" title="Google Sites">Google Sites</a> through 2009.</li>
+<li>Send to Phone – send links and other information from <a href="./Firefox" title="Firefox">Firefox</a> to their phone by text message. Discontinued on August 28, replaced by Google Chrome to Phone.</li>
+<li><a href="./Google_Browser_Sync" title="Google Browser Sync">Google Browser Sync</a> (<a href="./Firefox" title="Firefox">Mozilla Firefox</a>) – allowed Firefox users to synchronize settings across multiple computers. Discontinued in June.</li>
+<li><a href="./Picasa#Hello" title="Picasa">Hello</a> – send images across the Internet and publish them to blogs. Discontinued on May 15.</li>
+<li><a href="./Google_Web_Accelerator" title="Google Web Accelerator">Web Accelerator</a> – increased load speed of web pages. No longer available for, or supported by, Google as of January 20.</li>
+</ul>
+<h3>2007</h3>
+<ul>
+<li>Google Video Player – a video player that played back files in Google's own .gvi format and supported playlists in .gvp format. Shut down on August 17, 2007, due to Google's acquisition of YouTube.</li>
+<li>Google Video Marketplace – discontinued on August 15.</li>
+<li>Google Click-to-Call – allowed a user to speak directly over the phone without charge to businesses found on Google search results pages. Discontinued on July 20.</li>
+<li>Related Links – links to information related to a website's content. Discontinued on April 30.</li>
+<li>Public Service Search – non-commercial organization service, which included Google Site Search, traffic reports and unlimited search queries. Discontinued on February 13, replaced by <a href="./Google_Custom_Search" title="Google Custom Search">Google Custom Search</a>.</li>
+</ul>
+<h3>2006</h3>
+<ul>
+<li><a href="./Google_Answers" title="Google Answers">Google Answers</a> – online knowledge market that allowed users to post bounties for well-researched answers to their queries. Discontinued on November 28; still accessible (read-only).</li>
+<li><a href="./Google_Docs#History" title="Google Docs">Writely</a> – web-based <a href="./Word_processor" title="Word processor">word processor</a>. On October 10, Writely was merged into Google Docs &amp; Spreadsheets.</li>
+<li>Google Deskbar – desktop bar with a built-in mini browser. Replaced by a similar feature in <a href="./Google_Desktop" title="Google Desktop">Google Desktop</a>. Discontinued May 8.</li>
+</ul>
+<h2>See also</h2>
+<ul>
+<li>
+<p><a href="./File:Crystal_Clear_app_linneighborhood.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Crystal_Clear_app_linneighborhood.svg/40px-Crystal_Clear_app_linneighborhood.svg.png"></a><a href="./Portal:Internet" title="Portal:Internet">Internet portal</a></p>
+</li>
+<li>
+<p><a href="./Outline_of_Google" title="Outline of Google">Outline of Google</a></p>
+</li>
+<li><a href="./History_of_Google" title="History of Google">History of Google</a></li>
+<li><a href="./List_of_mergers_and_acquisitions_by_Alphabet" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a></li>
+<li><a href="./List_of_Google_April_Fools'_Day_jokes" title="List of Google April Fools' Day jokes">Google's hoaxes</a></li>
+<li><a href="./X_Development" title="X Development">X Development</a></li>
+<li><a href="./Google.org" title="Google.org">Google.org</a></li>
+</ul>
+<h2>References</h2>
+<h2>External links</h2>
+<ul>
+<li><a href="https://about.google/products/">List of products on the Google corporate site</a></li>
+<li><a href="https://developers.google.com/products/">List of products on Google Developers</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

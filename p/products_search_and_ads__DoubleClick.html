@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DoubleClick</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link active" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>DoubleClick</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/DoubleClick<br>
+Category: products_search_and_ads<br>
+Depth: 1</p>
+</blockquote>
+<h2>Summary</h2>
+<p>DoubleClick Inc. was an American advertisement company that developed and provided Internet ad serving services from 1995 until its acquisition by Google in March 2008. DoubleClick offered technology products and services that were sold primarily to advertising agencies and mass media, serving businesses like Microsoft, General Motors, Coca-Cola, Motorola, L'Oréal, Palm, Inc., Apple Inc., Visa Inc., Nike, Inc., and Carlsberg Group. The company's main product line was known as DART, which was intended to increase the purchasing efficiency of advertisers and minimize unsold inventory for publishers.</p>
+<h2>Full Article</h2>
+<p>Subsidiary of Google that provides Internet ad services</p>
+<p>This article is about the advertising company. For the computer term, see <a href="./Double-click" title="Double-click">Double-click</a>.</p>
+<p><strong>DoubleClick Inc.</strong> was an American advertisement company that developed and provided Internet <a href="./Ad_serving" title="Ad serving">ad serving</a> services from 1995 until its acquisition by <a href="./Google" title="Google">Google</a> in March 2008. DoubleClick offered technology products and services that were sold primarily to <a href="./Advertising_agencies" title="Advertising agencies">advertising agencies</a> and <a href="./Mass_media" title="Mass media">mass media</a>, serving businesses like <a href="./Microsoft" title="Microsoft">Microsoft</a>, <a href="./General_Motors" title="General Motors">General Motors</a>, <a href="./Coca-Cola" title="Coca-Cola">Coca-Cola</a>, <a href="./Motorola" title="Motorola">Motorola</a>, <a href="./L'Oréal" title="L'Oréal">L'Oréal</a>, <a href="./Palm,_Inc." title="Palm, Inc.">Palm, Inc.</a>, <a href="./Apple_Inc." title="Apple Inc.">Apple Inc.</a>, <a href="./Visa_Inc." title="Visa Inc.">Visa Inc.</a>, <a href="./Nike,_Inc." title="Nike, Inc.">Nike, Inc.</a>, and <a href="./Carlsberg_Group" title="Carlsberg Group">Carlsberg Group</a>. The company's main product line was known as <em>DART</em> (Dynamic Advertising, Reporting, and Targeting), which was intended to increase the purchasing efficiency of advertisers and minimize unsold inventory for publishers.</p>
+<p>DoubleClick was founded in 1995 by <a href="./Kevin_O'Connor_(entrepreneur)" title="Kevin O'Connor (entrepreneur)">Kevin O'Connor</a> and <a href="./Dwight_Merriman" title="Dwight Merriman">Dwight Merriman</a> and had headquarters in <a href="./New_York_City" title="New York City">New York City</a>, United States. It was acquired by <a href="./Private_equity" title="Private equity">private equity</a> firms <a href="./Hellman_&amp;_Friedman" title="Hellman &amp; Friedman">Hellman &amp; Friedman</a> and JMI Equity in July 2005. On March 11, 2008, Google acquired DoubleClick for $3.1 billion. In June 2018, Google announced plans to rebrand its ads platforms, and DoubleClick was merged into the new <a href="./Google_Marketing_Platform" title="Google Marketing Platform">Google Marketing Platform</a> brand. DoubleClick Bid Manager became Display and Video 360, DoubleClick Search became Search Ads 360, DoubleClick Campaign Manager became Campaign Manager 360 and DoubleClick for Publishers (DFP) became Google Ad Manager 360.</p>
+<h2>History</h2>
+<p>In 1995, <a href="./Kevin_O'Connor_(entrepreneur)" title="Kevin O'Connor (entrepreneur)">Kevin O'Connor</a> and <a href="./Dwight_Merriman" title="Dwight Merriman">Dwight Merriman</a> developed the concept for DoubleClick in O'Connor's basement. They created a system to display <a href="./Banner_ad" title="Banner ad">banner ads</a> across a network of websites and track their performance to better target internet users. The product caught the attention of entrepreneur <a href="./Kevin_P._Ryan" title="Kevin P. Ryan">Kevin Ryan</a>, who later joined as the company's <a href="./CFO" title="CFO">CFO</a> and later became its <a href="./CEO" title="CEO">CEO</a>.</p>
+<p>Later that year, O'Connor and Merriman met Fergus O'Daily, the CEO of Poppe Tyson. Poppe Tyson had created an Interactive Sales division, but lacked the technology to deliver online ads across its network of client's sites. O'Connor, Merriman, and O'Daily decided to merge the two companies. To prevent competition from each company's sales teams, in November 1995 DoubleClick was spun off as an independent, wholly owned subsidiary. DoubleClick was founded as one of the earliest known <a href="./Application_Service_Provider" title="Application Service Provider">Application Service Providers</a> (ASP) for internet "ad-serving"—primarily banner ads.</p>
+<p>In February 1998, during the <a href="./Dot-com_bubble" title="Dot-com bubble">dot-com bubble</a>, the company became a <a href="./Public_company" title="Public company">public company</a>, trading on NASDAQ under the symbol DCLK, via an <a href="./Initial_public_offering" title="Initial public offering">initial public offering</a>. Shares rose 75% on the first day of trading.</p>
+<p>In June 1999, DoubleClick acquired Abacus Direct, which marketed consumer-purchasing data to catalog firms.</p>
+<p>In July 1999, DoubleClick acquired NetGravity and rebranded NetGravity AdServer as <em>DART</em> Enterprise.</p>
+<p>As of 2002, DoubleClick faced six lawsuits, including class-action lawsuits, related to invasions of privacy. Privacy groups complained that DoubleClick's plan to combine its online profiling information with offline information gathered by Abacus Direct would violate privacy rules, including the <a href="./Stored_Communications_Act" title="Stored Communications Act">Stored Communications Act</a>, the <a href="./Wiretap_Statute" title="Wiretap Statute">Wiretap Statute</a>, and the <a href="./Computer_Fraud_and_Abuse_Act" title="Computer Fraud and Abuse Act">Computer Fraud and Abuse Act</a>, as it would allow the company to match a person's identity with their online habits, which it tracks through cookies. In February 2000, the FTC announced it had launched an investigation into the matter. The investigation was concluded in January 2001, with the FTC stating that it found no evidence that DoubleClick used or disclosed consumers personal identifying information. DoubleClick eventually entered into a settlement agreement where DoubleClick was required to explain its privacy policy in "easy-to-read" language; conduct a public information campaign consisting of 300 million banner ads inviting consumers to learn more about protecting their privacy; and institute data purging and opt-in procedures among other requirements.</p>
+<p>In 2004, DoubleClick acquired Performics, which offered <a href="./Affiliate_marketing" title="Affiliate marketing">affiliate marketing</a>, <a href="./Search_engine_optimization" title="Search engine optimization">search engine optimization</a>, and <a href="./Search_engine_marketing" title="Search engine marketing">search engine marketing</a> products. These products were integrated into the core DART system and rebranded DART search. DoubleClick Advertising Exchange connected both media buyers and sellers on an <a href="./Advertising_exchange" title="Advertising exchange">advertising exchange</a> much like the financial negotiations of listed companies' capital stock. Google sold Performics in 2008 to <a href="./Publicis" title="Publicis">Publicis</a>.</p>
+<p>In April 2005, <a href="./Hellman_&amp;_Friedman" title="Hellman &amp; Friedman">Hellman &amp; Friedman</a>, a San Francisco-based private equity firm, agreed to acquire the company for $1.1 billion.</p>
+<h2>Acquisition by Google</h2>
+<p>On April 13, 2007, <a href="./Google" title="Google">Google</a> agreed to acquire DoubleClick for US$3.1 billion in cash. The deal raised concerns surrounding competition with both the <a href="./Federal_Trade_Commission" title="Federal Trade Commission">Federal Trade Commission</a> (FTC) and the <a href="./European_Union" title="European Union">European Union</a>. In May 2007, the FTC requested additional information about the deal after it was urged by competitors, including <a href="./Microsoft" title="Microsoft">Microsoft</a>, which believed it would give Google too much control over online advertising. On December 20, 2007, the FTC approved Google's purchase of DoubleClick from its owners <a href="./Hellman_&amp;_Friedman" title="Hellman &amp; Friedman">Hellman &amp; Friedman</a> and JMI Equity. <a href="./European_Union" title="European Union">European Union</a> regulators approved on March 11, 2008, and Google completed the acquisition later that day. On April 2, 2008, Google announced it would cut 300 jobs at DoubleClick due to organizational redundancies. Selected employees would be matched within the Google organization as per position and experience.</p>
+<p>In November 2007, shortly after the announcement of the acquisition, it was reported that DoubleClick had been serving ads designed to trick users into buying malware. This occurred after a malicious website tricked several name-brand websites into serving the ads.</p>
+<p>In June 2010, <a href="./Google" title="Google">Google</a> confirmed its acquisition of <a href="./Invite_Media" title="Invite Media">Invite Media</a>, a <a href="./Demand-side_platform" title="Demand-side platform">demand-side platform</a>, which it later renamed DoubleClick Bid Manager.</p>
+<p>On July 24, 2018, the names and logos of all DoubleClick products were updated, and DoubleClick Bid Manager is now Display &amp; Video 360 (DV360).</p>
+<h2>See also</h2>
+<ul>
+<li><a href="./Surveillance_capitalism" title="Surveillance capitalism">Surveillance capitalism</a></li>
+</ul>
+<h2>References</h2>
+<h2>External links</h2>
+<ul>
+<li><a href="https://web.archive.org/web/20060717124504/http://www.doubleclick.com/us/">Official website</a> at the <a href="./Wayback_Machine" title="Wayback Machine">Wayback Machine</a> (archived 2006-07-17)</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products" title="List of Google products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Digital_Marketing_Company" title="Template:Digital Marketing Company">v</a> - <a href="./Template_talk:Digital_Marketing_Company?action=edit&amp;redlink=1" title="Template talk:Digital Marketing Company">t</a> - <a href="./Special:EditPage/Template:Digital_Marketing_Company" title="Special:EditPage/Template:Digital Marketing Company">e</a>  <a href="./Digital_marketing" title="Digital marketing">Digital marketing</a> companies</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Marketing_automation" title="Marketing automation">Marketing automation</a> services</td>
+<td>- <a href="./ActiveCampaign" title="ActiveCampaign">ActiveCampaign</a> - <a href="./Adobe_Experience_Cloud" title="Adobe Experience Cloud">Adobe Experience Cloud</a> - <a href="./Amplitude_(company)" title="Amplitude (company)">Amplitude</a> - <a href="./BlueKai" title="BlueKai">BlueKai</a> - <a href="./Braze,_Inc" title="Braze, Inc">Braze, Inc</a> - <a href="./CleverTap" title="CleverTap">CleverTap</a> - <a href="./Constant_Contact" title="Constant Contact">Constant Contact</a> - <a href="./DoubleClick">DoubleClick</a> - <a href="./Bread_Financial#Epsilon" title="Bread Financial">Epsilon</a> - <a href="./HubSpot" title="HubSpot">HubSpot</a> - <a href="./Klaviyo" title="Klaviyo">Klaviyo</a> - <a href="./Mailchimp" title="Mailchimp">Mailchimp</a> - <a href="./Marketo" title="Marketo">Marketo</a> - <a href="./Netcraft" title="Netcraft">Netcraft</a> - <a href="./Optimove" title="Optimove">Optimove</a> - <a href="./Salesforce_Marketing_Cloud" title="Salesforce Marketing Cloud">Salesforce Marketing Cloud</a> - <a href="./SendGrid" title="SendGrid">SendGrid</a> - <a href="./Sendinblue" title="Sendinblue">Sendinblue</a> - <a href="./Similarweb" title="Similarweb">Similarweb</a> - <a href="./Tealium" title="Tealium">Tealium</a> - <a href="./Zeta_Global" title="Zeta Global">Zeta Global</a></td>
+</tr>
+<tr>
+<td>Defunct</td>
+<td>- <a href="./Alexa_Internet" title="Alexa Internet">Alexa Internet</a> - <a href="./Compete.com" title="Compete.com">Compete.com</a></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Bain_Capital" title="Template:Bain Capital">v</a> - <a href="./Template_talk:Bain_Capital" title="Template talk:Bain Capital">t</a> - <a href="./Special:EditPage/Template:Bain_Capital" title="Special:EditPage/Template:Bain Capital">e</a>  <a href="./Bain_Capital" title="Bain Capital">Bain Capital</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>People</td>
+<td>- <a href="./Bill_Bain_(consultant)" title="Bill Bain (consultant)">Bill Bain</a> - <a href="./Fraser_Bullock" title="Fraser Bullock">Fraser Bullock</a> - <a href="./Eric_Kriss" title="Eric Kriss">Eric Kriss</a> - <a href="./Mitt_Romney" title="Mitt Romney">Mitt Romney</a></td>
+</tr>
+<tr>
+<td>Portfolio companies</td>
+<td>- <a href="./Aleris" title="Aleris">Aleris</a> - <a href="./Bavaria_Yachtbau" title="Bavaria Yachtbau">Bavaria Yachtbau</a> - <a href="./Bombardier_Recreational_Products" title="Bombardier Recreational Products">Bombardier Recreational Products</a> - <a href="./Brookstone" title="Brookstone">Brookstone</a> - <a href="./Burger_King" title="Burger King">Burger King</a> - <a href="./Burlington_(department_store)" title="Burlington (department store)">Burlington</a> - <a href="./D+M_Group" title="D+M Group">D+M Group</a> - <a href="./Dollarama" title="Dollarama">Dollarama</a> - <a href="./Domino's" title="Domino's">Domino's</a> - <a href="./DoubleClick">DoubleClick</a> - <a href="./Edcon" title="Edcon">Edcon</a> - <a href="./GOME_Electrical_Appliances" title="GOME Electrical Appliances">GOME Electrical Appliances</a> - <a href="./Guitar_Center" title="Guitar Center">Guitar Center</a> - <a href="./Gymboree" title="Gymboree">Gymboree</a> - <a href="./HCA_Healthcare" title="HCA Healthcare">HCA Healthcare</a> - <a href="./HD_Supply" title="HD Supply">HD Supply</a> - <a href="./IHeartMedia" title="IHeartMedia">iHeartMedia</a> - <a href="./Kansas_City_Bolt_and_Nut_Company_plant" title="Kansas City Bolt and Nut Company plant">Kansas City Bolt and Nut Company plant</a> - <a href="./KB_Toys" title="KB Toys">KB Toys</a> - <a href="./Michaels" title="Michaels">Michaels</a> - <a href="./New_Life_Lodge" title="New Life Lodge">New Life Lodge</a> - <a href="./NXP_Semiconductors" title="NXP Semiconductors">NXP Semiconductors</a> - <a href="./Retail_Zoo" title="Retail Zoo">Retail Zoo</a> - <a href="./Sealy_Corporation" title="Sealy Corporation">Sealy Corporation</a> - <a href="./Staples_Inc" title="Staples Inc">Staples</a> - <a href="./Toys_" title="R&quot;_Us &quot;Toys \&quot;R\&quot; Us">Toys "R" Us</a> - <a href="./Varsity_Brands" title="Varsity Brands">Varsity Brands</a> - <a href="./Virgin_Australia_Holdings" title="Virgin Australia Holdings">Virgin Australia Holdings</a> - <a href="./Warner_Music_Group" title="Warner Music Group">Warner Music Group</a> - <a href="./Tanabe_Pharma" title="Tanabe Pharma">Tanabe Pharma</a> - <a href="./The_Weather_Channel" title="The Weather Channel">The Weather Channel</a></td>
+</tr>
+<tr>
+<td><a href="./Aspen_Education_Group" title="Aspen Education Group">Aspen Education Group</a></td>
+<td>- <a href="./Aspen_Achievement_Academy" title="Aspen Achievement Academy">Aspen Achievement Academy</a> - <a href="./Academy_at_Swift_River" title="Academy at Swift River">Academy at Swift River</a> - <a href="./Bromley_Brook_School" title="Bromley Brook School">Bromley Brook School</a> - <a href="./Excel_Academy_(Conroe,_Texas)" title="Excel Academy (Conroe, Texas)">Excel Academy</a> - <a href="./Mount_Bachelor_Academy" title="Mount Bachelor Academy">Mount Bachelor Academy</a> - <a href="./New_Leaf_Academy" title="New Leaf Academy">New Leaf Academy</a> - <a href="./NorthStar_Center" title="NorthStar Center">NorthStar Center</a> - <a href="./Oakley_School" title="Oakley School">Oakley School</a> - <a href="./Wellspring_Academies" title="Wellspring Academies">Wellspring Academies</a></td>
+</tr>
+<tr>
+<td>Affiliates</td>
+<td>- <a href="./Bain_&amp;_Company" title="Bain &amp; Company">Bain &amp; Company</a> - <a href="./Bain_Capital_Ventures" title="Bain Capital Ventures">Bain Capital Ventures</a></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Dot-com_Bubble" title="Template:Dot-com Bubble">v</a> - <a href="./Template_talk:Dot-com_Bubble" title="Template talk:Dot-com Bubble">t</a> - <a href="./Special:EditPage/Template:Dot-com_Bubble" title="Special:EditPage/Template:Dot-com Bubble">e</a>  <a href="./Dot-com_bubble" title="Dot-com bubble">Dot-com bubble</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>People</td>
+<td>- <a href="./Daniel_Aegerter" title="Daniel Aegerter">Daniel Aegerter</a> - <a href="./Marc_Andreessen" title="Marc Andreessen">Marc Andreessen</a> - <a href="./Bob_Bernard" title="Bob Bernard">Bob Bernard</a> - <a href="./Jeff_Bezos" title="Jeff Bezos">Jeff Bezos</a> - <a href="./Henry_Blodget" title="Henry Blodget">Henry Blodget</a> - <a href="./James_H._Clark" title="James H. Clark">James H. Clark</a> - <a href="./Cynthia_Cooper_(accountant)" title="Cynthia Cooper (accountant)">Cynthia Cooper</a> - <a href="./Bob_Davis_(businessman)" title="Bob Davis (businessman)">Bob Davis</a> - <a href="./Bernard_Ebbers" title="Bernard Ebbers">Bernard Ebbers</a> - <a href="./David_Filo" title="David Filo">David Filo</a> - <a href="./Charlie_Gasparino" title="Charlie Gasparino">Charlie Gasparino</a> - <a href="./Richard_Grasso" title="Richard Grasso">Richard Grasso</a> - <a href="./Alan_Greenspan" title="Alan Greenspan">Alan Greenspan</a> - <a href="./Jack_Grubman" title="Jack Grubman">Jack Grubman</a> - <a href="./Josh_Harris_(entrepreneur)" title="Josh Harris (entrepreneur)">Josh Harris</a> - <a href="./Jeff_Hawkins" title="Jeff Hawkins">Jeff Hawkins</a> - <a href="./Howard_Jonas" title="Howard Jonas">Howard Jonas</a> - <a href="./Gerry_Kearby" title="Gerry Kearby">Gerry Kearby</a> - <a href="./Timothy_Koogle" title="Timothy Koogle">Timothy Koogle</a> - <a href="./Kenneth_Lay" title="Kenneth Lay">Kenneth Lay</a> - <a href="./Arthur_Levitt" title="Arthur Levitt">Arthur Levitt</a> - <a href="./Mary_Meeker" title="Mary Meeker">Mary Meeker</a> - <a href="./PayPal_Mafia" title="PayPal Mafia">PayPal Mafia</a> - <a href="./Kevin_O'Leary" title="Kevin O'Leary">Kevin O'Leary</a> - <a href="./Jason_Olim" title="Jason Olim">Jason Olim</a> - <a href="./Stephan_Paternot" title="Stephan Paternot">Stephan Paternot</a> - <a href="./Jim_Rutt" title="Jim Rutt">Jim Rutt</a> - <a href="./Michael_J._Saylor" title="Michael J. Saylor">Michael J. Saylor</a> - <a href="./Jeffrey_Skilling" title="Jeffrey Skilling">Jeffrey Skilling</a> - <a href="./Eliot_Spitzer" title="Eliot Spitzer">Eliot Spitzer</a> - <a href="./Scott_D._Sullivan" title="Scott D. Sullivan">Scott D. Sullivan</a> - <a href="./Kaleil_Isaza_Tuzman" title="Kaleil Isaza Tuzman">Kaleil Isaza Tuzman</a> - <a href="./Julie_Wainwright" title="Julie Wainwright">Julie Wainwright</a> - <a href="./Jerry_Yang" title="Jerry Yang">Jerry Yang</a></td>
+</tr>
+<tr>
+<td>Companies</td>
+<td>- <a href="./3Com" title="3Com">3Com</a> - <a href="./360networks" title="360networks">360networks</a> - <a href="./AboveNet" title="AboveNet">AboveNet</a> - <a href="./Actua_Corporation" title="Actua Corporation">Actua Corporation</a> - <a href="./Airspan_Networks" title="Airspan Networks">Airspan Networks</a> - <a href="./Akamai_Technologies" title="Akamai Technologies">Akamai Technologies</a> - <a href="./Alteon_WebSystems" title="Alteon WebSystems">Alteon WebSystems</a> - <a href="./Amazon_(company)" title="Amazon (company)">Amazon</a> - <a href="./AOL" title="AOL">America Online</a> - <a href="./Arthur_Andersen" title="Arthur Andersen">Arthur Andersen</a> - <a href="./Ask.com" title="Ask.com">Ask Jeeves</a> - <a href="./Blue_Coat_Systems" title="Blue Coat Systems">Blue Coat Systems</a> - <a href="./Boo.com" title="Boo.com">Boo.com</a> - <a href="./Books-A-Million" title="Books-A-Million">Books-A-Million</a> - <a href="./Broadband_Sports" title="Broadband Sports">Broadband Sports</a> - <a href="./Broadcast.com" title="Broadcast.com">Broadcast.com</a> - <a href="./CDNow" title="CDNow">CDNow</a> - <a href="./Chemdex" title="Chemdex">Chemdex</a> - <a href="./Steel_Connect" title="Steel Connect">CMGI Inc.</a> - <a href="./Cobalt_Networks" title="Cobalt Networks">Cobalt Networks</a> - <a href="./Commerce_One" title="Commerce One">Commerce One</a> - <a href="./Covad" title="Covad">Covad</a> - <a href="./Cyberian_Outpost" title="Cyberian Outpost">Cyberian Outpost</a> - <a href="./CyberRebate" title="CyberRebate">CyberRebate</a> - <a href="./Digex" title="Digex">Digex</a> - <a href="./CueCat" title="CueCat">Digital Convergence Corporation</a> - <a href="./Digital_Insight" title="Digital Insight">Digital Insight</a> - <a href="./Divine,_Inc." title="Divine, Inc.">Divine</a> - <a href="./DoubleClick">DoubleClick</a> - <a href="./EBay" title="EBay">eBay</a> - <a href="./EGain" title="EGain">eGain</a> - <a href="./Egghead_Software" title="Egghead Software">Egghead Software</a> - <a href="./Enron" title="Enron">Enron</a> - <a href="./Epidemic_Marketing" title="Epidemic Marketing">Epidemic Marketing</a> - <a href="./Excite_(web_portal)" title="Excite (web portal)">Excite</a> - <a href="./Flooz.com" title="Flooz.com">Flooz.com</a> - <a href="./Freei" title="Freei">Freei</a> - <a href="./Gadzoox" title="Gadzoox">Gadzoox</a> - <a href="./GeoCities" title="GeoCities">GeoCities</a> - <a href="./Global_Crossing" title="Global Crossing">Global Crossing</a> - <a href="./GovWorks" title="GovWorks">govWorks</a> - <a href="./Handspring,_Inc." title="Handspring, Inc.">Handspring</a> - <a href="./Healtheon" title="Healtheon">Healtheon</a> - <a href="./HomeGrocer" title="HomeGrocer">HomeGrocer</a> - <a href="./HotBot" title="HotBot">HotBot</a> - <a href="./Infoseek" title="Infoseek">Infoseek</a> - <a href="./InfoSpace" title="InfoSpace">InfoSpace</a> - <a href="./Inktomi" title="Inktomi">Inktomi</a> - <a href="./Interactive_Intelligence" title="Interactive Intelligence">Interactive Intelligence</a> - <a href="./Internet_America" title="Internet America">Internet America</a> - <a href="./IVillage" title="IVillage">iVillage</a> - <a href="./IWon" title="IWon">iWon</a> - <a href="./Kozmo.com" title="Kozmo.com">Kozmo.com</a> - <a href="./Lastminute.com" title="Lastminute.com">lastminute.com</a> - <a href="./The_Learning_Company" title="The Learning Company">The Learning Company</a> - <a href="./Liquid_Audio" title="Liquid Audio">Liquid Audio</a> - <a href="./LookSmart" title="LookSmart">LookSmart</a> - <a href="./Lycos" title="Lycos">Lycos</a>   - <a href="./Angelfire" title="Angelfire">Angelfire</a>   - <a href="./Tripod_(web_hosting)" title="Tripod (web hosting)">Tripod</a> - <a href="./MarchFirst" title="MarchFirst">MarchFirst</a> - <a href="./Merrill_(company)" title="Merrill (company)">Merrill Lynch</a> - <a href="./MicroStrategy" title="MicroStrategy">MicroStrategy</a> - <a href="./Net2Phone" title="Net2Phone">Net2Phone</a> - <a href="./NetBank" title="NetBank">NetBank</a> - <a href="./Netscape" title="Netscape">Netscape</a> - <a href="./Network_Solutions" title="Network Solutions">Network Solutions</a> - <a href="./NorthPoint_Communications" title="NorthPoint Communications">NorthPoint Communications</a> - <a href="./OmniSky" title="OmniSky">OmniSky</a> - <a href="./Palm,_Inc." title="Palm, Inc.">Palm, Inc.</a> - <a href="./PayPal" title="PayPal">PayPal</a> - <a href="./Pets.com" title="Pets.com">Pets.com</a> - <a href="./PFSweb" title="PFSweb">PFSweb</a> - <a href="./Pixelon" title="Pixelon">Pixelon</a> - <a href="./PLX_Technology" title="PLX Technology">PLX Technology</a> - <a href="./Prodigy_(online_service)" title="Prodigy (online service)">Prodigy</a> - <a href="./Pseudo.com" title="Pseudo.com">Pseudo.com</a> - <a href="./Radvision" title="Radvision">Radvision</a> - <a href="./Razorfish_(company)" title="Razorfish (company)">Razorfish</a> - <a href="./Redback_Networks" title="Redback Networks">Redback Networks</a> - <a href="./Register.com" title="Register.com">Register.com</a> - <a href="./Ritmoteca.com" title="Ritmoteca.com">Ritmoteca.com</a> - <a href="./Savvis" title="Savvis">Savvis</a> - <a href="./Scout_Electromedia" title="Scout Electromedia">Scout Electromedia</a>   - <a href="./Modo_(wireless_device)" title="Modo (wireless device)">modo</a> - <a href="./Terra_(company)" title="Terra (company)">Terra</a> - <a href="./TheGlobe.com" title="TheGlobe.com">theGlobe.com</a> - <a href="./Think_Tools" title="Think Tools">Think Tools</a> - <a href="./TIBCO_Software" title="TIBCO Software">TIBCO Software</a> - <a href="./Tradex_Technologies" title="Tradex Technologies">Tradex Technologies</a> - <a href="./Transmeta" title="Transmeta">Transmeta</a> - <a href="./UBid" title="UBid">uBid</a> - <a href="./United_Online" title="United Online">United Online</a> - <a href="./USinternetworking" title="USinternetworking">USinternetworking</a> - <a href="./UUNET" title="UUNET">UUNET</a> - <a href="./Geeknet" title="Geeknet">VA Linux Systems</a> - <a href="./Verio" title="Verio">Verio</a> - <a href="./VerticalNet" title="VerticalNet">VerticalNet</a> - <a href="./Vignette_Corporation" title="Vignette Corporation">Vignette Corporation</a> - <a href="./WebChat_Broadcasting_System" title="WebChat Broadcasting System">WebChat Broadcasting System</a> - <a href="./Forcepoint" title="Forcepoint">Websense</a> - <a href="./Webvan" title="Webvan">Webvan</a> - <a href="./MCI_Inc." title="MCI Inc.">WorldCom</a> - <a href="./World_Online" title="World Online">World Online</a> - <a href="./Yahoo!" title="Yahoo!">Yahoo!</a></td>
+</tr>
+<tr>
+<td>History</td>
+<td>- <a href="./Enron_scandal" title="Enron scandal">Enron scandal</a> - <a href="./Irrational_exuberance" title="Irrational exuberance">Irrational exuberance</a> - <a href="./Sarbanes–Oxley_Act" title="Sarbanes–Oxley Act">Sarbanes–Oxley Act</a> - <a href="./Telecoms_crash" title="Telecoms crash">Telecoms crash</a> - <a href="./Trial_of_Kenneth_Lay_and_Jeffrey_Skilling" title="Trial of Kenneth Lay and Jeffrey Skilling">Trial of Kenneth Lay and Jeffrey Skilling</a> - <a href="./WorldCom_scandal" title="WorldCom scandal">WorldCom scandal</a></td>
+</tr>
+<tr>
+<td>Publications</td>
+<td>- <em><a href="./Blood_on_the_Street" title="Blood on the Street">Blood on the Street</a></em> - <em><a href="./Conspiracy_of_Fools" title="Conspiracy of Fools">Conspiracy of Fools</a></em> - <em><a href="./The_Industry_Standard" title="The Industry Standard">The Industry Standard</a></em> - <em><a href="./The_PayPal_Wars" title="The PayPal Wars">The PayPal Wars</a></em></td>
+</tr>
+<tr>
+<td>Broadcast media</td>
+<td>- <em><a href="./E-Dreams" title="E-Dreams">e-Dreams</a></em> - <em><a href="./Enron:_The_Smartest_Guys_in_the_Room" title="Enron: The Smartest Guys in the Room">Enron: The Smartest Guys in the Room</a></em> - <em><a href="./Startup.com" title="Startup.com">Startup.com</a></em> - <em><a href="./Valley_of_the_Boom" title="Valley of the Boom">Valley of the Boom</a></em></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Dot-com_bubble" title="Category:Dot-com bubble">Category</a></td>
+<td></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

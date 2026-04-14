@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PageRank</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link active" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>PageRank</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/PageRank<br>
+Category: products_search_and_ads<br>
+Depth: 1</p>
+</blockquote>
+<h2>Summary</h2>
+<p>PageRank (PR) is an algorithm used by Google Search to rank web pages in their search engine results. It is named after both the term "web page" and co-founder Larry Page. PageRank is a way of measuring the importance of website pages. According to Google:PageRank works by counting the number and quality of links to a page to determine a rough estimate of how important the website is. The underlying assumption is that more important websites are likely to receive more links from other websites.</p>
+<h2>Images</h2>
+<p><img alt="330px-Page_rank_animation" src="../images/330px-Page_rank_animation.gif"><br>
+<img alt="500px-Page_rank_animation" src="../images/500px-Page_rank_animation.gif"><br>
+<img alt="500px-PageRanks-Example.svg" src="../images/500px-PageRanks-Example.svg.png"><br>
+<img alt="0a1cf2cf5d0fab047535790b2e5962369f081f74" src="../images/0a1cf2cf5d0fab047535790b2e5962369f081f74"><br>
+<img alt="72a20704b3f4eaf53c5fa51896bd3e89b1c56f93" src="../images/72a20704b3f4eaf53c5fa51896bd3e89b1c56f93"><br>
+<img alt="88496ec65433d4cd8f2618a0462823ff2a04cfca" src="../images/88496ec65433d4cd8f2618a0462823ff2a04cfca"><br>
+<img alt="179ce06124adc01074d09b5ba728733d5380902a" src="../images/179ce06124adc01074d09b5ba728733d5380902a"><br>
+<img alt="8a8c0a807f62331cc1740dd6c0f28ac1809926c7" src="../images/8a8c0a807f62331cc1740dd6c0f28ac1809926c7"><br>
+<img alt="7c3da6d608ba21cac0bbfc96e59615ffe8f33360" src="../images/7c3da6d608ba21cac0bbfc96e59615ffe8f33360"><br>
+<img alt="af3909afbed9793d94f41bf99ec98d75d5f1335a" src="../images/af3909afbed9793d94f41bf99ec98d75d5f1335a"><br>
+<img alt="9f853c33de82a94b16ff0ea7e7a7346620c0ea04" src="../images/9f853c33de82a94b16ff0ea7e7a7346620c0ea04"><br>
+<img alt="87490def075e50a6067f1450f1918466480a6e37" src="../images/87490def075e50a6067f1450f1918466480a6e37"><br>
+<img alt="733ef9718364811dbb28a8c06383db62d2cd7837" src="../images/733ef9718364811dbb28a8c06383db62d2cd7837"><br>
+<img alt="5bab39399bf5424f25d957cdc57c84a0622626d2" src="../images/5bab39399bf5424f25d957cdc57c84a0622626d2"></p>
+<h2>Full Article</h2>
+<p>Algorithm used by Google Search to rank web pages</p>
+<p><strong>PageRank</strong> (<strong>PR</strong>) is an <a href="./Algorithm" title="Algorithm">algorithm</a> used by <a href="./Google_Search" title="Google Search">Google Search</a> to <a href="./Ranking" title="Ranking">rank</a> <a href="./Webpages" title="Webpages">web pages</a> in their <a href="./Search_engine" title="Search engine">search engine</a> results. It is named after both the term "web page" and co-founder <a href="./Larry_Page" title="Larry Page">Larry Page</a>. PageRank is a way of measuring the importance of website pages. According to Google:</p>
+<blockquote>
+<p>PageRank works by counting the number and quality of links to a page to determine a rough estimate of how important the website is. The underlying assumption is that more important websites are likely to receive more links from other websites.</p>
+</blockquote>
+<p>Currently, PageRank is not the only algorithm used by <a href="./Google" title="Google">Google</a> to order search results, but it is the first algorithm that was used by the company, and it is the best known. As of September 24, 2019, all patents associated with PageRank have expired.</p>
+<h2>Description</h2>
+<p>PageRank is a <a href="./Link_analysis" title="Link analysis">link analysis</a> <a href="./Algorithm" title="Algorithm">algorithm</a> and it assigns a numerical <a href="./Weighting" title="Weighting">weighting</a> to each element of a <a href="./Hyperlink" title="Hyperlink">hyperlinked</a> <a href="./Set_(computer_science)" title="Set (computer science)">set</a> of documents, such as the <a href="./World_Wide_Web" title="World Wide Web">World Wide Web</a>, with the purpose of "measuring" its relative importance within the set. The <a href="./Algorithm" title="Algorithm">algorithm</a> may be applied to any collection of entities with <a href="./Reciprocal_link" title="Reciprocal link">reciprocal</a> quotations and references. The numerical weight that it assigns to any given element <em>E</em> is referred to as the <em>PageRank of E</em> and denoted by </p>
+<p>P<br>
+R<br>
+(<br>
+E<br>
+)<br>
+.<br>
+{\displaystyle PR(E).}<br>
+<img alt="{\displaystyle PR(E).}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/0a1cf2cf5d0fab047535790b2e5962369f081f74"></p>
+<p>A PageRank results from a mathematical algorithm based on the <a href="./Webgraph" title="Webgraph">Webgraph</a>, created by all World Wide Web pages as nodes and <a href="./Hyperlink" title="Hyperlink">hyperlinks</a> as edges, taking into consideration authority hubs such as <a href="./Cnn.com" title="Cnn.com">cnn.com</a> or <a href="./Mayoclinic.org" title="Mayoclinic.org">mayoclinic.org</a>. The rank value indicates an importance of a particular page. A hyperlink to a page counts as a vote of support. The PageRank of a page is defined <a href="./Recursion" title="Recursion">recursively</a> and depends on the number and PageRank metric of all pages that link to it ("<a href="./Incoming_link" title="Incoming link">incoming links</a>"). A page that is linked to by many pages with high PageRank receives a high rank itself.</p>
+<p>Numerous academic papers concerning PageRank have been published since Page and Brin's original paper. In practice, the PageRank concept may be vulnerable to manipulation. Research has been conducted into identifying falsely influenced PageRank rankings. The goal is to find an effective means of ignoring links from documents with falsely influenced PageRank.</p>
+<p>Other important content ranking systems from this era include the <a href="./HITS_algorithm" title="HITS algorithm">HITS algorithm</a> invented by <a href="./Jon_Kleinberg" title="Jon Kleinberg">Jon Kleinberg</a> (used by <a href="./Teoma" title="Teoma">Teoma</a> and now <a href="./Ask.com" title="Ask.com">Ask.com</a>), the IBM <a href="./CLEVER_project" title="CLEVER project">CLEVER project</a>, the <a href="./TrustRank" title="TrustRank">TrustRank</a> algorithm, <a href="./Dwell_time_(information_retrieval)" title="Dwell time (information retrieval)">"dwell time"</a> systems invented by Karl T. Muth, the <a href="./Google_Hummingbird" title="Google Hummingbird">Hummingbird</a> algorithm, and the <a href="./SALSA_algorithm" title="SALSA algorithm">SALSA algorithm</a>.</p>
+<h2>History</h2>
+<p>The <a href="./Eigenvalue" title="Eigenvalue">eigenvalue</a> problem behind PageRank's algorithm was independently rediscovered and reused in many scoring problems. In 1895, <a href="./Edmund_Landau" title="Edmund Landau">Edmund Landau</a> suggested using it for determining the winner of a chess tournament. The eigenvalue problem was also suggested in 1976 by Gabriel Pinski and Francis Narin, who worked on <a href="./Scientometrics" title="Scientometrics">scientometrics</a> ranking scientific journals, in 1977 by <a href="./Thomas_Saaty" title="Thomas Saaty">Thomas Saaty</a> in his concept of <a href="./Analytic_Hierarchy_Process" title="Analytic Hierarchy Process">Analytic Hierarchy Process</a> which weighted alternative choices, and in 1995 by Bradley Love and Steven Sloman as a <a href="./Cognitive_model" title="Cognitive model">cognitive model</a> for concepts, the centrality algorithm.</p>
+<p>A <a href="./Search_engine" title="Search engine">search engine</a> called "<a href="./RankDex" title="RankDex">RankDex</a>" from IDD Information Services, designed by <a href="./Robin_Li" title="Robin Li">Robin Li</a> in 1996, developed a strategy for site-scoring and page-ranking. Li referred to his search mechanism as "link analysis," which involved ranking the popularity of a web site based on how many other sites had linked to it. RankDex, the first search engine with page-ranking and site-scoring algorithms, was launched in 1996. Li filed a patent for the technology in RankDex in 1997; it was granted in 1999. He later used it when he founded <a href="./Baidu" title="Baidu">Baidu</a> in China in 2000. Google founder <a href="./Larry_Page" title="Larry Page">Larry Page</a> referenced Li's work as a citation in some of his U.S. patents for PageRank.</p>
+<p><a href="./Larry_Page" title="Larry Page">Larry Page</a> and <a href="./Sergey_Brin" title="Sergey Brin">Sergey Brin</a> developed PageRank at <a href="./Stanford_University" title="Stanford University">Stanford University</a> in 1996 as part of a research project to consider a new kind of search engine differentiated from then-dominant players like <a href="./Digital_Equipment_Corporation" title="Digital Equipment Corporation">DEC</a>'s <a href="./AltaVista" title="AltaVista">AltaVista</a>. An interview with <a href="./Héctor_García-Molina" title="Héctor García-Molina">Héctor García-Molina</a>, Stanford Computer Science professor and advisor to Sergey, provides background into the development of the page-rank algorithm. Sergey Brin had the idea that information on the web could be ordered in a hierarchy by "link popularity": a page ranks higher as there are more links to it. The system was developed with the help of Scott Hassan and Alan Steremberg, both of whom were cited by Page and Brin as being critical to the development of Google. <a href="./Rajeev_Motwani" title="Rajeev Motwani">Rajeev Motwani</a> and <a href="./Terry_Winograd" title="Terry Winograd">Terry Winograd</a> co-authored with Page and Brin the first paper about the project, describing PageRank and the initial prototype of the <a href="./Google_Search" title="Google Search">Google search engine</a>, published in 1998. Shortly after, Page and Brin founded <a href="./Google_Inc." title="Google Inc.">Google Inc.</a>, the company behind the Google search engine. While just one of many factors that determine the ranking of Google search results, PageRank continues to provide the basis for all of Google's web-search tools.</p>
+<p>The name "PageRank" plays on the name of developer Larry Page, as well as of the concept of a <a href="./Web_page" title="Web page">web page</a>. The word is a trademark of Google, and the PageRank process was <a href="./Software_patent" title="Software patent">patented</a>, with the patent granted in 2001, and now expired. However, the patent is assigned to Stanford University and not to Google. Google has exclusive license rights on the patent from <a href="./Stanford_University" title="Stanford University">Stanford University</a>. The university received 1.8 million shares of Google in exchange for use of the patent; it sold the shares in 2005 for $336 million.</p>
+<p>PageRank was influenced by <a href="./Citation_analysis" title="Citation analysis">citation analysis</a>, early developed by <a href="./Eugene_Garfield" title="Eugene Garfield">Eugene Garfield</a> in the 1950s at the University of Pennsylvania, and by <a href="./Hyper_Search" title="Hyper Search">Hyper Search</a>, developed by <a href="./Massimo_Marchiori" title="Massimo Marchiori">Massimo Marchiori</a> at the <a href="./University_of_Padua" title="University of Padua">University of Padua</a>. In the same year PageRank was introduced (1998), <a href="./Jon_Kleinberg" title="Jon Kleinberg">Jon Kleinberg</a> published his work on <a href="./HITS_algorithm" title="HITS algorithm">HITS</a>. Google's founders cite Garfield, Marchiori, and Kleinberg in their original papers.</p>
+<h2>Algorithm</h2>
+<p>The PageRank algorithm outputs a <a href="./Probability_distribution" title="Probability distribution">probability distribution</a> used to represent the likelihood that a person randomly clicking on links will arrive at any particular page. PageRank can be calculated for collections of documents of any size. It is assumed in several research papers that the distribution is evenly divided among all documents in the collection at the beginning of the computational process. The PageRank computations require several passes, called "iterations", through the collection to adjust approximate PageRank values to more closely reflect the theoretical true value.</p>
+<p>A probability is expressed as a numeric value between 0 and 1. A 0.5 probability is commonly expressed as a "50% chance" of something happening. Hence, a document with a PageRank of 0.5 means there is a 50% chance that a person clicking on a random link will be directed to said document. PageRank works on the assumption that a page is important if many other important pages link to it. This means the more quality backlinks a page has, the higher its PageRank score.</p>
+<h3>Simplified algorithm</h3>
+<p>Assume a small universe of four web pages: <strong>A</strong>, <strong>B</strong>, <strong>C</strong>, and <strong>D</strong>. Links from a page to itself are ignored. Multiple outbound links from one page to another page are treated as a single link. PageRank is initialized to the same value for all pages. In the original form of PageRank, the sum of PageRank over all pages was the total number of pages on the web at that time, so each page in this example would have an initial value of 1. However, later versions of PageRank, and the remainder of this section, assume a <a href="./Probability_distribution" title="Probability distribution">probability distribution</a> between 0 and 1. Hence the initial value for each page in this example is 0.25.</p>
+<p>The PageRank transferred from a given page to the targets of its outbound links upon the next iteration is divided equally among all outbound links.</p>
+<dl>
+<dt>If the only links in the system were from pages <strong>B</strong>, <strong>C</strong>, and <strong>D</strong> to <strong>A</strong>, each link would transfer 0.25 PageRank to <strong>A</strong> upon the next iteration, for a total of 0.75.</dt>
+<dd>
+<p>P<br>
+R<br>
+(<br>
+A<br>
+)<br>
+=<br>
+P<br>
+R<br>
+(<br>
+B<br>
+)<br>
++<br>
+P<br>
+R<br>
+(<br>
+C<br>
+)<br>
++<br>
+P<br>
+R<br>
+(<br>
+D<br>
+)<br>
+.</p>
+<p>{\displaystyle PR(A)=PR(B)+PR(C)+PR(D).\,}<br>
+<img alt="{\displaystyle PR(A)=PR(B)+PR(C)+PR(D).\,}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/72a20704b3f4eaf53c5fa51896bd3e89b1c56f93"></p>
+</dd>
+<dt>Suppose instead that page <strong>B</strong> had a link to pages <strong>C</strong> and <strong>A</strong>, page <strong>C</strong> had a link to page <strong>A</strong>, and page <strong>D</strong> had links to all three pages. Thus, upon the first iteration, page <strong>B</strong> would transfer half of its existing value (0.125) to page <strong>A</strong> and the other half (0.125) to page <strong>C</strong>. Page <strong>C</strong> would transfer all of its existing value (0.25) to the only page it links to, <strong>A</strong>. Since <strong>D</strong> had three outbound links, it would transfer one third of its existing value, or approximately 0.083, to <strong>A</strong>. At the completion of this iteration, page <strong>A</strong> will have a PageRank of approximately 0.458.</dt>
+<dd>
+<p>P<br>
+R<br>
+(<br>
+A<br>
+)<br>
+=</p>
+<p>P<br>
+R<br>
+(<br>
+B<br>
+)<br>
+2<br>
++</p>
+<p>P<br>
+R<br>
+(<br>
+C<br>
+)<br>
+1<br>
++</p>
+<p>P<br>
+R<br>
+(<br>
+D<br>
+)<br>
+3<br>
+.</p>
+<p>{\displaystyle PR(A)={\frac {PR(B)}{2}}+{\frac {PR(C)}{1}}+{\frac {PR(D)}{3}}.\,}<br>
+<img alt="{\displaystyle PR(A)={\frac {PR(B)}{2}}+{\frac {PR(C)}{1}}+{\frac {PR(D)}{3}}.\,}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/88496ec65433d4cd8f2618a0462823ff2a04cfca"></p>
+</dd>
+<dt>In other words, the PageRank conferred by an outbound link is equal to the document's own PageRank score divided by the number of outbound links <strong>L( )</strong>.</dt>
+<dd>
+<p>P<br>
+R<br>
+(<br>
+A<br>
+)<br>
+=</p>
+<p>P<br>
+R<br>
+(<br>
+B<br>
+)</p>
+<p>L<br>
+(<br>
+B<br>
+)<br>
++</p>
+<p>P<br>
+R<br>
+(<br>
+C<br>
+)</p>
+<p>L<br>
+(<br>
+C<br>
+)<br>
++</p>
+<p>P<br>
+R<br>
+(<br>
+D<br>
+)</p>
+<p>L<br>
+(<br>
+D<br>
+)<br>
+.</p>
+<p>{\displaystyle PR(A)={\frac {PR(B)}{L(B)}}+{\frac {PR(C)}{L(C)}}+{\frac {PR(D)}{L(D)}}.\,}<br>
+<img alt="{\displaystyle PR(A)={\frac {PR(B)}{L(B)}}+{\frac {PR(C)}{L(C)}}+{\frac {PR(D)}{L(D)}}.\,}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/179ce06124adc01074d09b5ba728733d5380902a"></p>
+</dd>
+<dt>In the general case, the PageRank value for any page <strong>u</strong> can be expressed as:</dt>
+<dd>
+<p>P<br>
+R<br>
+(<br>
+u<br>
+)<br>
+=</p>
+<p>∑</p>
+<p>v<br>
+∈</p>
+<p>B</p>
+<p>u</p>
+<p>P<br>
+R<br>
+(<br>
+v<br>
+)</p>
+<p>L<br>
+(<br>
+v<br>
+)<br>
+{\displaystyle PR(u)=\sum _{v\in B_{u}}{\frac {PR(v)}{L(v)}}}<br>
+<img alt="{\displaystyle PR(u)=\sum _{v\in B_{u}}{\frac {PR(v)}{L(v)}}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/8a8c0a807f62331cc1740dd6c0f28ac1809926c7">,</p>
+</dd>
+</dl>
+<p>i.e. the PageRank value for a page <strong>u</strong> is dependent on the PageRank values for each page <strong>v</strong> contained in the set <strong>Bu</strong> (the set containing all pages linking to page <strong>u</strong>), divided by the number <em>L</em>(<em>v</em>) of links from page <strong>v</strong>.</p>
+<h3>Damping factor</h3>
+<p>The PageRank theory holds that an imaginary surfer who is randomly clicking on links will eventually stop clicking. The probability, at any step, that the person will continue following links is a damping factor <em>d</em>. The probability that they instead jump to any random page is <em>1 - d</em>. Various studies have tested different damping factors, but it is generally assumed that the damping factor will be set around 0.85.</p>
+<dl>
+<dt>The damping factor is subtracted from 1 (and in some variations of the algorithm, the result is divided by the number of documents (<em>N</em>) in the collection; in the technical literature this is sometimes referred to as "library size") and this term is then added to the product of the damping factor and the sum of the incoming PageRank scores. That is,</dt>
+<dd>
+<p>P<br>
+R<br>
+(<br>
+A<br>
+)<br>
+=</p>
+<p>1<br>
+−<br>
+d<br>
+N<br>
++<br>
+d</p>
+<p>(</p>
+<p>P<br>
+R<br>
+(<br>
+B<br>
+)</p>
+<p>L<br>
+(<br>
+B<br>
+)<br>
++</p>
+<p>P<br>
+R<br>
+(<br>
+C<br>
+)</p>
+<p>L<br>
+(<br>
+C<br>
+)<br>
++</p>
+<p>P<br>
+R<br>
+(<br>
+D<br>
+)</p>
+<p>L<br>
+(<br>
+D<br>
+)<br>
++</p>
+<p>⋯<br>
+)<br>
+.<br>
+{\displaystyle PR(A)={1-d \over N}+d\left({\frac {PR(B)}{L(B)}}+{\frac {PR(C)}{L(C)}}+{\frac {PR(D)}{L(D)}}+\,\cdots \right).}<br>
+<img alt="{\displaystyle PR(A)={1-d \over N}+d\left({\frac {PR(B)}{L(B)}}+{\frac {PR(C)}{L(C)}}+{\frac {PR(D)}{L(D)}}+\,\cdots \right).}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/7c3da6d608ba21cac0bbfc96e59615ffe8f33360"></p>
+</dd>
+<dt>So any page's PageRank is derived in large part from the PageRanks of other pages. The damping factor adjusts the derived value downward. The original paper, however, gave the following formula, which has led to some confusion:</dt>
+<dd>
+<p>P<br>
+R<br>
+(<br>
+A<br>
+)<br>
+=<br>
+1<br>
+−<br>
+d<br>
++<br>
+d</p>
+<p>(</p>
+<p>P<br>
+R<br>
+(<br>
+B<br>
+)</p>
+<p>L<br>
+(<br>
+B<br>
+)<br>
++</p>
+<p>P<br>
+R<br>
+(<br>
+C<br>
+)</p>
+<p>L<br>
+(<br>
+C<br>
+)<br>
++</p>
+<p>P<br>
+R<br>
+(<br>
+D<br>
+)</p>
+<p>L<br>
+(<br>
+D<br>
+)<br>
++</p>
+<p>⋯<br>
+)<br>
+.<br>
+{\displaystyle PR(A)=1-d+d\left({\frac {PR(B)}{L(B)}}+{\frac {PR(C)}{L(C)}}+{\frac {PR(D)}{L(D)}}+\,\cdots \right).}<br>
+<img alt="{\displaystyle PR(A)=1-d+d\left({\frac {PR(B)}{L(B)}}+{\frac {PR(C)}{L(C)}}+{\frac {PR(D)}{L(D)}}+\,\cdots \right).}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/af3909afbed9793d94f41bf99ec98d75d5f1335a"></p>
+</dd>
+</dl>
+<p>The difference between them is that the PageRank values in the first formula sum to one, while in the second formula each PageRank is multiplied by <em>N</em> and the sum becomes <em>N</em>. A statement in Page and Brin's paper that "the sum of all PageRanks is one" and claims by other Google employees support the first variant of the formula above.</p>
+<p>Page and Brin confused the two formulas in their most popular paper "The Anatomy of a Large-Scale Hypertextual Web Search Engine", where they mistakenly claimed that the latter formula formed a probability distribution over web pages.</p>
+<p>Google recalculates PageRank scores each time it crawls the Web and rebuilds its index. As Google increases the number of documents in its collection, the initial approximation of PageRank decreases for all documents.</p>
+<p>The formula uses a <a href="./Random_surfing_model" title="Random surfing model">model of a <em>random surfer</em></a> who reaches their target site after several clicks, then switches to a random page. The PageRank value of a page reflects the chance that the random surfer will land on that page by clicking on a link. It can be understood as a <a href="./Markov_chain" title="Markov chain">Markov chain</a> in which the states are pages, and the transitions are the links between pages – all of which are all equally probable.</p>
+<p>If a page has no links to other pages, it becomes a sink and therefore terminates the random surfing process. If the random surfer arrives at a sink page, it picks another <a href="./Uniform_Resource_Locator" title="Uniform Resource Locator">URL</a> at random and continues surfing again.</p>
+<dl>
+<dt>When calculating PageRank, pages with no outbound links are assumed to link out to all other pages in the collection. Their PageRank scores are therefore divided evenly among all other pages. In other words, to be fair with pages that are not sinks, these random transitions are added to all nodes in the Web. This residual probability, <em>d</em>, is usually set to 0.85, estimated from the frequency that an average surfer uses his or her browser's bookmark feature. So, the equation is as follows:</dt>
+<dd>
+<p>P<br>
+R<br>
+(</p>
+<p>p</p>
+<p>i<br>
+)<br>
+=</p>
+<p>1<br>
+−<br>
+d<br>
+N<br>
++<br>
+d</p>
+<p>∑</p>
+<p>p</p>
+<p>j<br>
+∈<br>
+M<br>
+(</p>
+<p>p</p>
+<p>i<br>
+)</p>
+<p>P<br>
+R<br>
+(</p>
+<p>p</p>
+<p>j<br>
+)</p>
+<p>L<br>
+(</p>
+<p>p</p>
+<p>j<br>
+)<br>
+{\displaystyle PR(p_{i})={\frac {1-d}{N}}+d\sum _{p_{j}\in M(p_{i})}{\frac {PR(p_{j})}{L(p_{j})}}}<br>
+<img alt="{\displaystyle PR(p_{i})={\frac {1-d}{N}}+d\sum _{p_{j}\in M(p_{i})}{\frac {PR(p_{j})}{L(p_{j})}}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/9f853c33de82a94b16ff0ea7e7a7346620c0ea04"></p>
+</dd>
+</dl>
+<p>where </p>
+<p>p</p>
+<p>1<br>
+,</p>
+<p>p</p>
+<p>2<br>
+,<br>
+.<br>
+.<br>
+.<br>
+,</p>
+<p>p</p>
+<p>N<br>
+{\displaystyle p_{1},p_{2},...,p_{N}}<br>
+<img alt="{\displaystyle p_{1},p_{2},...,p_{N}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/87490def075e50a6067f1450f1918466480a6e37"> are the pages under consideration, </p>
+<p>M<br>
+(</p>
+<p>p</p>
+<p>i<br>
+)<br>
+{\displaystyle M(p_{i})}<br>
+<img alt="{\displaystyle M(p_{i})}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/733ef9718364811dbb28a8c06383db62d2cd7837"> is the set of pages that link to </p>
+<p>p</p>
+<p>i<br>
+{\displaystyle p_{i}}<br>
+<img alt="{\displaystyle p_{i}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/5bab39399bf5424f25d957cdc57c84a0622626d2">, </p>
+<p>L<br>
+(</p>
+<p>p</p>
+<p>j<br>
+)<br>
+{\displaystyle L(p_{j})}<br>
+<img alt="{\displaystyle L(p_{j})}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/9bca5899d25ec773204cb98f65202899fa7deca2"> is the number of outbound links on page </p>
+<p>p</p>
+<p>j<br>
+{\displaystyle p_{j}}<br>
+<img alt="{\displaystyle p_{j}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/499e0821b28c43e9bc2a6360b937de535057bc62">, and </p>
+<p>N<br>
+{\displaystyle N}<br>
+<img alt="{\displaystyle N}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/f5e3890c981ae85503089652feb48b191b57aae3"> is the total number of pages.</p>
+<dl>
+<dt>The PageRank values are the entries of the dominant right <a href="./Eigenvector" title="Eigenvector">eigenvector</a> of the modified <a href="./Adjacency_matrix" title="Adjacency matrix">adjacency matrix</a> rescaled so that each column adds up to one. This makes PageRank a particularly elegant metric: the eigenvector is</dt>
+<dd>
+<h1>R</h1>
+<p>[</p>
+<p>P<br>
+R<br>
+(</p>
+<p>p</p>
+<p>1<br>
+)</p>
+<p>P<br>
+R<br>
+(</p>
+<p>p</p>
+<p>2<br>
+)</p>
+<p>⋮</p>
+<p>P<br>
+R<br>
+(</p>
+<p>p</p>
+<p>N<br>
+)<br>
+]<br>
+{\displaystyle \mathbf {R} ={\begin{bmatrix}PR(p_{1})\PR(p_{2})\\vdots \PR(p_{N})\end{bmatrix}}}<br>
+<img alt="{\displaystyle \mathbf {R} ={\begin{bmatrix}PR(p_{1})\PR(p_{2})\\vdots \PR(p_{N})\end{bmatrix}}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/c1da019838e787e9868c41ec97e7ad8ef8110fd6"></p>
+</dd>
+<dt>where <strong>R</strong> is the solution of the equation</dt>
+<dd>
+<h1>R</h1>
+<p>[</p>
+<p>(<br>
+1<br>
+−<br>
+d<br>
+)</p>
+<p>/<br>
+N</p>
+<p>(<br>
+1<br>
+−<br>
+d<br>
+)</p>
+<p>/<br>
+N</p>
+<p>⋮</p>
+<p>(<br>
+1<br>
+−<br>
+d<br>
+)</p>
+<p>/<br>
+N<br>
+]<br>
++<br>
+d</p>
+<p>[</p>
+<p>ℓ<br>
+(</p>
+<p>p</p>
+<p>1<br>
+,</p>
+<p>p</p>
+<p>1<br>
+)</p>
+<p>ℓ<br>
+(</p>
+<p>p</p>
+<p>1<br>
+,</p>
+<p>p</p>
+<p>2<br>
+)</p>
+<p>⋯</p>
+<p>ℓ<br>
+(</p>
+<p>p</p>
+<p>1<br>
+,</p>
+<p>p</p>
+<p>N<br>
+)</p>
+<p>ℓ<br>
+(</p>
+<p>p</p>
+<p>2<br>
+,</p>
+<p>p</p>
+<p>1<br>
+)</p>
+<p>⋱</p>
+<p>⋮</p>
+<p>⋮</p>
+<p>ℓ<br>
+(</p>
+<p>p</p>
+<p>i<br>
+,</p>
+<p>p</p>
+<p>j<br>
+)</p>
+<p>ℓ<br>
+(</p>
+<p>p</p>
+<p>N<br>
+,</p>
+<p>p</p>
+<p>1<br>
+)</p>
+<p>⋯</p>
+<p>ℓ<br>
+(</p>
+<p>p</p>
+<p>N<br>
+,</p>
+<p>p</p>
+<p>N<br>
+)<br>
+]</p>
+<p>R<br>
+{\displaystyle \mathbf {R} ={\begin{bmatrix}{(1-d)/N}\{(1-d)/N}\\vdots \{(1-d)/N}\end{bmatrix}}+d{\begin{bmatrix}\ell (p_{1},p_{1})&amp;\ell (p_{1},p_{2})&amp;\cdots &amp;\ell (p_{1},p_{N})\\ell (p_{2},p_{1})&amp;\ddots &amp;&amp;\vdots \\vdots &amp;&amp;\ell (p_{i},p_{j})&amp;\\ell (p_{N},p_{1})&amp;\cdots &amp;&amp;\ell (p_{N},p_{N})\end{bmatrix}}\mathbf {R} }<br>
+<img alt="{\displaystyle \mathbf {R} ={\begin{bmatrix}{(1-d)/N}\{(1-d)/N}\\vdots \{(1-d)/N}\end{bmatrix}}+d{\begin{bmatrix}\ell (p_{1},p_{1})&amp;\ell (p_{1},p_{2})&amp;\cdots &amp;\ell (p_{1},p_{N})\\ell (p_{2},p_{1})&amp;\ddots &amp;&amp;\vdots \\vdots &amp;&amp;\ell (p_{i},p_{j})&amp;\\ell (p_{N},p_{1})&amp;\cdots &amp;&amp;\ell (p_{N},p_{N})\end{bmatrix}}\mathbf {R} }" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/135fc270ee538cdfc96ddc308bfc57a24a894c5c"></p>
+</dd>
+</dl>
+<p>where the adjacency function </p>
+<p>ℓ<br>
+(</p>
+<p>p</p>
+<p>i<br>
+,</p>
+<p>p</p>
+<p>j<br>
+)<br>
+{\displaystyle \ell (p_{i},p_{j})}<br>
+<img alt="{\displaystyle \ell (p_{i},p_{j})}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/145afef13f07d4c827ddfd6498bc221b59549fef"> is the ratio between number of links outbound from page j to page i to the total number of outbound links of page j. The adjacency function is 0 if page </p>
+<p>p</p>
+<p>j<br>
+{\displaystyle p_{j}}<br>
+<img alt="{\displaystyle p_{j}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/499e0821b28c43e9bc2a6360b937de535057bc62"> does not link to </p>
+<p>p</p>
+<dl>
+<dt>i</dt>
+<dt>{\displaystyle p_{i}}</dt>
+<dt><img alt="{\displaystyle p_{i}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/5bab39399bf5424f25d957cdc57c84a0622626d2">, and normalized such that, for each <em>j</em></dt>
+<dd>
+<p>∑</p>
+<h1>i</h1>
+<p>1</p>
+<p>N<br>
+ℓ<br>
+(</p>
+<p>p</p>
+<p>i<br>
+,</p>
+<p>p</p>
+<p>j<br>
+)<br>
+=<br>
+1<br>
+{\displaystyle \sum _{i=1}^{N}\ell (p_{i},p_{j})=1}<br>
+<img alt="{\displaystyle \sum _{i=1}^{N}\ell (p_{i},p_{j})=1}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/2d3a3d9a326269615735f64d32d5ef6334296c22">,</p>
+</dd>
+</dl>
+<p>i.e. the elements of each column sum up to 1, so the matrix is a <a href="./Stochastic_matrix" title="Stochastic matrix">stochastic matrix</a> (for more details see the <a href="./PageRank#Computation">computation</a> section below). Thus this is a variant of the <a href="./Eigenvector_centrality" title="Eigenvector centrality">eigenvector centrality</a> measure used commonly in <a href="./Network_theory" title="Network theory">network analysis</a>.</p>
+<p>Because of the large <a href="./Eigengap" title="Eigengap">eigengap</a> of the modified adjacency matrix above, the values of the PageRank eigenvector can be approximated to within a high degree of accuracy within only a few iterations.</p>
+<p>Google's founders, in their original paper, reported that the PageRank algorithm for a network consisting of 322 million links (in-edges and out-edges) converges to within a tolerable limit in 52 iterations. The convergence in a network of half the above size took approximately 45 iterations. Through this data, they concluded the algorithm can be scaled very well and that the scaling factor for extremely large networks would be roughly linear in </p>
+<p>log<br>
+⁡<br>
+n<br>
+{\displaystyle \log n}<br>
+<img alt="{\displaystyle \log n}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/317ab5292da7c7935aec01a570461fe0613b21d5">, where n is the size of the network.</p>
+<p>As a result of <a href="./Markov_process" title="Markov process">Markov theory</a>, it can be shown that the PageRank of a page is the probability of arriving at that page after a large number of clicks. This happens to equal </p>
+<p>t</p>
+<p>−<br>
+1<br>
+{\displaystyle t^{-1}}<br>
+<img alt="{\displaystyle t^{-1}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/82182729910430d9930cc0cbf96a3f43050b381c"> where </p>
+<p>t<br>
+{\displaystyle t}<br>
+<img alt="{\displaystyle t}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/65658b7b223af9e1acc877d848888ecdb4466560"> is the <a href="./Expected_value" title="Expected value">expectation</a> of the number of clicks (or random jumps) required to get from the page back to itself.</p>
+<p>One main disadvantage of PageRank is that it favors older pages. A new page, even a very good one, will not have many links unless it is part of an existing site (a site being a densely connected set of pages, such as <a href="./Wikipedia" title="Wikipedia">Wikipedia</a>). Several strategies have been proposed to accelerate the computation of PageRank. Various strategies to manipulate PageRank have been employed in concerted efforts to improve search results rankings and monetize advertising links. These strategies have severely impacted the reliability of the PageRank concept,[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>] which purports to determine which documents are actually highly valued by the Web community. Since December 2007, when it started <em>actively</em> penalizing sites selling paid text links, Google has combatted <a href="./Link_farm" title="Link farm">link farms</a> and other schemes designed to artificially inflate PageRank. How Google identifies link farms and other PageRank manipulation tools is among Google's <a href="./Trade_secret" title="Trade secret">trade secrets</a>.</p>
+<h3>Computation</h3>
+<p>PageRank can be computed either iteratively or algebraically. The iterative method can be viewed as the <a href="./Power_iteration" title="Power iteration">power iteration</a> method or the power method. The basic mathematical operations performed are identical.</p>
+<h4>Iterative</h4>
+<p>At </p>
+<h1>t</h1>
+<dl>
+<dt>0</dt>
+<dt>{\displaystyle t=0}</dt>
+<dt><img alt="{\displaystyle t=0}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/43469ec032d858feae5aa87029e22eaaf0109e9c">, an initial probability distribution is assumed, usually</dt>
+<dd>
+<p>P<br>
+R<br>
+(</p>
+<p>p</p>
+<p>i<br>
+;<br>
+0<br>
+)<br>
+=</p>
+<p>1<br>
+N<br>
+{\displaystyle PR(p_{i};0)={\frac {1}{N}}}<br>
+<img alt="{\displaystyle PR(p_{i};0)={\frac {1}{N}}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/7a88d72ae8cfe827f8872d60bbe5905a8165b587">.</p>
+</dd>
+</dl>
+<p>where N is the total number of pages, and </p>
+<p>p</p>
+<p>i<br>
+;<br>
+0<br>
+{\displaystyle p_{i};0}<br>
+<img alt="{\displaystyle p_{i};0}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/4c611e79a0a1f63a956c549973b67bb7ab180e9b"> is page i at time 0.</p>
+<dl>
+<dt>At each time step, the computation, as detailed above, yields</dt>
+<dd>
+<p>P<br>
+R<br>
+(</p>
+<p>p</p>
+<p>i<br>
+;<br>
+t<br>
++<br>
+1<br>
+)<br>
+=</p>
+<p>1<br>
+−<br>
+d<br>
+N<br>
++<br>
+d</p>
+<p>∑</p>
+<p>p</p>
+<p>j<br>
+∈<br>
+M<br>
+(</p>
+<p>p</p>
+<p>i<br>
+)</p>
+<p>P<br>
+R<br>
+(</p>
+<p>p</p>
+<p>j<br>
+;<br>
+t<br>
+)</p>
+<p>L<br>
+(</p>
+<p>p</p>
+<p>j<br>
+)<br>
+{\displaystyle PR(p_{i};t+1)={\frac {1-d}{N}}+d\sum _{p_{j}\in M(p_{i})}{\frac {PR(p_{j};t)}{L(p_{j})}}}<br>
+<img alt="{\displaystyle PR(p_{i};t+1)={\frac {1-d}{N}}+d\sum _{p_{j}\in M(p_{i})}{\frac {PR(p_{j};t)}{L(p_{j})}}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/6bb0f1469218a064274fd4691143e9ce64639dc2"></p>
+</dd>
+</dl>
+<p>where d is the damping factor,</p>
+<p>or in matrix notation</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R ( t + 1 ) = d   M  R ( t ) +    1 − d N  1 {\displaystyle \mathbf {R} (t+1)=d{\mathcal {M}}\mathbf {R} (t)+{\frac {1-d}{N}}\mathbf {1} } {\displaystyle \mathbf {R} (t+1)=d{\mathcal {M}}\mathbf {R} (t)+{\frac {1-d}{N}}\mathbf {1} },</td>
+<td></td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p>where </p>
+<p>R</p>
+<p>i<br>
+(<br>
+t<br>
+)<br>
+=<br>
+P<br>
+R<br>
+(</p>
+<p>p</p>
+<p>i<br>
+;<br>
+t<br>
+)<br>
+{\displaystyle \mathbf {R} _{i}(t)=PR(p_{i};t)}<br>
+<img alt="{\displaystyle \mathbf {R} _{i}(t)=PR(p_{i};t)}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/2af6be614047773cafa5e1dd486240587e92b78a"> and </p>
+<p>1<br>
+{\displaystyle \mathbf {1} }<br>
+<img alt="{\displaystyle \mathbf {1} }" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/235ffc0f1788b720aef5caa7b97246a84421fd0e"> is the column vector of length </p>
+<p>N<br>
+{\displaystyle N}<br>
+<img alt="{\displaystyle N}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/f5e3890c981ae85503089652feb48b191b57aae3"> containing only ones.</p>
+<p>The matrix </p>
+<dl>
+<dt>M</dt>
+<dt>{\displaystyle {\mathcal {M}}}</dt>
+<dt><img alt="{\displaystyle {\mathcal {M}}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/2cc2abebd45ec020509a0ec548b67c9a2cb7cecd"> is defined as</dt>
+<dd>
+<p>M</p>
+<p>i<br>
+j<br>
+=</p>
+<p>{</p>
+<p>1</p>
+<p>/<br>
+L<br>
+(</p>
+<p>p</p>
+<p>j<br>
+)<br>
+,</p>
+<p>if <br>
+j</p>
+<p>links to <br>
+i<br>
+</p>
+<p>0<br>
+,</p>
+<p>otherwise</p>
+<p>{\displaystyle {\mathcal {M}}_{ij}={\begin{cases}1/L(p_{j}),&amp;{\mbox{if }}j{\mbox{ links to }}i\ \0,&amp;{\mbox{otherwise}}\end{cases}}}<br>
+<img alt="{\displaystyle {\mathcal {M}}_{ij}={\begin{cases}1/L(p_{j}),&amp;{\mbox{if }}j{\mbox{ links to }}i\ \0,&amp;{\mbox{otherwise}}\end{cases}}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/3e82b446a376633a386b10668703a4547f167d1c"></p>
+</dd>
+<dt>i.e.,</dt>
+<dd>
+<p>M<br>
+:=<br>
+(</p>
+<p>K</p>
+<p>−<br>
+1<br>
+A</p>
+<p>)</p>
+<p>T<br>
+{\displaystyle {\mathcal {M}}:=(K^{-1}A)^{T}}<br>
+<img alt="{\displaystyle {\mathcal {M}}:=(K^{-1}A)^{T}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/3f08514130e2e26a62ae8ff7645b19b4cab08daf">,</p>
+</dd>
+</dl>
+<p>where</p>
+<p>A<br>
+{\displaystyle A}<br>
+<img alt="{\displaystyle A}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/7daff47fa58cdfd29dc333def748ff5fa4c923e3"> denotes the <a href="./Adjacency_matrix" title="Adjacency matrix">adjacency matrix</a> of the graph and </p>
+<p>K<br>
+{\displaystyle K}<br>
+<img alt="{\displaystyle K}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/2b76fce82a62ed5461908f0dc8f037de4e3686b0"> is the diagonal matrix with the outdegrees in the diagonal.</p>
+<p>The probability calculation is made for each page at a time point, then repeated for the next time point. The computation ends when for some small </p>
+<dl>
+<dt>ϵ</dt>
+<dt>{\displaystyle \epsilon }</dt>
+<dt><img alt="{\displaystyle \epsilon }" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/c3837cad72483d97bcdde49c85d3b7b859fb3fd2"></dt>
+<dd>
+<p>|</p>
+<p>R<br>
+(<br>
+t<br>
++<br>
+1<br>
+)<br>
+−</p>
+<p>R<br>
+(<br>
+t<br>
+)</p>
+<p>|<br>
+&lt;<br>
+ϵ<br>
+{\displaystyle |\mathbf {R} (t+1)-\mathbf {R} (t)|&lt;\epsilon }<br>
+<img alt="{\displaystyle |\mathbf {R} (t+1)-\mathbf {R} (t)|&lt;\epsilon }" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/8c60e37b238eed8b1bac59fe2841ecc718b8804a">,</p>
+</dd>
+</dl>
+<p>i.e., when convergence is assumed.</p>
+<h4>Power method</h4>
+<p>If the matrix </p>
+<p>M<br>
+{\displaystyle {\mathcal {M}}}<br>
+<img alt="{\displaystyle {\mathcal {M}}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/2cc2abebd45ec020509a0ec548b67c9a2cb7cecd"> is a transition probability, i.e., column-stochastic and </p>
+<p>R<br>
+{\displaystyle \mathbf {R} }<br>
+<img alt="{\displaystyle \mathbf {R} }" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/5de85fcc2a00d8ba14aae84aeef812d7fef4b3d5"> is a probability distribution (i.e., </p>
+<p>|</p>
+<p>R</p>
+<h1>|</h1>
+<p>1<br>
+{\displaystyle |\mathbf {R} |=1}<br>
+<img alt="{\displaystyle |\mathbf {R} |=1}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/3beb98543fc9b650f79d0e6769366bec65c0276c">, </p>
+<p>E</p>
+<h1>R</h1>
+<p>1<br>
+{\displaystyle \mathbf {E} \mathbf {R} =\mathbf {1} }<br>
+<img alt="{\displaystyle \mathbf {E} \mathbf {R} =\mathbf {1} }" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/ff32d3dadac699f47604b69356c606dddd5cce41"> where </p>
+<p>E<br>
+{\displaystyle \mathbf {E} }<br>
+<img alt="{\displaystyle \mathbf {E} }" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/0d7f22b39d51f780fc02859059c1757c606b9de2"> is matrix of all ones), then equation (<strong><a href="./PageRank#math_2">2</a></strong>) is equivalent to</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R =  (  d   M +    1 − d N  E )  R =:     M ^  R {\displaystyle \mathbf {R} =\left(d{\mathcal {M}}+{\frac {1-d}{N}}\mathbf {E} \right)\mathbf {R} =:{\widehat {\mathcal {M}}}\mathbf {R} } {\displaystyle \mathbf {R} =\left(d{\mathcal {M}}+{\frac {1-d}{N}}\mathbf {E} \right)\mathbf {R} =:{\widehat {\mathcal {M}}}\mathbf {R} }.</td>
+<td></td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<p>Hence PageRank </p>
+<p>R<br>
+{\displaystyle \mathbf {R} }<br>
+<img alt="{\displaystyle \mathbf {R} }" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/5de85fcc2a00d8ba14aae84aeef812d7fef4b3d5"> is the <a href="./Principal_eigenvector" title="Principal eigenvector">principal eigenvector</a> of </p>
+<p>M<br>
+^<br>
+{\displaystyle {\widehat {\mathcal {M}}}}<br>
+<img alt="{\displaystyle {\widehat {\mathcal {M}}}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/f7219d2c5c7b91b51336ce174e75e327118bc06f">. A fast and easy way to compute this is using the <a href="./Power_iteration" title="Power iteration">power method</a>: starting with an arbitrary vector </p>
+<p>x<br>
+(<br>
+0<br>
+)<br>
+{\displaystyle x(0)}<br>
+<img alt="{\displaystyle x(0)}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/8f7176643e6d36fa7674dc79fdff1a4daa068f5d">, the operator </p>
+<dl>
+<dt>M</dt>
+<dt>^</dt>
+<dt>{\displaystyle {\widehat {\mathcal {M}}}}</dt>
+<dt><img alt="{\displaystyle {\widehat {\mathcal {M}}}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/f7219d2c5c7b91b51336ce174e75e327118bc06f"> is applied in succession, i.e.,</dt>
+<dd>
+<p>x<br>
+(<br>
+t<br>
++<br>
+1<br>
+)<br>
+=</p>
+<p>M<br>
+^<br>
+x<br>
+(<br>
+t<br>
+)<br>
+{\displaystyle x(t+1)={\widehat {\mathcal {M}}}x(t)}<br>
+<img alt="{\displaystyle x(t+1)={\widehat {\mathcal {M}}}x(t)}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/f06088bcf96afd1716cf954eeb4786682a0ab46e">,</p>
+</dd>
+<dt>until</dt>
+<dd>
+<p>|<br>
+x<br>
+(<br>
+t<br>
++<br>
+1<br>
+)<br>
+−<br>
+x<br>
+(<br>
+t<br>
+)</p>
+<p>|<br>
+&lt;<br>
+ϵ<br>
+{\displaystyle |x(t+1)-x(t)|&lt;\epsilon }<br>
+<img alt="{\displaystyle |x(t+1)-x(t)|&lt;\epsilon }" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/e6da4f6374e7e362fa12683af73b0c777125aba4">.</p>
+</dd>
+<dt>Note that in equation (<strong><a href="./PageRank#math_3">3</a></strong>) the matrix on the right-hand side in the parenthesis can be interpreted as</dt>
+<dd>
+<p>1<br>
+−<br>
+d<br>
+N</p>
+<h1>E</h1>
+<p>(<br>
+1<br>
+−<br>
+d<br>
+)</p>
+<p>P</p>
+<p>1</p>
+<p>t<br>
+{\displaystyle {\frac {1-d}{N}}\mathbf {E} =(1-d)\mathbf {P} \mathbf {1} ^{t}}<br>
+<img alt="{\displaystyle {\frac {1-d}{N}}\mathbf {E} =(1-d)\mathbf {P} \mathbf {1} ^{t}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/645336287367348454ada56dc36d0779eb00f851">,</p>
+</dd>
+</dl>
+<p>where </p>
+<dl>
+<dt>P</dt>
+<dt>{\displaystyle \mathbf {P} }</dt>
+<dt><img alt="{\displaystyle \mathbf {P} }" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/c0c250ef2a112c86b93c637dfa288c6d7f34ac3f"> is an initial probability distribution. n the current case</dt>
+<dd>
+<p>P<br>
+:=</p>
+<p>1<br>
+N</p>
+<p>1<br>
+{\displaystyle \mathbf {P} :={\frac {1}{N}}\mathbf {1} }<br>
+<img alt="{\displaystyle \mathbf {P} :={\frac {1}{N}}\mathbf {1} }" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/69b312f0f87863d243f1b536de21937d37bf0180">.</p>
+</dd>
+</dl>
+<p>Finally, if </p>
+<p>M<br>
+{\displaystyle {\mathcal {M}}}<br>
+<img alt="{\displaystyle {\mathcal {M}}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/2cc2abebd45ec020509a0ec548b67c9a2cb7cecd"> has columns with only zero values, they should be replaced with the initial probability vector</p>
+<dl>
+<dt>P</dt>
+<dt>{\displaystyle \mathbf {P} }</dt>
+<dt><img alt="{\displaystyle \mathbf {P} }" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/c0c250ef2a112c86b93c637dfa288c6d7f34ac3f">. In other words,</dt>
+<dd>
+<p>M</p>
+<p>′<br>
+:=</p>
+<p>M<br>
++</p>
+<p>D<br>
+{\displaystyle {\mathcal {M}}^{\prime }:={\mathcal {M}}+{\mathcal {D}}}<br>
+<img alt="{\displaystyle {\mathcal {M}}^{\prime }:={\mathcal {M}}+{\mathcal {D}}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/7507bea0b6e13daa6502f1c26e0425efbd456353">,</p>
+</dd>
+</dl>
+<p>where the matrix </p>
+<dl>
+<dt>D</dt>
+<dt>{\displaystyle {\mathcal {D}}}</dt>
+<dt><img alt="{\displaystyle {\mathcal {D}}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/3277962e1959c3241fb1b70c7f0ac6dcefebd966"> is defined as</dt>
+<dd>
+<p>D<br>
+:=</p>
+<p>P</p>
+<p>D</p>
+<p>t<br>
+{\displaystyle {\mathcal {D}}:=\mathbf {P} \mathbf {D} ^{t}}<br>
+<img alt="{\displaystyle {\mathcal {D}}:=\mathbf {P} \mathbf {D} ^{t}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/9dec37bc118b4d3331649b6d2103784454442548">,</p>
+</dd>
+<dt>with</dt>
+<dd>
+<p>D</p>
+<h1>i</h1>
+<p>{</p>
+<p>1<br>
+,</p>
+<p>if <br>
+L<br>
+(</p>
+<p>p</p>
+<p>i<br>
+)<br>
+=<br>
+0<br>
+</p>
+<p>0<br>
+,</p>
+<p>otherwise</p>
+<p>{\displaystyle \mathbf {D} _{i}={\begin{cases}1,&amp;{\mbox{if }}L(p_{i})=0\ \0,&amp;{\mbox{otherwise}}\end{cases}}}<br>
+<img alt="{\displaystyle \mathbf {D} _{i}={\begin{cases}1,&amp;{\mbox{if }}L(p_{i})=0\ \0,&amp;{\mbox{otherwise}}\end{cases}}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/2f6762e541780bcec1fe8c9a4581c6553f9ec903"></p>
+</dd>
+</dl>
+<p>In this case, the above two computations using </p>
+<dl>
+<dt>M</dt>
+<dt>{\displaystyle {\mathcal {M}}}</dt>
+<dt><img alt="{\displaystyle {\mathcal {M}}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/2cc2abebd45ec020509a0ec548b67c9a2cb7cecd"> only give the same PageRank if their results are normalized:</dt>
+<dd>
+<p>R</p>
+<h1>power</h1>
+<p>R</p>
+<p>iterative</p>
+<p>|</p>
+<p>R</p>
+<p>iterative</p>
+<h1>|</h1>
+<p>R</p>
+<p>algebraic</p>
+<p>|</p>
+<p>R</p>
+<p>algebraic</p>
+<p>|<br>
+{\displaystyle \mathbf {R} _{\textrm {power}}={\frac {\mathbf {R} _{\textrm {iterative}}}{|\mathbf {R} _{\textrm {iterative}}|}}={\frac {\mathbf {R} _{\textrm {algebraic}}}{|\mathbf {R} _{\textrm {algebraic}}|}}}<br>
+<img alt="{\displaystyle \mathbf {R} _{\textrm {power}}={\frac {\mathbf {R} _{\textrm {iterative}}}{|\mathbf {R} _{\textrm {iterative}}|}}={\frac {\mathbf {R} _{\textrm {algebraic}}}{|\mathbf {R} _{\textrm {algebraic}}|}}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/60cd59b033a85159606117df3e5af2f5010da9c8">.</p>
+</dd>
+</dl>
+<h3>Implementation</h3>
+<h4><a href="./Python_(programming_language)" title="Python (programming language)">Python</a></h4>
+<pre><code>import numpy as np
+
+def pagerank(M, d: float = 0.85):
+    &quot;&quot;&quot;PageRank algorithm with explicit number of iterations. Returns ranking of nodes (pages) in the adjacency matrix.
+
+    Parameters
+    ----------
+    M : numpy array
+        adjacency matrix where M_i,j represents the link from 'j' to 'i', such that for all 'j'
+        sum(i, M_i,j) = 1
+    d : float, optional
+        damping factor, by default 0.85
+
+    Returns
+    -------
+    numpy array
+        a vector of ranks such that v_i is the i-th rank from [0, 1],
+
+    &quot;&quot;&quot;
+    N = M.shape[1]
+    w = np.ones(N) / N
+    M_hat = d * M
+    v = M_hat @ w + (1 - d) / N
+    while np.linalg.norm(w - v) &gt;= 1e-10:
+        w = v
+        v = M_hat @ w + (1 - d) / N
+    return v
+
+M = np.array([[0, 0, 0, .25],
+              [0, 0, 0, .5],
+              [1, 0.5, 0, .25],
+              [0, 0.5, 1, 0]])
+v = pagerank(M, 0.85)
+</code></pre>
+<h2>Variations</h2>
+<h3>PageRank of an undirected graph</h3>
+<p>The PageRank of an undirected <a href="./Graph_(data_structure)" title="Graph (data structure)">graph</a> </p>
+<p>G<br>
+{\displaystyle G}<br>
+<img alt="{\displaystyle G}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/f5f3c8921a3b352de45446a6789b104458c9f90b"> is statistically close to the <a href="./Degree_distribution" title="Degree distribution">degree distribution</a> of the graph </p>
+<p>G<br>
+{\displaystyle G}<br>
+<img alt="{\displaystyle G}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/f5f3c8921a3b352de45446a6789b104458c9f90b">, but they are generally not identical: If </p>
+<p>R<br>
+{\displaystyle R}<br>
+<img alt="{\displaystyle R}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/4b0bfb3769bf24d80e15374dc37b0441e2616e33"> is the PageRank vector defined above, and </p>
+<dl>
+<dt>D</dt>
+<dt>{\displaystyle D}</dt>
+<dt><img alt="{\displaystyle D}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/f34a0c600395e5d4345287e21fb26efd386990e6"> is the degree distribution vector</dt>
+<dd>
+<h1>D</h1>
+<p>1</p>
+<p>2</p>
+<p>|<br>
+E</p>
+<p>|</p>
+<p>[</p>
+<p>deg<br>
+⁡<br>
+(</p>
+<p>p</p>
+<p>1<br>
+)</p>
+<p>deg<br>
+⁡<br>
+(</p>
+<p>p</p>
+<p>2<br>
+)</p>
+<p>⋮</p>
+<p>deg<br>
+⁡<br>
+(</p>
+<p>p</p>
+<p>N<br>
+)<br>
+]<br>
+{\displaystyle D={1 \over 2|E|}{\begin{bmatrix}\deg(p_{1})\\deg(p_{2})\\vdots \\deg(p_{N})\end{bmatrix}}}<br>
+<img alt="{\displaystyle D={1 \over 2|E|}{\begin{bmatrix}\deg(p_{1})\\deg(p_{2})\\vdots \\deg(p_{N})\end{bmatrix}}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/c23dae3eff4fd2e328e6ef3299e14344674972b0"></p>
+</dd>
+</dl>
+<p>where </p>
+<p>deg<br>
+⁡<br>
+(</p>
+<p>p</p>
+<p>i<br>
+)<br>
+{\displaystyle \deg(p_{i})}<br>
+<img alt="{\displaystyle \deg(p_{i})}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/33cda9ae5483b54746019bd1027c98475882a6d0"> denotes the degree of vertex </p>
+<p>p</p>
+<p>i<br>
+{\displaystyle p_{i}}<br>
+<img alt="{\displaystyle p_{i}}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/5bab39399bf5424f25d957cdc57c84a0622626d2">, and </p>
+<p>E<br>
+{\displaystyle E}<br>
+<img alt="{\displaystyle E}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/4232c9de2ee3eec0a9c0a19b15ab92daa6223f9b"> is the edge-set of the graph, then, with </p>
+<h1>Y</h1>
+<p>1<br>
+N</p>
+<p>1<br>
+{\displaystyle Y={1 \over N}\mathbf {1} }<br>
+<img alt="{\displaystyle Y={1 \over N}\mathbf {1} }" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/39b16e8f78f22ae0e578b255804b6e07ae23b5e9">, shows that:</p>
+<p>1<br>
+−<br>
+d</p>
+<p>1<br>
++<br>
+d<br>
+‖<br>
+Y<br>
+−<br>
+D</p>
+<p>‖</p>
+<p>1<br>
+≤<br>
+‖<br>
+R<br>
+−<br>
+D</p>
+<p>‖</p>
+<p>1<br>
+≤<br>
+‖<br>
+Y<br>
+−<br>
+D</p>
+<p>‖</p>
+<p>1<br>
+,<br>
+{\displaystyle {1-d \over 1+d}|Y-D|_{1}\leq |R-D|_{1}\leq |Y-D|_{1},}<br>
+<img alt="{\displaystyle {1-d \over 1+d}|Y-D|_{1}\leq |R-D|_{1}\leq |Y-D|_{1},}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/3f2616581ca7f7b33dca40b0b15c969fb5e0bb28"></p>
+<p>that is, the PageRank of an undirected graph equals to the degree distribution vector if and only if the graph is regular, i.e., every vertex has the same degree.</p>
+<h3>Ranking objects of two kinds</h3>
+<p>A generalization of PageRank for the case of ranking two interacting groups of objects was described by Daugulis. In applications it may be necessary to model systems having objects of two kinds where a weighted relation is defined on object pairs. This leads to considering <a href="./Bipartite_graphs" title="Bipartite graphs">bipartite graphs</a>. For such graphs two related positive or nonnegative irreducible matrices corresponding to vertex partition sets can be defined. One can compute rankings of objects in both groups as eigenvectors corresponding to the maximal positive eigenvalues of these matrices. Normed eigenvectors exist and are unique by the Perron or <a href="./Perron–Frobenius_theorem" title="Perron–Frobenius theorem">Perron–Frobenius theorem</a>. Example: consumers and products. The relation weight is the product consumption rate.</p>
+<h3>Distributed algorithm for PageRank computation</h3>
+<p>Sarma et al. describe two <a href="./Random_walk" title="Random walk">random walk</a>-based <a href="./Distributed_algorithms" title="Distributed algorithms">distributed algorithms</a> for computing PageRank of nodes in a network. One algorithm takes </p>
+<p>O<br>
+(<br>
+log<br>
+⁡<br>
+n</p>
+<p>/<br>
+ϵ<br>
+)<br>
+{\displaystyle O(\log n/\epsilon )}<br>
+<img alt="{\displaystyle O(\log n/\epsilon )}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/64956675fad27462a0cc44acd4f908edf48c6932"> rounds with high probability on any graph (directed or undirected), where n is the network size and </p>
+<p>ϵ<br>
+{\displaystyle \epsilon }<br>
+<img alt="{\displaystyle \epsilon }" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/c3837cad72483d97bcdde49c85d3b7b859fb3fd2"> is the reset probability (</p>
+<p>1<br>
+−<br>
+ϵ<br>
+{\displaystyle 1-\epsilon }<br>
+<img alt="{\displaystyle 1-\epsilon }" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/57f9b07affe80ff61cdc4f2e47977c8421a59c73">, which is called the damping factor) used in the PageRank computation. They also present a faster algorithm that takes </p>
+<p>O<br>
+(</p>
+<p>log<br>
+⁡<br>
+n</p>
+<p>/<br>
+ϵ<br>
+)<br>
+{\displaystyle O({\sqrt {\log n}}/\epsilon )}<br>
+<img alt="{\displaystyle O({\sqrt {\log n}}/\epsilon )}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/c707fb5dbfab344e9b20d6f26bd00732474263dc"> rounds in undirected graphs. In both algorithms, each node processes and sends a number of bits per round that are polylogarithmic in n, the network size.</p>
+<h3>Google Toolbar</h3>
+<p>The <a href="./Google_Toolbar" title="Google Toolbar">Google Toolbar</a> long had a PageRank feature which displayed a visited page's PageRank as a whole number between 0 (least popular) and 10 (most popular). Google had not disclosed the specific method for determining a Toolbar PageRank value, which was to be considered only a rough indication of the value of a website. The "Toolbar Pagerank" was available for verified site maintainers through the Google Webmaster Tools interface. However, on October 15, 2009, a Google employee confirmed that the company had removed PageRank from its <em>Webmaster Tools</em> section, saying that "We've been telling people for a long time that they shouldn't focus on PageRank so much. Many site owners seem to think it's the most important <a href="./Search_Engine_Optimization_Metrics" title="Search Engine Optimization Metrics">metric</a> for them to track, which is simply not true."</p>
+<p>The "Toolbar Pagerank" was updated very infrequently. It was last updated in November 2013. In October 2014 Matt Cutts announced that another visible pagerank update would not be coming. In March 2016 Google announced it would no longer support this feature, and the underlying API would soon cease to operate. On April 15, 2016, Google turned off display of PageRank Data in Google Toolbar, though the PageRank continued to be used internally to rank content in search results.</p>
+<h3>SERP rank</h3>
+<p>The <a href="./Search_engine_results_page" title="Search engine results page">search engine results page</a> (SERP) is the actual result returned by a search engine in response to a keyword query. The SERP consists of a list of links to web pages with associated text snippets, paid ads, featured snippets, and Q&amp;A. The SERP rank of a web page refers to the placement of the corresponding link on the SERP, where higher placement means higher SERP rank. The SERP rank of a web page is a function not only of its PageRank, but of a relatively large and continuously adjusted set of factors (over 200).[<em><a href="./Wikipedia:Reliable_sources" title="Wikipedia:Reliable sources">unreliable source?</a></em>] <a href="./Search_engine_optimization" title="Search engine optimization">Search engine optimization</a> (SEO) is aimed at influencing the SERP rank for a website or a set of web pages.</p>
+<p>Positioning of a webpage on Google SERPs for a keyword depends on relevance and reputation, also known as authority and popularity. PageRank is Google's indication of its assessment of the reputation of a webpage: It is non-keyword specific. Google uses a combination of webpage and website authority to determine the overall authority of a webpage competing for a keyword. The PageRank of the HomePage of a website is the best indication Google offers for website authority.</p>
+<p>After the introduction of <a href="./Google_Places" title="Google Places">Google Places</a> into the mainstream organic SERP, numerous other factors in addition to PageRank affect ranking a business in Local Business Results. When Google elaborated on the reasons for PageRank deprecation at Q&amp;A #March 2016, they announced Links and Content as the Top Ranking Factors. RankBrain had earlier in October 2015 been announced as the #3 Ranking Factor, so the Top 3 Factors have been confirmed officially by Google.</p>
+<h3>Google directory PageRank</h3>
+<p>The <a href="./Google_Directory" title="Google Directory">Google Directory</a> PageRank was an 8-unit measurement. Unlike the Google Toolbar, which showed a numeric PageRank value upon mouseover of the green bar, the Google Directory only displayed the bar, never the numeric values. Google Directory was closed on July 20, 2011.</p>
+<h3>False or spoofed PageRank</h3>
+<p>It was known that the PageRank shown in the Toolbar could easily be <a href="./Website_spoofing" title="Website spoofing">spoofed</a>. Redirection from one page to another, either via a <a href="./HTTP_302" title="HTTP 302">HTTP 302</a> response or a "Refresh" <a href="./Meta_tag" title="Meta tag">meta tag</a>, caused the source page to acquire the PageRank of the destination page. Hence, a new page with PR 0 and no incoming links could have acquired PR 10 by redirecting to the Google home page. Spoofing can usually be detected by performing a Google search for a source URL; if the URL of an entirely different site is displayed in the results, the latter URL may represent the destination of a redirection.</p>
+<h3>Manipulating PageRank</h3>
+<p>For <a href="./Search_engine_optimization" title="Search engine optimization">search engine optimization</a> purposes, some companies offer to sell high PageRank links to webmasters. As links from higher-PR pages are believed to be more valuable, they tend to be more expensive. It can be an effective and viable <a href="./Marketing_strategy" title="Marketing strategy">marketing strategy</a> to buy link advertisements on content pages of quality and relevant sites to drive traffic and increase a webmaster's link popularity. However, Google has publicly warned webmasters that if they are or were discovered to be selling links for the purpose of conferring PageRank and reputation, their links will be devalued (ignored in the calculation of other pages' PageRanks). The practice of buying and selling is intensely debated across the Webmaster community. Google advised webmasters to use the <a href="./Nofollow" title="Nofollow">nofollow</a> <a href="./HTML_attribute" title="HTML attribute">HTML attribute</a> value on paid links. According to <a href="./Matt_Cutts" title="Matt Cutts">Matt Cutts</a>, Google is concerned about webmasters who try to <a href="./Game_the_system" title="Game the system">game the system</a>, and thereby reduce the quality and relevance of Google search results.</p>
+<p>In 2019, Google announced two additional link attributes providing hints about which links to consider or exclude within Search: <code>rel="ugc"</code> as a tag for <a href="./User-generated_content" title="User-generated content">user-generated content</a>, such as comments; and <code>rel="sponsored"</code> as a tag for advertisements or other types of sponsored content. Multiple <code>rel</code> values are also allowed, for example, <code>rel="ugc sponsored"</code> can be used to hint that the link came from user-generated content and is sponsored.</p>
+<p>Even though PageRank has become less important for SEO purposes, the existence of back-links from more popular websites continues to push a webpage higher up in search rankings.</p>
+<h3>Directed Surfer Model</h3>
+<p>A more intelligent surfer that probabilistically hops from page to page depending on the content of the pages and query terms the surfer is looking for. This model is based on a query-dependent PageRank score of a page which as the name suggests is also a function of query. When given a multiple-term query, </p>
+<h1>Q</h1>
+<p>{<br>
+q<br>
+1<br>
+,<br>
+q<br>
+2<br>
+,<br>
+⋯<br>
+}<br>
+{\displaystyle Q={q1,q2,\cdots }}<br>
+<img alt="{\displaystyle Q={q1,q2,\cdots }}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/def250a18328bba5b10b1a25dd38ca0a0086cae4">, the surfer selects a </p>
+<p>q<br>
+{\displaystyle q}<br>
+<img alt="{\displaystyle q}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/06809d64fa7c817ffc7e323f85997f783dbdf71d"> according to some probability distribution, </p>
+<p>P<br>
+(<br>
+q<br>
+)<br>
+{\displaystyle P(q)}<br>
+<img alt="{\displaystyle P(q)}" src="https://wikimedia.org/api/rest_v1/media/math/render/svg/7076229c299e38dcffbc3bca2144e5f64fac9537">, and uses that term to guide its behavior for a large number of steps. It then selects another term according to the distribution to determine its behavior, and so on. The resulting distribution over visited web pages is QD-PageRank.</p>
+<h2>Other uses</h2>
+<p>The mathematics of PageRank are entirely general and apply to any graph or network in any domain. Thus, PageRank is now regularly used in bibliometrics, social and information network analysis, and for link prediction and recommendation. It is used for systems analysis of road networks, and in biology, chemistry, neuroscience, and physics.</p>
+<h3>Scientific research and academia</h3>
+<p>PageRank has been used to quantify the scientific impact of researchers. The underlying citation and collaboration networks are used in conjunction with PageRank algorithm in order to come up with a ranking system for individual publications which propagates to individual authors. The new index known as pagerank-index (Pi) is demonstrated to be fairer compared to h-index in the context of many drawbacks exhibited by h-index. For the analysis of protein networks in biology PageRank is also a useful tool. In any ecosystem, a modified version of PageRank may be used to determine species that are essential to the continuing health of the environment. A similar newer use of PageRank is to rank academic doctoral programs based on their records of placing their graduates in faculty positions. In PageRank terms, academic departments link to each other by hiring their faculty from each other (and from themselves). A version of PageRank has recently been proposed as a replacement for the traditional <a href="./Institute_for_Scientific_Information" title="Institute for Scientific Information">Institute for Scientific Information</a> (ISI) <a href="./Impact_factor" title="Impact factor">impact factor</a>, and implemented at <a href="./Eigenfactor" title="Eigenfactor">Eigenfactor</a> as well as at <a href="./SCImago" title="SCImago">SCImago</a>. Instead of merely counting total citations to a journal, the "importance" of each citation is determined in a PageRank fashion. In <a href="./Neuroscience" title="Neuroscience">neuroscience</a>, the PageRank of a <a href="./Neuron" title="Neuron">neuron</a> in a neural network has been found to correlate with its relative firing rate.</p>
+<h3>Internet use</h3>
+<p>Personalized PageRank is used by <a href="./Twitter" title="Twitter">Twitter</a> to present users with other accounts they may wish to follow. <a href="./Swiftype" title="Swiftype">Swiftype</a>'s site search product builds a "PageRank that's specific to individual websites" by looking at each website's signals of importance and prioritizing content based on factors such as number of links from the home page.</p>
+<p>A <a href="./Web_crawler" title="Web crawler">Web crawler</a> may use PageRank as one of a number of importance metrics it uses to determine which URL to visit during a crawl of the web. One of the early working papers that were used in the creation of Google is <em>Efficient crawling through URL ordering</em>, which discusses the use of a number of different importance metrics to determine how deeply, and how much of a site Google will crawl. PageRank is presented as one of a number of these importance metrics, though there are others listed such as the number of inbound and outbound links for a URL, and the distance from the root directory on a site to the URL.</p>
+<p>The PageRank may also be used as a methodology to measure the apparent impact of a community like the <a href="./Blogosphere" title="Blogosphere">Blogosphere</a> on the overall Web itself. This approach uses therefore the PageRank to measure the distribution of attention in reflection of the <a href="./Scale-free_network" title="Scale-free network">Scale-free network</a> paradigm.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>]</p>
+<h3>Other applications</h3>
+<p>In 2005, in a pilot study in Pakistan, <em>Structural Deep Democracy, SD2</em> was used for leadership selection in a sustainable agriculture group called Contact Youth. SD2 uses <em>PageRank</em> for the processing of the transitive proxy votes, with the additional constraints of mandating at least two initial proxies per voter, and all voters are proxy candidates. More complex variants can be built on top of SD2, such as adding specialist proxies and direct votes for specific issues, but SD2 as the underlying umbrella system, mandates that generalist proxies should always be used.</p>
+<p>In sport the PageRank algorithm has been used to rank the performance of: teams in the National Football League (NFL) in the USA; individual soccer players; and athletes in the Diamond League. PageRank has been used to rank spaces or streets to predict how many people (pedestrians or vehicles) come to the individual spaces or streets. In <a href="./Lexical_semantics" title="Lexical semantics">lexical semantics</a> it has been used to perform <a href="./Word_Sense_Disambiguation" title="Word Sense Disambiguation">Word Sense Disambiguation</a>, <a href="./Semantic_similarity" title="Semantic similarity">Semantic similarity</a>, and also to automatically rank <a href="./WordNet" title="WordNet">WordNet</a> <a href="./Synsets" title="Synsets">synsets</a> according to how strongly they possess a given semantic property, such as positivity or negativity.</p>
+<p>How a traffic system changes its operational mode can be described by transitions between quasi-stationary states in correlation structures of traffic flow. PageRank has been used to identify and explore the dominant states among these quasi-stationary states in traffic systems.</p>
+<h2>nofollow</h2>
+<p>In early 2005, Google implemented a new value, "<a href="./Nofollow" title="Nofollow">nofollow</a>", for the <a href="./Semantic_link" title="Semantic link">rel</a> attribute of HTML link and anchor elements, so that website developers and <a href="./Blog" title="Blog">bloggers</a> can make links that Google will not consider for the purposes of PageRank—they are links that no longer constitute a "vote" in the PageRank system. The nofollow relationship was added in an attempt to help combat <a href="./Spamdexing" title="Spamdexing">spamdexing</a>.</p>
+<p>As an example, people could previously create many message-board posts with links to their website to artificially inflate their PageRank. With the nofollow value, message-board administrators can modify their code to automatically insert "rel='nofollow'" to all hyperlinks in posts, thus preventing PageRank from being affected by those particular posts. This method of avoidance, however, also has various drawbacks, such as reducing the link value of legitimate comments. (See: <a href="./Spam_in_blogs#nofollow" title="Spam in blogs">Spam in blogs#nofollow</a>)</p>
+<p>In an effort to manually control the flow of PageRank among pages within a website, many webmasters practice what is known as PageRank Sculpting—which is the act of strategically placing the nofollow attribute on certain internal links of a website in order to funnel PageRank towards those pages the webmaster deemed most important. This tactic had been used since the inception of the nofollow attribute, but may no longer be effective since Google announced that blocking PageRank transfer with nofollow does not redirect that PageRank to other links.</p>
+<h2>See also</h2>
+<ul>
+<li><a href="./Attention_inequality" title="Attention inequality">Attention inequality</a></li>
+<li><a href="./CheiRank" title="CheiRank">CheiRank</a></li>
+<li><a href="./Domain_authority" title="Domain authority">Domain authority</a></li>
+<li><a href="./EigenTrust" title="EigenTrust">EigenTrust</a> — a decentralized PageRank algorithm</li>
+<li><a href="./Google_bombing" title="Google bombing">Google bombing</a></li>
+<li><a href="./Google_Hummingbird" title="Google Hummingbird">Google Hummingbird</a></li>
+<li><a href="./Google_matrix" title="Google matrix">Google matrix</a></li>
+<li><a href="./Google_Panda" title="Google Panda">Google Panda</a></li>
+<li><a href="./Google_Penguin" title="Google Penguin">Google Penguin</a></li>
+<li><a href="./Google_Search" title="Google Search">Google Search</a></li>
+<li><a href="./Hilltop_algorithm" title="Hilltop algorithm">Hilltop algorithm</a></li>
+<li><a href="./Katz_centrality" title="Katz centrality">Katz centrality</a> — a 1953 scheme closely related to pagerank</li>
+<li><a href="./Link_building" title="Link building">Link building</a></li>
+<li><a href="./Search_engine_optimization" title="Search engine optimization">Search engine optimization</a></li>
+<li><a href="./SimRank" title="SimRank">SimRank</a> — a measure of object-to-object similarity based on random-surfer model</li>
+<li><a href="./Automatic_summarization#Unsupervised_approach:_TextRank" title="Automatic summarization">TextRank</a> — Application of PageRank to Natural Language Processing</li>
+<li><a href="./TrustRank" title="TrustRank">TrustRank</a></li>
+<li><a href="./VisualRank" title="VisualRank">VisualRank</a> — Google's application of PageRank to image-search</li>
+<li><a href="./Webgraph" title="Webgraph">Webgraph</a></li>
+</ul>
+<h2>References</h2>
+<h3>Citations</h3>
+<h3>Sources</h3>
+<ul>
+<li>Altman, Alon; Moshe Tennenholtz (2005). <a href="http://www.eecs.harvard.edu/cs286r/courses/fall11/papers/AT%2705.pdf">"Ranking Systems: The PageRank Axioms"</a> (PDF). <em>Proceedings of the 6th ACM conference on Electronic commerce (EC-05)</em>. Vancouver, BC. Retrieved 29 September 2014.</li>
+<li>Cheng, Alice; Eric J. Friedman (2006-06-11). <a href="http://www.cs.duke.edu/nicl/netecon06/papers/ne06-sybil.pdf">"Manipulability of PageRank under Sybil Strategies"</a> (PDF). <em>Proceedings of the First Workshop on the Economics of Networked Systems (NetEcon06)</em>. Ann Arbor, Michigan. <a href="https://web.archive.org/web/20100821011759/http://www.cs.duke.edu/nicl/netecon06/papers/ne06-sybil.pdf">Archived</a> (PDF) from the original on 2010-08-21. Retrieved 2008-01-22.</li>
+<li>Farahat, Ayman; LoFaro, Thomas; Miller, Joel C.; Rae, Gregory; <a href="./Lesley_Ward" title="Lesley Ward">Ward, Lesley A.</a> (2006). "Authority Rankings from HITS, PageRank, and SALSA: Existence, Uniqueness, and Effect of Initialization". <em>SIAM Journal on Scientific Computing</em>. <strong>27</strong> (4): 1181–1201. <a href="./Bibcode_(identifier)" title="Bibcode (identifier)">Bibcode</a>:<a href="https://ui.adsabs.harvard.edu/abs/2006SJSC...27.1181F">2006SJSC...27.1181F</a>. <a href="./CiteSeerX_(identifier)" title="CiteSeerX (identifier)">CiteSeerX</a> <a href="https://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.99.3942">10.1.1.99.3942</a>. <a href="./Doi_(identifier)" title="Doi (identifier)">doi</a>:<a href="https://doi.org/10.1137%2FS1064827502412875">10.1137/S1064827502412875</a>.</li>
+<li>Haveliwala, Taher; Jeh, Glen; Kamvar, Sepandar (2003). <a href="http://www-cs-students.stanford.edu/~taherh/papers/comparison.pdf">"An Analytical Comparison of Approaches to Personalizing PageRank"</a> (PDF). <em>Stanford University Technical Report</em>. <a href="https://web.archive.org/web/20101216084254/http://www-cs-students.stanford.edu/~taherh/papers/comparison.pdf">Archived</a> (PDF) from the original on 2010-12-16. Retrieved 2008-11-13.</li>
+<li><a href="./Amy_Langville" title="Amy Langville">Langville, Amy N.</a>; Meyer, Carl D. (2003). "Survey: Deeper Inside PageRank". <em>Internet Mathematics</em>. <strong>1</strong> (3).</li>
+<li><a href="./Amy_Langville" title="Amy Langville">Langville, Amy N.</a>; Meyer, Carl D. (2006). <em>Google's PageRank and Beyond: The Science of Search Engine Rankings</em>. Princeton University Press. <a href="./ISBN_(identifier)" title="ISBN (identifier)">ISBN</a> <a href="./Special:BookSources/978-0-691-12202-1" title="Special:BookSources/978-0-691-12202-1">978-0-691-12202-1</a>.</li>
+<li>Richardson, Matthew; Domingos, Pedro (2002). <a href="http://www.cs.washington.edu/homes/pedrod/papers/nips01b.pdf">"The intelligent surfer: Probabilistic combination of link and content information in PageRank"</a> (PDF). <em>Proceedings of Advances in Neural Information Processing Systems</em>. Vol. 14. <a href="https://web.archive.org/web/20100628120615/http://www.cs.washington.edu/homes/pedrod/papers/nips01b.pdf">Archived</a> (PDF) from the original on 2010-06-28. Retrieved 2004-09-18.</li>
+</ul>
+<h2>Relevant patents</h2>
+<ul>
+<li><a href="http://patft.uspto.gov/netacgi/nph-Parser?patentnumber=6,285,999">Original PageRank U.S. Patent—Method for node ranking in a linked database</a> <a href="https://web.archive.org/web/20140829134755/http://patft.uspto.gov/netacgi/nph-Parser?patentnumber=6,285,999">Archived</a> 2014-08-29 at the <a href="./Wayback_Machine" title="Wayback Machine">Wayback Machine</a>—Patent number 6,285,999—September 4, 2001</li>
+<li><a href="http://patft1.uspto.gov/netacgi/nph-Parser?Sect1=PTO1&amp;Sect2=HITOFF&amp;d=PALL&amp;p=1&amp;u=%2Fnetahtml%2FPTO%2Fsrchnum.htm&amp;r=1&amp;f=G&amp;l=50&amp;s1=6,799,176.PN.&amp;OS=PN/6,799,176&amp;RS=PN/6,799,176">PageRank U.S. Patent—Method for scoring documents in a linked database</a>—Patent number 6,799,176—September 28, 2004</li>
+<li><a href="http://patft.uspto.gov/netacgi/nph-Parser?Sect1=PTO2&amp;Sect2=HITOFF&amp;u=%2Fnetahtml%2FPTO%2Fsearch-adv.htm&amp;r=1&amp;p=1&amp;f=G&amp;l=50&amp;d=PTXT&amp;S1=7,058,628.PN.&amp;OS=pn/7,058,628&amp;RS=PN/7,058,628">PageRank U.S. Patent—Method for node ranking in a linked database</a> <a href="https://web.archive.org/web/20190828223450/http://patft.uspto.gov/netacgi/nph-Parser?Sect1=PTO2&amp;Sect2=HITOFF&amp;u=%2Fnetahtml%2FPTO%2Fsearch-adv.htm&amp;r=1&amp;p=1&amp;f=G&amp;l=50&amp;d=PTXT&amp;S1=7%2C058%2C628.PN.&amp;OS=pn%2F7%2C058%2C628&amp;RS=PN%2F7%2C058%2C628">Archived</a> 2019-08-28 at the <a href="./Wayback_Machine" title="Wayback Machine">Wayback Machine</a>—Patent number 7,058,628—June 6, 2006</li>
+<li><a href="http://patft.uspto.gov/netacgi/nph-Parser?Sect1=PTO2&amp;Sect2=HITOFF&amp;u=%2Fnetahtml%2FPTO%2Fsearch-adv.htm&amp;r=1&amp;p=1&amp;f=G&amp;l=50&amp;d=PTXT&amp;S1=7,269,587.PN.&amp;OS=pn/7,269,587&amp;RS=PN/7,269,587">PageRank U.S. Patent—Scoring documents in a linked database</a> <a href="https://web.archive.org/web/20180331090147/http://patft.uspto.gov/netacgi/nph-Parser?Sect1=PTO2">Archived</a> 2018-03-31 at the <a href="./Wayback_Machine" title="Wayback Machine">Wayback Machine</a>—Patent number 7,269,587—September 11, 2007</li>
+</ul>
+<h2>External links</h2>
+<p><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Wikiquote-logo.svg/40px-Wikiquote-logo.svg.png"></p>
+<p>Wikiquote has quotations related to <strong><em><a href="https://en.wikiquote.org/wiki/Special:Search/PageRank" title="q:Special:Search/PageRank">PageRank</a></em></strong>.</p>
+<ul>
+<li><a href="https://www.google.com/insidesearch/howsearchworks/algorithms.html">Algorithms</a> by Google</li>
+<li><a href="https://www.google.com/technology/">Our products and services</a> by Google</li>
+<li><a href="https://www.ams.org/featurecolumn/archive/pagerank.html">How Google Finds Your Needle in the Web's Haystack</a> by the American Mathematical Society</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_Search_navbox" title="Template:Google Search navbox">v</a> - <a href="./Template_talk:Google_Search_navbox" title="Template talk:Google Search navbox">t</a> - <a href="./Special:EditPage/Template:Google_Search_navbox" title="Special:EditPage/Template:Google Search navbox">e</a>  <a href="./Google_Search" title="Google Search">Google Search</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Timeline_of_Google_Search" title="Timeline of Google Search">Timeline of Google Search</a></td>
+<td></td>
+</tr>
+<tr>
+<td>Features</td>
+<td>- <a href="./AI_Overviews" title="AI Overviews">AI Overviews</a> - <a href="./Google_AI_Mode" title="Google AI Mode">AI Mode</a> - <a href="./Knowledge_Graph_(Google)" title="Knowledge Graph (Google)">Knowledge Graph</a> - <a href="./SafeSearch" title="SafeSearch">SafeSearch</a> - <a href="./Google_SearchWiki" title="Google SearchWiki">SearchWiki</a> - <a href="./Google_Voice_Search" title="Google Voice Search">Voice Search</a> - <a href="./Google_Personalized_Search" title="Google Personalized Search">Google Personalized Search</a></td>
+</tr>
+<tr>
+<td>Component algorithms and updates</td>
+<td>- <a href="./Googlebot" title="Googlebot">Googlebot</a> - <a href="./Google_Hummingbird" title="Google Hummingbird">Hummingbird</a> - <a href="./Mobilegeddon" title="Mobilegeddon">Mobilegeddon</a> - <a href="./PageRank">PageRank</a>   - <a href="./Google_matrix" title="Google matrix">Matrix</a> - <a href="./Google_Panda" title="Google Panda">Panda</a> - <a href="./Google_Penguin" title="Google Penguin">Penguin</a> - <a href="./Google_Pigeon" title="Google Pigeon">Pigeon</a> - <a href="./RankBrain" title="RankBrain">RankBrain</a></td>
+</tr>
+<tr>
+<td>Special purpose search engines</td>
+<td>- <a href="./Google_Dataset_Search" title="Google Dataset Search">Google Dataset Search</a> - <a href="./Google_Books" title="Google Books">Google Books</a> - <a href="./Google_Images" title="Google Images">Google Images</a> - <a href="./Google_Finance" title="Google Finance">Google Finance</a> - <a href="./Google_News" title="Google News">Google News</a>   - <a href="./Google_News_Archive" title="Google News Archive">Google News Archive</a> - <a href="./Google_Scholar" title="Google Scholar">Google Scholar</a> - <a href="./Google_Shopping" title="Google Shopping">Google Shopping</a>  - <a href="./Dragonfly_(search_engine)" title="Dragonfly (search engine)">Dragonfly</a> - <a href="./Google_Blog_Search" title="Google Blog Search">Google Blog Search</a> - <a href="./Google_Code_Search" title="Google Code Search">Google Code Search</a></td>
+</tr>
+<tr>
+<td>Data insights</td>
+<td>- <a href="./Google_Books_Ngram_Viewer" title="Google Books Ngram Viewer">Google Books Ngram Viewer</a> - <a href="./Google_Trends" title="Google Trends">Google Trends</a>   - <a href="./Google_Insights_for_Search" title="Google Insights for Search">Google Insights for Search</a> - <a href="./List_of_Year_in_Search_top_searches" title="List of Year in Search top searches">Year in Search</a></td>
+</tr>
+<tr>
+<td>Developer and business tools</td>
+<td>- <a href="./Google_Programmable_Search_Engine" title="Google Programmable Search Engine">Google Programmable Search Engine</a> - <a href="./Google_Search_Console" title="Google Search Console">Google Search Console</a> - <a href="./Google_Get_Your_Business_Online" title="Google Get Your Business Online">Get Your Business Online</a></td>
+</tr>
+<tr>
+<td>Related</td>
+<td>- "<a href="./Reunion_(advertisement)" title="Reunion (advertisement)">Reunion</a>" - <a href="./Google_Search_Appliance" title="Google Search Appliance">Google Search Appliance</a> - <a href="./FairSearch" title="FairSearch">FairSearch</a></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

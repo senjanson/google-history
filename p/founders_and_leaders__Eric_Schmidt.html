@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eric Schmidt</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link active" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Eric Schmidt</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Eric_Schmidt<br>
+Category: founders_and_leaders<br>
+Depth: 1</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Eric Emerson Schmidt is an American businessman and former computer engineer who was the chief executive officer of Google from 2001 to 2011 and the company's executive chairman from 2011 to 2015. He also was the executive chairman of parent company Alphabet Inc. from 2015 to 2017, and technical advisor at Alphabet from 2017 to 2020. Since 2025, he has been the CEO of Relativity Space, an aerospace manufacturing company. As of 2025, he is one of the wealthiest people in the world according to Bloomberg Billionaires Index with an estimated net worth of US$54.5 billion.</p>
+<h2>Images</h2>
+<p><img alt="Eric_Schmidt_at_the_37th_G8_Summit_in_Deauville_037__28cropped_29" src="../images/Eric_Schmidt_at_the_37th_G8_Summit_in_Deauville_037__28cropped_29.jpg"><br>
+<img alt="330px-Eric_Schmidt_at_the_37th_G8_Summit_in_Deauville_037__28cropped_29" src="../images/330px-Eric_Schmidt_at_the_37th_G8_Summit_in_Deauville_037__28cropped_29.jpg"><br>
+<img alt="250px-Eric_Schmidt_at_the_37th_G8_Summit_in_Deauville_037__28cropped_29" src="../images/250px-Eric_Schmidt_at_the_37th_G8_Summit_in_Deauville_037__28cropped_29.jpg"><br>
+<img alt="250px-Schmidt-Brin-Page-20080520" src="../images/250px-Schmidt-Brin-Page-20080520.jpg"><br>
+<img alt="250px-Eric_Schmidt_2C_Executive_Chairman_2C_Google__28left_29_in_conversation_with_Nik_Gowing__2811051254154_29" src="../images/250px-Eric_Schmidt_2C_Executive_Chairman_2C_Google__28left_29_in_conversation_with_Nik_Gowing__2811051254154_29.jpg"><br>
+<img alt="500px-Eric_Schmidt_and_Ash_Carter" src="../images/500px-Eric_Schmidt_and_Ash_Carter.jpeg"><br>
+<img alt="250px-Eric_Schmidt_MSC_2018__28cropped_29" src="../images/250px-Eric_Schmidt_MSC_2018__28cropped_29.jpg"></p>
+<h2>Full Article</h2>
+<p>American businessman and software engineer (born 1955)</p>
+<p>For other people with similar names, see <a href="./Eric_Schmidt_(disambiguation)" title="Eric Schmidt (disambiguation)">Eric Schmidt (disambiguation)</a>.</p>
+<p><strong>Eric Emerson Schmidt</strong> (born April 27, 1955) is an American businessman and former computer engineer who was the chief executive officer of <a href="./Google" title="Google">Google</a> from 2001 to 2011 and the company's executive chairman from 2011 to 2015. He also was the executive chairman of parent company <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc.</a> from 2015 to 2017, and technical advisor at Alphabet from 2017 to 2020. Since 2025, he has been the CEO of <a href="./Relativity_Space" title="Relativity Space">Relativity Space</a>, an aerospace manufacturing company. As of 2025, he is one of the  <a href="./The_World's_Billionaires" title="The World's Billionaires">wealthiest people in the world</a> according to <em><a href="./Bloomberg_Billionaires_Index" title="Bloomberg Billionaires Index">Bloomberg Billionaires Index</a></em> with an estimated <a href="./Net_worth" title="Net worth">net worth</a> of US$54.5 billion.</p>
+<p>As an intern at <a href="./Bell_Labs" title="Bell Labs">Bell Labs</a>, Schmidt in 1975 was co-author of <a href="./Lex_(software)" title="Lex (software)">Lex</a>, a software program to generate <a href="./Lexical_analysis" title="Lexical analysis">lexical analysers</a> for the <a href="./Unix" title="Unix">Unix</a> <a href="./Operating_system" title="Operating system">computer operating system</a>. In 1983, he joined <a href="./Sun_Microsystems" title="Sun Microsystems">Sun Microsystems</a> and worked in various roles. From 1997 to 2001, he was chief executive officer (CEO) of <a href="./Novell" title="Novell">Novell</a>. Schmidt has been on various other boards in academia and industry, including the boards of trustees for <a href="./Carnegie_Mellon_University" title="Carnegie Mellon University">Carnegie Mellon University</a>, <a href="./Apple_Inc." title="Apple Inc.">Apple</a>, <a href="./Princeton_University" title="Princeton University">Princeton University</a>, and the <a href="./Mayo_Clinic" title="Mayo Clinic">Mayo Clinic</a>. He also owns a minority stake in the <a href="./National_Football_League" title="National Football League">National Football League</a> (NFL) team <a href="./Washington_Commanders" title="Washington Commanders">Washington Commanders</a>.</p>
+<p>In 2008, during his tenure as Google's chairman, Schmidt campaigned for <a href="./Barack_Obama" title="Barack Obama">Barack Obama</a>, and subsequently became a member of Obama's <a href="./President's_Council_of_Advisors_on_Science_and_Technology" title="President's Council of Advisors on Science and Technology">President's Council of Advisors on Science and Technology</a>. In the meantime, Schmidt had left Google, and founded philanthropic venture <a href="./Schmidt_Futures" title="Schmidt Futures">Schmidt Futures</a>, in 2017. Under his tenure, Schmidt Futures provided the compensation for two science-office employees in the Office of Science and Technology Policy. Schmidt became the first chair of the U.S. <a href="./National_Security_Commission_on_Artificial_Intelligence" title="National Security Commission on Artificial Intelligence">National Security Commission on Artificial Intelligence</a> in 2018, while keeping shares of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a> stock, worth over $5.3 billion in 2019. In October 2021, Schmidt founded the <a href="./Special_Competitive_Studies_Project" title="Special Competitive Studies Project">Special Competitive Studies Project</a> (SCSP) and has since served as its chairman. Schmidt had a major influence on the <a href="./Presidency_of_Joe_Biden" title="Presidency of Joe Biden">Biden administration</a>'s science policy after 2021, especially shaping policies on <a href="./AI" title="AI">AI</a>.</p>
+<h2>Early life and education</h2>
+<p>Schmidt was born in <a href="./Falls_Church,_Virginia" title="Falls Church, Virginia">Falls Church, Virginia</a>, later moving to <a href="./Blacksburg,_Virginia" title="Blacksburg, Virginia">Blacksburg, Virginia</a>. He is one of three sons of Eleanor, who had a master's degree in psychology, and Wilson Emerson Schmidt, a professor of <a href="./International_economics" title="International economics">international economics</a> at <a href="./Virginia_Tech" title="Virginia Tech">Virginia Tech</a> and <a href="./Johns_Hopkins_University" title="Johns Hopkins University">Johns Hopkins University</a>, who worked at the <a href="./U.S._Treasury_Department" title="U.S. Treasury Department">U.S. Treasury Department</a> during the <a href="./Nixon_Administration" title="Nixon Administration">Nixon Administration</a>. Schmidt spent part of his childhood in Italy as a result of his father's work and has stated that it had changed his outlook.</p>
+<p>Schmidt graduated from <a href="./Yorktown_High_School_(Virginia)" title="Yorktown High School (Virginia)">Yorktown High School</a> in the Yorktown neighborhood of <a href="./Arlington_County,_Virginia" title="Arlington County, Virginia">Arlington County, Virginia</a>, in 1972, after earning eight <a href="./Varsity_letter" title="Varsity letter">varsity letter</a> awards in long-distance running. He attended <a href="./Princeton_University" title="Princeton University">Princeton University</a>, starting as an architecture major and switching to <a href="./Electrical_engineering" title="Electrical engineering">electrical engineering</a>, earning a Bachelor of Science in Engineering degree in 1976.</p>
+<p>From 1976 to 1980, Schmidt resided at the <a href="./International_House_Berkeley" title="International House Berkeley">International House Berkeley</a>, where he met his future wife, <a href="./Wendy_Schmidt" title="Wendy Schmidt">Wendy Boyle</a>. In 1979, at the <a href="./University_of_California,_Berkeley" title="University of California, Berkeley">University of California, Berkeley</a>, Schmidt earned an EECS M.S. degree for designing and implementing a <a href="./Computer_network" title="Computer network">network</a> (<a href="./Berknet" title="Berknet">Berknet</a>) linking the campus computer center with the CS and <a href="./Computer_engineering" title="Computer engineering">EECS</a> departments. There, he also earned a PhD degree in 1982 in EECS; <a href="./Computer_Engineering" title="Computer Engineering">Computer Engineering</a>, with a dissertation about the problems of managing distributed software development and tools for solving these problems.</p>
+<h2>Career</h2>
+<h3>Early career</h3>
+<p>Early in his career, Schmidt held a series of technical positions with <a href="./Information_technology" title="Information technology">IT</a> companies including Byzromotti Design, <a href="./Bell_Labs" title="Bell Labs">Bell Labs</a> (in research and development), <a href="./Zilog" title="Zilog">Zilog</a>, and Palo Alto Research Center (<a href="./PARC_(company)" title="PARC (company)">PARC</a>).</p>
+<p>During his summers at Bell Labs, he and <a href="./Mike_Lesk" title="Mike Lesk">Mike Lesk</a> wrote <a href="./Lex_(software)" title="Lex (software)">Lex</a>, a program used in <a href="./Compiler" title="Compiler">compiler</a> construction that generates <a href="./Lexical_analysis" title="Lexical analysis">lexical-analyzers</a> from <a href="./Regular_expression" title="Regular expression">regular-expression</a> descriptions.</p>
+<h3>Sun Microsystems</h3>
+<p>In 1983, Schmidt joined <a href="./Sun_Microsystems" title="Sun Microsystems">Sun Microsystems</a> as its first software manager. He rose to become director of software engineering, vice president and general manager of the software products division, vice president of the general systems group, and president of Sun Technology Enterprises.</p>
+<p>During his time at Sun, he was the target of two notable <a href="./April_Fool's_Day" title="April Fool's Day">April Fool's Day</a> pranks. In the first, his office was taken apart and rebuilt on a platform in the middle of a pond, complete with a working phone and workstation on the corporate Ethernet network. The next year, a working <a href="./Volkswagen_Beetle" title="Volkswagen Beetle">Volkswagen Beetle</a> was taken apart and re-assembled in his office.</p>
+<h3>Novell</h3>
+<p>In April 1997, Schmidt became the CEO and chairman of the board of <a href="./Novell" title="Novell">Novell</a>. He presided over a period of decline at Novell where its <a href="./Internetwork_Packet_Exchange" title="Internetwork Packet Exchange">IPX protocol</a> was being replaced by open TCP/IP products, while at the same time Microsoft was shipping free TCP/IP stacks in Windows 95, making Novell much less profitable. In 2001, he departed after the acquisition of <a href="./Cambridge_Technology_Partners" title="Cambridge Technology Partners">Cambridge Technology Partners</a>.</p>
+<h3>Google</h3>
+<p>Google founders <a href="./Larry_Page" title="Larry Page">Larry Page</a> and <a href="./Sergey_Brin" title="Sergey Brin">Sergey Brin</a> interviewed Schmidt. Impressed by him, they recruited Schmidt to run their company in 2001 under the guidance of <a href="./Venture_capital" title="Venture capital">venture capitalists</a> <a href="./John_Doerr" title="John Doerr">John Doerr</a> and <a href="./Michael_Moritz" title="Michael Moritz">Michael Moritz</a>.</p>
+<p>In March 2001, Schmidt joined Google's board of directors as chair, and became the company's CEO in August 2001. At Google, Schmidt shared responsibility for Google's daily operations with founders Page and Brin. Prior to the Google <a href="./Initial_public_offering" title="Initial public offering">initial public offering</a>, Schmidt had responsibilities typically assigned to the CEO of a public company and focused on the management of the vice presidents and the sales organization. According to Google, Schmidt's job responsibilities included "building the corporate infrastructure needed to maintain Google's rapid growth as a company and on ensuring that quality remains high while the product development cycle times are kept to a minimum."</p>
+<p>Upon being hired at Google, Eric Schmidt was paid a salary of $250,000 and an annual performance bonus. He was granted 14,331,703 shares of Class B common stock at $0.30 per share and 426,892 shares of Series C preferred stock at purchase price of $2.34.</p>
+<p>In 2004, Schmidt and the Google founders agreed to a base <a href="./One-dollar_salary" title="One-dollar salary">salary of US$1</a> (which continued through 2010) with other compensation of $557,465 in 2006, $508,763 in 2008, and $243,661 in 2009. He did not receive any additional stock or options in 2009 or 2010.<br>
+Most of his compensation was for "personal security" and charters of private aircraft.</p>
+<p>In 2007, <em><a href="./PC_World_(magazine)" title="PC World (magazine)">PC World</a></em> ranked Schmidt as the first on its list of the 50 most important people on the Web, along with Google co-founders Page and Brin.</p>
+<p>In its 2011 'World's Billionaires' list, <em><a href="./Forbes" title="Forbes">Forbes</a></em> ranked Schmidt as the 136th-richest person in the world, with an estimated wealth of $7 billion.</p>
+<p>On January 20, 2011, Google announced that Schmidt would step down as the CEO of Google but would take new title as executive chairman of the company and act as an adviser to co-founders Page and Brin. Google gave him a $100 million equity award in 2011 when he stepped down as CEO. On April 4, 2011, Page replaced Schmidt as the CEO.</p>
+<p>On December 21, 2017, Schmidt announced he would be stepping down as the executive chairman of Alphabet. Schmidt stated that "<a href="./Larry_Page" title="Larry Page">Larry</a>, <a href="./Sergey_Brin" title="Sergey Brin">Sergey</a>, <a href="./Sundar_Pichai" title="Sundar Pichai">Sundar</a> and I all believe that the time is right in Alphabet's evolution for this transition."</p>
+<p>In February 2020, Schmidt left his post as technical advisor of Alphabet after 19 years with the company.</p>
+<h4>Department of Defense</h4>
+<p>In March 2016, it was announced that Schmidt would chair a new advisory board for the Department of Defense, titled the <a href="./Defense_Innovation_Advisory_Board" title="Defense Innovation Advisory Board">Defense Innovation Advisory Board</a>. The advisory board serves as a forum connecting mainstays in the technology sector with those in the Pentagon.</p>
+<p>To avoid potential conflicts of interest within the role, where Schmidt retained his role as technical adviser to Alphabet, and where Google's bidding for the multi-million dollar Pentagon cloud contract, the <a href="./Joint_Enterprise_Defense_Infrastructure" title="Joint Enterprise Defense Infrastructure">Joint Enterprise Defense Infrastructure</a>, or JEDI, was ongoing: Schmidt screened emails and other communications, stating, "'There’s a rule: I'm not allowed to be briefed' about Google or Alphabet business as it relates to the Defense Department". He exited the position November 2020.</p>
+<p>From 2019 to 2021, Schmidt co-chaired the <a href="./National_Security_Commission_on_Artificial_Intelligence" title="National Security Commission on Artificial Intelligence">National Security Commission on Artificial Intelligence</a> with <a href="./Robert_O._Work" title="Robert O. Work">Robert O. Work</a>.</p>
+<h4>Role in illegal non-recruiting agreements</h4>
+<p>While working at Google, Schmidt was involved by early 2005 in activities that later became the subject of the <a href="./High-Tech_Employee_Antitrust_Litigation" title="High-Tech Employee Antitrust Litigation">High-Tech Employee Antitrust Litigation</a> case that resulted in a settlement of $415 million paid by <a href="./Adobe_Systems" title="Adobe Systems">Adobe</a>, <a href="./Apple_Inc." title="Apple Inc.">Apple</a>, Google and <a href="./Intel" title="Intel">Intel</a> to employees. In one March, 2007 incident, after receiving a complaint from <a href="./Steve_Jobs" title="Steve Jobs">Steve Jobs</a> of Apple, Schmidt sent an email to Google's HR department saying; "I believe we have a policy of no recruiting from Apple and this is a direct inbound request. Can you get this stopped and let me know why this is happening? I will need to send a response back to Apple quickly so please let me know as soon as you can. Thanks Eric". Schmidt's email led to a recruiter for Google being "terminated within the hour" for having adhered to the illegal scheme. Under Schmidt, there was a "Do Not Call list" of companies Google would avoid recruiting from. According to a court filing, another 2005 email exchange shows Google's human resources director asking Schmidt about sharing its no-cold-call agreements with competitors. Schmidt responded that he preferred it be shared "verbally[,] since I don't want to create a paper trail over which we can be sued later?"</p>
+<h3>Apple</h3>
+<p>On August 28, 2006, Schmidt was elected to <a href="./Apple_Inc." title="Apple Inc.">Apple Inc.</a>'s board of directors, a position he held until August 2009.</p>
+<h3>Broad Institute</h3>
+<p>Schmidt was chairman of the board of directors at <a href="./Broad_Institute" title="Broad Institute">Broad Institute</a> from 2021 until 2025.</p>
+<h3>Other ventures</h3>
+<p>Schmidt sat on the boards of trustees of <a href="./Carnegie_Mellon_University" title="Carnegie Mellon University">Carnegie Mellon University</a> and <a href="./Princeton_University" title="Princeton University">Princeton University</a>. He taught at <a href="./Stanford_Graduate_School_of_Business" title="Stanford Graduate School of Business">Stanford Graduate School of Business</a> in the 2000s. Schmidt serves on the boards of the <a href="./Institute_for_Advanced_Study" title="Institute for Advanced Study">Institute for Advanced Study</a> in Princeton, the <a href="./Khan_Academy" title="Khan Academy">Khan Academy</a>, and <em><a href="./The_Economist" title="The Economist">The Economist</a></em>.</p>
+<p><a href="./New_America_(organization)" title="New America (organization)">New America</a> is a non-profit public-policy institute and think tank, founded in 1999. Schmidt succeeded founding chairman <a href="./James_Fallows" title="James Fallows">James Fallows</a> in 2008 and served as chairman until 2016.</p>
+<p>Schmidt runs the <a href="./Family_office" title="Family office">family office</a> Hillspire, which was founded in 2006. The business has invested in more than 22 AI firms since 2019, and is the number-one ranked family office as of 2026.</p>
+<p>Founded in 2010 by Schmidt and Dror Berman, Innovation Endeavors is an early-stage <a href="./Venture_capital" title="Venture capital">venture capital</a> firm. The fund, based in <a href="./Palo_Alto,_California" title="Palo Alto, California">Palo Alto, California</a>, invested in companies such as <a href="./Mashape" title="Mashape">Mashape</a>, <a href="./Uber" title="Uber">Uber</a>, <a href="./Quixey" title="Quixey">Quixey</a>, <a href="./Gogobot" title="Gogobot">Gogobot</a>, <a href="./BillGuard" title="BillGuard">BillGuard</a>, and <a href="./Formlabs" title="Formlabs">Formlabs</a>.</p>
+<p>In July 2020, Schmidt started working with the U.S. government to create a tech college as part of an initiative to educate future coders, cyber-security experts and scientists.</p>
+<p>In August 2020, Schmidt launched the podcast <em>Reimagine with Eric Schmidt</em>. In December 2021, Schmidt joined <a href="./Chainlink_(blockchain)" title="Chainlink (blockchain)">Chainlink</a> Labs as a strategic advisor. In October 2022, he co-authored a piece titled "America Could Lose the Tech Contest With China" for <em><a href="./Foreign_Affairs" title="Foreign Affairs">Foreign Affairs</a></em> with Ylli Bajraktari, former executive director of the U.S. <a href="./National_Security_Commission_on_Artificial_Intelligence" title="National Security Commission on Artificial Intelligence">National Security Commission on Artificial Intelligence</a>. In March 2023, Schmidt testified at a <a href="./U.S._House_Committee_on_Oversight_and_Accountability" title="U.S. House Committee on Oversight and Accountability">U.S. House Committee on Oversight and Accountability</a> hearing regarding AI. He invests in startups that develop military technologies including Rebellion Defense, Istari, Swift Beat, and White Stork, which developed the <a href="./Merops_(weapon)" title="Merops (weapon)">Merops</a> counterdrone system. In June 2023, Schmidt also invested in Keeta, a startup developing a cross-border payments platform using proprietary ledger technology.</p>
+<p>In 2022, Schmidt was appointed to the <a href="./National_Security_Commission_on_Emerging_Biotechnology" title="National Security Commission on Emerging Biotechnology">National Security Commission on Emerging Biotechnology</a>, a legislative commission charged with making policy recommendations to Congress and the Executive Branch.</p>
+<p>Schmidt has been the chairman of <a href="./SandboxAQ" title="SandboxAQ">SandboxAQ</a>, a Palo Alto-based quantum computing and AI company that spun off from <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc.</a> in 2022.</p>
+<p>In 2023, Schmidt was a part of an investment group led by <a href="./Josh_Harris_(businessman)" title="Josh Harris (businessman)">Josh Harris</a> that purchased the <a href="./Washington_Commanders" title="Washington Commanders">Washington Commanders</a>, an American football team belonging to the <a href="./National_Football_League" title="National Football League">National Football League</a> (NFL), for $6.05 billion. In March 2025, Schmidt took over as CEO of <a href="./Relativity_Space" title="Relativity Space">Relativity Space</a>, an aerospace manufacturing company, after acquiring a controlling stake in the company.</p>
+<h2>Political activity</h2>
+<p>Schmidt was an informal advisor and major donor to <a href="./Barack_Obama" title="Barack Obama">Barack Obama</a>'s <a href="./Barack_Obama_2008_presidential_campaign" title="Barack Obama 2008 presidential campaign">2008 presidential campaign</a>, and began campaigning the week of October 19, 2008, on behalf of the candidate. He was mentioned as a possible candidate for the <a href="./Chief_Technology_Officer_of_the_United_States" title="Chief Technology Officer of the United States">Chief Technology Officer</a> position, which Obama created in his administration, and Obama considered him for <a href="./United_States_Secretary_of_Commerce" title="United States Secretary of Commerce">Commerce Secretary</a>. After Obama won in 2008, Schmidt became a member of <a href="./Presidential_transition_of_Barack_Obama" title="Presidential transition of Barack Obama">President Obama's transition advisory board</a> and then a member of the <a href="./United_States_President's_Council_of_Advisors_on_Science_and_Technology" title="United States President's Council of Advisors on Science and Technology">United States President's Council of Advisors on Science and Technology</a> (PCAST). Schmidt has served on Google's <a href="./Lobbying" title="Lobbying">government relations</a> team.</p>
+<p>Schmidt has proposed that the easiest way to solve all of the domestic problems of the United States at once is by a stimulus program that rewards <a href="./Renewable_energy" title="Renewable energy">renewable energy</a> and, over time, attempts to replace <a href="./Fossil_fuel" title="Fossil fuel">fossil fuels</a> with renewable energy.</p>
+<p>Secretary of Defense <a href="./Ash_Carter" title="Ash Carter">Ash Carter</a> appointed Schmidt as chairman of the <a href="./Defense_Innovation_Advisory_Board" title="Defense Innovation Advisory Board">DoD Innovation Advisory Board</a> announced March 2, 2016. It was modeled on the <a href="./Defense_Business_Board" title="Defense Business Board">Defense Business Board</a> with the purpose of facilitating the <a href="./The_Pentagon" title="The Pentagon">Pentagon</a> to become more innovative and adaptive.</p>
+<p>Schmidt was an investor in <a href="./The_Groundwork" title="The Groundwork">The Groundwork</a>, a start-up company associated with <a href="./Hillary_Clinton" title="Hillary Clinton">Hillary Clinton</a>'s <a href="./Hillary_Clinton_2016_presidential_campaign" title="Hillary Clinton 2016 presidential campaign">2016 presidential campaign</a>. For example, it charged the campaign $177,000 in the second quarter of 2015. By May 2016, the campaign had spent $500,000 on it.</p>
+<p>Schmidt was an investor in Timshel, another start up company associated with Hillary Clinton's 2016 presidential campaign. Timshel was the parent company of The Groundwork.</p>
+<h2>Philanthropy</h2>
+<h3>Schmidt Family Foundation and Schmidt Ocean Institute</h3>
+<p>Main article: <a href="./Schmidt_Family_Foundation" title="Schmidt Family Foundation">Schmidt Family Foundation</a></p>
+<p>In 2006, Eric Schmidt and <a href="./Wendy_Schmidt" title="Wendy Schmidt">Wendy Schmidt</a> established the Schmidt Family Foundation, to support the sustainable use of natural resources. The foundation's subsidiaries include ReMain Nantucket and the Marine Science and Technology Foundation; its main charitable program is the 11th Hour Project. The foundation has also awarded grants to the <a href="./Natural_Resources_Defense_Council" title="Natural Resources Defense Council">Natural Resources Defense Council</a> and the Energy Foundation.</p>
+<p>The foundation is the main funder of the <a href="./Schmidt_Ocean_Institute" title="Schmidt Ocean Institute">Schmidt Ocean Institute</a>, which supports oceanographic research by operating the <a href="./RV_Falkor_Too" title="RV Falkor Too"><em>R/V Falkor (too)</em></a> and previously the <a href="./Gaia_Blu" title="Gaia Blu">RV <em>Falkor</em></a> and <em>Lone Ranger</em>, a converted salvage tug.</p>
+<p>Schmidt and his wife also established the Eric &amp; Wendy Schmidt Data Science for Social Good Summer Fellowship.</p>
+<p>The Schmidts, working with Hart Howerton, a San Francisco architectural firm that specializes in large-scale land use, have inaugurated several projects on the island of <a href="./Nantucket" title="Nantucket">Nantucket</a> that seek to sustain the unique character of the island and to minimize the impact of seasonal visitation on the island's core community.</p>
+<p>Mrs. Schmidt offered the prize purse of the <a href="./Wendy_Schmidt_Oil_Cleanup_X_CHALLENGE" title="Wendy Schmidt Oil Cleanup X CHALLENGE">Wendy Schmidt Oil Cleanup X CHALLENGE</a>, a challenge award for the efficient capturing of <a href="./Crude_oil" title="Crude oil">crude oil</a> from <a href="./Seawater" title="Seawater">seawater</a> motivated by the <a href="./Deepwater_Horizon_oil_spill" title="Deepwater Horizon oil spill">Deepwater Horizon oil spill</a>.</p>
+<p>The foundation also donated $10 million to the <a href="./Monterey_Bay_Aquarium" title="Monterey Bay Aquarium">Monterey Bay Aquarium</a> in 2015.</p>
+<p>In 2022, the Schmidts gave $12.6 million to their alma mater, <a href="./University_of_California,_Berkeley" title="University of California, Berkeley">Berkeley</a>, to establish the Schmidt Center for Data Science and the Environment. They have also been contributors to Berkeley's <a href="./International_House_Berkeley" title="International House Berkeley">International House</a> and its <a href="./Simons_Institute_for_the_Theory_of_Computing" title="Simons Institute for the Theory of Computing">Simons Institute for the Theory of Computing</a>.</p>
+<h3>Schmidt Transformative Technology Fund</h3>
+<p>In 2009, Eric and Wendy Schmidt endowed the Schmidt Transformative Technology Fund at <a href="./Princeton_University" title="Princeton University">Princeton University</a> with $25 million. The Fund's purpose is to support research and technology in the natural sciences and engineering, encouraging collaboration across disciplines. It awarded $1.2 million in grants in 2010 and $1.7 million in grants in 2012.</p>
+<h3>Schmidt Science Fellows</h3>
+<p>Created in partnership with the <a href="./Rhodes_House" title="Rhodes House">Rhodes Trust</a>, the <a href="./Schmidt_Science_Fellows" title="Schmidt Science Fellows">Schmidt Science Fellows</a> program is part of a $100 million commitment to drive scientific leadership and interdisciplinary research. The program features a Global Meeting Series including exclusive sessions at world-leading institutions including <a href="./University_of_Oxford" title="University of Oxford">Oxford</a>, <a href="./University_of_Cambridge" title="University of Cambridge">Cambridge</a>, <a href="./Massachusetts_Institute_of_Technology" title="Massachusetts Institute of Technology">MIT</a>, and <a href="./Harvard_University" title="Harvard University">Harvard</a>. Fellows receive a stipend to participate in postdoctoral study which differs from their existing expertise.</p>
+<h3>Rise</h3>
+<p>An initiative of <a href="./Schmidt_Futures" title="Schmidt Futures">Schmidt Futures</a> and the Rhodes Trust, which aims to increase the opportunity for exceptional young people worldwide to serve others throughout their lives. The program, which will find and elevate young people between the ages of 15 and 17 from around the world, will be designed to encourage a lifetime of service and learning by providing support that could include scholarships, career services, and funding opportunities</p>
+<h2>Public positions</h2>
+<h3>Tax avoidance</h3>
+<p>Schmidt has claimed that <a href="./Criticism_of_Google#Tax_avoidance" title="Criticism of Google">Google's use of artificial distinctions</a> to avoid paying billions of <a href="./Pound_sterling" title="Pound sterling">pounds</a> in <a href="./Corporate_tax" title="Corporate tax">corporation tax</a> otherwise owed by its UK operations is "capitalism" and that he was "very proud of it".</p>
+<h3>Privacy</h3>
+<p>Publicly Schmidt stated that, as paraphrased by <em><a href="./CNN" title="CNN">CNN</a></em>/<em><a href="./Money_(magazine)" title="Money (magazine)">Money</a></em>, "there has to be a trade-off between privacy concerns and functionality." His explanations referenced "<a href="./Don't_Be_Evil" title="Don't Be Evil">Don't Be Evil</a>".</p>
+<p>During an interview aired on December 3, 2009, on the CNBC documentary "Inside the Mind of Google," Schmidt was asked, "People are treating Google like their most trusted friend. Should they be?" He replied: "I think judgment matters. If you have something that you don't want anyone to know, maybe you shouldn't be doing it in the first place. But if you really need that kind of privacy, the reality is that search engines, including Google, do retain this information for some time. And it's important, for example, that we are all subject in the United States to the <a href="./Patriot_Act" title="Patriot Act">Patriot Act</a>. It is possible that information could be made available to the authorities."</p>
+<p>At the <a href="./Techonomy_Media" title="Techonomy Media">Techonomy</a> conference on August 4, 2010, Schmidt expressed that technology is good. And he said that the only way to manage the challenges is "much greater transparency and no anonymity." Schmidt also stated that in an era of asymmetric threats, "true anonymity is too dangerous." However, at the 2013 <a href="./Hay_Festival" title="Hay Festival">Hay Festival</a>, Schmidt expressed concern that sharing of personal information was too rampant and could have a negative effect, particularly on teenagers, stating that "we have never had a generation with a full photographic, digital record of what they did", declaring that "We have a point at which we [Google] forget information we know about you because it is the right thing to do. There are situations in life that it's better that they don't exist."</p>
+<p>In 2013, Schmidt stated that the government surveillance in the United States was the "nature of our society" and that he was not going to "pass judgment on that". However, on the revelation that the NSA has been secretly spying on Google's data centers worldwide, he called the practice "outrageous" and criticized the NSA's collection of Americans phone records.</p>
+<h3>Network neutrality</h3>
+<p>In August 2010, Schmidt clarified his company's views on <a href="./Network_neutrality" title="Network neutrality">network neutrality</a>: "I want to be clear what we mean by Net neutrality: What we mean is if you have one data type like video, you don't discriminate against one person's video in favor of another. But it's okay to discriminate across different types. So you could prioritize voice over video. And there is general agreement with <a href="./Verizon" title="Verizon">Verizon</a> and Google on that issue."</p>
+<h3>Influence of Internet usage in North Korea</h3>
+<p>In January 2013, Schmidt and <a href="./Jared_Cohen" title="Jared Cohen">Jared Cohen</a>, director of <a href="./Google_Ideas" title="Google Ideas">Google Ideas</a> visited <a href="./DPRK" title="DPRK">North Korea</a> along with former <a href="./New_Mexico" title="New Mexico">New Mexico</a> governor <a href="./Bill_Richardson" title="Bill Richardson">Bill Richardson</a>. The trip was highly publicized and controversial due to the ongoing tension between North Korea and the United States. On August 10, 2013, North Korea announced an indigenous smartphone, named <a href="./Arirang_(smartphone)" title="Arirang (smartphone)">Arirang</a>, that may be using the Google Android operating system.</p>
+<h3>Advocating open Internet use in Myanmar</h3>
+<p>In March 2013, Schmidt visited <a href="./Myanmar" title="Myanmar">Myanmar</a>, which had been ruled by a <a href="./Military_junta" title="Military junta">military junta</a> for decades and was transitioning to a democracy. During his visit, Schmidt spoke in favor of free and open Internet use in the country, and was scheduled to meet with the country's president.</p>
+<h3>Technology advocacy</h3>
+<p>In January 2015, Schmidt and <a href="./Jared_Cohen" title="Jared Cohen">Jared Cohen</a>, director of <a href="./Google_Ideas" title="Google Ideas">Google Ideas</a>, met with <a href="./Pope_Francis" title="Pope Francis">Pope Francis</a> to discuss technology and society. This was the first meeting between the Pope and a technology leader, which was subsequently followed by other tech leaders visiting the <a href="./Vatican_City" title="Vatican City">Vatican</a>.</p>
+<h3>Authored books and publications</h3>
+<h4><em>The New Digital Age</em></h4>
+<p>In 2013, Schmidt and <a href="./Jared_Cohen" title="Jared Cohen">Jared Cohen</a>, director of the <a href="./Google_Ideas" title="Google Ideas">Google Ideas</a> think tank, published <em>The New Digital Age: Reshaping the Future of People, Nations and Business</em>, which discusses the geopolitical implications of increasingly widespread Internet use and access to information. The book was inspired by an essay in <em><a href="./Foreign_Affairs" title="Foreign Affairs">Foreign Affairs</a></em> magazine the two co-wrote in 2010. He also wrote the preface to <em>The Startup Game: Inside the Partnership between Venture Capitalists and Entrepreneurs</em>, by <a href="./William_Henry_Draper_III" title="William Henry Draper III">William H. Draper, III</a>.</p>
+<h4><em>How Google Works</em></h4>
+<p>In 2014, Schmidt co-authored the New York Times best-selling book <em><a href="./How_Google_Works" title="How Google Works">How Google Works</a></em> with <a href="./Jonathan_Rosenberg_(technologist)" title="Jonathan Rosenberg (technologist)">Jonathan Rosenberg</a>, former Senior Vice President of Products at Google and current advisor to Google CEO <a href="./Larry_Page" title="Larry Page">Larry Page</a>, and Alan Eagle. The book is a collection of the business management lessons learned over the course of Schmidt and Rosenberg's time leading Google. In his book, Eric Schmidt argues that successful companies in the technology-driven internet age should attract smart and creative employees and create an environment where they can thrive. He argues that the traditional business rules that make a company successful have changed; companies should maximize freedom and speed, and decision-making should not lie in the hands of the few. Schmidt also emphasizes that individuals and small teams can have a massive impact on innovation.</p>
+<h4><em>The Age of AI: And Our Human Future</em></h4>
+<p>In 2021, Schmidt co-authored "<em>The Age of AI: And Our Human Future</em>" with <a href="./Henry_Kissinger" title="Henry Kissinger">Henry Kissinger</a> and <a href="./Daniel_Huttenlocher" title="Daniel Huttenlocher">Daniel Huttenlocher</a>.</p>
+<h3>Schmidt's Law</h3>
+<p>Dating back to early 1990s and dubbed "Schmidt's Law" by <a href="./George_Gilder" title="George Gilder">George Gilder</a> when Schmidt predicted that the network will become the computer. Schmidt's Law states: "When the network becomes as fast as the <a href="./Backplane" title="Backplane">backplane</a> of your computer, the computer hollows out, its components dispersing across the Web, its value migrating to search and sort functions."</p>
+<h3>Social networking services</h3>
+<p>In October 2020, Schmidt stated that <a href="./Social_networking_service" title="Social networking service">social networking services</a> are "amplifiers for idiots and crazy people" and that this was not what the <a href="./Big_Tech" title="Big Tech">Big Tech</a> firms <a href="./Unintended_consequences" title="Unintended consequences">intended when creating them</a>.</p>
+<h3>Silicon Valley entrepreneurship</h3>
+<p>During a 2024 interview with <a href="./Stanford_University" title="Stanford University">Stanford University</a> students, Schmidt commented on Silicon Valley's probable use of AI in the future, commenting that a hypothetical <a href="./Startup_company" title="Startup company">startup company</a> could release a product that infringes on <a href="./Intellectual_property" title="Intellectual property">intellectual property</a>, and simply hire lawyers to solve any legal problems if it became successful. This concept was compared to the <a href="./Silicon_Valley" title="Silicon Valley">Silicon Valley</a> mentality of "move fast and break things", which had recently led to lawsuits against <a href="./OpenAI" title="OpenAI">OpenAI</a>.</p>
+<h2>Other work</h2>
+<h3>Art collection</h3>
+<p>Schmidt was on the list of <em><a href="./ARTnews" title="ARTnews">ARTnews</a></em>'s 200 top art collectors in 2008. Schmidt denied that he was an art collector, despite his involvement in art, in 2019.</p>
+<h3>Bilderberg Group</h3>
+<p>He is a member of the <a href="./Bilderberg_Group" title="Bilderberg Group">Bilderberg Group</a> and attends the annual Bilderberg conferences regularly. He also has a listed membership with the <a href="./Trilateral_Commission" title="Trilateral Commission">Trilateral Commission</a>.</p>
+<h3>Berggruen Institute</h3>
+<p>Schmidt is an active member of the <a href="./Berggruen_Institute" title="Berggruen Institute">Berggruen Institute</a>'s 21st Century Council, and its board of directors.</p>
+<h3>Dialog</h3>
+<p>Schmidt has participated in <a href="./Dialog_(organization)" title="Dialog (organization)">Dialog</a>, a secretive, invite-only social club founded by <a href="./Peter_Thiel" title="Peter Thiel">Peter Thiel</a> and <a href="./Auren_Hoffman" title="Auren Hoffman">Auren Hoffman</a>.</p>
+<h3>World Economic forum</h3>
+<p>Schmidt has been active at the <a href="./World_Economic_Forum" title="World Economic Forum">World Economic Forum</a> in <a href="./Davos" title="Davos">Davos</a>, serving as a Co-Chair of the 2015 Annual Meeting held under the theme “The New Global Context.”</p>
+<h3>Acting</h3>
+<p>In 2014, he had a cameo appearance in the film <em><a href="./Dumb_and_Dumber_To" title="Dumb and Dumber To">Dumb and Dumber To</a></em>, starring <a href="./Jim_Carrey" title="Jim Carrey">Jim Carrey</a> and <a href="./Jeff_Daniels" title="Jeff Daniels">Jeff Daniels</a>. He also had a cameo appearance in the pilot episode "<a href="./Minimum_Viable_Product_(Silicon_Valley)" title="Minimum Viable Product (Silicon Valley)">Minimum Viable Product</a>" of the <a href="./HBO" title="HBO">HBO</a> show <em><a href="./Silicon_Valley_(TV_series)" title="Silicon Valley (TV series)">Silicon Valley</a></em>.</p>
+<h2>Personal life</h2>
+<p>In June 1980, Schmidt married <a href="./Wendy_Schmidt" title="Wendy Schmidt">Wendy Susan Boyle</a> (born 1955 in <a href="./Short_Hills,_New_Jersey" title="Short Hills, New Jersey">Short Hills, New Jersey</a>). They lived in <a href="./Atherton,_California" title="Atherton, California">Atherton</a>, California, in the 1990s. They have a daughter, <a href="./Sophie_Schmidt_(publisher)" title="Sophie Schmidt (publisher)">Sophie</a>, and had another, Alison, who died in 2017 from an illness. A number of Schmidt's extramarital relationships have attracted publicity, but he and his wife continue joint philanthropic efforts.</p>
+<p>In January 2013, Schmidt visited <a href="./North_Korea" title="North Korea">North Korea</a> with his daughter Sophie, <a href="./Jared_Cohen" title="Jared Cohen">Jared Cohen</a>, and former <a href="./New_Mexico" title="New Mexico">New Mexico</a> governor <a href="./Bill_Richardson" title="Bill Richardson">Bill Richardson</a>.</p>
+<p>In 2015, Schmidt acquired a 20% stake in <a href="./D._E._Shaw_&amp;_Co." title="D. E. Shaw &amp; Co.">D. E. Shaw &amp; Co.</a>. Schmidt is also an investor in CargoMetrics, another quant hedge fund.</p>
+<p>In April 2015, Schmidt delivered the commencement address at <a href="./Virginia_Tech" title="Virginia Tech">Virginia Tech</a>, located in Schmidt's childhood home of <a href="./Blacksburg,_Virginia" title="Blacksburg, Virginia">Blacksburg, Virginia</a>. This came on the heels of Schmidt making a $2 million donation to Virginia Tech's College of Engineering. Schmidt's philanthropy is the result of his longstanding friendship with Virginia Tech's former president <a href="./Paul_Torgersen" title="Paul Torgersen">Paul Torgersen</a>. His donation funded the Paul and Dorothea Torgersen Dean's Chair in Engineering.</p>
+<p>In September 2020, Schmidt purchased Montecito Mansion, a 22,000-square-foot estate overlooking <a href="./Santa_Barbara,_California" title="Santa Barbara, California">Santa Barbara</a>, for $30.8 million.</p>
+<p>In November 2020, <em><a href="./Recode" title="Recode">Recode</a></em> reported that Schmidt was finalizing his plan to become a citizen of <a href="./Cyprus" title="Cyprus">Cyprus</a>. He is one of the highest-profile people to take advantage of the <a href="./Immigrant_investor_programs" title="Immigrant investor programs">immigrant investor programs</a> that offers a "passport-for-sale". This passport can be used to enter and live in any country of the <a href="./European_Union" title="European Union">European Union</a>.</p>
+<p>In 2024, Bloomberg estimated his <a href="./Net_worth" title="Net worth">net worth</a> to be US$37.8 billion. In 2024, Schmidt was appointed an <a href="./Honorary_Knight_Commander_of_the_Order_of_the_British_Empire" title="Honorary Knight Commander of the Order of the British Empire">Honorary Knight Commander of the Order of the British Empire</a> for his services to philanthropy.</p>
+<p>In 2023 and 2024, CO2 emissions from flights taken by Schmidt's <a href="./Gulfstream_650" title="Gulfstream 650">Gulfstream 650</a> jet placed him at the top of lists of private jet owners who generated the most carbon emissions.</p>
+<p>In December 2024, Schmidt reached a legal settlement with Michelle Ritter, with whom he had co-founded the technology startup Steel Perlot. In 2025, Ritter filed a lawsuit in <a href="./Los_Angeles_County_Superior_Court" title="Los Angeles County Superior Court">LA County Superior Court</a> in an attempt to throw out their previous agreement and avoid arbitration over ongoing legal disputes. The suit accused him of rape, sexual assault, harassment, and surveillance; she also alleged that he had been able to access employees’ Google accounts. Schmidt claimed the allegations as Ritter’s attempt to extort him and circumvent arbitration after she broke their previous legal agreements. Schmidt’s filings claimed that the allegations "are directly contradicted by [Ritter’s] own words," accusing her of "yet another desperate and destructive effort to publish false and defamatory statements to escape accountability from an existing arbitration over a business dispute."</p>
+<h2>See also</h2>
+<ul>
+<li><a href="./File:Crystal_Clear_app_linneighborhood.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Crystal_Clear_app_linneighborhood.svg/40px-Crystal_Clear_app_linneighborhood.svg.png"></a><a href="./Portal:Internet" title="Portal:Internet">Internet portal</a></li>
+<li>
+<p><img alt="" src="//upload.wikimedia.org/wikipedia/en/thumb/6/69/P_vip.svg/40px-P_vip.svg.png"><a href="./Portal:Biography" title="Portal:Biography">Biography portal</a></p>
+</li>
+<li>
+<p><em><a href="./The_World's_Billionaires" title="The World's Billionaires">The World's Billionaires</a></em></p>
+</li>
+<li><a href="./70/20/10_Model#70/20/10_in_Managing_Innovation" title="70/20/10 Model">70/20/10 Model</a> – business model advocated by Schmidt</li>
+<li><a href="./RechargeIT" title="RechargeIT">RechargeIT</a></li>
+</ul>
+<h2>References</h2>
+<h2>External links</h2>
+<p><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Wikiquote-logo.svg/40px-Wikiquote-logo.svg.png"></p>
+<p>Wikiquote has quotations related to <strong><em><a href="https://en.wikiquote.org/wiki/Special:Search/Eric%20Schmidt" title="q:Special:Search/Eric Schmidt">Eric Schmidt</a></em></strong>.</p>
+<p><a href="./File:Commons-logo.svg"><img alt="Wikimedia Commons logo" src="//upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/40px-Commons-logo.svg.png"></a></p>
+<p>Wikimedia Commons has media related to <a href="https://commons.wikimedia.org/wiki/Category:Eric%20E.%20Schmidt" title="commons:Category:Eric E. Schmidt">Eric E. Schmidt</a>.</p>
+<ul>
+<li><a href="https://www.c-span.org/person/?49441">Appearances</a> on <a href="./C-SPAN" title="C-SPAN">C-SPAN</a></li>
+<li><a href="https://www.imdb.com/name/nm2978079/">Eric Schmidt</a> at <a href="./IMDb_(identifier)" title="IMDb (identifier)">IMDb</a></li>
+<li><a href="https://www.theguardian.com/technology/eric-schmidt">Eric Schmidt</a> collected news and commentary at <em><a href="./The_Guardian" title="The Guardian">The Guardian</a></em> <a href="https://www.wikidata.org/wiki/Q92747#P3106" title="Edit this at Wikidata"><img alt="Edit this at Wikidata" src="//upload.wikimedia.org/wikipedia/en/thumb/8/8a/OOjs_UI_icon_edit-ltr-progressive.svg/20px-OOjs_UI_icon_edit-ltr-progressive.svg.png"></a></li>
+<li><a href="https://www.youtube.com/watch?v=wHF83ROalOo">Eric Schmidt speaks as part of NASA 50 years Lecture series</a> on <a href="./YouTube_video_(identifier)" title="YouTube video (identifier)">YouTube</a> (January 17, 2008)</li>
+<li><a href="http://www.mobileworldlive.com/on-stage/mwc/mobile-world-congress-2010-keynote-eric-schmidt-ceo-google/">Mobile World Congress 2010 Keynote: Eric Schmidt, CEO, Google</a> <a href="https://web.archive.org/web/20181119173338/https://www.mobileworldlive.com/on-stage/mwc/mobile-world-congress-2010-keynote-eric-schmidt-ceo-google/">Archived</a> November 19, 2018, at the <a href="./Wayback_Machine" title="Wayback Machine">Wayback Machine</a> (February 2010)</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Business positions</th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Preceded by <a href="./Larry_Page" title="Larry Page">Larry Page</a></td>
+<td><strong>Chief executive officer of <a href="./Google" title="Google">Google</a></strong>  2001–2011</td>
+<td>Succeeded by Larry Page</td>
+</tr>
+<tr>
+<td><strong>New office</strong></td>
+<td><strong>Executive chairman of Google</strong>  2011–2017</td>
+<td>Succeeded by <a href="./John_L._Hennessy" title="John L. Hennessy">John L. Hennessy</a></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Apple_Inc." title="Template:Apple Inc.">v</a> - <a href="./Template_talk:Apple_Inc." title="Template talk:Apple Inc.">t</a> - <a href="./Special:EditPage/Template:Apple_Inc." title="Special:EditPage/Template:Apple Inc.">e</a>  <a href="./Apple_Inc." title="Apple Inc.">Apple Inc.</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>- <a href="./History_of_Apple_Inc." title="History of Apple Inc.">History</a> - <a href="./Outline_of_Apple_Inc." title="Outline of Apple Inc.">Outline</a> - <a href="./Environmental_practices_of_Apple" title="Environmental practices of Apple">Environment</a> - <a href="./Marketing_of_Apple_Inc." title="Marketing of Apple Inc.">Marketing</a> - <a href="./Apple_supply_chain" title="Apple supply chain">Supply chain</a> - <a href="./Apple_and_unions" title="Apple and unions">Trade unions</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./List_of_Apple_products" title="List of Apple products">Products</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Category:Apple_Inc._services" title="Category:Apple Inc. services">Services</a></td>
+<td></td>
+</tr>
+<tr>
+<td>Companies</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Apple_Inc._design_motifs" title="Apple Inc. design motifs">Design</a> and <a href="./Marketing_of_Apple_Inc." title="Marketing of Apple Inc.">marketing</a></td>
+<td>- <a href="./Apple_Inc._advertising" title="Apple Inc. advertising">Advertising</a>   - "<a href="./1984_(advertisement)" title="1984 (advertisement)">1984</a>"   - "<a href="./Think_different" title="Think different">Think different</a>"   - "<a href="./Get_a_Mac" title="Get a Mac">Get a Mac</a>"   - <a href="./IPod_advertising" title="IPod advertising">iPod</a>   - <a href="./Product_Red" title="Product Red">Product Red</a> - <a href="./List_of_Apple_Inc._media_events" title="List of Apple Inc. media events">Events</a> - <a href="./Apple_Industrial_Design_Group" title="Apple Industrial Design Group">IDg</a> - <a href="./Typography_of_Apple_Inc." title="Typography of Apple Inc.">Typography</a></td>
+</tr>
+<tr>
+<td>Legal issues and labour relations</td>
+<td>- <a href="./AppleToo" title="AppleToo">#AppleToo</a> - <a href="./Apple's_EU_tax_dispute" title="Apple's EU tax dispute">EU tax dispute</a> - <a href="./Litigation_involving_Apple_Inc." title="Litigation involving Apple Inc.">Litigation</a>   - <a href="./United_States_v._Apple_(2024)" title="United States v. Apple (2024)">2024 US antitrust case</a>   - <a href="./Apple_Inc._v._Pepper" title="Apple Inc. v. Pepper">App Store antitrust case</a>   - <a href="./High-Tech_Employee_Antitrust_Litigation" title="High-Tech Employee Antitrust Litigation">Non-recruiting agreements</a>   - <a href="./United_States_v._Apple_(2012)" title="United States v. Apple (2012)">Price-fixing ebooks</a>   - <a href="./FBI–Apple_encryption_dispute" title="FBI–Apple encryption dispute">FBI encryption dispute</a>   - <a href="./Epic_Games_v._Apple" title="Epic Games v. Apple">Epic Games</a> - <a href="./Right_to_repair" title="Right to repair">Right to repair</a> - <a href="./Apple_and_unions" title="Apple and unions">Unions</a></td>
+</tr>
+<tr>
+<td>Related</td>
+<td>- <a href="./Apple_car_project" title="Apple car project">Car project</a> - <a href="./Criticism_of_Apple_Inc." title="Criticism of Apple Inc.">Criticism</a> - <a href="./Apple_community" title="Apple community">Community</a>   - <a href="./AppleMasters" title="AppleMasters">AppleMasters</a> - <a href="./Apple_ecosystem" title="Apple ecosystem">Ecosystem</a> - <a href="./History_of_Apple_Inc." title="History of Apple Inc.">History</a>   - <a href="./List_of_Apple_codenames" title="List of Apple codenames">Codenames</a>   - <a href="./Apple_FileWare" title="Apple FileWare">Apple FileWare</a> - <a href="./IOS_app_approvals" title="IOS app approvals">iOS app approvals</a> - Offices   - <a href="./Apple_Infinite_Loop_campus" title="Apple Infinite Loop campus">Infinite Loop campus</a>   - <a href="./Apple_Park" title="Apple Park">Park</a> - <a href="./Apple_University" title="Apple University">University</a></td>
+</tr>
+<tr>
+<td><a href="./Category:Apple_Inc._people" title="Category:Apple Inc. people">People</a></td>
+<td></td>
+</tr>
+<tr>
+<td>- <em>Italics</em> indicate discontinued products, services, or defunct companies. - <a href="./Category:Apple_Inc." title="Category:Apple Inc.">Category</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Alphabet_Inc." title="Template:Alphabet Inc.">v</a> - <a href="./Template_talk:Alphabet_Inc." title="Template talk:Alphabet Inc.">t</a> - <a href="./Special:EditPage/Template:Alphabet_Inc." title="Special:EditPage/Template:Alphabet Inc.">e</a>  <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc.</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Subsidiaries</td>
+<td></td>
+</tr>
+<tr>
+<td>People</td>
+<td></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Alphabet_Inc." title="Category:Alphabet Inc.">Category</a> - <a href="./Portal:Companies" title="Portal:Companies">Companies portal</a> - <a href="./File:Crystal_Clear_app_linneighborhood.svg">icon</a> <a href="./Portal:Internet" title="Portal:Internet">Internet portal</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products" title="List of Google products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:IEEE_Founders_Medal" title="Template:IEEE Founders Medal">v</a> - <a href="./Template_talk:IEEE_Founders_Medal" title="Template talk:IEEE Founders Medal">t</a> - <a href="./Special:EditPage/Template:IEEE_Founders_Medal" title="Special:EditPage/Template:IEEE Founders Medal">e</a>  <a href="./IEEE" title="IEEE">IEEE</a> <a href="./IEEE_Founders_Medal" title="IEEE Founders Medal">Founders Medal</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1953–1975</td>
+<td>- <a href="./David_Sarnoff" title="David Sarnoff">David Sarnoff</a> (1953) - <a href="./Alfred_Norton_Goldsmith" title="Alfred Norton Goldsmith">Alfred Norton Goldsmith</a> (1954) - <em>No award</em> (1955) - <em>No award</em> (1956) - <a href="./Raymond_A._Heising" title="Raymond A. Heising">Raymond A. Heising</a> (1957) - <a href="./Walter_Ransom_Gail_Baker" title="Walter Ransom Gail Baker">Walter Ransom Gail Baker</a> (1958) - <em>No award</em> (1959) - <a href="./Haraden_Pratt" title="Haraden Pratt">Haraden Pratt</a> (1960) - <a href="./Ralph_Bown" title="Ralph Bown">Ralph Bown</a> (1961) - <em>No award</em> (1962) - <a href="./Frederick_Terman" title="Frederick Terman">Frederick Terman</a> (1963) - <a href="./Andrew_McNaughton" title="Andrew McNaughton">Andrew McNaughton</a> (1964) - <em>No award</em> (1965) - <a href="./Elmer_William_Engstrom" title="Elmer William Engstrom">Elmer William Engstrom</a> (1966) - <a href="./Harvey_Fletcher" title="Harvey Fletcher">Harvey Fletcher</a> (1967) - <a href="./Patrick_E._Haggerty" title="Patrick E. Haggerty">Patrick E. Haggerty</a> (1968) - <a href="./E._Finley_Carter" title="E. Finley Carter">E. Finley Carter</a> (1969) - <a href="./Morris_D._Hooven" title="Morris D. Hooven">Morris D. Hooven</a> (1970) - <a href="./Ernst_Weber_(engineer)" title="Ernst Weber (engineer)">Ernst Weber</a> (1971) - <a href="./Masaru_Ibuka" title="Masaru Ibuka">Masaru Ibuka</a> (1972) - <a href="./Bill_Hewlett" title="Bill Hewlett">Bill Hewlett</a> and <a href="./David_Packard" title="David Packard">David Packard</a> (1973) - <a href="./Lawrence_A._Hyland" title="Lawrence A. Hyland">Lawrence A. Hyland</a> (1974) - <a href="./John_Grist_Brainerd" title="John Grist Brainerd">John G. Brainerd</a> (1975)</td>
+</tr>
+<tr>
+<td>1976–2000</td>
+<td>- Edward W. Herold (1976) - <a href="./Jerome_Wiesner" title="Jerome Wiesner">Jerome Wiesner</a> (1977) - <a href="./Donald_G._Fink" title="Donald G. Fink">Donald G. Fink</a> (1978) - Hanzo Omi (1979) - <a href="./Simon_Ramo" title="Simon Ramo">Simon Ramo</a> (1980) - <a href="./James_Hillier" title="James Hillier">James Hillier</a> (1981) - Shigeru Yonezawa (1982) - <a href="./Joseph_M._Pettit" title="Joseph M. Pettit">Joseph M. Pettit</a> (1983) - Koji Kobayashi (1984) - <a href="./William_Norris_(CEO)" title="William Norris (CEO)">William Norris</a> (1985) - <a href="./George_H._Heilmeier" title="George H. Heilmeier">George H. Heilmeier</a> (1986) - <a href="./James_B._Owens" title="James B. Owens">James B. Owens</a> (1987) - <a href="./Ian_Munro_Ross" title="Ian Munro Ross">Ian Munro Ross</a> (1988) - <a href="./Ivan_A._Getting" title="Ivan A. Getting">Ivan A. Getting</a> (1989) - <a href="./Erich_Bloch" title="Erich Bloch">Erich Bloch</a> (1990) - <a href="./Irwin_Dorros" title="Irwin Dorros">Irwin Dorros</a> (1991) - <a href="./Roland_W._Schmitt" title="Roland W. Schmitt">Roland W. Schmitt</a> (1992) - <a href="./Ken_Olsen" title="Ken Olsen">Ken Olsen</a> (1993) - <a href="./Akio_Morita" title="Akio Morita">Akio Morita</a> (1994) - <a href="./Malcolm_R._Currie" title="Malcolm R. Currie">Malcolm R. Currie</a> (1995) - <a href="./Norman_R._Augustine" title="Norman R. Augustine">Norman R. Augustine</a> (1996) - <a href="./Gordon_Moore" title="Gordon Moore">Gordon Moore</a> (1997) - <a href="./Alan_W._Rudge" title="Alan W. Rudge">Alan W. Rudge</a> (1998) - <a href="./Benjamin_M._Rosen" title="Benjamin M. Rosen">Benjamin M. Rosen</a> (1999) - <a href="./Bob_Galvin" title="Bob Galvin">Bob Galvin</a> (2000)</td>
+</tr>
+<tr>
+<td>2001–present</td>
+<td>- <a href="./Robert_A._Frosch" title="Robert A. Frosch">Robert A. Frosch</a> (2001) - <a href="./Thomas_Eugene_Everhart" title="Thomas Eugene Everhart">Thomas Eugene Everhart</a> (2002) - <a href="./Ray_Stata" title="Ray Stata">Ray Stata</a> (2003) - <a href="./Mildred_Dresselhaus" title="Mildred Dresselhaus">Mildred Dresselhaus</a> (2004) - <a href="./Eugene_Wong" title="Eugene Wong">Eugene Wong</a> (2005) - Toshiharu Aoki (2006) - <a href="./Anita_K._Jones" title="Anita K. Jones">Anita K. Jones</a> (2007) - <a href="./Steven_Sample" title="Steven Sample">Steven Sample</a> (2008) - <a href="./Craig_Barrett_(chief_executive)" title="Craig Barrett (chief executive)">Craig Barrett</a> (2009) - <a href="./Paul_E._Gray" title="Paul E. Gray">Paul E. Gray</a> (2010) - <a href="./James_F._Gibbons" title="James F. Gibbons">James F. Gibbons</a> (2011) - <a href="./F._C._Kohli" title="F. C. Kohli">F. C. Kohli</a> (2012) - <a href="./Leo_Beranek" title="Leo Beranek">Leo Beranek</a> (2013) - <a href="./Eric_Schmidt">Eric Schmidt</a> (2014) - James Plummer (2015) - <em>No award</em> (2016) - <a href="./Takeo_Kanade" title="Takeo Kanade">Takeo Kanade</a> (2017) - <a href="./N._R._Narayana_Murthy" title="N. R. Narayana Murthy">N. R. Narayana Murthy</a> (2018) - <a href="./Robin_Saxby" title="Robin Saxby">Robin Saxby</a> (2019) - <a href="./Jen-Hsun_Huang" title="Jen-Hsun Huang">Jen-Hsun Huang</a> (2020) - <a href="./Henry_Samueli" title="Henry Samueli">Henry Samueli</a> (2021) - <a href="./John_Brooks_Slaughter" title="John Brooks Slaughter">John Brooks Slaughter</a> (2022) - <a href="./Rodney_Brooks" title="Rodney Brooks">Rodney Brooks</a> (2023) - <a href="./Tsu-Jae_King_Liu" title="Tsu-Jae King Liu">Tsu-Jae King Liu</a> (2024) - <a href="./Mung_Chiang" title="Mung Chiang">Mung Chiang</a> (2025) - <a href="./Marian_Croak" title="Marian Croak">Marian Croak</a> (2026)</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Novell" title="Template:Novell">v</a> - <a href="./Template_talk:Novell" title="Template talk:Novell">t</a> - <a href="./Special:EditPage/Template:Novell" title="Special:EditPage/Template:Novell">e</a>  <a href="./Novell" title="Novell">Novell</a></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>People</td>
+<td>- <a href="./Drew_Major" title="Drew Major">Drew Major</a> - <a href="./Dennis_Fairclough" title="Dennis Fairclough">Dennis Fairclough</a> - <a href="./Ray_Noorda" title="Ray Noorda">Raymond Noorda</a> - <a href="./Robert_Frankenberg" title="Robert Frankenberg">Robert Frankenberg</a> - <a href="./Ronald_Hovsepian" title="Ronald Hovsepian">Ronald Hovsepian</a> - <a href="./Eric_Schmidt">Eric Schmidt</a></td>
+<td></td>
+</tr>
+<tr>
+<td>Products</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Related</td>
+<td>- <a href="./Novell_BrainShare" title="Novell BrainShare">BrainShare</a> - <em><a href="./NetWars" title="NetWars">NetWars</a></em> - <em><a href="./SCO_Group,_Inc._v._Novell,_Inc." title="SCO Group, Inc. v. Novell, Inc.">SCO v. Novell</a></em> - <a href="./Star_Trek_project" title="Star Trek project">Star Trek project</a> - <a href="./SUSE_Linux" title="SUSE Linux">SUSE Linux</a> - <a href="./Univel" title="Univel">Univel</a> - <a href="./Unix_System_Laboratories" title="Unix System Laboratories">Unix System Laboratories</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Category:Novell" title="Category:Novell">Category</a></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Washington_Commanders_owners" title="Template:Washington Commanders owners">v</a> - <a href="./Template_talk:Washington_Commanders_owners" title="Template talk:Washington Commanders owners">t</a> - <a href="./Special:EditPage/Template:Washington_Commanders_owners" title="Special:EditPage/Template:Washington Commanders owners">e</a>  <a href="./Washington_Commanders_owners" title="Washington Commanders owners">Washington Commanders owners</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Formerly the <strong>Boston Braves</strong> (1932), <strong>Boston Redskins</strong> (1933–1936), <strong>Washington Redskins</strong> (1937–2019), and <strong>Washington Football Team</strong> (2020–2021)</td>
+<td></td>
+</tr>
+<tr>
+<td>- <a href="./George_Preston_Marshall" title="George Preston Marshall">George Preston Marshall</a> (1932–1965) - <a href="./Edward_Bennett_Williams" title="Edward Bennett Williams">Edward Bennett Williams</a> (1965–1979) - <a href="./Jack_Kent_Cooke" title="Jack Kent Cooke">Jack Kent Cooke</a> (1979–1997) - <a href="./John_Kent_Cooke" title="John Kent Cooke">John Kent Cooke</a> (1997–1999) - <a href="./Daniel_Snyder" title="Daniel Snyder">Daniel Snyder</a> (1999–2023) - <a href="./Josh_Harris_(businessman)" title="Josh Harris (businessman)">Josh Harris</a> (2023–present)</td>
+<td></td>
+</tr>
+<tr>
+<td>Limited partners:  - <a href="./Mitchell_Rales" title="Mitchell Rales">Mitchell Rales</a> - <a href="./Magic_Johnson" title="Magic Johnson">Magic Johnson</a> - <a href="./David_Blitzer" title="David Blitzer">David Blitzer</a> - <a href="./Mark_Ein" title="Mark Ein">Mark Ein</a> - <a href="./Lee_Ainslie" title="Lee Ainslie">Lee Ainslie</a> - Eric Holoman - Michael Li - <a href="./Marc_Lipschultz" title="Marc Lipschultz">Marc Lipschultz</a> - <a href="./Doug_Ostrover" title="Doug Ostrover">Doug Ostrover</a> - <a href="./Santo_Domingo_family" title="Santo Domingo family">Santo Domingo family</a> - <a href="./Michael_Sapir" title="Michael Sapir">Michael Sapir</a> - <a href="./Eric_Schmidt">Eric Schmidt</a> - <a href="./Andy_Snyder" title="Andy Snyder">Andy Snyder</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><a href="./Help:Authority_control" title="Help:Authority control">Authority control databases</a> <a href="https://www.wikidata.org/wiki/Q92747#identifiers" title="Edit this at Wikidata">Edit this at Wikidata</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>International</td>
+<td>- <a href="https://isni.org/isni/000000035619648X">ISNI</a> - <a href="https://viaf.org/viaf/181632109">VIAF</a> - <a href="https://d-nb.info/gnd/142238074">GND</a> - <a href="https://id.worldcat.org/fast/1928882">FAST</a> - <a href="https://id.oclc.org/worldcat/entity/E39PBJpDRxWtJ77BbMhvwjCxXd">WorldCat</a></td>
+</tr>
+<tr>
+<td>National</td>
+<td>- <a href="https://id.loc.gov/authorities/n2011066279">United States</a> - <a href="https://catalogue.bnf.fr/ark:/12148/cb167467728">France</a> - <a href="https://data.bnf.fr/ark:/12148/cb167467728">BnF data</a> - <a href="https://id.ndl.go.jp/auth/ndlna/001163668">Japan</a> - <a href="https://opac.sbn.it/nome/RMSV982528">Italy</a> - <a href="https://aleph.nkp.cz/F/?func=find-c&amp;local_base=aut&amp;ccl_term=ica=ola2015857661&amp;CON_LNG=ENG">Czech Republic</a> - <a href="https://datos.bne.es/resource/XX5423568">Spain</a> - <a href="http://id.bnportugal.gov.pt/aut/catbnp/1565083">Portugal</a> - <a href="http://data.bibliotheken.nl/id/thes/p334541018">Netherlands</a> - <a href="https://kopkatalogs.lv/F?func=direct&amp;local_base=lnc10&amp;doc_number=000246115&amp;P_CON_LNG=ENG">Latvia</a> - <a href="https://lod.nl.go.kr/resource/KAC201316191">Korea</a> - <a href="https://dbn.bn.org.pl/descriptor-details/9810559795305606">Poland</a> - <a href="https://www.nli.org.il/en/authorities/987007520859305171">Israel</a> - <a href="https://opac.kbr.be/LIBRARY/doc/AUTHORITY/14471606">Belgium</a></td>
+</tr>
+<tr>
+<td>Academics</td>
+<td>- <a href="https://orcid.org/0000-0001-6595-1219">ORCID</a> - <a href="https://dl.acm.org/profile/81539802556">Association for Computing Machinery</a> - <a href="https://www.scopus.com/authid/detail.uri?authorId=7402693715">Scopus</a> - <a href="https://dblp.org/pid/10/2128">DBLP</a></td>
+</tr>
+<tr>
+<td>Artists</td>
+<td>- <a href="https://musicbrainz.org/artist/64843560-f6a6-48db-af6e-6edf78a98e30">MusicBrainz</a></td>
+</tr>
+<tr>
+<td>People</td>
+<td>- <a href="https://trove.nla.gov.au/people/1535152">Trove</a> - <a href="https://www.deutsche-digitale-bibliothek.de/person/gnd/142238074">DDB</a></td>
+</tr>
+<tr>
+<td>Other</td>
+<td>- <a href="https://www.idref.fr/171170954">IdRef</a> - <a href="https://lux.collections.yale.edu/view/person/5fbc1508-df80-4a0f-825f-004fe363230d">Yale LUX</a></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

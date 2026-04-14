@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Google+</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link active" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Google+</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Google%2B<br>
+Category: company__depth2<br>
+Depth: 2</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Google+ was a social network owned and operated by Google until it ceased operations in 2019. The network was launched on June 28, 2011, in an attempt to challenge other social networks, linking other Google products like Google Drive, Blogger, Google AdSense, and YouTube. The service, Google's fourth foray into social networking, experienced strong growth in its initial years, although usage statistics varied, depending on how the service was defined. Three Google executives oversaw the service, which underwent substantial changes that led to a redesign in November 2015.</p>
+<h2>Images</h2>
+<p><img alt="120px-Google_Plus_icon__282011-2015_29.svg" src="../images/120px-Google_Plus_icon__282011-2015_29.svg.png"><br>
+<img alt="120px-Google_Plus_logo__282013-2015_29.svg" src="../images/120px-Google_Plus_logo__282013-2015_29.svg.png"><br>
+<img alt="250px-MotorolaCanada" src="../images/250px-MotorolaCanada.jpg"><br>
+<img alt="250px-MotorolaCanada2" src="../images/250px-MotorolaCanada2.jpg"></p>
+<h2>Full Article</h2>
+<p>Defunct social networking service</p>
+<p><strong>Google+</strong> (sometimes written as <strong>Google Plus</strong>, stylized as <strong>G+</strong> or <strong>g+</strong>) was a <a href="./Social_networking_service" title="Social networking service">social network</a> owned and operated by <a href="./Google" title="Google">Google</a> until it ceased operations in 2019. The network was launched on June 28, 2011, in an attempt to challenge other social networks, linking other <a href="./List_of_Google_products" title="List of Google products">Google products</a> like <a href="./Google_Drive" title="Google Drive">Google Drive</a>, <a href="./Blogger_(service)" title="Blogger (service)">Blogger</a>, <a href="./Google_AdSense" title="Google AdSense">Google AdSense</a>, and <a href="./YouTube" title="YouTube">YouTube</a>. The service, Google's fourth foray into social networking, experienced strong growth in its initial years, although usage statistics varied, depending on how the service was defined. Three Google executives oversaw the service, which underwent substantial changes that led to a redesign in November 2015.</p>
+<p>Due to low user engagement and disclosed <a href="./Software_design" title="Software design">software design</a> flaws that potentially allowed outside developers access to personal information of its users, the Google+ developer API was discontinued on March 7, 2019, and Google+ was shut down for business and personal use on April 2, 2019.</p>
+<h2>History</h2>
+<h3>Release</h3>
+<p>Google+ was the company's fourth foray into social networking, following <a href="./Google_Buzz" title="Google Buzz">Google Buzz</a> (introduced 2010, retired in 2011), <a href="./Google_Friend_Connect" title="Google Friend Connect">Google Friend Connect</a> (introduced 2008, retired in March 2012), and <a href="./Orkut" title="Orkut">Orkut</a> (introduced 2004, retired in September 2014).</p>
+<p>Google+ was introduced in June 2011. Features included the ability to post photos and status updates to the stream or interest-based communities, group different types of relationships (rather than simply "friends") into Circles, a multi-person instant messaging, text and video chat called <a href="./Google_Hangouts" title="Google Hangouts">Hangouts</a>, events, location tagging, and the ability to edit and upload photos to private cloud-based albums.</p>
+<p>According to a 2016 book by a former <a href="./Facebook_Platform" title="Facebook Platform">Facebook</a> employee, some leaders at Facebook saw Google's foray into social networking as a serious threat to the company. Facebook founder <a href="./Mark_Zuckerberg" title="Mark Zuckerberg">Mark Zuckerberg</a> instituted a company-wide "lockdown", signaling that employees were supposed to dedicate time to bringing Facebook's features into line with Google+.</p>
+<h3>Growth</h3>
+<p>Assessments of Google+ growth varied widely, because Google first defined the service as a social network, then later as "a social layer across all of Google's services", allowing them to share a user's identity and interests. According to <a href="./Ars_Technica" title="Ars Technica">Ars Technica</a>, Google+ signups were "often just an incidental byproduct of signing up for other Google services."</p>
+<p>In 2011, Google+ had 10 million users two weeks after the launch. In a month, it had 25 million. In October 2011, the service had 40 million users, according to <a href="./Larry_Page" title="Larry Page">Larry Page</a>. At the end of 2011, Google+ had 90 million users. In October 2013, approximately 540 million monthly <a href="./Active_users" title="Active users">active users</a> used the social layer by interacting with Google+'s enhanced properties, such as <a href="./Gmail" title="Gmail">Gmail</a>, the +1 button, and <a href="./YouTube" title="YouTube">YouTube</a> comments. Some 300 million monthly active users participated in the social network by interacting with the Google+ social-networking stream. According to <a href="./ComScore" title="ComScore">ComScore</a>, the biggest market was the <a href="./United_States" title="United States">United States</a> followed by <a href="./India" title="India">India</a>.</p>
+<p>Google+'s user engagement was lower than that of its competitors; <a href="./ComScore" title="ComScore">ComScore</a> estimated that the average amount of time spent by users on the site during the month of January 2012 amounted to only 3.3 minutes, while on Facebook this metric was over 136 times greater, at 7.5 hours. In March 2013, average time spent on the site had increased but remained low, at about 7 minutes according to Nielsen (not including traffic from apps). In February 2014, <em><a href="./The_New_York_Times" title="The New York Times">The New York Times</a></em> likened Google+ to a <a href="./Ghost_town" title="Ghost town">ghost town</a>, citing Google's stated 540 million "monthly active users" and noting that almost half did not visit the site. The company replied that the significance of Google+ was less as a Facebook competitor than as a means of gathering and connecting user information from Google's various services.</p>
+<h3>Changes in management and product direction</h3>
+<p>In April 2014, <a href="./Vic_Gundotra" title="Vic Gundotra">Vic Gundotra</a>, the executive in charge of Google+, departed the company with management responsibility going to David Besbris. By March 2015, Google executive <a href="./Bradley_Horowitz" title="Bradley Horowitz">Bradley Horowitz</a>, who had co-founded Google+ with Gundotra, had replaced Besbris, becoming vice president of streams, photos, and sharing.</p>
+<p>In an interview with <a href="./Steven_Levy" title="Steven Levy">Steven Levy</a> published on May 28, 2015, Horowitz said that Google+ was about to undergo a "huge shift" that would better reflect how the service is actually used. By that time, two core Google+ functions, communications and photos, had become standalone services. <a href="./Google_Photos" title="Google Photos">Google Photos</a>, Google's photo and video library, was announced at the May 2015 <a href="./Google_I/O" title="Google I/O">Google I/O</a> conference. <a href="./Google_Hangouts" title="Google Hangouts">Google Hangouts</a>, Google's communications platform, was announced two years earlier, also at Google I/O. Google subsequently refocused Google+ on shared interests, removing features not supporting "an interest-based social experience". The company also eliminated the Google+ social layer; users no longer needed a Google+ profile to share content and communicate with contacts. The transition began with YouTube, where a Google+ profile was no longer required to create, upload, or comment on a channel, but a Google+ page was instead required. YouTube comments no longer appeared on Google+ or vice versa.[<em><a href="./Wikipedia:Citing_sources#Bundling_citations" title="Wikipedia:Citing sources">excessive citations</a></em>]</p>
+<h3>Redesign</h3>
+<p>On November 18, 2015, Google+ underwent a redesign with the stated intent of making the site simpler and faster, making the new features of Communities and Collections more prominent, and removing features such as Hangouts integration, Events and Custom URLs, though Events and Custom URLs were eventually added back.</p>
+<h3>Shutdown of consumer version</h3>
+<p>See also: <a href="./2018_Google_data_breach" title="2018 Google data breach">2018 Google data breach</a></p>
+<p>On October 8, 2018, Google announced it would be ending the consumer version of Google+ by the end of August 2019, later changing that date to April 2, 2019. The company cited low user engagement and difficulties in "creating and maintaining a successful Google+ that meets consumers' expectations", noting that 90% of user sessions on the service lasted less than five seconds. It also acknowledged a design flaw in an <a href="./Application_programming_interface" title="Application programming interface">API</a> that could expose private user data. Google said it found no evidence that "any developer was aware of this bug, or abusing the API" or that "any Profile data was misused."</p>
+<p>According to <em><a href="./The_Wall_Street_Journal" title="The Wall Street Journal">The Wall Street Journal</a>,</em> the data exposure was discovered in the spring of 2018, and was not reported by the company because of fears of increased regulatory scrutiny. The newspaper said that "the move effectively puts the final nail in the coffin of a product that was launched in 2011 to challenge Facebook, and is widely seen as one of Google's biggest failures."</p>
+<p>On December 10, 2018, Google reported that a subsequent Google+ API update exposed customer data for six days before being discovered, again saying there was no evidence of any breach. The bug allowed outside developers access to personal information of users. Over 52.5 million users were affected. The company moved the service's shutdown date to April 2019, and said it would "sunset all Google+ APIs in the next 90 days."</p>
+<h3>Shutdown of business version</h3>
+<p>On its business-oriented <a href="./Google_Workspace" title="Google Workspace">G Suite</a>, Google replaced Google+ with a similar product called <a href="./Google_Currents_(social_app)" title="Google Currents (social app)">Google Currents</a>, which facilitates internal communications. A few months after the Google+ closure, in July 2019, the company <a href="./Soft_launch" title="Soft launch">soft launched</a> an experimental social networking platform called <em>Shoelace</em>, oriented toward organizing local activities and events. However, due to the <a href="./COVID-19_pandemic" title="COVID-19 pandemic">COVID-19 pandemic</a>, Shoelace shut down on May 12, 2020. On June 5, 2020, Google announced that Currents would replace Google+ for all G Suite customers on July 6, 2020. On February 10, 2022, Google announced that it would be planning to "wind down" Currents and transition its users to <a href="./Google_Chat" title="Google Chat">Google Chat</a> in 2023.</p>
+<h2>User demographics</h2>
+<p>Google+'s user base was roughly 60% male and 25% female in November 2013, and 15% "other" or unknown. Early adopters of Google+ in mid-2011 were mostly male (71.24%), and the dominant age bracket (35%) was between 25 and 34. An August 2011 survey estimated that 13% of U.S. adults had joined Google+.</p>
+<h2>Features and functions</h2>
+<h3>User profile</h3>
+<p>A Google+ user profile was a publicly visible account of a user that was attached to many Google properties. It included basic social networking services like a profile photo, an about section, a cover photo, previous work and school history, interests, places lived and an area to post status updates. It also included several identity service sections, such as a contributor and other profiles area that allowed users to link their "properties across the web". These sections were optionally linked to other social media accounts one had, any blogs one owns or have written or sites one is a contributor to. This area was used for Google Authorship. Customized or Vanity URLs were made available to the public starting on October 29, 2013, to any account that was 30+ days old and had a profile photo and at least 10 followers. Google removed author photos from search results in June 2014, and in August 2014 Google stopped showing authorship in search results, both photo and author name.</p>
+<h3>Circles</h3>
+<p>Circles was a core feature of the Google+ Social Platform. It enabled users to organize people into groups or lists for sharing across <a href="./List_of_Google_products" title="List of Google products">various Google products and services</a>. Organization of circles was done through a <a href="./Drag-and-drop" title="Drag-and-drop">drag-and-drop</a> interface until a site redesign in 2015 reduced it to a simple checkbox interface. Once a circle was created, a Google+ user could share specific private content to only that circle. For example, work-themed content could be shared with only colleagues, and one's friends and family could see more personal content and photos. The option to share Public or with Everyone was always available.</p>
+<h3>Identity services</h3>
+<p>Starting in November 2011, Google+ profiles were used as the background account for many Google services including YouTube, Gmail, Google Maps, Android, Google Play, Google Music, Google Voice, Google Wallet, Google Local and more. As of January 10, Google Search was customized with a feature called Search Plus Your World, which inserted content shared on Google+ profiles and brand pages under Web Search results, if one was logged into one's Google+ account while using it. The feature, which was opt-in, was received with controversy over the emphasis of Google+ profiles over other social networking services. The feature built upon the earlier "Social Search" feature which indexes content shared or published by authors; "Social Search", however, relied partly upon returns from non-Google services, such as Twitter and Flickr. As of July 2011, tweets were no longer shown due to the expiration of Google's contract with Twitter.</p>
+<h3>Public</h3>
+<p>The public setting allowed users to disclose certain information to the circles of their choice. Users could also see their profile visitors.</p>
+<h3>+1 button</h3>
+<p>Google+ featured a "<em>+1</em> button" which allowed people to recommend sites and posts, similar in use to <a href="./Facebook_like_button" title="Facebook like button">Facebook's <em>Like</em> button</a>. Similar to "like", "+1" was also called "plus one", and posts (on Google+) and pages (across the internet) could be "+1'd" or "plusoned".</p>
+<h3>Google+ Pages</h3>
+<p>Google+ Pages was released on November 7, 2011, to all users, allowing businesses to connect with fans.</p>
+<p>Google+ Badges was quietly introduced to select enterprises beginning on November 9, 2011, and officially released to the public on November 16. Badges were sidebar widgets which embed "Add to Circles" buttons and drop-down lists into off-site websites and blogs, similar to Facebook's Like Box widgets. This was officially treated by Google as a replacement for the older <a href="./Google_Friend_Connect" title="Google Friend Connect">Google Friend Connect</a> and its widgets, and GFC was announced by Senior Vice President of Operations <a href="./Urs_Hölzle" title="Urs Hölzle">Urs Hölzle</a> on November 23, 2011, as scheduled to be retired by March 12, 2012, on all non-<a href="./Blogger_(service)" title="Blogger (service)">Blogger</a> sites in favor of Google+ Page Badges.</p>
+<p>Google+ Views was introduced on April 1, 2014. It featured a "view counter", which is displayed on every user's profile page. The view counter showed the number of times the user's content had been seen by others, including photos, posts, and profile page. This feature was later removed in favor of an insights feature.</p>
+<h3>Communities</h3>
+<p>Google+ Communities was released on December 6, 2012. This allowed users to create ongoing conversations about particular topics.</p>
+<h4>Events</h4>
+<p>Events allowed users to invite other people to share photos and media in real time. This was removed from Google+ as part of the November 2015 redesign, but later added back in a different location. Events were later included on the user's profile.</p>
+<h4>Discover</h4>
+<p>The Discover page showed trending posts and articles on Google+ and around the web.</p>
+<h3>Google Local</h3>
+<p>On June 11, 2014, Google combined Google Places and Google+ Local Business Pages with the Google My Business product. The product used the interface of Google+ but had many more features, including insights and analytics. On May 30, 2012, Google Places was replaced by Google+ Local, which integrated directly with the Google+ service to allow users to post photos and reviews of locations directly to its page on the service. Additionally, Google+ Local and Maps featured detailed reviews and ratings from <a href="./Zagat" title="Zagat">Zagat</a>, which was acquired by Google in September 2011.</p>
+<h3>Photography</h3>
+<ul>
+<li>Google+ Creative Kit was an online photo editor integrated to Google+ on October 27, 2011, similar to <a href="./Picnik" title="Picnik">Picnik</a>, integrated earlier to <a href="./Picasa_Web_Albums" title="Picasa Web Albums">Picasa Web Albums</a>. This feature was removed from Google+ in 2015.</li>
+<li>Auto Awesome: Released at <a href="./Google_I/O" title="Google I/O">Google I/O</a> in 2013, the feature applied special effects, manually (with Android) or automatically, often using multiple sequential shots. Effects included composite motion in a single image, short animation, <a href="./Photo_booth" title="Photo booth">photo booth</a> style, and <a href="./High-dynamic-range_rendering" title="High-dynamic-range rendering">high-dynamic range rendering</a> (HDR). This feature was moved to <a href="./Google_Photos" title="Google Photos">Google Photos</a> in 2015.</li>
+<li>Auto Enhance: With Auto Enhance, Google+ made subtle adjustments to hypothetically improve photos. This feature was moved to Google Photos in 2015.</li>
+<li>Google+ Auto-Backup: A desktop utility that imported a large collection of photos and videos. This feature was moved to <a href="./Google_Photos" title="Google Photos">Google Photos</a> in 2015.</li>
+</ul>
+<h3>Additional features</h3>
+<ul>
+<li>Google Takeout provided the ability to download one's content from Google+.</li>
+<li><a href="./Hashtag" title="Hashtag">Hashtags</a>, where "<a href="./Number_sign" title="Number sign">#</a>" is written before a word or <a href="./CamelCase" title="CamelCase">CamelCase</a>, were hyperlinked to the most recent or highest-trending search results within Google+ containing the term. This, a feature which gained notoriety as a microblogging practice on <a href="./Twitter" title="Twitter">Twitter</a>, was implemented as a Google+ feature on October 12, 2011. Autocompletion came on January 17, 2012.</li>
+<li>Over the lifetime of Google+, Google added and made changes to many features. On September 30, 2011, the company released a list of changes and additions to Google+ mobile which include:</li>
+<li>Selected public figures had <strong>verified names</strong>. Google determined whether a particular profile warranted verification. The purpose was to indicate to site visitors whether a particular profile belonged to who one would generally expect the name to be, and not someone who coincidentally had the same name as a public figure. Verified identity profiles had a checkmark logo after their name. Examples of profiles that bore the verified name badge include <a href="./Linus_Torvalds" title="Linus Torvalds">Linus Torvalds</a>, <a href="./William_Shatner" title="William Shatner">William Shatner</a>, <a href="./Leo_Laporte" title="Leo Laporte">Leo Laporte</a>, <a href="./Mark_Zuckerberg" title="Mark Zuckerberg">Mark Zuckerberg</a>, <a href="./Larry_Page" title="Larry Page">Larry Page</a>, and <a href="./Sergey_Brin" title="Sergey Brin">Sergey Brin</a>.</li>
+</ul>
+<h3>Collections</h3>
+<p>In May 2015, Google+ launched the "Collections" feature which was inspired by Pinterest. It allowed users to "build content collections based on topics and interests".</p>
+<h3>Deprecated features</h3>
+<ul>
+<li><em>Search in Google+</em> allowed users to search for content within Google+ and around the web. Users typed what they were looking for into the Google+ search box, and Google returned relevant people and posts, as well as popular content from around the web.</li>
+<li><em>Messenger</em>, also called <em>Huddle</em>, was a feature available to <a href="./Android_(operating_system)" title="Android (operating system)">Android</a>, <a href="./IPhone" title="IPhone">iPhone</a>, and <a href="./SMS" title="SMS">SMS</a> devices for communicating through instant messaging within Circles. Additionally, users could share photos in Messenger between their Circles. This feature was removed in August 2013 as it was superseded by Hangouts.</li>
+<li><em>Sparks</em> was a front-end to <a href="./Google_Search" title="Google Search">Google Search</a>, enabling users to identify topics they might be interested in sharing with others. "Featured interests" sparks were also available, based on topics others globally were finding interesting. Sparks was accessed as a pull-down from search results and helped to keep users informed of the latest updates on the topics of their interest. Sparks was removed sometime in November 2012.</li>
+<li><em>Games</em> had 16 games when Google+ launched on August 11, 2011, which expanded to 44 a few months later, but by April 2013 there were 38, since some games were removed by the owner. Unlike Facebook games, Google+ games were located under a games tab, which gave games less visibility, and had separate notifications from the rest of a user's notifications. All games were removed from Google+ in June 2013. The concept was later recycled as YouTube Playables, a similar webgame platform.</li>
+<li><em>Ripples</em>, introduced on October 27, 2011, was a visualization tool, showing how re-sharing activity happened regarding a public post. One could replay the public share's activity, zoom in on certain events, identify top contributors, view statistics about average chain length, the most influential people in the chain, the language of the sharers, etc. The feature was removed in May 2015.</li>
+<li><em>Hangouts</em>, the feature that enabled users to chat, voice, and video conference between users, was removed from Google+ as part of the November 2015 redesign and made accessible through its own Hangouts homepage and mobile applications.</li>
+<li><em>Hangouts on Air</em>, introduced in September 2011, the live streaming service was moved to YouTube Live starting September 12, 2016.</li>
+<li><em>What's Hot</em>, introduced on October 27, 2011, was a stream showing what Google+ users had commented, shared and interacted with the most. It was similar to "Trending Topics" On Twitter. The page was removed in late 2015, but a new "discover" stream introduced in 2017 provided similar functionality.</li>
+<li><em>Photos</em> was a suite of features which provided photo backup and editing, removed in 2015 and replaced with a separate product called Google Photos.</li>
+<li><em>Mentions</em> was a separate stream that showed posts and images the user was +mentioned in. This page was removed in the November 2015 redesign.</li>
+</ul>
+<h2>Technologies</h2>
+<p>According to Joseph Smarr, one of the Google+ team's technical leads, Google+ was a typical Google web application: it used <a href="./Java_servlet" title="Java servlet">Java servlets</a> for the server code and <a href="./JavaScript" title="JavaScript">JavaScript</a> for the browser-side of the UI, largely built with Google's <a href="./Google_Closure_Tools" title="Google Closure Tools">Closure framework</a>, including the JavaScript compiler and the template system. They used the <a href="./HTML5" title="HTML5">HTML5</a> History API to maintain good-looking URLs in modern browsers despite the <a href="./AJAX" title="AJAX">AJAX</a> app. To achieve fast response times Google often rendered the Closure templates on the server side before any JavaScript was loaded; then the JavaScript found the right <a href="./Document_Object_Model" title="Document Object Model">DOM</a> nodes, hooked up <a href="./Event_handler" title="Event handler">event handlers</a>, etc. The back ends were built mostly on top of <a href="./Bigtable" title="Bigtable">Bigtable</a> and <a href="./Google_File_System" title="Google File System">Colossus/GFS</a>, and other common Google technologies such as <a href="./MapReduce" title="MapReduce">MapReduce</a>.</p>
+<h2>Censorship</h2>
+<p>Within a day of the website's launch, various news agencies reported that Google+ was restricted by the <a href="./People's_Republic_of_China" title="People's Republic of China">People's Republic of China</a>. This was part of a wider policy of <a href="./Censorship_in_China" title="Censorship in China">censorship in mainland China</a>. While it was not technically "blocked", it was made impossible to use by slowing it down to a crawl. The <a href="./Iran" title="Iran">Iranian</a> government had also blocked access to Google+ from July 11, 2011, as part of <a href="./Internet_censorship_in_Iran" title="Internet censorship in Iran">Internet censorship in Iran</a>.</p>
+<h2>Controversies</h2>
+<h3>Obama's election campaign</h3>
+<p>On February 20, 2012, Internet users from China realized that state restrictions on Google+ had been relaxed for unknown reasons, allowing them to post on Google+ pages. In particular, Chinese users began to inundate the <a href="./Barack_Obama_2012_presidential_campaign" title="Barack Obama 2012 presidential campaign">official election campaign pages</a> of U.S. president <a href="./Barack_Obama" title="Barack Obama">Barack Obama</a> on Google+ with often off-topic comments.</p>
+<h3>Nymwars</h3>
+<p>Main article: <a href="./Nymwars" title="Nymwars">Nymwars</a></p>
+<p>In July 2011, Google+ required users to identify themselves using their real names, and some accounts were suspended when this requirement was not met. Google VP Bradley Horowitz stated that a violation of the terms of service would only affect offenders' access to Google+ and not any of the other services that Google provided. However, there were early reports of account holders being temporarily locked out of all of Google services.</p>
+<p>On October 19, 2011, at the Web 2.0 Summit, Google executive <a href="./Vic_Gundotra" title="Vic Gundotra">Vic Gundotra</a> revealed that Google+ would begin supporting pseudonyms and other types of identity "within a few months". Starting on January 23, 2012, Google+ began allowing the use of established pseudonyms. In July 2014, Google+'s policy was changed to allow any name to be used.</p>
+<h3>Commenting on YouTube</h3>
+<p>On November 6, 2013, YouTube, Google's popular video-hosting site, began requiring that <a href="./Comments_section" title="Comments section">commenting</a> on its videos be done via a Google+ account, making it impossible to reply to pre-Google+ integrated comments. YouTube said that its new commenting system featured improved tools for moderation, and comments would no longer be shown chronologically with two top comments at the top when applicable, but would be featured according to "relevance" and popularity, determined by the commenters' community engagement, reputation, and up-votes for a particular comment.</p>
+<p>The decision led hundreds of thousands of users to criticize the change. Some YouTube commenters and content creators complained that the Google+ requirement that users use their real name created online privacy and security concerns. YouTube co-founder <a href="./Jawed_Karim" title="Jawed Karim">Jawed Karim</a> voiced his disapproval in one of a few comments subsequent to the change including the temporary addition of the following comments, "Why the f**k do I need a Google+ account to comment on a video?" and "I can't comment here anymore, since I don't want a google+ account" to the description of <a href="./Me_at_the_zoo" title="Me at the zoo">the first ever public video on the site</a>. Thousands of commenters on YouTube pasted text art tanks and stick figures called "Bob" to protest the new commenting system and Google+. Supporters of the changes said it was a positive step at cleaning up the "virtual cesspool" of homophobic, racist, sexist and offensive comments found on YouTube. However, this actually increased the spam, and in fixing the issue, Google took the opportunity to strike back against those posting "Bob" <a href="./ASCII_art" title="ASCII art">ASCII art</a> in protest at the company's actions.</p>
+<p>On July 27, 2015, it was announced that the integration with Google+ would be discontinued and that YouTube would require only a Google+ page to use all the features, such as uploading videos and posting comments. YouTube had these changes rolled out over the course of several months, with the comments feature already having an update directly after the announcement: comments only appeared on <a href="./YouTube" title="YouTube">YouTube</a> and were no longer shared to the social network platform.</p>
+<h2>Legal issues</h2>
+<h3>Class-action lawsuit</h3>
+<p>In October 2018, a class-action lawsuit was filed against <a href="./Google,_Inc." title="Google, Inc.">Google, Inc.</a> and <a href="./Alphabet,_Inc." title="Alphabet, Inc.">Alphabet, Inc.</a> due to "non-public" Google+ account data being exposed as a result of a privacy bug that allowed app developers to gain access to private information of users. The litigation was settled in July 2020 for $7.5 million and 1,720,029 claimants received $2.15 each.</p>
+<h2>In popular culture</h2>
+<ul>
+<li>The 2013 film <em><a href="./The_Internship" title="The Internship">The Internship</a></em> makes many references to Google+. Set at Google, the comedy was directed by <a href="./Shawn_Levy" title="Shawn Levy">Shawn Levy</a> and stars <a href="./Owen_Wilson" title="Owen Wilson">Owen Wilson</a> and <a href="./Vince_Vaughn" title="Vince Vaughn">Vince Vaughn</a>.</li>
+<li>Musician <a href="./Emma_Blackery" title="Emma Blackery">Emma Blackery</a> made a November 2013 song criticizing the platform's integration with YouTube. In November 2018, following the announcement of the service's imminent shutdown for consumers, an updated version was released.</li>
+</ul>
+<h2>See also</h2>
+<ul>
+<li>
+<p><a href="./File:Crystal_Clear_app_linneighborhood.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Crystal_Clear_app_linneighborhood.svg/40px-Crystal_Clear_app_linneighborhood.svg.png"></a><a href="./Portal:Internet" title="Portal:Internet">Internet portal</a></p>
+</li>
+<li>
+<p><a href="./The_Apache_Software_Foundation" title="The Apache Software Foundation">The Apache Software Foundation</a> – Nonprofit open-source software corporation</p>
+</li>
+<li><a href="./Google_App_Engine" title="Google App Engine">Google App Engine</a> – Cloud-based web application hosting service</li>
+<li><a href="./Google_Buzz" title="Google Buzz">Google Buzz</a> – Defunct social networking service</li>
+<li><a href="./Google_Sites" title="Google Sites">Google Sites</a> – Structured wiki- and Web page-creation tool</li>
+<li><a href="./Google_Wave" title="Google Wave">Google Wave</a> – Software framework for real-time collaborative editing online</li>
+<li><a href="./List_of_social_networking_services" title="List of social networking services">List of social networking services</a></li>
+<li><a href="./Orkut" title="Orkut">Orkut</a> – Defunct social networking service</li>
+</ul>
+<h2>References</h2>
+<h2>External links</h2>
+<ul>
+<li><a href="./File:Commons-logo.svg"><img alt="Wikimedia Commons logo" src="//upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/20px-Commons-logo.svg.png"></a> Media related to <a href="https://commons.wikimedia.org/wiki/Category:Google+" title="commons:Category:Google+">Google+</a> at Wikimedia Commons</li>
+<li><a href="https://www.theguardian.com/technology/blog/2013/jun/04/google-plus-the-matrix">Google+ isn't a social network; it's The Matrix</a>, <a href="./The_Guardian" title="The Guardian">The Guardian</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products" title="List of Google products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Microblogging" title="Template:Microblogging">v</a> - <a href="./Template_talk:Microblogging" title="Template talk:Microblogging">t</a> - <a href="./Special:EditPage/Template:Microblogging" title="Special:EditPage/Template:Microblogging">e</a>  <a href="./Microblogging" title="Microblogging">Microblogging</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Centralized</td>
+<td>- <a href="./Facebook" title="Facebook">Facebook</a> - <a href="./Fanfou" title="Fanfou">Fanfou</a> - <a href="./Gab_(social_network)" title="Gab (social network)">Gab</a> - <a href="./Gettr" title="Gettr">Gettr</a> - <a href="./Hive_Social" title="Hive Social">Hive Social</a> - <a href="./LinkedIn" title="LinkedIn">LinkedIn</a> - <a href="./Myspace" title="Myspace">Myspace</a> - <a href="./Pillowfort" title="Pillowfort">Pillowfort</a> - <a href="./Plurk" title="Plurk">Plurk</a> - <a href="./Qzone" title="Qzone">Qzone</a> - <a href="./Solaborate" title="Solaborate">Solaborate</a> - <a href="./Spoutible" title="Spoutible">Spoutible</a> - <a href="./Truth_Social" title="Truth Social">Truth Social</a> - <a href="./Tumblr" title="Tumblr">Tumblr</a> - <a href="./UpScrolled" title="UpScrolled">UpScrolled</a> - <a href="./Viadeo" title="Viadeo">Viadeo</a> - <a href="./VK_(service)" title="VK (service)">VK</a> - <a href="./Weibo" title="Weibo">Weibo</a> - <a href="./X_(social_network)" title="X (social network)">X/Twitter</a> - <a href="./XING" title="XING">XING</a></td>
+</tr>
+<tr>
+<td>Decentralized</td>
+<td></td>
+</tr>
+<tr>
+<td>Defunct</td>
+<td>- <a href="./App.net" title="App.net">App.net</a> - <a href="./Edmodo" title="Edmodo">Edmodo</a> - <a href="./Google_Buzz" title="Google Buzz">Google Buzz</a> - <a href="./Google+">Google+</a> - <a href="./Heello" title="Heello">Heello</a> - <a href="./Jaiku" title="Jaiku">Jaiku</a> - <a href="./Me2day" title="Me2day">Me2day</a> - <a href="./Yahoo_Meme" title="Yahoo Meme">Meme</a> - <a href="./Migme" title="Migme">Migme</a> - <a href="./Natter_(social_network)" title="Natter (social network)">Natter</a> - <a href="./Parler" title="Parler">Parler</a> - <a href="./Posterous" title="Posterous">Posterous</a> - <a href="./Pownce" title="Pownce">Pownce</a> - <a href="./Qaiku" title="Qaiku">Qaiku</a> - <a href="./Tencent_Weibo" title="Tencent Weibo">Tencent Weibo</a> - <a href="./Tout_(company)" title="Tout (company)">Tout</a></td>
+</tr>
+<tr>
+<td>Features</td>
+<td>- <a href="./Activity_stream" title="Activity stream">Activity stream</a> - <a href="./Backchannel" title="Backchannel">Backchannel</a> - <a href="./Hashtag" title="Hashtag">Hashtag</a> - <a href="./Lifestreaming" title="Lifestreaming">Lifestreaming</a> - <a href="./Mention_(blogging)" title="Mention (blogging)">Mention/Replies</a> - <a href="./Reblogging" title="Reblogging">Reblogging</a></td>
+</tr>
+<tr>
+<td>- <a href="./Comparison_of_microblogging_and_similar_services" title="Comparison of microblogging and similar services">Comparison of microblogging and similar services</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Social_networking_services" title="Template:Social networking services">v</a> - <a href="./Template_talk:Social_networking_services" title="Template talk:Social networking services">t</a> - <a href="./Special:EditPage/Template:Social_networking_services" title="Special:EditPage/Template:Social networking services">e</a>  <a href="./Social_networking_service" title="Social networking service">Social networking services</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./List_of_social_networking_services" title="List of social networking services">Personal</a></td>
+<td>- <a href="./23snaps" title="23snaps">23snaps</a> - <a href="./Amikumu" title="Amikumu">Amikumu</a> - <a href="./Anobii" title="Anobii">anobii</a> - <a href="./Are.na" title="Are.na">Are.na</a> - <a href="./Badoo" title="Badoo">Badoo</a> - <a href="./BeReal" title="BeReal">BeReal</a> - <a href="./Bluesky" title="Bluesky">Bluesky</a> - <a href="./BharatMatrimony" title="BharatMatrimony">BharatMatrimony</a> - <a href="./Bondee" title="Bondee">Bondee</a> - <a href="./Bumble" title="Bumble">Bumble</a> - <a href="./Cara_(app)" title="Cara (app)">Cara</a> - <a href="./Clapper_(service)" title="Clapper (service)">Clapper</a> - <a href="./Clubhouse_(app)" title="Clubhouse (app)">Clubhouse</a> - <a href="./Convoz" title="Convoz">Convoz</a> - <a href="./Cyworld" title="Cyworld">Cyworld</a> - <a href="./Diaspora_(social_network)" title="Diaspora (social network)">Diaspora</a> - <a href="./Display_(social_network)" title="Display (social network)">display</a> - <a href="./Douban" title="Douban">Douban</a> - <a href="./Draugiem.lv" title="Draugiem.lv">Draugiem.lv</a> - <a href="./Facebook" title="Facebook">Facebook</a> - <a href="./Foursquare_City_Guide" title="Foursquare City Guide">Foursquare City Guide</a> - <a href="./Foursquare_Swarm" title="Foursquare Swarm">Foursquare Swarm</a> - <a href="./Friendica" title="Friendica">Friendica</a> - <a href="./Gab_(social_network)" title="Gab (social network)">Gab</a> - <a href="./Gapo" title="Gapo">Gapo</a> - <a href="./Gas_(app)" title="Gas (app)">Gas</a> - <a href="./Gettr" title="Gettr">Gettr</a> - <a href="./GNU_social" title="GNU social">GNU social</a> - <a href="./Hi5" title="Hi5">Hi5</a> - <a href="./Hive_Social" title="Hive Social">Hive Social</a> - <a href="./Idka" title="Idka">Idka</a> - <a href="./Instagram" title="Instagram">Instagram</a> - <a href="./IRC-Galleria" title="IRC-Galleria">IRC-Galleria</a> - <a href="./Kuaishou" title="Kuaishou">Kuaishou</a> - <a href="./Kumu_(social_network)" title="Kumu (social network)">Kumu</a> - <a href="./Letterboxd" title="Letterboxd">Letterboxd</a> - <a href="./Likee" title="Likee">Likee</a> - <a href="./LiveJournal" title="LiveJournal">LiveJournal</a> - <a href="./Jeevansathi.com" title="Jeevansathi.com">Jeevansathi.com</a> - <a href="./Matrimony.com" title="Matrimony.com">Matrimony.com</a> - <a href="./Marco_Polo_(app)" title="Marco Polo (app)">Marco Polo</a> - <a href="./Mastodon_(social_network)" title="Mastodon (social network)">Mastodon</a> - <a href="./The_Meet_Group" title="The Meet Group">The Meet Group</a> - <a href="./Meetup" title="Meetup">Meetup</a> - <a href="./Mewe_(social_media)" title="Mewe (social media)">mewe</a> - <a href="./Miaopai" title="Miaopai">Miaopai</a> - <a href="./Micro.blog" title="Micro.blog">micro.blog</a> - <a href="./Minds_(social_network)" title="Minds (social network)">Minds</a> - <a href="./Misskey" title="Misskey">Misskey</a> - <a href="./Mixi" title="Mixi">Mixi</a> - <a href="./MX_TakaTak" title="MX TakaTak">MX TakaTak</a> - <a href="./My_World@Mail.Ru" title="My World@Mail.Ru">My World@Mail.Ru</a> - <a href="./Myspace" title="Myspace">Myspace</a> - <a href="./Nextdoor" title="Nextdoor">Nextdoor</a> - <a href="./Odnoklassniki" title="Odnoklassniki">Odnoklassniki</a> - <a href="./Parler" title="Parler">Parler</a> - <a href="./Pinterest" title="Pinterest">Pinterest</a> - <a href="./Pixnet" title="Pixnet">Pixnet</a> - <a href="./Pleroma_(software)" title="Pleroma (software)">Pleroma</a> - <a href="./Plurk" title="Plurk">Plurk</a> - <a href="./Promo.com" title="Promo.com">Promo.com</a> - <a href="./Qzone" title="Qzone">Qzone</a> - <a href="./Readgeek" title="Readgeek">Readgeek</a> - <a href="./Xiaohongshu" title="Xiaohongshu">Xiaohongshu</a> (RedNote) - <a href="./Renren" title="Renren">Renren</a> - <a href="./Seeking.com" title="Seeking.com">Seeking.com</a> - <a href="./Shaadi.com" title="Shaadi.com">Shaadi.com</a> - <a href="./ShareChat" title="ShareChat">ShareChat</a> - <a href="./Snapchat" title="Snapchat">Snapchat</a> - <a href="./Snow_(app)" title="Snow (app)">Snow</a> - <a href="./Spaces_(social_network)" title="Spaces (social network)">Spaces</a> - <a href="./Spoutible" title="Spoutible">Spoutible</a> - <a href="./Tagged_(website)" title="Tagged (website)">Tagged</a> - <a href="./Tal_Canal" title="Tal Canal">Tal Canal</a> - <a href="./Tastebuds.fm" title="Tastebuds.fm">Tastebuds.fm</a> - <a href="./Tea_(app)" title="Tea (app)">Tea</a> - <a href="./Tellonym" title="Tellonym">Tellonym</a> - <a href="./Threads_(social_network)" title="Threads (social network)">Threads</a> - <a href="./TikTok" title="TikTok">TikTok</a> - <a href="./Tinder_(app)" title="Tinder (app)">Tinder</a> - <a href="./Triller_(app)" title="Triller (app)">Triller</a> - <a href="./Trust_Café" title="Trust Café">Trust Café</a> - <a href="./Truth_Social" title="Truth Social">Truth Social</a> - <a href="./Tuenti" title="Tuenti">Tuenti</a> - <a href="./Tumblr" title="Tumblr">Tumblr</a> - <a href="./TV_Time" title="TV Time">TV Time</a> - <a href="./Untappd" title="Untappd">Untappd</a> - <a href="./UpScrolled" title="UpScrolled">UpScrolled</a> - <a href="./Vero_(app)" title="Vero (app)">Vero</a> - <a href="./VK_(service)" title="VK (service)">VK</a> - <a href="./Weibo" title="Weibo">Weibo</a> - <a href="./Whisper_(app)" title="Whisper (app)">Whisper</a> - <a href="./X_(social_network)" title="X (social network)">X</a> (formerly Twitter) - <a href="./Yik_Yak" title="Yik Yak">Yik Yak</a></td>
+</tr>
+<tr>
+<td><a href="./Professional_network_service" title="Professional network service">Professional</a></td>
+<td>- <a href="./Academia.edu" title="Academia.edu">Academia.edu</a> - <a href="./Behance" title="Behance">Behance</a> - <a href="./Brainly" title="Brainly">Brainly</a> - <a href="./HCL_Connections" title="HCL Connections">HCL Connections</a> - <a href="./LinkedIn" title="LinkedIn">LinkedIn</a> - <a href="./Moodle" title="Moodle">Moodle</a> - <a href="./ResearchGate" title="ResearchGate">ResearchGate</a> - <a href="./Solaborate" title="Solaborate">Solaborate</a> - <a href="./TradingView" title="TradingView">TradingView</a> - <a href="./Viadeo" title="Viadeo">Viadeo</a> - <a href="./Viva_Engage" title="Viva Engage">Viva Engage</a> - <a href="./XING" title="XING">XING</a></td>
+</tr>
+<tr>
+<td><a href="./List_of_defunct_social_networking_services" title="List of defunct social networking services">Defunct</a></td>
+<td>- <a href="./App.net" title="App.net">App.net</a> - <a href="./AsianAve" title="AsianAve">AsianAve</a> - <a href="./Ask.fm" title="Ask.fm">Ask.fm</a> - <a href="./Avatars_United" title="Avatars United">Avatars United</a> - <a href="./Bebo" title="Bebo">Bebo</a> - <a href="./Bolt_(website)" title="Bolt (website)">Bolt</a> - <a href="./BranchOut" title="BranchOut">BranchOut</a> - <a href="./Capazoo" title="Capazoo">Capazoo</a> - <a href="./Cloob" title="Cloob">Cloob</a> - <a href="./Cohost" title="Cohost">Cohost</a> - <a href="./EConozco" title="EConozco">eConozco</a> - <a href="./Edmodo" title="Edmodo">Edmodo</a> - <a href="./Ello_(social_network)" title="Ello (social network)">Ello</a> - <a href="./Emojli" title="Emojli">Emojli</a> - <a href="./EWorld" title="EWorld">eWorld</a> - <a href="./Eyegroove" title="Eyegroove">Eyegroove</a> - <a href="./FitFinder" title="FitFinder">FitFinder</a> - <a href="./FriendFeed" title="FriendFeed">FriendFeed</a> - <a href="./Friends_Reunited" title="Friends Reunited">Friends Reunited</a> - <a href="./Friendster" title="Friendster">Friendster</a> - <a href="./Google+">Google+</a> - <a href="./Google_Buzz" title="Google Buzz">Google Buzz</a> - <a href="./Google_Currents_(social_app)" title="Google Currents (social app)">Google Currents</a> - <a href="./Grono.net" title="Grono.net">Grono.net</a> - <a href="./Heello" title="Heello">Heello</a> - <a href="./Hello_(social_network)" title="Hello (social network)">Hello</a> - <a href="./Highlight_(application)" title="Highlight (application)">Highlight</a> - <a href="./Houseparty_(app)" title="Houseparty (app)">Houseparty</a> - <a href="./Huddles_(app)" title="Huddles (app)">Huddles</a> - <a href="./Hyves" title="Hyves">Hyves</a> - <a href="./IdeaPlane" title="IdeaPlane">IdeaPlane</a> - <a href="./IGTV" title="IGTV">IGTV</a> - <a href="./ITunes_Ping" title="ITunes Ping">iTunes Ping</a> - <a href="./IWiW" title="IWiW">iWiW</a> - <a href="./Jaiku" title="Jaiku">Jaiku</a> - <a href="./Keek" title="Keek">Keek</a> - <a href="./Koo_(social_network)" title="Koo (social network)">Koo</a> - <a href="./Lifeknot" title="Lifeknot">Lifeknot</a> - <a href="./LunarStorm" title="LunarStorm">LunarStorm</a> - <a href="./Me2day" title="Me2day">Me2day</a> - <a href="./Meerkat_(app)" title="Meerkat (app)">Meerkat</a> - <a href="./Miiverse" title="Miiverse">Miiverse</a> - <a href="./MixBit" title="MixBit">MixBit</a> - <a href="./Mobli" title="Mobli">Mobli</a> - <a href="./Mugshot_(website)" title="Mugshot (website)">Mugshot</a> - <a href="./Multiply_(website)" title="Multiply (website)">Multiply</a> - <a href="./Musical.ly" title="Musical.ly">Musical.ly</a> - <a href="./Natter_(social_network)" title="Natter (social network)">Natter</a> - <a href="./Netlog" title="Netlog">Netlog</a> - <a href="./NK.pl" title="NK.pl">NK.pl</a> - <a href="./Orkut" title="Orkut">Orkut</a> - <a href="./Path_(social_network)" title="Path (social network)">Path</a> - <a href="./Peach_(social_network)" title="Peach (social network)">Peach</a> - <a href="./Periscope_(service)" title="Periscope (service)">Periscope</a> - <a href="./Pheed" title="Pheed">Pheed</a> - <a href="./Piczo" title="Piczo">Piczo</a> - <a href="./PlanetAll" title="PlanetAll">PlanetAll</a> - <a href="./Posterous" title="Posterous">Posterous</a> - <a href="./Pownce" title="Pownce">Pownce</a> - <a href="./Qaiku" title="Qaiku">Qaiku</a> - <a href="./Sciencescape" title="Sciencescape">Sciencescape</a> (Metaα) - <a href="./SixDegrees.com" title="SixDegrees.com">SixDegrees.com</a> - <a href="./Skyrock_(social_network_site)" title="Skyrock (social network site)">Skyrock</a> - <a href="./So.cl" title="So.cl">So.cl</a> - <a href="./Spotify_Live" title="Spotify Live">Spotify Live</a> - <a href="./Spring.me" title="Spring.me">Spring.me</a> - <a href="./Streetlife_(website)" title="Streetlife (website)">Streetlife</a> - <a href="./StudiVZ" title="StudiVZ">StudiVZ</a> - <a href="./Surfbook" title="Surfbook">Surfbook</a> - <a href="./Talkbits" title="Talkbits">Talkbits</a> - <a href="./Taringa!" title="Taringa!">Taringa!</a> - <a href="./Tbh" title="Tbh">tbh</a> - <a href="./Tea_Party_Community" title="Tea Party Community">Tea Party Community</a> - <a href="./Third_Voice" title="Third Voice">Third Voice</a> - <a href="./Tout_(company)" title="Tout (company)">Tout</a> - <a href="./Tribe.net" title="Tribe.net">tribe.net</a> - <a href="./Tvtag" title="Tvtag">tvtag</a> - <a href="./Vine_(service)" title="Vine (service)">Vine</a> - <a href="./Windows_Live_Spaces" title="Windows Live Spaces">Windows Live Spaces</a> - <a href="./Wretch_(website)" title="Wretch (website)">Wretch</a> - <a href="./Xanga" title="Xanga">Xanga</a> - <a href="./Yahoo_360°" title="Yahoo 360°">Yahoo! 360°</a> - <a href="./Yahoo_Kickstart" title="Yahoo Kickstart">Yahoo! Kickstart</a> - <a href="./Yahoo_Mash" title="Yahoo Mash">Yahoo! Mash</a> - <a href="./Yahoo_Meme" title="Yahoo Meme">Yahoo! Meme</a> - <a href="./YaRus" title="YaRus">YaRus</a> - <a href="./Yo_(app)" title="Yo (app)">Yo</a> - <a href="./Zune_Social" title="Zune Social">Zune Social</a> - <a href="./ZunZuneo" title="ZunZuneo">ZunZuneo</a></td>
+</tr>
+<tr>
+<td>Services</td>
+<td>- <a href="./Comparison_of_social_networking_software" title="Comparison of social networking software">Software comparison</a> - <a href="./Burned_Haystack_Dating_Method" title="Burned Haystack Dating Method">Burned Haystack Dating Method</a> - <a href="./White-label_product" title="White-label product">White-label</a>   - <a href="./Ning_(website)" title="Ning (website)">Ning</a>   - <a href="./Wall.fm" title="Wall.fm">Wall.fm</a></td>
+</tr>
+<tr>
+<td>Tools</td>
+<td>- <a href="./Social_network_analysis_software" title="Social network analysis software">Analysis software</a> - <a href="./Diaspora_(social_network)" title="Diaspora (social network)">Diaspora</a> - <a href="./Web_2.0_Suicide_Machine" title="Web 2.0 Suicide Machine">Web 2.0 Suicide Machine</a></td>
+</tr>
+<tr>
+<td>Concepts</td>
+<td>- <a href="./Attention_inequality" title="Attention inequality">Attention inequality</a> - <a href="./Confessions_page" title="Confessions page">Confessions page</a> - <a href="./Cybersectarianism" title="Cybersectarianism">Cybersectarianism</a> - <a href="./Fediverse" title="Fediverse">Fediverse</a> - <a href="./Online_identity" title="Online identity">Online identity</a> - <a href="./Small-world_experiment" title="Small-world experiment">Small-world experiment</a> - <a href="./Small-world_network" title="Small-world network">Small-world network</a> - <a href="./Social_network" title="Social network">Social network</a> - <a href="./Thirst_trap" title="Thirst trap">Thirst trap</a> - <a href="./User_profile" title="User profile">User profile</a> - <a href="./Virtual_community" title="Virtual community">Virtual community</a>   - <a href="./List_of_virtual_communities_with_more_than_1_million_users" title="List of virtual communities with more than 1 million users">list</a></td>
+</tr>
+<tr>
+<td>Applications</td>
+<td>- <a href="./Hospitality_exchange_service" title="Hospitality exchange service">Hospitality exchange service</a> - <a href="./Mobile_social_network" title="Mobile social network">Mobile</a> - <a href="./Online_dating" title="Online dating">Online dating</a>   - <a href="./Comparison_of_online_dating_services" title="Comparison of online dating services">comparison</a> - <a href="./Social_network_advertising" title="Social network advertising">Social network advertising</a> - <a href="./Social_network_hosting_service" title="Social network hosting service">Social network hosting service</a> - <a href="./Social_profiling" title="Social profiling">Social profiling</a></td>
+</tr>
+<tr>
+<td><a href="./User_interface" title="User interface">User interface</a></td>
+<td>- <a href="./Activity_stream" title="Activity stream">Activity stream</a> - <a href="./Brand_page" title="Brand page">Brand page</a> - <a href="./Group_(online_social_networking)" title="Group (online social networking)">Groups</a> - <a href="./Hashtag" title="Hashtag">Hashtag</a> - <a href="./Like_button" title="Like button">Like button</a> - <a href="./Online_petition" title="Online petition">Online petitions</a> - <a href="./Open-access_poll" title="Open-access poll">Polling</a> - <a href="./Reblogging" title="Reblogging">Reblogging</a> - <a href="./Story_(social_media)" title="Story (social media)">Story</a></td>
+</tr>
+<tr>
+<td>Implications</td>
+<td>- <a href="./Issues_relating_to_social_networking_services" title="Issues relating to social networking services">Issues</a> - <a href="./Privacy_concerns_with_social_networking_services" title="Privacy concerns with social networking services">Privacy concerns</a> - <a href="./Problematic_social_media_use" title="Problematic social media use">Problematic social media use</a> - <a href="./Use_of_social_network_websites_in_investigations" title="Use of social network websites in investigations">Use in investigations</a> - <a href="./Social_media_use_in_politics" title="Social media use in politics">Use in politics</a> - <a href="./Gender_differences_in_social_network_service_use" title="Gender differences in social network service use">User gender differences</a></td>
+</tr>
+<tr>
+<td>Protocols</td>
+<td>- <a href="./ActivityPub" title="ActivityPub">ActivityPub</a> - <a href="./AT_Protocol" title="AT Protocol">AT Protocol</a> - <a href="./Decentralized_Social_Networking_Protocol" title="Decentralized Social Networking Protocol">Decentralized Social Networking Protocol</a> - <a href="./Distributed_Social_Networking_Protocol" title="Distributed Social Networking Protocol">Distributed Social Networking Protocol</a> (defunct) - <a href="./Micropub_(protocol)" title="Micropub (protocol)">Micropub</a> - <a href="./Nostr" title="Nostr">Nostr</a> - <a href="./OpenSocial" title="OpenSocial">OpenSocial</a> (defunct) - <a href="./OStatus" title="OStatus">OStatus</a> - <a href="./Pump.io" title="Pump.io">Pump.io</a> - <a href="./XMPP" title="XMPP">XMPP</a></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><a href="./Help:Authority_control" title="Help:Authority control">Authority control databases</a> <a href="https://www.wikidata.org/wiki/Q356#identifiers" title="Edit this at Wikidata">Edit this at Wikidata</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>International</td>
+<td>- <a href="https://viaf.org/viaf/220807360">VIAF</a> - <a href="https://d-nb.info/gnd/7843593-6">GND</a> - <a href="https://id.worldcat.org/fast/1913805">FAST</a></td>
+</tr>
+<tr>
+<td>National</td>
+<td>- <a href="https://id.loc.gov/authorities/no2011196208">United States</a> - <a href="https://www.nli.org.il/en/authorities/987007371891905171">Israel</a></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

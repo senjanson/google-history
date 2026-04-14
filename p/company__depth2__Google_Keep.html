@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Google Keep</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link active" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Google Keep</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Google_Keep<br>
+Category: company__depth2<br>
+Depth: 2</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Google Keep is a note-taking service included as part of the free, web-based Google Docs Editors suite offered by Google. The service also includes: Google Docs, Google Sheets, Google Slides, Google Drawings, Google Forms and Google Sites. Google Keep is available as a web application as well as mobile app for Android and iOS. The app offers a variety of tools for taking notes, including texts, lists, images, and audio. Text from images can be extracted using optical character recognition and voice recordings can be transcribed. The interface allows for a single-column view or a multi-column view. Notes can be color-coded and labels can be applied to notes to categorize them. Later updates have added functionality to pin notes and to collaborate on notes with other Keep users in real-time.</p>
+<h2>Images</h2>
+<p><img alt="Google_Keep_Android" src="../images/Google_Keep_Android.png"><br>
+<img alt="Google_Keep_Android" src="../images/Google_Keep_Android.png"><br>
+<img alt="120px-Google_Keep_2020_Logo.svg" src="../images/120px-Google_Keep_2020_Logo.svg.png"><br>
+<img alt="Google_Keep_Android" src="../images/Google_Keep_Android.png"></p>
+<h2>Full Article</h2>
+<p>Note-taking service developed by Google</p>
+<p><strong>Google Keep</strong> (formerly <strong>Google Notes</strong> and appears in app launcher as <strong>Keep Notes</strong>) is a <a href="./Note-taking" title="Note-taking">note-taking</a> service included as part of the free, <a href="./Web_application" title="Web application">web-based</a> <a href="./Google_Docs_Editors" title="Google Docs Editors">Google Docs Editors</a> suite offered by <a href="./Google" title="Google">Google</a>. The service also includes: <a href="./Google_Docs" title="Google Docs">Google Docs</a>, <a href="./Google_Sheets" title="Google Sheets">Google Sheets</a>, <a href="./Google_Slides" title="Google Slides">Google Slides</a>, <a href="./Google_Drawings" title="Google Drawings">Google Drawings</a>, <a href="./Google_Forms" title="Google Forms">Google Forms</a> and <a href="./Google_Sites" title="Google Sites">Google Sites</a>. Google Keep is available as a <a href="./Web_application" title="Web application">web application</a> as well as <a href="./Mobile_app" title="Mobile app">mobile app</a> for <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> and <a href="./IOS" title="IOS">iOS</a>. The app offers a variety of tools for taking notes, including texts, lists, images, and audio. Text from images can be extracted using <a href="./Optical_character_recognition" title="Optical character recognition">optical character recognition</a> and voice recordings can be transcribed. The interface allows for a single-column view or a multi-column view. Notes can be color-coded and labels can be applied to notes to categorize them. Later updates have added functionality to pin notes and to collaborate on notes with other Keep users in real-time.</p>
+<p>Google Keep has received mixed reviews. A review just after its launch in 2013 praised its speed, the quality of voice notes, synchronization, and the widget that could be placed on the Android home screen. Reviews in 2016 have criticized the lack of formatting options, inability to undo changes, and an interface that only offers two view modes where neither was liked for their handling of long notes. However, Google Keep received praise for features including universal device access, native integration with other Google services, and the option to turn photos into text through optical character recognition.</p>
+<p>Google ended support for the Google Keep Chrome app in February 2021, though Google Keep itself will continue to be accessible through other apps and directly in web browsers.</p>
+<h2>Features</h2>
+<p>Google Keep allows users to make different kinds of notes, including: texts, lists, images and audio. Users can set reminders, which are integrated with <a href="./Google_Now" title="Google Now">Google Now</a>, to notify at a specified time. Notification when near a specified location was supported, but discontinued in late 2025.Text from images can be extracted using <a href="./Optical_character_recognition" title="Optical character recognition">optical character recognition</a> technology. Voice recordings created through Keep are automatically transcribed. Keep can convert text notes into checklists. Users can choose between a single-column view and a multi-column view. Notes can be color-coded, with options for: white, red, orange, yellow, green, teal, blue or gray. Users can press a "Copy to Google Doc" button that automatically copies all text into a new <a href="./Google_Docs" title="Google Docs">Google Docs</a> document. Users can create notes and lists <a href="./Google_Voice_Search" title="Google Voice Search">by voice</a>. Notes can be categorized using labels, with a list of labels in the app's navigation bar.</p>
+<h3>Updates</h3>
+<p>In November 2014, Google introduced a real-time note cooperation feature between different Keep users, as well as a search feature determined by attributes, such as color, sharing status or the kind of content in the note. In October 2016, Google added the ability for users to pin notes. In February 2017, Google integrated Google Keep with <a href="./Google_Docs,_Sheets_and_Slides" title="Google Docs, Sheets and Slides">Google Docs</a>, providing access to notes while using Docs on the web. <a href="./Google_Assistant" title="Google Assistant">Google Assistant</a> could previously maintain a <a href="./Shopping_list" title="Shopping list">shopping list</a> within Google Keep. This feature was moved to <a href="./Google_Express" title="Google Express">Google Express</a> in April 2017, resulting in a severe loss of functionality. In July 2017, Google updated Keep on Android with the ability for users to undo and redo changes.</p>
+<p>Support for notification when near a specified location was discontinued in late 2025.</p>
+<h2>Platforms</h2>
+<p>Google Keep was launched on March 20, 2013 for the <a href="./Android_(operating_system)" title="Android (operating system)">Android operating system</a> and on the <a href="./Web_application" title="Web application">web</a>. The Android app is compatible with <a href="./Wear_OS" title="Wear OS">Wear OS</a>. Users can create new notes using voice input, add and check off items in lists and view reminders.</p>
+<p>An app for the <a href="./IOS" title="IOS">iOS</a> operating system was released on September 24, 2015.</p>
+<h2>Reception</h2>
+<h3>2013</h3>
+<p>In a May 2013 review, Alan Henry of <em><a href="./Lifehacker" title="Lifehacker">Lifehacker</a></em> wrote that the interface was "colorful and easy to use" and that the colors actually served a purpose in organization and contrast. Henry praised: the speed, quality of voice notes, synchronization, and Android home screen widget. He criticized the web interface, as well as the lack of an <a href="./IOS" title="IOS">iOS</a> app.</p>
+<p><em><a href="./Time_(magazine)" title="Time (magazine)">Time</a></em> listed Google Keep among its 50 best Android applications for 2013.</p>
+<h3>2016</h3>
+<p>In a January 2016 review, JR Raphael of <em><a href="./Computerworld" title="Computerworld">Computerworld</a></em> wrote that "Keep is incredibly close to being an ideal tool for me to collect and manage all of my personal and work-related notes. And, as evidenced by the fact that I continue to use it, its positives outweigh its negatives for me and make it the best all-around option for my needs", praising what he calls Keep's "killer features", namely simplicity, "easy universal access" and native integration with other Google services. However, he characterized Keep's lack of formatting options, the inability to undo or revert changes and a missing search functionality within notes as "lingering weaknesses".</p>
+<p>In a July 2016 review, Jill Duffy of <em><a href="./PC_Magazine" title="PC Magazine">PC Magazine</a></em> wrote that the interface was best described as "simplicity" and criticized it for offering list and grid views that did not make finding information quick or easy. Adding that "Most of my notes are text-based recipes, which are quite long", Duffy said the list view was "even worse" than the grid view as it only showed "one note at a time and it's the most recently edited note." She wrote that the web interface was lacking in functionality present in the apps. The mobile app's offering to take a photo and run <a href="./Optical_character_recognition" title="Optical character recognition">optical character recognition</a> to have the scan turned into text was described as a "shining star", with the comment "It's an amazing feature, and it works very well". She also criticized the lack of formatting options and that sharing options are "possible but not very refined".</p>
+<h2>See also</h2>
+<ul>
+<li><a href="./Comparison_of_note-taking_software" title="Comparison of note-taking software">Comparison of note-taking software</a></li>
+<li><a href="./Google_Notebook" title="Google Notebook">Google Notebook</a></li>
+<li><a href="./Jamboard" title="Jamboard">Jamboard</a></li>
+</ul>
+<h2>References</h2>
+<h2>External links</h2>
+<ul>
+<li><a href="https://keep.google.com/">Official website</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products" title="List of Google products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Notetaking_software" title="Template:Notetaking software">v</a> - <a href="./Template_talk:Notetaking_software" title="Template talk:Notetaking software">t</a> - <a href="./Special:EditPage/Template:Notetaking_software" title="Special:EditPage/Template:Notetaking software">e</a>  <a href="./Note-taking" title="Note-taking">Note-taking</a>/<a href="./Outliner" title="Outliner">outliner</a> software (<a href="./Comparison_of_note-taking_software" title="Comparison of note-taking software">comparison</a>)</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>- <a href="./AllMyNotes_Organizer" title="AllMyNotes Organizer">AllMyNotes Organizer</a> - <a href="./A.nnotate" title="A.nnotate">A.nnotate</a> - <a href="./Evernote" title="Evernote">Evernote</a> - <a href="./Gnote" title="Gnote">Gnote</a> - <a href="./Google_Notebook" title="Google Notebook">Google Notebook</a>/<a href="./Google_Keep">Keep</a> - <a href="./Joplin_(software)" title="Joplin (software)">Joplin</a> - <a href="./Keynote_(notetaking_software)" title="Keynote (notetaking software)">Keynote</a> - <a href="./Logseq" title="Logseq">Logseq</a> - <a href="./MyInfo" title="MyInfo">MyInfo</a> - <a href="./Obsidian_(software)" title="Obsidian (software)">Obsidian</a> - <a href="./Notes_(Apple)" title="Notes (Apple)">Notes</a> - <a href="./Notion_(productivity_software)" title="Notion (productivity software)">Notion</a> - <a href="./Microsoft_OneNote" title="Microsoft OneNote">OneNote</a> - <a href="./Personal_Knowbase" title="Personal Knowbase">Personal Knowbase</a> - <a href="./Samsung_Notes" title="Samsung Notes">Samsung Notes</a> - <a href="./TiddlyWiki" title="TiddlyWiki">TiddlyWiki</a> - <a href="./Tomboy_(software)" title="Tomboy (software)">Tomboy</a> - <a href="./Windows_Journal" title="Windows Journal">Windows Journal</a> - <a href="./Whizfolders" title="Whizfolders">Whizfolders</a></td>
+<td></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

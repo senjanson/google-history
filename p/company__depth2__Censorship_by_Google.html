@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Censorship by Google</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link active" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Censorship by Google</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Censorship_by_Google<br>
+Category: company__depth2<br>
+Depth: 2</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Google and its subsidiary companies, such as YouTube, have removed or omitted information from its services in order to comply with company policies, legal demands, and government censorship laws.</p>
+<h2>Full Article</h2>
+<p>This article is about censorship by Google itself. For censorship of Google by governments and organizations, see <a href="./Censorship_of_Google" title="Censorship of Google">Censorship of Google</a>.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>This article needs to be <strong>updated</strong>. Please help update this article to reflect recent events or newly available information. <em>(January 2021)</em></td>
+</tr>
+</tbody>
+</table>
+<p><a href="./Google" title="Google">Google</a> and its subsidiary companies, such as <a href="./YouTube" title="YouTube">YouTube</a>, have removed or omitted information from its services in order to comply with company policies, legal demands, and government <a href="./Censorship" title="Censorship">censorship</a> laws.</p>
+<p>Numerous governments have asked Google to censor content. In 2012, Google ruled in favor of more than half the requests they received via court orders and phone calls. This did not include <a href="./China" title="China">China</a> or <a href="./Iran" title="Iran">Iran</a>, who completely blocked the site or one of its subsidiary companies.</p>
+<p>As of 2025, Google continues to receive hundreds of thousands of removal requests annually from governments worldwide, most commonly related to national security, copyright, or defamation, and regularly reviews each request for compliance with its policies.</p>
+<h2>Google AdSense</h2>
+<p>See also: <a href="./Google_AdSense" title="Google AdSense">Google AdSense</a></p>
+<p>In February 2003, Google stopped showing advertisements from <a href="./Oceana_(non-profit_group)" title="Oceana (non-profit group)">Oceana</a>, a non-profit organization protesting against a major cruise ship operation's sewage treatment practices. Google, citing its editorial policy, stated that "Google does not accept advertising if the ad or site advocates against other individuals, groups, or organizations."</p>
+<p>In April 2008, Google refused to run ads for a UK Christian group opposed to abortion, explaining that "At this time, Google policy does not permit the advertisement of websites that contain 'abortion and religion'".</p>
+<p>In April 2014, Google removed ads for certain <a href="./Crisis_pregnancy_center" title="Crisis pregnancy center">crisis pregnancy centers</a> following an investigation by <a href="./NARAL" title="NARAL">NARAL</a>. Research across 70 U.S. cities found that, among "abortion clinic" search results, 79% of the Google ads reviewed violated its policy against deceptive advertising. According to NARAL, people using Google to search for <a href="./Abortion_clinic" title="Abortion clinic">abortion clinics</a> were shown advertisements for <a href="./Anti-abortion_movement_in_the_United_States" title="Anti-abortion movement in the United States">anti-abortion</a> crisis pregnancy centers. Google stated that it constantly reviews ads for policy violations and, if found, takes appropriate actions, including disabling or blacklisting accounts, as quickly as possible.</p>
+<p>In September 2018, Google removed a paid advertisement from YouTube made by supporters of Russian opposition who urged Russians to participate in a protest set on September 9. Russia's <a href="./Central_Election_Commission_(Russia)" title="Central Election Commission (Russia)">Central Election Commission</a> earlier sent a request to Google to remove the advertisement, saying it violated election laws that call for a "day of silence" on election matters ahead of voting, but the advertisement was blocked even in regions with no voting set on September 9 and in regions where authorities had authorized the pension-reform protests.</p>
+<h2>Google Maps</h2>
+<p>See also: <a href="./Google_Maps" title="Google Maps">Google Maps</a></p>
+<p>In March 2007, the lower-resolution <a href="./Satellite_imagery" title="Satellite imagery">satellite imagery</a> on <a href="./Google_Maps" title="Google Maps">Google Maps</a> showing post-<a href="./Hurricane_Katrina" title="Hurricane Katrina">Hurricane Katrina</a> damage in <a href="./Louisiana" title="Louisiana">Louisiana</a>, US, was allegedly replaced with higher resolution images from before the storm. Google's official blog post in April revealed that the imagery was still available in <a href="./Keyhole_Markup_Language" title="Keyhole Markup Language">KML</a> format on <a href="./Google_Earth" title="Google Earth">Google Earth</a> or Google Maps.</p>
+<p>In March 2008, Google removed <a href="./Google_Street_View" title="Google Street View">Street View</a> and 360° images of military bases per <a href="./The_Pentagon" title="The Pentagon">the Pentagon</a>'s request.</p>
+<p>To protect the privacy and anonymity of individuals, Google selectively blurred photographs containing car license number plates and faces in <a href="./Google_Street_View" title="Google Street View">Google Street View</a>. Users may request further blurring of images that feature them, their family, their car, or their home. Users can also request the removal of images that feature what Google terms "inappropriate content," which falls under their categories of intellectual property violations; sexually explicit content; illegal, dangerous, or violent content; child endangerment; hate speech; harassment and threats; and personal or confidential information. In some countries (e.g. Germany), Google modifies images of specific buildings. In the United States, Google Street View adjusts or omits certain images deemed of interest to national security by the federal government.</p>
+<h2>Google Search</h2>
+<p>See also: <a href="./Google_Search" title="Google Search">Google Search</a></p>
+<p>In the United States, Google commonly filters search results to comply with <a href="./Digital_Millennium_Copyright_Act" title="Digital Millennium Copyright Act">Digital Millennium Copyright Act</a> (DMCA)-related legal complaints.</p>
+<p>In the United Kingdom, it was reported that Google had "delisted" <a href="./Inquisition_21?action=edit&amp;redlink=1" title="Inquisition 21">Inquisition 21</a>, a website that claims to challenge moral authoritarian and sexually absolutist ideas in the United Kingdom. Google later released a press statement suggesting Inquisition 21 had attempted to manipulate search results. In Germany and France, a study reported that approximately 113 <a href="./White_nationalism" title="White nationalism">white nationalist</a>, <a href="./Nazism" title="Nazism">Nazi</a>, <a href="./Antisemitism" title="Antisemitism">antisemitic</a>, <a href="./Islamic_extremism" title="Islamic extremism">Islamic extremist</a>, and other similar websites had been removed from the German and French versions of Google. Google has complied with these laws by not including sites containing such material in its search results. However, Google does list the number of excluded results at the bottom of the search result page and links to <a href="./Lumen_(website)" title="Lumen (website)">Lumen</a> (formerly, Chilling Effects) for an explanation.</p>
+<h3>Lolicon content</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>This section needs to be <strong>updated</strong>. The reason given is: <strong>No info past 2010</strong>. Please help update this article to reflect recent events or newly available information. <em>(April 2024)</em></td>
+</tr>
+</tbody>
+</table>
+<p>As of 18 April 2010<a href="https://en.wikipedia.org/w/index.php?title=Censorship_by_Google&amp;action=edit">[update]</a>, Google censors "<em><a href="./Lolicon" title="Lolicon">lolicon</a></em>", a Japanese term meaning "attractive young girls", on its search results, hiding results regarding lolicon material, even if the user types words along with the term which would typically lead to explicit content results; the terms "loli" and "lolita" also suffer from censorship in regards to this content.</p>
+<h3>Removal of SafeSearch options</h3>
+<p>Google <a href="./SafeSearch" title="SafeSearch">SafeSearch</a> was first introduced in 1999 as a tool to help users filter out explicit content such as pornography or violence from search results. Some users have stated that SafeSearch's lack of a completely unfiltered option amounts to censorship by Google. A Google spokesperson[<em><a href="./Wikipedia:Manual_of_Style/Words_to_watch#Unsupported_attributions" title="Wikipedia:Manual of Style/Words to watch">who?</a></em>] disagreed, saying that Google is "not censoring any adult content," but "want to show users exactly what they are looking for—but [Google policies] aim not to show sexually-explicit results unless a user is specifically searching for them".</p>
+<h3>Online pharmacies</h3>
+<p>Following a settlement with the <a href="./Food_and_Drug_Administration" title="Food and Drug Administration">Food and Drug Administration</a> (FDA) ending <a href="./Google_Ads" title="Google Ads">Google Adwords</a>' advertising of Canadian pharmacies that permitted Americans to access cheaper prescriptions, Google agreed to several compliances and reporting measures to limit the visibility of "rogue pharmacies". Google and other members of the Center for Safe Internet Pharmacies are collaborating to remove illegal pharmacies from search results and participating in "Operation Pangea" with the FDA and Interpol.</p>
+<h3>Search suggestions</h3>
+<p>See also: <a href="./Search_suggest_drop-down_list" title="Search suggest drop-down list">Search suggest drop-down list</a> and <a href="./Criticism_of_Google#Web_search" title="Criticism of Google">Criticism of Google § Web search</a></p>
+<p>In January 2010, Google was reported to have stopped providing automatic suggestions for any search beginning with the term "Islam is", while it continued to do so for other major religions. According to <em><a href="./Wired_(magazine)" title="Wired (magazine)">Wired.com</a></em>, a Google spokesperson stated, "This is a bug and we're working to fix it as quickly as we can." Suggestions for "Islam is" were available later that month. Nonetheless, Google continues to filter certain words from autocomplete suggestions, describing them as "potentially inappropriate".</p>
+<p>The publication <em><a href="./2600:_The_Hacker_Quarterly" title="2600: The Hacker Quarterly">2600: The Hacker Quarterly</a></em> has compiled a list of words that are restricted by <a href="./Google_Search#Instant_Search" title="Google Search">Google Instant</a>. These are terms that the company's Instant Search feature will not search. Most terms are often vulgar and derogatory in nature, but some apparently irrelevant searches including "Myleak" are removed.</p>
+<p>As of 26 January 2011<a href="https://en.wikipedia.org/w/index.php?title=Censorship_by_Google&amp;action=edit">[update]</a>, Google's Autocomplete feature would not complete certain words such as "BitTorrent," "Torrent," "uTorrent," "Megaupload," and "Rapidshare", and Google actively censored search terms or phrases that its algorithm considered likely constituting spam or intending to manipulate search results.</p>
+<p>In September 2012, multiple sources reported that Google had removed "<a href="./Bisexuality" title="Bisexuality">bisexual</a>" from its list of blacklisted terms for Instant Search.</p>
+<p>In December 2022, Google was reported to have stopped providing automatic suggestions for any search with the term "protests in China", while it continued to do so for other countries.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>]</p>
+<h3>Ungoogleable</h3>
+<p>In 2013, the <a href="./Language_Council_of_Sweden" title="Language Council of Sweden">Language Council of Sweden</a> included the <a href="./Swedish_language" title="Swedish language">Swedish</a> version of the word <em>ungoogleable</em> (<em><a href="https://en.wiktionary.org/wiki/ogooglebar" title="wikt:ogooglebar">ogooglebar</a></em>) in its list of new words. It had "defined the term as something that cannot be found with any search engine". Google objected to this definition, wanting it to only refer to Google searches, and the Council removed it in order to avoid a legal confrontation, and accused Google of trying to "control the Swedish language".</p>
+<h3>Leaked celebrity content</h3>
+<p>Main article: <a href="./2014_celebrity_nude_photo_leak" title="2014 celebrity nude photo leak">2014 celebrity nude photo leak</a></p>
+<p>On 31 August 2014, almost 200 private pictures of various celebrities containing nudity and explicit content were <a href="./2014_celebrity_nude_photo_leak" title="2014 celebrity nude photo leak">made public on certain websites</a>. Google removed most search results that linked users directly to such content shortly after.</p>
+<h3>COVID-19 pandemic-related content</h3>
+<p>An Australian study found Google search results relating to COVID-19 were heavily curated, with no indication given to users that such curation was happening. Google removed autocomplete suggestions for searches related to the <a href="./COVID-19_lab_leak_theory" title="COVID-19 lab leak theory">COVID-19 lab leak theory</a>.</p>
+<h3>International</h3>
+<h4>Australia</h4>
+<p>In January 2010, Google Australia removed links to satirical website <a href="./Encyclopedia_Dramatica" title="Encyclopedia Dramatica">Encyclopedia Dramatica's</a> "Aboriginal" article, citing it as a violation of Australia's <a href="./Racial_Discrimination_Act_1975" title="Racial Discrimination Act 1975">Racial Discrimination Act</a>. After the website's domain change in 2011, the article resurfaced in Google Australia's search results.</p>
+<h4>Canada</h4>
+<p>Main article: <a href="./Google_Inc_v_Equustek_Solutions_Inc" title="Google Inc v Equustek Solutions Inc">Google Inc v Equustek Solutions Inc</a></p>
+<p>On 19 June 2014, Google was ordered by the <a href="./Supreme_Court_of_British_Columbia" title="Supreme Court of British Columbia">Supreme Court of British Columbia</a> to remove search results that linked to websites of a company called Datalink. The websites in question sell network device technology that Datalink is alleged to have stolen from Equustek Solutions. Google voluntarily removed links from google.ca, the main site used by Canadians, but the court granted a temporary injunction applying to all Google sites across the world. Google argued that Canadian law could not be imposed across the world but was given until June 17, 2014, to comply with the court's ruling.</p>
+<h4>China</h4>
+<p>Main article: <a href="./Google_China" title="Google China">Google China</a></p>
+<p>Google adhered to the <a href="./Internet_censorship_in_China" title="Internet censorship in China">Internet censorship policies of China</a>, enforced by means of filters colloquially known as "The <a href="./Great_Firewall" title="Great Firewall">Great Firewall</a>," until March 2010. Google.cn search results were filtered to not display any results perceived to be harmful to the <a href="./Chinese_Communist_Party" title="Chinese Communist Party">Chinese Communist Party</a> (CCP).[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>] Google claimed that some censorship was necessary in order to keep the <a href="./Government_of_China" title="Government of China">Chinese government</a> from blocking Google entirely, which had happened in 2002.[<em><a href="./Wikipedia:Verifiability" title="Wikipedia:Verifiability">failed verification</a></em>]</p>
+<p>Google claimed it did not plan to give the government information about users who searched for blocked content and would inform users that content had been restricted if they attempt to search for it. As of 2009<a href="https://en.wikipedia.org/w/index.php?title=Censorship_by_Google&amp;action=edit">[update]</a>, Google was the only major China-based search engine to explicitly inform the user when search results were blocked or hidden. As of December 2012<a href="https://en.wikipedia.org/w/index.php?title=Censorship_by_Google&amp;action=edit">[update]</a>, Google no longer informs the user of possible censorship for certain queries during a search. The Chinese government had restricted citizens' access to popular search engines such as <a href="./AltaVista" title="AltaVista">AltaVista</a>, <a href="./Yahoo" title="Yahoo">Yahoo</a>, and <a href="./Google_Search" title="Google Search">Google</a> in the past, though the complete ban has since been lifted[<em><a href="./Wikipedia:Manual_of_Style/Dates_and_numbers#Chronological_items" title="Wikipedia:Manual of Style/Dates and numbers">when?</a></em>]. However, the government remains active in filtering Internet content. In October 2005, the <a href="./Blogger_(service)" title="Blogger (service)">Blogger</a> platform and access to the Google <a href="./Web_cache" title="Web cache">cache</a> was made available in mainland China; however, in December 2005, some mainland Chinese Blogger users reported that their access to the site was once again restricted[<em><a href="./Wikipedia:Manual_of_Style/Words_to_watch#Unsupported_attributions" title="Wikipedia:Manual of Style/Words to watch">who?</a></em>].</p>
+<p>In January 2006, Google agreed that China's version of Google, <a href="./Google.cn" title="Google.cn">Google.cn</a>, would filter certain keywords given to it by the Chinese government. Google pledged to tell users when search results are censored and said that it would not "maintain any services that involve personal or confidential data, such as <a href="./Gmail" title="Gmail">Gmail</a> or <a href="./Blogger_(service)" title="Blogger (service)">Blogger</a>, on the mainland". Google said that it does not plan to give the government information about users who search for blocked content and will inform users that content has been restricted if they attempt to search for it. Searchers may encounter a message which states: "In accordance with local laws and policies, some of the results have not been displayed." Google issued a statement saying that "removing search results is inconsistent with Google's mission" but that the alternative—being shut down entirely and thereby "providing no information (or a heavily degraded user experience that amounts to no information) is more inconsistent with our mission." Initially, both the censored Google.cn and the uncensored Chinese-language Google.com were available. In June 2006, however, China blocked Google.com again.</p>
+<p>Some Chinese Internet users were critical of Google for assisting the Chinese government in repressing its own citizens, particularly those dissenting against the government and advocating for human rights. Furthermore, Google had been denounced and called hypocritical by the <a href="./Free_Media_Movement" title="Free Media Movement">Free Media Movement</a> and <a href="./Reporters_Without_Borders" title="Reporters Without Borders">Reporters Without Borders</a> for agreeing to China's demands while simultaneously fighting the United States government's requests for similar information. Google China had also been condemned by <a href="./Reporters_Without_Borders" title="Reporters Without Borders">Reporters Without Borders</a>, <a href="./Human_Rights_Watch" title="Human Rights Watch">Human Rights Watch</a>, and <a href="./Amnesty_International" title="Amnesty International">Amnesty International</a>.</p>
+<p>On 14 February 2006, protesters organized a "mass breakup with Google" whereby users agreed to boycott Google on <a href="./Valentine's_Day" title="Valentine's Day">Valentine's Day</a> to show their disapproval of the Google China policy.</p>
+<p>In June 2009, Google was ordered by the Chinese government to block various overseas websites, including some with sexually explicit content. Google was criticized by the China Illegal Information Reporting Center (CIIRC) for allowing search results that included content that was sexual in nature, and claimed the company was a dissemination channel for a "huge amount of <a href="./Pornography" title="Pornography">pornography</a> and lewd content".</p>
+<p>On 12 January 2010, in response to an <a href="./Operation_Aurora" title="Operation Aurora">apparent hacking of Google's servers</a> in an attempt to access information about Chinese dissidents, Google announced that "we are no longer willing to continue censoring our results on Google.cn, and so over the next few weeks we will be discussing with the Chinese government the basis on which we could operate an unfiltered search engine within the law, if at all."</p>
+<p>On 22 March 2010, after talks with Chinese authorities failed to reach an agreement, the company redirected its censor-complying <a href="./Google_China" title="Google China">Google China</a> service to its Google Hong Kong service, which is outside the jurisdiction of Chinese censorship laws. However, at least as of March 23, 2010, "The Great Firewall" continues to censor search results from the Hong Kong portal, www.google.com.hk (as it does with the US portal, www.google.com) for controversial terms such as "<a href="./Falun_Gong" title="Falun Gong">Falun gong</a>" and "the <a href="./1989_Tiananmen_Square_protests_and_massacre" title="1989 Tiananmen Square protests and massacre">June 4th incident</a>" (1989 Tiananmen Square protests and massacre).</p>
+<p>In August 2018, it was revealed that Google was working on a version of its search engine for use in China, which would censor content according to the restrictions placed by the Chinese government. This project was worked on by a small percentage of the company and was codenamed <a href="./Dragonfly_(search_engine)" title="Dragonfly (search engine)">Dragonfly</a>. A number of Google employees expressed their concern about the project, and several resigned. In 2019, Google's vice president of public policy, <a href="./Karan_Bhatia" title="Karan Bhatia">Karan Bhatia</a>, testified before the <a href="./United_States_Senate_Committee_on_the_Judiciary" title="United States Senate Committee on the Judiciary">U.S. Senate Judiciary Committee</a> that the Dragonfly project had been terminated.</p>
+<p>In February 2023, <a href="./Radio_Free_Asia" title="Radio Free Asia">Radio Free Asia</a> reported that YouTube content satirizing <a href="./General_Secretary_of_the_Chinese_Communist_Party" title="General Secretary of the Chinese Communist Party">General Secretary of the Chinese Communist Party</a> <a href="./Xi_Jinping" title="Xi Jinping">Xi Jinping</a> is routinely targeted for takedowns using YouTube's <a href="./Copyright_infringement" title="Copyright infringement">copyright infringement</a> reporting system.</p>
+<p>On 15 February 2025, The Guardian issued a report indicating the Google China had removed content such as <a href="./YouTube_videos" title="YouTube videos">YouTube videos</a> of <a href="./Anti-state" title="Anti-state">anti-state</a> protesters or content that criticises and alleges <a href="./Corruption" title="Corruption">corruption</a> among their politicians. At the request of the <a href="./Ministry_of_Public_Security_(China)" title="Ministry of Public Security (China)">ministry of public security</a> in <a href="./Minister_of_Public_Security_(China)" title="Minister of Public Security (China)">China</a>, which oversees the police and domestic political spying networks, Google took down more than 200 videos. The ministry had requested removals for 412, of which 346 "contained allegations about corruption within the political system in the People's Republic of China or stories about top government officials". Google also assisted in China's crackdown on <a href="./Free_speech" title="Free speech">free speech</a>, removing profiles that <a href="./Impersonator" title="Impersonator">impersonated</a> the <a href="./General_Secretary_of_the_Chinese_Communist_Party" title="General Secretary of the Chinese Communist Party">CCP General Secretary</a>, <a href="./Xi_Jinping" title="Xi Jinping">Xi Jinping</a>. Online impersonation accounts were banned in 2015 after Chinese citizens used them to covertly criticise Xi and to circumvent <a href="./Censorship_in_China" title="Censorship in China">censorship laws</a>, which are some of the world's most prohibitive.</p>
+<h4>European Union</h4>
+<p>In July 2014, Google began removing certain search results from its search engines in the <a href="./European_Union" title="European Union">European Union</a> in response to requests under the <a href="./Right_to_be_forgotten" title="Right to be forgotten">right to be forgotten</a>. Articles whose links were removed, when searching for specific personal names, included a 2007 blog by the BBC journalist <a href="./Robert_Peston" title="Robert Peston">Robert Peston</a> about <a href="./Stanley_O'Neal" title="Stanley O'Neal">Stanley O'Neal</a>, a former chairman of investment bank <a href="./Merrill_(company)" title="Merrill (company)">Merrill Lynch</a>, being forced out after the bank made huge losses. Peston criticized Google for "...cast[ing him] into oblivion".</p>
+<p><em>The Guardian</em> reported that six of its articles, including three relating to a former Scottish football referee, had been "hidden". Other articles, including one about French office workers using post-it notes and another about a collapsed fraud trial of a solicitor standing for election to the Law Society's ruling body, were affected.</p>
+<p><a href="./Sky_News_Australia" title="Sky News Australia">Sky News Australia</a> reported that a story about <a href="./Kelly_Osbourne" title="Kelly Osbourne">Kelly Osbourne</a> falling ill on the set of <em><a href="./Fashion_Police" title="Fashion Police">Fashion Police</a></em> in 2013 had been removed.</p>
+<p>The <em>Oxford Mail</em> reported that its publishers had been notified by Google about the removal of links to the story of a conviction for shoplifting in 2006. The paper said it was not known who had asked Google to remove the search result, but there had been a previous complaint to the <a href="./Press_Complaints_Commission" title="Press Complaints Commission">Press Complaints Commission</a> (PCC) in 2010 concerning its accuracy, claimed that the report was causing "embarrassment", and requested that the story be taken off the paper's website. The paper said two factual amendments were made to the article and the PCC dismissed the complaint.</p>
+<p>An article about the conversion to Islam of the brother of <a href="./George_Osborne" title="George Osborne">George Osborne</a>, the <a href="./Chancellor_of_the_Exchequer" title="Chancellor of the Exchequer">Chancellor of the Exchequer</a>, was removed after a request to Google from an unknown person under the right-to-be-forgotten ruling.</p>
+<p><em>The Telegraph</em> reported that links to a report on its website about claims that a former Law Society chief faked complaints against his deputy were hidden. The search results for the articles for the same story in the Guardian and <em><a href="./The_Independent" title="The Independent">The Independent</a></em> were also removed. <em>The Independent</em> reported that its article, together with an article on the Indian Ocean tsunami in 2004 and one on new trends in sofa design in 1998, had been removed. <em>The Telegraph</em> also reported that links to articles concerning a student's 2008 drunk-driving conviction and a 2001 case that resulted in two brothers each receiving nine-month jail terms for affray had been removed.</p>
+<p>The Spanish newspaper <em>El Mundo</em> reported that some results were hidden over a 2008 news report of a Spanish Supreme Court ruling involving executives of Riviera Coast Invest who were involved in a mortgage mis-selling scandal.</p>
+<p>On 5 July 2014, German news magazine <em>Der Spiegel</em> reported removal of a search result to an article about <a href="./Scientology" title="Scientology">Scientology</a>.</p>
+<p>On 19 August 2014, the BBC reported that Google had removed 12 links to stories on BBC News.</p>
+<h4>Germany and France</h4>
+<p>On 22 October 2002, a study reported that approximately 113 Internet sites had been removed from the German and French versions of Google. This <a href="./Censorship" title="Censorship">censorship</a> mainly affected <a href="./White_nationalism" title="White nationalism">white nationalist</a>, <a href="./Nazism" title="Nazism">Nazi</a>, <a href="./Antisemitism" title="Antisemitism">antisemitic</a>, Islamic extremist websites, and at least one <a href="./Christian_fundamentalism" title="Christian fundamentalism">fundamentalist Christian</a> website. Under French and German law, <a href="./Hate_speech" title="Hate speech">hate speech</a> and <a href="./Holocaust_denial" title="Holocaust denial">Holocaust denial</a> are illegal. In the case of Germany, violent or sex-related sites such as <a href="./YouPorn" title="YouPorn">YouPorn</a> and <a href="./BMEzine" title="BMEzine">BME</a> that the <em><a href="./Federal_Agency_for_Child_and_Youth_Protection_in_the_Media" title="Federal Agency for Child and Youth Protection in the Media">Bundesprüfstelle für jugendgefährdende Medien</a></em> deems harmful to youth are also censored.</p>
+<p>Google has complied with these laws by not including sites containing such material in its search results. However, Google does list the number of excluded results at the bottom of the search result page and links to <a href="./Lumen_(website)" title="Lumen (website)">Lumen</a> (formerly known as Chilling Effects) for explanation.</p>
+<h4>Sweden</h4>
+<p>In March 2018, Google delisted a WordPress hosted site from search results in Sweden, following an intense media frenzy targeted against Google, YouTube, and Facebook by the tabloid <em><a href="./Expressen" title="Expressen">Expressen</a></em> and the daily newspaper <em><a href="./Dagens_Nyheter" title="Dagens Nyheter">Dagens Nyheter</a></em>. The WordPress site lists Swedish Jews in the public sphere, and also agitates against the dominant publishing house <a href="./Bonnier_Group" title="Bonnier Group">Bonnier Group</a>, the owner of both newspapers.</p>
+<p>Although perfectly legal in Sweden, the WordPress site was described as <a href="./Antisemitism" title="Antisemitism">antisemitic</a>. The Bonnier papers argued that Google should not promote such content and above all not at a high rank. Ministers in the Swedish green-left government agreed with this sentiment, and threatened with national and EU regulation unless Google adapt its algorithms and delist contents of "threats and hate" <em>(hot och hat)</em>. Google eventually delisted the site in Sweden due to copyright claims.[<em><a href="./Wikipedia:Manual_of_Style/Dates_and_numbers#Chronological_items" title="Wikipedia:Manual of Style/Dates and numbers">when?</a></em>]</p>
+<p>Said papers also targeted the YouTube channel Granskning Sverige (Scrutiny Sweden) for its alleged extreme right-wing contents. The channel was described as a "troll factory", where members called authorities, journalists and other public figures, and recut the recorded interviews to make them fit the channel's right-wing extremist world view. The interviews were broadcast against a black backdrop with the channel logotype, and the occasional use of screen dumps from newspaper articles related to the interviews. Google eventually complied with the demands,[<em><a href="./Wikipedia:Manual_of_Style/Dates_and_numbers#Chronological_items" title="Wikipedia:Manual of Style/Dates and numbers">when?</a></em>] and closed the channel, citing copyright infringement and violation of terms of agreement.</p>
+<p>On April 13, 2018, Google took part in a meeting with the Swedish government, to discuss the search company's role in the media landscape. Minister of Justice, <a href="./Morgan_Johansson" title="Morgan Johansson">Morgan Johansson</a> (Social Democrats), and Minister of Digitization, <a href="./Peter_Eriksson_(politician)" title="Peter Eriksson (politician)">Peter Eriksson</a> (Green Party), expressed concerns that "unlawful" and "harmful" content was facilitated by Google, and that "trolls" could have a negative impact on the upcoming Swedish parliamentary election. Google agreed to refine its algorithms, and also hire more staff to make sure "threats and hate" are eliminated from Google search and YouTube videos. Critics have voiced concerns that private international companies are mandated to put censorship into effect to comply with local regulations without guidance from courts, and that free speech is deteriorating at an accelerating rate.</p>
+<h4>India</h4>
+<p>In September 2016, the <a href="./Ministry_of_Health_and_Family_Welfare" title="Ministry of Health and Family Welfare">Ministry of Health and Family Welfare</a> revealed that Google had agreed to censor search results and advertising of <a href="./Prenatal_sex_discernment" title="Prenatal sex discernment">prenatal sex discernment</a>, which is illegal in India.</p>
+<h4>Israel</h4>
+<p>Since 2015, Google removed certain search results that were defamatory in nature from its search engine in <a href="./Israel" title="Israel">Israel</a> following <a href="./Gag_order" title="Gag order">gag orders</a>.</p>
+<h4>Russia</h4>
+<p>See also: <a href="./Internet_censorship_in_Russia" title="Internet censorship in Russia">Internet censorship in Russia</a></p>
+<p>In the four years from June 2020 to June 2024, Russia accounted for more than 60% of takedown requests<strong>.</strong> The country's <a href="./Internet_censorship_in_Russia" title="Internet censorship in Russia">internet censor</a>, <a href="./Roskomnadzor" title="Roskomnadzor">Roskomnadzor</a>, is one of the government agencies that corresponds most frequently with Google – and has earned the nickname "Rosco" in some of its reports. Google removed a YouTube video that allegedly exposed "corruption among politicians" and made "some rhetorical threats of violent action against the alleged corrupt politicians."</p>
+<p><a href="./Russians" title="Russians">Russian citizens</a> were also prevented from viewing certain posts on the company's <a href="./Blogger_(service)" title="Blogger (service)">Blogger</a> platform, which "included criticism of <a href="./Russian_military" title="Russian military">Russian military</a> history and policy, and <a href="./Russian_holidays" title="Russian holidays">Russian patriotic holidays</a>. It also incited violence against residents of a Russian town," the report said.</p>
+<p>In 2022, the Company censored multiple YouTube videos calling for protests against the <a href="./Russia" title="Russia">Russian Federation</a>. Other pieces of content that criticised Putin, including the late Russian opposition leader <a href="./Alexei_Navalny" title="Alexei Navalny">Alexei Navalny</a>'s <a href="./Tactical_voting" title="Tactical voting">tactical voting</a> recommendations, were temporarily blocked during the September 2021 election period. Roskomnadzor "and other Russian government entities" also asked that Google removed Navalny's <a href="./Smart_Voting" title="Smart Voting">Smart Voting</a> app from its <a href="./Play_Store" title="Play Store">Play Store</a>, which it did.</p>
+<h4>United Kingdom</h4>
+<p>On 21 September 2006, it was reported that Google had "delisted" Inquisition 21, a website that claims to challenge moral authoritarian and sexually absolutist ideas in the United Kingdom. According to Inquisition 21, Google was acting "in support of a campaign by law enforcement agencies in the US and the UK to suppress emerging information about their involvement in major malpractice", allegedly exposed by their own investigation of any legal action against those who carried out <a href="./Operation_Ore" title="Operation Ore">Operation Ore</a>, a far-reaching and much-criticized law enforcement campaign against the viewers of child pornography. Google released a press statement suggesting Inquisition 21 had attempted to manipulate search results.</p>
+<h4>United States</h4>
+<p>Google commonly removes search results to comply with <a href="./Digital_Millennium_Copyright_Act" title="Digital Millennium Copyright Act">Digital Millennium Copyright Act</a> (DMCA)-related legal complaints.</p>
+<p>In 2002, "in an apparent response to criticism of its handling of a threatening letter from a <a href="./Church_of_Scientology" title="Church of Scientology">Church of Scientology</a> lawyer," Google began to make DMCA "takedown" letters public, posting such notices on the Chilling Effects archive (now <a href="./Lumen_(website)" title="Lumen (website)">Lumen</a>), which archives legal threats made against Internet users and Internet sites.</p>
+<p>In mid-2016, Google conducted a two-month standoff with writer <a href="./Dennis_Cooper" title="Dennis Cooper">Dennis Cooper</a> after deleting his Blogger and Gmail accounts without warning or explanation following a single anonymous complaint. The case drew worldwide media attention, and finally resulted in Google returning Cooper's content to him.</p>
+<p>In mid-2018, Google permanently barred conspiracy theorist <a href="./Alex_Jones" title="Alex Jones">Alex Jones</a> from using its subsidiary company <a href="./YouTube" title="YouTube">YouTube</a>. Jones' channel <a href="./InfoWars" title="InfoWars">InfoWars</a> responded by "accusing the companies of censorship".</p>
+<p>In mid-2019, Google allegedly suspended <a href="./Tulsi_Gabbard" title="Tulsi Gabbard">Tulsi Gabbard</a>'s advertisements for her presidential campaign, while the candidate was at the height of public interest. Gabbard sued Google for $50 million in damages.[<em><a href="./Wikipedia:Manual_of_Style/Dates_and_numbers#Chronological_items" title="Wikipedia:Manual of Style/Dates and numbers">needs update</a></em>]</p>
+<h3>Global blocking</h3>
+<p>See also: <a href="./Comparison_of_search_engines" title="Comparison of search engines">Comparison of search engines</a></p>
+<p>In June 2017, the <a href="./Supreme_Court_of_Canada" title="Supreme Court of Canada">Canadian supreme court</a> ruled that Google can be forced to remove search results worldwide. Civil liberties groups including <a href="./Human_Rights_Watch" title="Human Rights Watch">Human Rights Watch</a>, the <a href="./British_Columbia_Civil_Liberties_Association" title="British Columbia Civil Liberties Association">BC Civil Liberties Association</a>, and the <a href="./Electronic_Frontier_Foundation" title="Electronic Frontier Foundation">Electronic Frontier Foundation</a> argue that this would set a precedent for Internet censorship. In an appeal, Google argued that the global reach of the order was unnecessary and that it raised concerns over freedom of expression. While the court writes that "[They] have not, to date, accepted that freedom of expression requires the facilitation of the unlawful sale of goods", <a href="./OpenMedia" title="OpenMedia">OpenMedia</a> spokesman, David Christopher, warns that "there is great risk that governments and commercial entities will see this ruling as justifying censorship requests that could result in perfectly legal and legitimate content disappearing off the web because of a court order in the opposite corner of the globe".</p>
+<h3>Refresh Outdated Content vulnerability</h3>
+<p>See also: <a href="./John_Doe_v._Substack_Inc" title="John Doe v. Substack Inc">John Doe v. Substack Inc</a></p>
+<p>After journalist Jack Poulson discovered that articles he had published about tech CEO Delwin Maurice Blackman's domestic violence arrest had been removed from Google (following attempts through legal pressure and bribery to remove the articles), the <a href="./Freedom_of_the_Press_Foundation" title="Freedom of the Press Foundation">Freedom of the Press Foundation</a> investigated and found that Google's 'Refresh Outdated Content' tool had been exploited to suppress his articles &amp; others in major publications from appearing in Google search results. Google have stated that the vulnerability that allowed abuse of the tool has been corrected.</p>
+<h2>Google Play</h2>
+<p>See also: <a href="./Google_Play" title="Google Play">Google Play</a></p>
+<p>On September 17, 2021, Google removed the <a href="./Smart_Voting" title="Smart Voting">Smart Voting</a> app used by the <a href="./Opposition_to_Vladimir_Putin_in_Russia" title="Opposition to Vladimir Putin in Russia">Russian opposition</a> to coordinate its voting strategy against the ruling <a href="./United_Russia" title="United Russia">United Russia</a> party during elections. The app was removed following threats from the Russian government.</p>
+<p>Google was reported to have removed Red Dot, an app similar to <a href="./ICEBlock" title="ICEBlock">ICEBlock</a>.</p>
+<h2>YouTube</h2>
+<p>See also: <a href="./Criticism_of_Google#YouTube" title="Criticism of Google">Criticism of Google § YouTube</a></p>
+<p><a href="./YouTube" title="YouTube">YouTube</a>, a <a href="./Online_video_platform" title="Online video platform">video sharing</a> website and subsidiary of Google, in its Terms of Service, prohibits the posting of videos which violate <a href="./Copyright" title="Copyright">copyrights</a> or depict <a href="./Pornography" title="Pornography">pornography</a>, illegal acts, gratuitous violence, <a href="./Hate_speech" title="Hate speech">hate speech</a>, and what it deems to be misinformation about COVID-19. User-posted videos that violate such terms may be removed and replaced with a message that reads, "This video has been removed due to a violation of our Terms of Service."</p>
+<h3>General censorship</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>The <strong><a href="./Wikipedia:Neutral_point_of_view" title="Wikipedia:Neutral point of view">neutrality</a> of this article is <a href="./Wikipedia:NPOV_dispute" title="Wikipedia:NPOV dispute">disputed</a></strong>. Relevant discussion may be found on the <a href="./Talk:Censorship_by_Google#Linus_Tech_Tips_DeGoogle_your_Life_part_2" title="Talk:Censorship by Google">talk page</a>. Please do not remove this message until <a href="./Template:POV#When_to_remove" title="Template:POV">conditions to do so are met</a>. <em>(September 2024)</em> <em>(<a href="./Help:Maintenance_template_removal" title="Help:Maintenance template removal">Learn how and when to remove this message</a>)</em></td>
+</tr>
+</tbody>
+</table>
+<p>In September 2007, YouTube blocked the account of <a href="./Wael_Abbas" title="Wael Abbas">Wael Abbas</a>, an Egyptian activist who posted videos of police brutality, voting irregularities and antigovernmental demonstrations under the Mubarak regime. Shortly afterward, his account was subsequently restored, along with 187 of his videos.</p>
+<p>In 2006, Thailand blocked access to YouTube after identifying 20 offensive videos it ordered the site to remove. In 2007, a Turkish judge ordered YouTube to be blocked in the country due to videos insulting <a href="./Mustafa_Kemal_Atatürk" title="Mustafa Kemal Atatürk">Mustafa Kemal Atatürk</a>, the founder of the Republic of Turkey (which falls under <a href="./Article_301_(Turkish_Penal_Code)" title="Article 301 (Turkish Penal Code)">Article 301 prohibitions on insulting the Turkish nation</a>).</p>
+<p>In February 2008, the <a href="./Pakistan_Telecommunication_Authority" title="Pakistan Telecommunication Authority">Pakistan Telecommunications Authority</a> banned YouTube in the country, but the manner in which it performed the block accidentally prevented access to the website worldwide for several hours. The ban was lifted after YouTube removed controversial religious comments made by a Dutch government official concerning Islam.</p>
+<p>In October 2008, YouTube removed a video by <a href="./Pat_Condell" title="Pat Condell">Pat Condell</a> titled "Welcome to Saudi Britain"; in response, his fans re-uploaded the video themselves and the <a href="./National_Secular_Society" title="National Secular Society">National Secular Society</a> wrote to YouTube in protest.</p>
+<p>In 2016, YouTube launched a localized Pakistani version of its website for the users in Pakistan in order to censor content considered blasphemous by the Pakistan government as a part of its deal with the latter. As a result, the three-year ban on YouTube by the Pakistan government was subsequently lifted.</p>
+<p>In July 2017, YouTube began modifying suggested videos to debunk terrorist ideologies. In August 2017, YouTube wrote a blog post explaining a new "limited state" for religious and controversial videos, which would not allow comments, likes, monetization, and suggested videos.</p>
+<p>In October 2017, <a href="./PragerU" title="PragerU">PragerU</a> sued YouTube, alleging violations of their <a href="./Freedom_of_speech" title="Freedom of speech">freedom of speech</a> under the <a href="./First_Amendment_to_the_United_States_Constitution" title="First Amendment to the United States Constitution">First Amendment</a> via YouTube's "arbitrary and capricious use of 'restricted mode' and 'demonetization' viewer restriction filters" to suppress their content. A U.S. district appeals court threw out the suit in February 2020, stating that despite "[its] ubiquity and its role as a public-facing platform", YouTube was still considered a private platform (the First Amendment only applies to <a href="./State_action" title="State action">state actors</a>).</p>
+<p>In December 2017, what YouTubers referred to as the "AdPocalypse" took place, with YouTube's automated content policing tool began demonetizing content that ran afoul of the company's very-broad "Not Advertiser-Friendly" category. The following April, numerous firearm-related channels began encountering additional policing by YouTube when new rules restricting videos "that facilitate private gun sales or link to websites that sell guns" were enacted. As a result, popular firearms vlogger <a href="./Hickok45" title="Hickok45">Hickok45</a>'s account was deleted (and subsequently reinstated after an outcry).</p>
+<p>In March 2018, <em><a href="./The_Atlantic" title="The Atlantic">The Atlantic</a></em> found that YouTube had delisted a video where journalist <a href="./Daniel_Lombroso" title="Daniel Lombroso">Daniel Lombroso</a> reported a speech by white nationalist <a href="./Richard_B._Spencer" title="Richard B. Spencer">Richard B. Spencer</a> at the 2016 annual conference of the <a href="./National_Policy_Institute" title="National Policy Institute">National Policy Institute</a>, where they celebrated <a href="./Donald_Trump" title="Donald Trump">Donald Trump</a>'s win at the presidential election. YouTube relisted the video after <em>The Atlantic</em> sent a complaint.</p>
+<p>On June 5, 2019, YouTube updated its hate speech policy to prohibit hateful and supremacist work, and limit the spread of violent extremist content online. The policy extends to content that justifies discrimination, segregation, or exclusion based on qualities like age, gender, race, caste, religion, sexual orientation, or veteran status. It covers videos that, for example, include <a href="./Nazism" title="Nazism">Nazi ideology</a>, <a href="./Holocaust_denial" title="Holocaust denial">Holocaust denial</a>, <a href="./Sandy_Hook_Elementary_School_shooting_conspiracy_theories" title="Sandy Hook Elementary School shooting conspiracy theories">Sandy Hook conspiracy theories</a>, or <a href="./Flat_Earth" title="Flat Earth">flat Earth</a> theories. The policy also aims at reducing borderline content and harmful misinformation, such as videos promoting <a href="./Quackery" title="Quackery">phony miracle cures</a> for serious illnesses.</p>
+<p>In February 2020, YouTube reportedly began censoring any content related to the novel coronavirus (<a href="./SARS-CoV-2" title="SARS-CoV-2">SARS-CoV-2</a>) by removal or demonetization of the channel, citing the "sensitive topics" advertiser-friendly content guideline on Twitter.</p>
+<p>In 2020, Republican senator <a href="./Rand_Paul" title="Rand Paul">Rand Paul</a> criticized YouTube for removing a video of his floor speech which named the <a href="./Trump–Ukraine_scandal" title="Trump–Ukraine scandal">alleged Ukraine whistleblower</a>.</p>
+<p>In early February 2021, YouTube removed raw footage taken of the <a href="./January_6_United_States_Capitol_attack" title="January 6 United States Capitol attack">2021 storming of the United States Capitol</a> by independent journalists like <a href="./Ford_Fischer" title="Ford Fischer">Ford Fischer</a> from News2Share or from progressive media outlets such as <em><a href="./Jordan_Chariton#Status_Coup" title="Jordan Chariton">Status Coup</a></em> citing that the videos violated its policies on misinformation. The same footage from the outlets was reused by large media organizations and still up on their YouTube accounts. Some independent journalists including Fischer and other progressive outlets like <em>The Progressive Soap Box</em> (host Jamarl Thomas), <em>Political Vigilante</em> (Graham Elwood), <em>Franc Analysis</em> and <em>The Convo Couch</em> were demonetized by YouTube with some having their superchat feature blocked. Fischer was later remonetized by YouTube after it acknowledged "over-enforcement".</p>
+<h2>Shadowbanning of comments</h2>
+<p>Comments on YouTube are frequently shadowbanned without the poster even being informed of it.</p>
+<p>Once posted, the comment appears but immediately disappears when the page is refreshed.</p>
+<h3>China-related content</h3>
+<p>See also: <a href="./Chinese_censorship_abroad" title="Chinese censorship abroad">Chinese censorship abroad</a></p>
+<p>At least since October 2019, YouTube has been automatically deleting any comments that contain the Chinese terms for "<a href="./50_Cent_Party" title="50 Cent Party">50 Cent Party</a>" (五毛党) and its shortened version "50 Cent" (五毛). They have also been deleting any comments referring to the <a href="./Chinese_Communist_Party" title="Chinese Communist Party">Chinese Communist Party</a> (CCP) as "bandits" (共匪). In May 2020, YouTube made a statement to <em><a href="./The_Verge" title="The Verge">The Verge</a></em> that these deletions were made "in error".</p>
+<p>In June 2021, <em><a href="./MIT_Technology_Review" title="MIT Technology Review">MIT Technology Review</a></em> and <a href="./Reuters" title="Reuters">Reuters</a> reported that YouTube removed videos of a human rights group documenting testimonies of the <a href="./Persecution_of_Uyghurs_in_China" title="Persecution of Uyghurs in China">persecution of Uyghurs in China</a>.</p>
+<p>In October 2023, <a href="./Radio_Free_Asia" title="Radio Free Asia">Radio Free Asia</a> reported that YouTube repeatedly removed channels satirizing <a href="./General_Secretary_of_the_Chinese_Communist_Party" title="General Secretary of the Chinese Communist Party">General Secretary of the Chinese Communist Party</a> <a href="./Xi_Jinping" title="Xi Jinping">Xi Jinping</a> on the grounds of "cyberbullying".</p>
+<h3>Advertiser-friendly content</h3>
+<p>YouTube policies restrict certain forms of content from being included in videos being monetized with advertising, including strong violence, language, sexual content, and "controversial or sensitive subjects and events, including subjects related to wars, political conflicts, natural disasters, and tragedies, even if graphic imagery is not shown", unless the content is "usually newsworthy or comedic and the creator's intent is to inform or entertain".</p>
+<p>On August 31, 2016, YouTube introduced a new system to notify users of violations of the "advertiser-friendly content" rules, and allow them to appeal. Following its introduction, many prominent YouTube users began to accuse the site of engaging in <em>de facto</em> censorship, arbitrarily disabling monetization on videos discussing various topics such as skincare, politics, and <a href="./LGBTQ_history" title="LGBTQ history">LGBTQ history</a>. <a href="./Philip_DeFranco" title="Philip DeFranco">Philip DeFranco</a> argued that not being able to earn money from a video was "censorship by a different name", while <a href="./Vlogbrothers" title="Vlogbrothers">Vlogbrothers</a> similarly pointed out that YouTube had flagged both "<a href="./Zaatari_refugee_camp" title="Zaatari refugee camp">Zaatari</a>: thoughts from a refugee camp" and "Vegetables that look like penises" (although the flagging on the former was eventually overturned). The hashtag "#YouTubeIsOverParty" was prominently used on Twitter as a means of discussing the controversy. A YouTube spokesperson stated that "[w]hile [their] policy of demonetizing videos due to advertiser-friendly concerns hasn't changed, [they've] recently improved the notification and appeal process to ensure better communication to [their] creators."</p>
+<p>In March 2017, a number of major advertisers and prominent companies began to pull their advertising campaigns from YouTube over concerns that their ads were appearing on objectionable and/or extremist content, in what the YouTube community began referring to as a "<a href="./Boycott" title="Boycott">boycott</a>". YouTube personality PewDiePie described these boycotts as an "adpocalypse", noting that his video revenue had fallen to the point that he was generating more revenue from <a href="./YouTube_Premium" title="YouTube Premium">YouTube Red</a> subscription profit sharing (which is divided based on views by subscribers) than advertising. On 6 April 2017, YouTube announced planned changes to its Partner Program, restricting new membership to vetted channels with a total of at least 10,000 video views. YouTube stated that the changes were made in order to "ensure revenue only flows to creators who are playing by the rules".</p>
+<p>In addition to moderation of content creators, YouTube also moderates each video's comments section. From October 2024 to December 2024, YouTube removed over a billion comments. Of those comments, 99.7% were deleted automatically. The most common reason for deletion was identification as spam, a scam, or otherwise misleading (81.7%), followed by identification as harassment/cyberbullying (6.6%). False positives have led users to speculate on the criteria of deletion, leading to a rise in video creation suggesting possible answers to meet demand. Common answers include similarity of comments between videos (spam-like), external links (though the channel owner has the option prohibit use of <em>any</em> links), or use of words prohibited by YouTube or the channel owner. A post may be held from publication until the channel owner has reviewed it. A comment may be visible to its author but no one else, leaving the author with the false impression that community rules are being met. In a different account, the comment may be visible only in a 'Newest First' sort, or not at all. Deletions are also account-dependent: in the same comment thread, the removal of a word may be needed for a post to be published, despite another account already having used it with consequence. Further confounding the chore of determining prohibited words is fractional prohibition, that is, several loaded words in separate posts might not lead to the posts' deletion, but their aggregation into one post may crest a threshold that does. Also, an account used to downvote comments and videos may be shielded from seeing comments that others have reported—not the result people likely intend when they report a post as spam or offensive. Thus viewing from Account 1 to test if a comment by Account 2 was deleted might yield a false positive. Account 3 might still see Account 2's comment if Account 3 never votes down.</p>
+<h3>Censorship of LGBT content in Restricted Mode</h3>
+<p>In March 2017, the "Restricted Mode" feature was criticized by <a href="./List_of_LGBT_YouTubers" title="List of LGBT YouTubers">YouTube's LGBT community</a> for filtering videos that discuss issues of <a href="./Human_sexuality" title="Human sexuality">human sexuality</a> and <a href="./Sexual_identity" title="Sexual identity">sexual</a> and <a href="./Gender_identity" title="Gender identity">gender identity</a>, even when there is no explicit references to <a href="./Sexual_intercourse" title="Sexual intercourse">sexual intercourse</a> or otherwise inappropriate content. Rapper <a href="./Mykki_Blanco" title="Mykki Blanco">Mykki Blanco</a> told <em><a href="./The_Guardian" title="The Guardian">The Guardian</a></em> that such restrictions are used to make LGBT vloggers feel "policed and demeaned" and "sends a clear homophobic message that the fact that my video displays unapologetic <a href="./Queer" title="Queer">queer</a> imagery means it's slapped with an 'age restriction', while other <a href="./Cisgender" title="Cisgender">cis</a>, overly sexualised <a href="./Heteronormativity" title="Heteronormativity">heteronormative</a> work" remain uncensored. Musicians <a href="./Tegan_and_Sara" title="Tegan and Sara">Tegan and Sara</a> similarly argued that LGBT people "shouldn't be restricted", after acknowledging that the mode had censored several of their music videos.</p>
+<p>YouTube later stated that a technical error on Restricted Mode wrongfully impacted "hundreds of thousands" LGBT-related videos.</p>
+<h3>False positives</h3>
+<p>In February 2019, automated filters accidentally flagged several channels with videos discussing the AR mobile game <em><a href="./Pokémon_Go" title="Pokémon Go">Pokémon Go</a></em> and the <a href="./Massively_multiplayer_online_game" title="Massively multiplayer online game">massively multiplayer online game</a> <em><a href="./Club_Penguin" title="Club Penguin">Club Penguin</a></em> for containing prohibited sexual content, as some of their videos contained references to "CP" in their title. In <em>Pokémon Go</em>, "CP" is an abbreviation of "Combat Power"—a level system in the game, and "CP" is an abbreviation of <em>Club Penguin</em>, but it was believed that YouTube's filters had accidentally interpreted it as referring to <a href="./Child_pornography" title="Child pornography">child pornography</a>. The affected channels were restored, and YouTube apologized for the inconvenience.</p>
+<p>In August 2019, YouTube mistakenly took down <a href="./Robot_combat" title="Robot combat">robot fighting</a> videos for violating its policies against <a href="./Cruelty_to_animals" title="Cruelty to animals">animal cruelty</a>.</p>
+<h2>2007 anti-censorship shareholder initiative</h2>
+<p>On May 10, 2007, shareholders of Google voted down an anti-censorship proposal for the company. The text of the failed proposal submitted by the <a href="./New_York_City_Comptroller" title="New York City Comptroller">New York City comptroller's office</a>, which controls a significant number of shares on behalf of retirement funds, stated that:</p>
+<ol>
+<li>Data that can identify individual users should not be hosted in <a href="./Internet_censorship" title="Internet censorship">Internet-restricting</a> countries, where political speech can be treated as a crime by the legal system.</li>
+<li>The company will not engage in proactive censorship.</li>
+<li>The company will use all legal means to resist demands for censorship. The company will only comply with such demands if required to do so through legally binding procedures.</li>
+<li>Users will be clearly informed when the company has acceded to legally binding government requests to filter or otherwise censor content that the user is trying to access.</li>
+<li>Users should be informed about the company's <a href="./Data_retention" title="Data retention">data retention</a> practices and the ways in which their data is shared with third parties.</li>
+<li>The company will document all cases where legally-binding censorship requests have been complied with, and that information will be publicly available.</li>
+</ol>
+<p><a href="./David_Drummond_(businessman)" title="David Drummond (businessman)">David Drummond</a>, senior vice president for corporate development, said "Pulling out of China, shutting down Google.cn, is just not the right thing to do at this point... but that's exactly what this proposal would do."</p>
+<p>CEO <a href="./Eric_Schmidt" title="Eric Schmidt">Eric Schmidt</a> and founders <a href="./Larry_Page" title="Larry Page">Larry Page</a> and <a href="./Sergey_Brin" title="Sergey Brin">Sergey Brin</a> recommended that shareholders vote against the proposal. Together, they hold 66.2 percent of Google's total shareholder voting power, meaning that they could themselves have declined the anti-censorship proposal.</p>
+<h2>Russian invasion of Ukraine</h2>
+<p>In early March 2022, contractors who were working for Google and preparing translations for the Russian market received an update from Google: "Effective immediately, the ongoing Russian war against Ukraine could no longer be referred to as a war but rather only vaguely as 'extraordinary circumstances.'" Thus, Google was trying to protect itself from Russian sanctions, as well as its employees from persecution within Russia, in connection with the new law, which provided up to 15 years in prison for any information about the war against Ukraine, except when officially announced by the <a href="./Kremlin" title="Kremlin">Kremlin</a>.</p>
+<p>Since the beginning of the <a href="./2022_Russian_invasion_of_Ukraine" title="2022 Russian invasion of Ukraine">2022 Russian invasion of Ukraine</a>, Google has been blocking Russian state-funded media such as RT and Sputnik, and has also extended its censorship to non state-funded media outlets such as RBK by banning them entirely from the video-hosting platform YouTube. Thus said, Google has been blocking all Russian news outlets, citing that it represents a violation of their terms of services. Google also acted upon a request of the European Union.</p>
+<p>Citing a report from <a href="./The_Guardian" title="The Guardian">The Guardian</a>, YouTube footage of Ukrainian protesters burning a <a href="./Russian_flag" title="Russian flag">Russian flag</a> and of people insulting Russian state symbols was taken down.</p>
+<h2>See also</h2>
+<ul>
+<li><a href="./Criticism_of_Google" title="Criticism of Google">Criticism of Google</a></li>
+<li><a href="./Content_moderation" title="Content moderation">Content moderation</a></li>
+<li><a href="./Dragonfly_(search_engine)" title="Dragonfly (search engine)">Dragonfly (search engine)</a></li>
+<li><a href="./Internet_censorship" title="Internet censorship">Internet censorship</a></li>
+<li><a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">List of Google products § Discontinued products and services</a></li>
+<li><a href="./Network_neutrality" title="Network neutrality">Network neutrality</a></li>
+<li><a href="./YouTube_Premium#Licensing_terms_and_content_blocking" title="YouTube Premium">YouTube Premium § Licensing terms and content blocking</a></li>
+</ul>
+<h2>References</h2>
+<h2>Sources</h2>
+<ul>
+<li>Galbraith, Patrick W. (2016). <a href="https://web.archive.org/web/20210725100111/https://www.academia.edu/28693090">"'The lolicon guy': Some observations on researching unpopular topics in Japan"</a>. In McLelland, Mark (ed.). <em>The End of Cool Japan: Ethical, Legal, and Cultural Challenges to Japanese Popular Culture</em>. London and New York: Routledge. pp. 109–133. <a href="./ISBN_(identifier)" title="ISBN (identifier)">ISBN</a> <a href="./Special:BookSources/978-1-317-26937-3" title="Special:BookSources/978-1-317-26937-3">978-1-317-26937-3</a>. Archived from <a href="https://www.academia.edu/28693090">the original</a> on 2021-07-25. Retrieved 2021-12-19.</li>
+<li>Kittredge, Katharine (2014). "Lethal Girls Drawn for Boys: Girl Assassins in Manga/Anime and Comics/Film". <em><a href="./Children's_Literature_Association_Quarterly" title="Children's Literature Association Quarterly">Children's Literature Association Quarterly</a></em>. <strong>39</strong> (4): 506–532 [524]. <a href="./Doi_(identifier)" title="Doi (identifier)">doi</a>:<a href="https://doi.org/10.1353%2Fchq.2014.0059">10.1353/chq.2014.0059</a>. <a href="./S2CID_(identifier)" title="S2CID (identifier)">S2CID</a> <a href="https://api.semanticscholar.org/CorpusID:143630310">143630310</a>.</li>
+<li>McLelland, Mark (2011b). <a href="https://ro.uow.edu.au/cgi/viewcontent.cgi?article=2166&amp;context=artspapers">"Australia's 'child-abuse material' legislation, internet regulation and the juridification of the imagination"</a>. <em><a href="./International_Journal_of_Cultural_Studies" title="International Journal of Cultural Studies">International Journal of Cultural Studies</a></em>. <strong>15</strong> (5): 467–483. <a href="./Doi_(identifier)" title="Doi (identifier)">doi</a>:<a href="https://doi.org/10.1177%2F1367877911421082">10.1177/1367877911421082</a>. <a href="./S2CID_(identifier)" title="S2CID (identifier)">S2CID</a> <a href="https://api.semanticscholar.org/CorpusID:41788106">41788106</a>. <a href="https://web.archive.org/web/20210923070347/https://ro.uow.edu.au/cgi/viewcontent.cgi?article=2166&amp;context=artspapers">Archived</a> from the original on 2021-09-23. Retrieved 2021-10-01.</li>
+</ul>
+<h2>External links</h2>
+<ul>
+<li><a href="https://web.archive.org/web/20180519012106/http://hiddenfromgoogle.com/">hiddenfromgoogle.com</a> A list of links affected by the EU "Right to be Forgotten" ruling</li>
+<li><a href="http://www.linkedin.com/today/post/article/20140620140349-53089235-blogspot-down-in-pakistan">Pakistan v/s Google Products</a> Blogspot Down in Pakistan.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Censorship" title="Template:Censorship">v</a> - <a href="./Template_talk:Censorship" title="Template talk:Censorship">t</a> - <a href="./Special:EditPage/Template:Censorship" title="Special:EditPage/Template:Censorship">e</a>  <a href="./Censorship" title="Censorship">Censorship</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Media regulation</td>
+<td>- <a href="./Book_censorship" title="Book censorship">Books</a>   - <a href="./List_of_books_banned_by_governments" title="List of books banned by governments">books banned</a> - <a href="./Film_censorship" title="Film censorship">Films</a>   - <a href="./List_of_banned_films" title="List of banned films">banned films</a> - <a href="./Internet_censorship" title="Internet censorship">Internet</a>   - <a href="./Internet_censorship_circumvention" title="Internet censorship circumvention">circumvention</a> - <a href="./Censorship_of_LGBTQ_issues" title="Censorship of LGBTQ issues">LGBTQ issues</a> - <a href="./Music_censorship" title="Music censorship">Music</a> - <a href="./Postal_censorship" title="Postal censorship">Postal</a> - <a href="./Freedom_of_the_press" title="Freedom of the press">Press</a> - <a href="./Radio_jamming" title="Radio jamming">Radio</a> - <a href="./Freedom_of_speech" title="Freedom of speech">Speech and expression</a> - <a href="./Censorship_of_student_media" title="Censorship of student media">Student media</a> - <a href="./Television_censorship" title="Television censorship">Televisions</a>   - <a href="./Television_censorship#List_of_banned_television_series" title="Television censorship">banned televisions</a> - <a href="./Freedom_of_thought" title="Freedom of thought">Thought</a> - <a href="./Video_game_censorship" title="Video game censorship">Video games</a>   - <a href="./List_of_banned_video_games_by_country" title="List of banned video games by country">banned video games</a></td>
+</tr>
+<tr>
+<td>Methods</td>
+<td>- <a href="./Blacklisting" title="Blacklisting">Blacklisting</a> - <a href="./Bleep_censor" title="Bleep censor">Bleeping</a> - <a href="./Book_burning" title="Book burning">Book burning</a> - <a href="./Broadcast_delay" title="Broadcast delay">Broadcast delay</a> - <a href="./Censorship_by_copyright" title="Censorship by copyright">By copyright</a> - <a href="./Cancel_culture" title="Cancel culture">Cancel culture</a> - <a href="./Censor_bars" title="Censor bars">Censor bars</a> - <a href="./Chilling_effect" title="Chilling effect">Chilling effect</a> - <a href="./Collateral_censorship" title="Collateral censorship">Collateral censorship</a> - <a href="./Concision_(media_studies)" title="Concision (media studies)">Concision</a> - <a href="./Conspiracy_of_silence_(expression)" title="Conspiracy of silence (expression)">Conspiracy of silence</a> - <a href="./Content-control_software" title="Content-control software">Content-control software</a> - <a href="./Damnatio_memoriae" title="Damnatio memoriae">Damnatio memoriae</a> - <a href="./Debanking" title="Debanking">Debanking</a>   - <a href="./Financial_censorship" title="Financial censorship">Financial censorship</a> - <a href="./Deplatforming" title="Deplatforming">Deplatforming</a> - <a href="./Euphemism" title="Euphemism">Euphemism</a>   - <a href="./Minced_oath" title="Minced oath">Minced oath</a> - <a href="./Expurgation" title="Expurgation">Expurgation</a> - <a href="./Fig_leaf" title="Fig leaf">Fig leaf</a> - <a href="./Fogging_(censorship)" title="Fogging (censorship)">Fogging</a> - <a href="./Gag_order" title="Gag order">Gag order</a> - <a href="./Gatekeeping_(communication)" title="Gatekeeping (communication)">Gatekeeping</a> - <a href="./Hallin's_spheres" title="Hallin's spheres">Hallin's spheres</a> - <a href="./Heckler" title="Heckler">Heckling</a> - <a href="./Heckler's_veto" title="Heckler's veto">Heckler's veto</a> - <a href="./Hush_money" title="Hush money">Hush money</a> - <a href="./Internet_police" title="Internet police">Internet police</a> - <a href="./Malinformation" title="Malinformation">Malinformation</a> - <a href="./Media_blackout" title="Media blackout">Media blackout</a> - <a href="./Memory_hole" title="Memory hole">Memory hole</a> - <a href="./National_intranet" title="National intranet">National intranet</a> - <a href="./News_embargo" title="News embargo">News embargo</a> - <a href="./Newspaper_theft" title="Newspaper theft">Newspaper theft</a> - <a href="./Non-disclosure_agreement" title="Non-disclosure agreement">Non-disclosure agreement</a> - <a href="./Opinion_corridor" title="Opinion corridor">Opinion corridor</a> - <a href="./Overton_window" title="Overton window">Overton window</a> - <a href="./Pixelization" title="Pixelization">Pixelization</a> - <a href="./Political_correctness" title="Political correctness">Political correctness</a> - <a href="./Prior_restraint" title="Prior restraint">Prior restraint</a> - <a href="./Propaganda" title="Propaganda">Propaganda</a> - <a href="./Purge" title="Purge">Purge</a> - <a href="./Redaction" title="Redaction">Redaction</a> - <a href="./Historical_negationism" title="Historical negationism">Revisionism</a> - <a href="./Sanitization_(classified_information)" title="Sanitization (classified information)">Sanitization</a> - <a href="./Self-censorship" title="Self-censorship">Self-censorship</a> - <a href="./Shadow_banning" title="Shadow banning">Shadow banning</a> - <a href="./Social_rejection" title="Social rejection">Social rejection</a> - <a href="./Speech_code" title="Speech code">Speech code</a> - <a href="./Spiral_of_silence" title="Spiral of silence">Spiral of silence</a> - <a href="./Strategic_lawsuit_against_public_participation" title="Strategic lawsuit against public participation">Strategic lawsuit</a> - <a href="./Super-injunctions_in_English_law" title="Super-injunctions in English law">Super-injunction</a> - <a href="./Surveillance" title="Surveillance">Surveillance</a>   - <a href="./Computer_and_network_surveillance" title="Computer and network surveillance">computer and network</a>   - <a href="./Mass_surveillance" title="Mass surveillance">mass</a> - <a href="./Taboo" title="Taboo">Taboo</a> - <a href="./Whitewashing_(censorship)" title="Whitewashing (censorship)">Whitewashing</a> - <a href="./Wordfilter" title="Wordfilter">Word filtering</a></td>
+</tr>
+<tr>
+<td>Contexts</td>
+<td>- <a href="./AI_alignment" title="AI alignment">AI</a> - <a href="./Algorithmic_bias" title="Algorithmic bias">Algorithmic</a> - <a href="./Chinese_censorship_abroad" title="Chinese censorship abroad">Chinese censorship abroad</a> - <a href="./Criminal_speech" title="Criminal speech">Criminal</a> - <a href="./Corporate_censorship" title="Corporate censorship">Corporate</a>   - <a href="./Censorship_by_Apple" title="Censorship by Apple">Apple</a>   - <a href="./Censorship_by_Facebook" title="Censorship by Facebook">Facebook</a>   - <a href="./Censorship_by_Google">Google</a> - <a href="./Hate_speech" title="Hate speech">Hate speech</a>   - <a href="./Online_hate_speech" title="Online hate speech">Online</a> - <a href="./Ideological_repression" title="Ideological repression">Ideological</a>   - <a href="./Academic_bias" title="Academic bias">Academic</a> - <a href="./Censorship_of_LGBT_issues" title="Censorship of LGBT issues">LGBT issues</a> - <a href="./Media_bias" title="Media bias">Media bias</a> - <a href="./Moral_police" title="Moral police">Moral police</a> - <a href="./Moralistic_fallacy" title="Moralistic fallacy">Moralistic fallacy</a> - <a href="./Naturalistic_fallacy" title="Naturalistic fallacy">Naturalistic fallacy</a> - <a href="./Political_censorship" title="Political censorship">Political censorship</a>   - <a href="./List_of_banned_political_parties" title="List of banned political parties">Banned parties</a>   - <a href="./Political_prisoner" title="Political prisoner">Political prisoner</a> - <a href="./Propaganda_model" title="Propaganda model">Propaganda model</a> - <a href="./Religious_censorship" title="Religious censorship">Religious</a>   - <a href="./Blasphemy_law" title="Blasphemy law">Blasphemy law</a>   - <a href="./Censorship_in_Islamic_societies" title="Censorship in Islamic societies">Islamic</a>     - <a href="./Islamic_religious_police" title="Islamic religious police">Police</a> - <a href="./Dissent" title="Dissent">Suppression of dissent</a> - <a href="./Systemic_bias" title="Systemic bias">Systemic bias</a> - <a href="./Censorship_of_Wikipedia" title="Censorship of Wikipedia">Wikipedia</a></td>
+</tr>
+<tr>
+<td>By location</td>
+<td>- <a href="./Censorship_by_country" title="Censorship by country">Censorship by country</a>   - <a href="./Blasphemy_law#By_country" title="Blasphemy law">Blasphemy law</a>   - <a href="./Freedom_of_speech_by_country" title="Freedom of speech by country">Freedom of speech</a>   - <a href="./Internet_censorship_and_surveillance_by_country" title="Internet censorship and surveillance by country">Internet censorship</a>   - <a href="./Censorship_in_the_Middle_East" title="Censorship in the Middle East">In the Middle East</a>   - <a href="./Censorship_in_South_Asia" title="Censorship in South Asia">In South Asia</a></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products" title="List of Google products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Censorship_and_websites" title="Template:Censorship and websites">v</a> - <a href="./Template_talk:Censorship_and_websites" title="Template talk:Censorship and websites">t</a> - <a href="./Special:EditPage/Template:Censorship_and_websites" title="Special:EditPage/Template:Censorship and websites">e</a>  <a href="./Internet_censorship" title="Internet censorship">Censorship and websites</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Censorship of</td>
+<td>- <a href="./Chinese_censorship_abroad" title="Chinese censorship abroad">Chinese censorship abroad</a> - <a href="./Censorship_of_Facebook" title="Censorship of Facebook">Facebook</a> - <a href="./Legal_aspects_of_file_sharing" title="Legal aspects of file sharing">File sharing sites</a> - <a href="./Censorship_of_GitHub" title="Censorship of GitHub">GitHub</a> - <a href="./Censorship_of_Google" title="Censorship of Google">Google</a> - <a href="./Censorship_of_the_iTunes_Store" title="Censorship of the iTunes Store">iTunes Store</a> - <a href="./Countries_blocking_access_to_The_Pirate_Bay" title="Countries blocking access to The Pirate Bay">The Pirate Bay</a> - <a href="./Censorship_of_Roblox" title="Censorship of Roblox">Roblox</a> - <a href="./Censorship_of_Snapchat" title="Censorship of Snapchat">Snapchat</a> - <a href="./Censorship_of_Telegram" title="Censorship of Telegram">Telegram</a>   - <a href="./Telegram_in_Iran" title="Telegram in Iran">in Iran</a>   - <a href="./Blocking_of_Telegram_in_Russia" title="Blocking of Telegram in Russia">in Russia</a> - <a href="./Censorship_of_TikTok" title="Censorship of TikTok">TikTok</a>   - <a href="./Efforts_to_ban_TikTok_in_the_United_States" title="Efforts to ban TikTok in the United States">in the United States</a> - <a href="./Censorship_of_Twitter" title="Censorship of Twitter">Twitter (X)</a>   - <a href="./Blocking_of_Twitter_in_Brazil" title="Blocking of Twitter in Brazil">in Brazil</a>   - <a href="./Blocking_of_Twitter_in_Nigeria" title="Blocking of Twitter in Nigeria">in Nigeria</a> - <a href="./Censorship_of_Wikipedia" title="Censorship of Wikipedia">Wikipedia</a>   - <a href="./Wikimedia_censorship_in_mainland_China" title="Wikimedia censorship in mainland China">in China</a>   - <a href="./Block_of_Wikipedia_in_Russia" title="Block of Wikipedia in Russia">in Russia</a>   - <a href="./Block_of_Wikipedia_in_Turkey" title="Block of Wikipedia in Turkey">in Turkey</a>   - <a href="./Block_of_Wikipedia_in_Venezuela" title="Block of Wikipedia in Venezuela">in Venezuela</a> - <a href="./Censorship_of_YouTube" title="Censorship of YouTube">YouTube</a>   - <a href="./Blocking_of_YouTube_videos_in_Germany" title="Blocking of YouTube videos in Germany">in Germany</a></td>
+</tr>
+<tr>
+<td>Censorship by</td>
+<td>- <a href="./Criticism_of_AOL#Terms_of_Service_(TOS)" title="Criticism of AOL">AOL</a> - <a href="./Censorship_by_Apple" title="Censorship by Apple">Apple</a> - <a href="./Cisco#China" title="Cisco">Cisco in China</a> - <a href="./Censorship_by_Facebook" title="Censorship by Facebook">Facebook</a> - <a href="./Censorship_by_TikTok" title="Censorship by TikTok">TikTok</a> - <a href="./Censorship_by_Twitter" title="Censorship by Twitter">Twitter (X)</a> - <a href="./Censorship_by_Yahoo" title="Censorship by Yahoo">Yahoo</a> - <a href="./Censorship_by_Google">Google</a>   - <a href="./Censorship_by_Google#YouTube">YouTube</a> - <a href="./Criticism_of_Microsoft#Censorship_in_China" title="Criticism of Microsoft">Microsoft in China</a>   - <a href="./Skype#Service_in_the_People's_Republic_of_China" title="Skype">Skype in China</a> - <a href="./Criticism_of_Myspace#Censorship" title="Criticism of Myspace">Myspace</a></td>
+</tr>
+<tr>
+<td>Forms</td>
+<td>- <a href="./Age_verification_system" title="Age verification system">Age verification system</a> - <a href="./AI_alignment" title="AI alignment">AI alignment</a> - <a href="./Block_(Internet)" title="Block (Internet)">Block</a> - <a href="./Content_moderation" title="Content moderation">Content moderation</a> - <a href="./Deplatforming" title="Deplatforming">Deplatforming</a> - <a href="./Digital_identity" title="Digital identity">Digital identity</a> - <a href="./Identity_verification_service" title="Identity verification service">Identity verification service</a> - <a href="./Internet_filter" title="Internet filter">Internet filter</a> - <a href="./Internet_police" title="Internet police">Internet police</a> - <a href="./Internet_safety" title="Internet safety">Internet safety</a> - <a href="./Online_service_provider_law" title="Online service provider law">Online service provider law</a> - <a href="./Parental_controls" title="Parental controls">Parental controls</a> - <a href="./Real-name_system" title="Real-name system">Real-name system</a> - <a href="./Shadow_banning" title="Shadow banning">Shadow banning</a> - <a href="./Social_Credit_System" title="Social Credit System">Social Credit System</a> - <a href="./Techno-authoritarianism" title="Techno-authoritarianism">Techno-authoritarianism</a> - <a href="./Trust_and_safety" title="Trust and safety">Trust and safety</a></td>
+</tr>
+<tr>
+<td>Websites blocked in</td>
+<td>- <a href="./Internet_censorship_in_Australia" title="Internet censorship in Australia">Australia</a> - <a href="./List_of_websites_blocked_in_Belgium" title="List of websites blocked in Belgium">Belgium</a> - <a href="./Internet_censorship_in_China" title="Internet censorship in China">China</a>   - <a href="./List_of_websites_blocked_in_mainland_China" title="List of websites blocked in mainland China">list</a> - <a href="./Internet_censorship_in_Cuba" title="Internet censorship in Cuba">Cuba</a> - <a href="./Internet_censorship_in_France" title="Internet censorship in France">France</a> - <a href="./Internet_censorship_in_Germany" title="Internet censorship in Germany">Germany</a> - <a href="./Internet_censorship_in_Hong_Kong" title="Internet censorship in Hong Kong">Hong Kong</a> - <a href="./Internet_censorship_in_India" title="Internet censorship in India">India</a> - <a href="./Internet_censorship_in_Indonesia" title="Internet censorship in Indonesia">Indonesia</a> - <a href="./Internet_censorship_in_Iran" title="Internet censorship in Iran">Iran</a> - <a href="./Internet_censorship_in_the_Republic_of_Ireland" title="Internet censorship in the Republic of Ireland">Ireland</a> - <a href="./Internet_censorship_in_Malawi" title="Internet censorship in Malawi">Malawi</a> - <a href="./Internet_censorship_in_Morocco" title="Internet censorship in Morocco">Morocco</a> - <a href="./Internet_censorship_in_New_Zealand" title="Internet censorship in New Zealand">New Zealand</a> - <a href="./Internet_censorship_in_Pakistan" title="Internet censorship in Pakistan">Pakistan</a> - <a href="./Internet_censorship_in_Romania" title="Internet censorship in Romania">Romania</a> - <a href="./Internet_censorship_in_Russia" title="Internet censorship in Russia">Russia</a>   - <a href="./List_of_websites_blocked_in_Russia" title="List of websites blocked in Russia">list</a> - <a href="./Internet_censorship_in_Singapore" title="Internet censorship in Singapore">Singapore</a>   - <a href="./List_of_websites_blocked_in_Singapore" title="List of websites blocked in Singapore">list</a> - <a href="./Internet_censorship_in_South_Africa" title="Internet censorship in South Africa">South Africa</a> - <a href="./Internet_censorship_in_South_Korea" title="Internet censorship in South Korea">South Korea</a>   - <a href="./List_of_North_Korean_websites_banned_in_South_Korea" title="List of North Korean websites banned in South Korea">North Korean websites</a> - <a href="./Internet_censorship_in_Switzerland" title="Internet censorship in Switzerland">Switzerland</a> - <a href="./Internet_censorship_in_Syria" title="Internet censorship in Syria">Syria</a> - <a href="./Internet_censorship_in_Thailand" title="Internet censorship in Thailand">Thailand</a> - <a href="./Internet_censorship_in_Tunisia" title="Internet censorship in Tunisia">Tunisia</a> - <a href="./Internet_censorship_in_Vietnam" title="Internet censorship in Vietnam">Vietnam</a> - <a href="./Internet_censorship_in_the_United_Kingdom" title="Internet censorship in the United Kingdom">United Kingdom</a>   - <a href="./Web_blocking_in_the_United_Kingdom" title="Web blocking in the United Kingdom">web blocking</a>     - <a href="./List_of_websites_blocked_in_the_United_Kingdom" title="List of websites blocked in the United Kingdom">list</a> - <a href="./Internet_censorship_in_the_United_States" title="Internet censorship in the United States">United States</a></td>
+</tr>
+<tr>
+<td>Laws</td>
+<td>- <a href="./Brazilian_Congressional_Bill_No._2630" title="Brazilian Congressional Bill No. 2630">Brazilian Congressional Bill No. 2630</a> - <a href="./Children's_Online_Privacy_Protection_Act" title="Children's Online Privacy Protection Act">Children's Online Privacy Protection Act</a> (USA) - <a href="./Digital_Services_Act" title="Digital Services Act">Digital Services Act</a> (EU) - <a href="./Kids_Online_Safety_Act" title="Kids Online Safety Act">Kids Online Safety Act</a> (USA) - <a href="./Online_Safety_Act_2023" title="Online Safety Act 2023">Online Safety Act 2023</a> (UK) - <a href="./Social_media_age_verification_laws_by_country" title="Social media age verification laws by country">Social media age verification laws by country</a></td>
+</tr>
+<tr>
+<td>Opposition</td>
+<td>- <a href="./Academic_freedom" title="Academic freedom">Academic freedom</a> - <a href="./Artistic_freedom" title="Artistic freedom">Artistic freedom</a> - <a href="./Freedom_of_information" title="Freedom of information">Freedom of information</a> - <a href="./Freedom_of_speech" title="Freedom of speech">Freedom of speech</a> - <a href="./Freedom_of_the_press" title="Freedom of the press">Freedom of the press</a> - <a href="./Freedom_of_thought" title="Freedom of thought">Freedom of thought</a> - <a href="./Internet_freedom" title="Internet freedom">Internet freedom</a></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

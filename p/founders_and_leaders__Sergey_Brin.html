@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sergey Brin</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link active" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Sergey Brin</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Sergey_Brin<br>
+Category: founders_and_leaders<br>
+Depth: 1</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Sergey Mikhailovich Brin is an American computer scientist and businessman who co-founded Google with Larry Page. He was the president of Google's parent company, Alphabet Inc., until stepping down from the role on December 3, 2019. He and Page remain at Alphabet as co-founders, controlling shareholders, and board members. Brin is a centibillionaire and among the richest people in the world.</p>
+<h2>Images</h2>
+<p><img alt="Sergey_Brin_Ted_2010__28cropped_29" src="../images/Sergey_Brin_Ted_2010__28cropped_29.jpg"><br>
+<img alt="330px-Sergey_Brin_Ted_2010__28cropped_29" src="../images/330px-Sergey_Brin_Ted_2010__28cropped_29.jpg"><br>
+<img alt="250px-Sergey_Brin_Ted_2010__28cropped_29" src="../images/250px-Sergey_Brin_Ted_2010__28cropped_29.jpg"><br>
+<img alt="250px-Schmidt-Brin-Page-20080520" src="../images/250px-Schmidt-Brin-Page-20080520.jpg"><br>
+<img alt="250px-PageRanks-Example.svg" src="../images/250px-PageRanks-Example.svg.png"><br>
+<img alt="250px-Sergey_Brin__28cropped_29" src="../images/250px-Sergey_Brin__28cropped_29.JPG"><br>
+<img alt="250px-Sergey_Brin_2C_Web_2.0_Conference" src="../images/250px-Sergey_Brin_2C_Web_2.0_Conference.jpg"></p>
+<h2>Full Article</h2>
+<p>American computer scientist (born 1973)</p>
+<p><strong>Sergey Mikhailovich Brin</strong> (Russian: Сергей Михайлович Брин; born August 21, 1973) is an American <a href="./Computer_scientist" title="Computer scientist">computer scientist</a> and businessman who co-founded <a href="./Google" title="Google">Google</a> with <a href="./Larry_Page" title="Larry Page">Larry Page</a>. He was the president of Google's parent company, <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc.</a>, until stepping down from the role on December 3, 2019. He and Page remain at Alphabet as co-founders, <a href="./Controlling_shareholder" title="Controlling shareholder">controlling shareholders</a>, and <a href="./Board_members" title="Board members">board members</a>. Brin is a <a href="./Centibillionaire" title="Centibillionaire">centibillionaire</a> and among the <a href="./The_World's_Billionaires" title="The World's Billionaires">richest people in the world</a>.</p>
+<p>Brin immigrated to the United States from the <a href="./Soviet_Union" title="Soviet Union">Soviet Union</a> at the age of six. He earned his bachelor's degree at the <a href="./University_of_Maryland,_College_Park" title="University of Maryland, College Park">University of Maryland, College Park</a>, following in his father's and grandfather's footsteps by studying mathematics as well as computer science. After graduation, in September 1993, he enrolled in <a href="./Stanford_University" title="Stanford University">Stanford University</a> to pursue a PhD in computer science. There he met Page, with whom he built a <a href="./Web_search_engine" title="Web search engine">web search engine</a>. The program became popular at Stanford, and he discontinued his PhD studies to start Google in <a href="./Susan_Wojcicki" title="Susan Wojcicki">Susan Wojcicki</a>'s garage in <a href="./Menlo_Park,_California" title="Menlo Park, California">Menlo Park</a>.</p>
+<p>In December 2023, he came out of retirement to contribute to AI research at <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc.</a>.</p>
+<h2>Early life and education</h2>
+<p>Sergey Mikhailovich Brin was born into a <a href="./History_of_the_Jews_in_Russia" title="History of the Jews in Russia">Jewish</a> family on August 21, 1973, in the Russian capital of <a href="./Moscow" title="Moscow">Moscow</a>. At the time, Russia, known as the <a href="./Russian_Soviet_Federative_Socialist_Republic" title="Russian Soviet Federative Socialist Republic">Russian Soviet Federative Socialist Republic</a>, was a <a href="./Republics_of_the_Soviet_Union" title="Republics of the Soviet Union">constituent republic</a> of the <a href="./Soviet_Union" title="Soviet Union">Soviet Union</a>. Both of Brin's parents, Mikhail and Eugenia Brin (1948–2024), had graduated from <a href="./Moscow_State_University" title="Moscow State University">Moscow State University</a> (MSU). His father is a retired mathematics professor at the <a href="./University_of_Maryland,_College_Park" title="University of Maryland, College Park">University of Maryland</a>, and his mother was a researcher at <a href="./NASA" title="NASA">NASA</a>'s <a href="./Goddard_Space_Flight_Center" title="Goddard Space Flight Center">Goddard Space Flight Center</a>.</p>
+<p>The Brin family lived in a three-room apartment in central Moscow, which they also shared with Sergey's paternal grandmother. In 1977, after returning from a mathematics conference in Warsaw, Poland, Mikhail announced that, because of <a href="./Antisemitism_in_the_Soviet_Union" title="Antisemitism in the Soviet Union">antisemitism in the Soviet Union</a>, it was time for the family to emigrate. They formally applied for their <a href="./Exit_visa" title="Exit visa">exit visa</a> in September 1978, and as a result, his father was "promptly fired". For related reasons, his mother had to leave her job. For the next eight months, without any steady income, they were forced to take on temporary jobs as they waited, afraid their request would be denied as it was for many <a href="./Refuseniks" title="Refuseniks">refuseniks</a>. In May 1979, they were granted their official exit visas and were allowed to leave the country.</p>
+<p>The Brin family lived in Vienna and Paris while Mikhail Brin secured a teaching position at the University of Maryland with help from <a href="./Anatole_Katok" title="Anatole Katok">Anatole Katok</a>. During this time, the Brin family received support and assistance from the <a href="./HIAS" title="HIAS">Hebrew Immigrant Aid Society</a>. They arrived in the United States on October 25, 1979.</p>
+<p>He attended <a href="./Eleanor_Roosevelt_High_School_(Maryland)" title="Eleanor Roosevelt High School (Maryland)">Eleanor Roosevelt High School</a>. In September 1990, Brin enrolled in the University of Maryland, where he received his <a href="./Bachelor_of_Science" title="Bachelor of Science">Bachelor of Science</a> from the Department of Computer Science in 1993 with honors in <a href="./Computer_science" title="Computer science">computer science</a> and high honors in mathematics at the age of 19. In 1993, he <a href="./Intern" title="Intern">interned</a> at <a href="./Wolfram_Research" title="Wolfram Research">Wolfram Research</a>, the developers of <a href="./Wolfram_Mathematica" title="Wolfram Mathematica">Mathematica</a>.</p>
+<p>Brin began his graduate study in computer science at <a href="./Stanford_University" title="Stanford University">Stanford University</a> on a <a href="./NSF_Graduate_Research_Fellowship_Program" title="NSF Graduate Research Fellowship Program">graduate fellowship from the National Science Foundation</a>, receiving a <a href="./Master_of_Science" title="Master of Science">Master of Science</a> degree in computer science in 1995. As of 2008<a href="https://en.wikipedia.org/w/index.php?title=Sergey_Brin&amp;action=edit">[update]</a>, he was on leave from his <a href="./Doctor_of_Philosophy" title="Doctor of Philosophy">Doctor of Philosophy</a> studies at Stanford.</p>
+<h2>Search engine development</h2>
+<p>During an orientation for new students at Stanford, he met <a href="./Larry_Page" title="Larry Page">Larry Page</a>. The two men seemed to disagree on most subjects, but after spending time together they "became intellectual soul-mates and close friends." Brin's focus was on developing data mining systems while Page's was on extending "the concept of inferring the importance of a research paper from its <a href="./Citation" title="Citation">citations</a> in other papers". Together, they authored a paper titled "The Anatomy of a Large-Scale <a href="./Hypertext" title="Hypertext">Hypertextual</a> Web Search Engine".</p>
+<p>To convert the backlink data gathered by Backrub's <a href="./Web_crawler" title="Web crawler">web crawler</a> into a measure of importance for a given web page, Brin and Page developed the <a href="./PageRank" title="PageRank">PageRank algorithm</a>, and realized that it could be used to build a <a href="./Search_engine" title="Search engine">search engine</a> far superior to those existing at the time. The new algorithm relied on a new kind of technology that analyzed the relevance of the <a href="./Backlink" title="Backlink">backlinks</a> that connected one Web page to another, and allowed the number of links and their rank, to determine the rank of the page. Combining their ideas, they began utilizing Page's dormitory room as a machine laboratory, and extracted spare parts from inexpensive computers to create a device that they used to connect the nascent search engine with Stanford's broadband campus network.</p>
+<p>After filling Page's room with equipment, they then converted Brin's dorm room into an office and programming center, where they tested their new search engine designs on the web. The rapid growth of their project caused Stanford's computing infrastructure to experience problems.</p>
+<p>Page and Brin used Page's basic <a href="./HTML" title="HTML">HTML</a> programming skills to set up a simple search page for users, as they did not have a web page developer to create anything visually elaborate. They also began using any computer part they could find to assemble the necessary computing power to handle searches by multiple users. As their search engine grew in popularity among Stanford users, it required additional <a href="./Server_(computing)" title="Server (computing)">servers</a> to process the queries. In August 1996, the initial version of Google was made available on the Stanford Web site.</p>
+<dl>
+<dt>By early 1997, the Backrub page described the state as follows:</dt>
+<dd>
+<p>:   Some Rough Statistics (from August 29, 1996)<br>
+:   Total indexable HTML urls: 75.2306 Million<br>
+:   Total content downloaded: 207.022 gigabytes<br>
+:   ...</p>
+</dd>
+<dd>
+<p>:   BackRub is written in Java and Python and runs on several Sun Ultras and Intel Pentiums running <a href="./Linux" title="Linux">Linux</a>. The primary database is kept on a <a href="./Sun_Ultra_series" title="Sun Ultra series">Sun Ultra series</a> II with 28GB of disk. Scott Hassan and Alan Steremberg have provided a great deal of very talented implementation help. Sergey Brin has also been very involved and deserves many thanks.</p>
+<pre><code>:   - Larry Page page![@](//upload.wikimedia.org/wikipedia/commons/thumb/8/88/At_sign.svg/20px-At_sign.svg.png)cs.stanford.edu
+</code></pre>
+</dd>
+</dl>
+<p>BackRub already exhibited the rudimentary functions and characteristics of a search engine: a query input was entered and it provided a list of backlinks ranked by importance. Page recalled: "We realized that we had a querying tool. It gave you a good overall ranking of pages and ordering of follow-up pages." Page said that in mid-1998 they finally realized the further potential of their project: "Pretty soon, we had 10,000 searches a day. And we figured, maybe this is really real."</p>
+<p>Some compared Page and Brin's vision to the impact of <a href="./Johannes_Gutenberg" title="Johannes Gutenberg">Johannes Gutenberg</a>, the inventor of modern printing:</p>
+<blockquote>
+<p>In 1440, Johannes Gutenberg introduced Europe to the mechanical printing press, printing Bibles for mass consumption. The technology allowed for books and manuscripts‍—‌originally replicated by hand‍—‌to be printed at a much faster rate, thus spreading knowledge and helping to usher in the European Renaissance ... Google has done a similar job.</p>
+</blockquote>
+<p>The comparison was also noted by the authors of <em>The Google Story</em>: "Not since Gutenberg ... has any new invention empowered individuals, and transformed access to information, as profoundly as Google." Also, not long after the two "cooked up their new engine for web searches, they began thinking about information that was at the time beyond the web," such as digitizing books and expanding health information.</p>
+<h2>Other roles and interests</h2>
+<p>In June 2008, Brin invested $4.5 million in <a href="./Space_Adventures" title="Space Adventures">Space Adventures</a>, a <a href="./Virginia" title="Virginia">Virginia</a>-based <a href="./Space_tourism" title="Space tourism">space tourism</a> company.</p>
+<p>Brin and Page jointly own a customized <a href="./Boeing_767" title="Boeing 767">Boeing 767–200</a> and a <a href="./Dassault/Dornier_Alpha_Jet" title="Dassault/Dornier Alpha Jet">Dassault/Dornier Alpha Jet</a>, and pay $1.3 million a year to house them and two <a href="./Gulfstream_V" title="Gulfstream V">Gulfstream V</a> jets owned by Google executives at <a href="./Moffett_Federal_Airfield" title="Moffett Federal Airfield">Moffett Federal Airfield</a>. The aircraft has scientific equipment installed by <a href="./NASA" title="NASA">NASA</a> to allow experimental data to be collected in flight.</p>
+<p>Brin is a backer of LTA Research &amp; Exploration LLC, an <a href="./Airship" title="Airship">airship</a> maker company. In October 2023, LTA's 124-meter long flagship, <a href="./Pathfinder_1_(airship)" title="Pathfinder 1 (airship)">Pathfinder 1</a>, became the largest airship since the <em><a href="./LZ_129_Hindenburg" title="LZ 129 Hindenburg">Hindenburg</a></em> to receive clearance for flight testing, permitted over the boundaries of <a href="./Moffett_Federal_Airfield" title="Moffett Federal Airfield">Moffett Field</a> and neighboring <a href="./Palo_Alto_Airport" title="Palo Alto Airport">Palo Alto Airport</a>'s airspaces, at a height of up to 460 meters.</p>
+<p>In 2026, Brin was appointed to the <a href="./President's_Council_of_Advisors_on_Science_and_Technology" title="President's Council of Advisors on Science and Technology">President's Council of Advisors on Science and Technology</a> (PCAST) by President <a href="./Donald_Trump" title="Donald Trump">Donald Trump</a>.</p>
+<h2>Personal life</h2>
+<p>Brin was raised Jewish, but is not religious.[<em><a href="./Wikipedia:Verifiability#Questionable_sources" title="Wikipedia:Verifiability">better source needed</a></em>]</p>
+<p>In May 2007, Brin married <a href="./Biotechnology" title="Biotechnology">biotech analyst</a> and entrepreneur <a href="./Anne_Wojcicki" title="Anne Wojcicki">Anne Wojcicki</a> in <a href="./The_Bahamas" title="The Bahamas">the Bahamas</a>. They had a son in late 2008 and a daughter in late 2011. In August 2013, it was announced that Brin and his wife were living separately after Brin had an extramarital affair with a <a href="./Google_Glass" title="Google Glass">Google Glass</a> colleague. In June 2015, Brin and Wojcicki finalized their divorce.</p>
+<p>On November 7, 2018, he married <a href="./Nicole_Shanahan" title="Nicole Shanahan">Nicole Shanahan</a>, a <a href="./Legal_technology" title="Legal technology">legal tech</a> founder. They have a daughter, born in late 2018. Brin and Shanahan separated on December 15, 2021, and Brin filed for divorce on January 4, 2022. In summer 2023, the divorce was finalized. The <em><a href="./Wall_Street_Journal" title="Wall Street Journal">Wall Street Journal</a></em> reported that a reason for the breakup was a "brief affair" in 2021 between Shanahan and <a href="./Elon_Musk" title="Elon Musk">Elon Musk</a>.</p>
+<p>Brin's mother, Eugenia, has been diagnosed with <a href="./Parkinson's_disease" title="Parkinson's disease">Parkinson's disease</a>. In 2008, he decided to make a donation to the <a href="./University_of_Maryland_School_of_Medicine" title="University of Maryland School of Medicine">University of Maryland School of Medicine</a>, where his mother has received treatment. According to <em>Forbes</em>, Brin has donated over $1 billion to fund research on the disease.</p>
+<p>Brin and Wojcicki, although separated, jointly ran The Brin Wojcicki Foundation until 2014. Since then, Brin has used the <a href="./Sergey_Brin_Family_Foundation" title="Sergey Brin Family Foundation">Sergey Brin Family Foundation</a> and a donor-advised fund for his philanthropic giving. They donated extensively to <a href="./The_Michael_J._Fox_Foundation" title="The Michael J. Fox Foundation">The Michael J. Fox Foundation</a> and in 2009 gave $1 million to support the <a href="./HIAS" title="HIAS">Hebrew Immigrant Aid Society</a>.</p>
+<p>Brin is a donor to <a href="./Democratic_Party_(United_States)" title="Democratic Party (United States)">Democratic Party</a> candidates and organizations, having donated $5,000 to <a href="./Barack_Obama" title="Barack Obama">Barack Obama</a>'s <a href="./Barack_Obama_2012_presidential_campaign" title="Barack Obama 2012 presidential campaign">2012 reelection campaign</a> and $30,800 to the <a href="./Democratic_National_Committee" title="Democratic National Committee">DNC</a>. Brin attended the <a href="./Second_inauguration_of_Donald_Trump" title="Second inauguration of Donald Trump">second inauguration of Donald Trump</a>, sitting alongside Donald Trump supporters and other tech moguls. In December 2025, Brin and Page, worth a combined $520 billion, terminated or moved out of California sixty limited liability companies that hold their assets.</p>
+<p>Brin is the owner of the <a href="./Superyacht" title="Superyacht">superyacht</a> <a href="./Dragonfly_(yacht)" title="Dragonfly (yacht)"><em>Dragonfly</em></a>.</p>
+<h2>Awards and accolades</h2>
+<h3>2002–2009</h3>
+<ul>
+<li>In 2002, Brin, along with Larry Page, was named in the <em><a href="./MIT_Technology_Review" title="MIT Technology Review">MIT Technology Review</a></em> <a href="./Innovators_Under_35" title="Innovators Under 35">TR100</a>, as one of the top 100 innovators in the world under the age of 35.</li>
+<li>In 2003, both Brin and Page received an <a href="./Honorary_degree" title="Honorary degree">honorary</a> MBA from <a href="./IE_Business_School" title="IE Business School">IE Business School</a> "for embodying the entrepreneurial spirit and lending momentum to the creation of new businesses...".</li>
+<li>In 2003, Brin and Page were both Award Recipients and National Finalists for the EY Entrepreneur of the Year Award.</li>
+<li>In 2004, they received the <a href="./Marconi_Prize" title="Marconi Prize">Marconi Prize</a>, and were elected Fellows of the <a href="./Marconi_Foundation" title="Marconi Foundation">Marconi Foundation</a>. The two men were "cited for the invention that has fundamentally changed the way information is retrieved today."</li>
+<li>In 2004, Brin received the <a href="./Academy_of_Achievement" title="Academy of Achievement">American Academy of Achievement</a>'s Golden Plate Award with Larry Page at a ceremony in Chicago, Illinois.</li>
+<li>In 2006, Brin was one of the inaugural class of winners of the <a href="./Great_Immigrants_Award" title="Great Immigrants Award">Great Immigrants Award</a> named by <a href="./Carnegie_Corporation_of_New_York" title="Carnegie Corporation of New York">Carnegie Corporation of New York</a>.</li>
+</ul>
+<h3>Since 2009</h3>
+<ul>
+<li>In November 2009, <em><a href="./Forbes" title="Forbes">Forbes</a></em> named Brin and Page the fifth most powerful people in the world.</li>
+<li>Earlier that same year, in February, Brin was inducted into the <a href="./National_Academy_of_Engineering" title="National Academy of Engineering">National Academy of Engineering</a>, which is "among the highest professional distinctions accorded to an engineer ... [and] honors those who have made outstanding contributions to engineering research, practice...". He was selected specifically, "for leadership in development of rapid indexing and retrieval of relevant information from the World Wide Web".</li>
+<li>In their "Profiles" of Fellows, the <a href="./National_Science_Foundation" title="National Science Foundation">National Science Foundation</a> included a number of earlier awards:<blockquote>
+<p>he was a featured speaker at the <a href="./World_Economic_Forum" title="World Economic Forum">World Economic Forum</a> and the Technology, Entertainment and Design Conference. ... <em><a href="./PC_Magazine" title="PC Magazine">PC Magazine</a></em> has praised Google in the Top 100 Web Sites and Search Engines (1998) and awarded Google the Technical Excellence Award, for Innovation in Web Application Development in 1999. In 2000, Google earned a <a href="./Webby_Award" title="Webby Award">Webby Award</a>, a People's Voice Award for technical achievement, and in 2001, was awarded Outstanding Search Service, Best Image Search Engine, Best Design, Most Webmaster Friendly Search Engine, and Best Search Feature at the Search Engine Watch Awards.</p>
+</blockquote>
+</li>
+<li>As of September 2024, Brin is the tenth-richest person in the world according to Bloomberg, with an estimated net worth of $135 billion.</li>
+</ul>
+<h2>Appearances in film</h2>
+<table>
+<thead>
+<tr>
+<th>Year</th>
+<th>Title</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2013</td>
+<td><em><a href="./The_Internship" title="The Internship">The Internship</a></em></td>
+<td>Himself (cameo)</td>
+</tr>
+</tbody>
+</table>
+<h2>See also</h2>
+<p><a href="./List_of_people_named_in_the_Epstein_files" title="List of people named in the Epstein files">List of people named in the Epstein files</a></p>
+<h2>Notes and references</h2>
+<h3>Notes</h3>
+<h3>References</h3>
+<h2>External links</h2>
+<p><strong>Sergey Brin</strong> at Wikipedia's <a href="./Wikipedia:Wikimedia_sister_projects" title="Wikipedia:Wikimedia sister projects">sister projects</a></p>
+<ul>
+<li><a href="./File:Commons-logo.svg"><img alt="Wikimedia Commons logo" src="//upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/20px-Commons-logo.svg.png"></a><a href="https://commons.wikimedia.org/wiki/Sergey%20Brin" title="c:Sergey Brin">Media</a> from Commons</li>
+<li>
+<p><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Wikiquote-logo.svg/40px-Wikiquote-logo.svg.png"><a href="https://en.wikiquote.org/wiki/Sergey%20Brin" title="q:Sergey Brin">Quotations</a> from Wikiquote</p>
+</li>
+<li>
+<p><a href="https://www.forbes.com/profile/sergey-brin/">Sergey Brin</a> on <a href="./Forbes" title="Forbes">Forbes</a></p>
+</li>
+<li><a href="https://www.c-span.org/person/?1008687">Appearances</a> on <a href="./C-SPAN" title="C-SPAN">C-SPAN</a></li>
+<li><a href="https://charlierose.com/videos/6277">Sergey Brin</a> on <a href="./Charlie_Rose_(talk_show)" title="Charlie Rose (talk show)"><em>Charlie Rose</em></a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Alphabet_Inc." title="Template:Alphabet Inc.">v</a> - <a href="./Template_talk:Alphabet_Inc." title="Template talk:Alphabet Inc.">t</a> - <a href="./Special:EditPage/Template:Alphabet_Inc." title="Special:EditPage/Template:Alphabet Inc.">e</a>  <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc.</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Subsidiaries</td>
+<td></td>
+</tr>
+<tr>
+<td>People</td>
+<td></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Alphabet_Inc." title="Category:Alphabet Inc.">Category</a> - <a href="./Portal:Companies" title="Portal:Companies">Companies portal</a> - <a href="./File:Crystal_Clear_app_linneighborhood.svg">icon</a> <a href="./Portal:Internet" title="Portal:Internet">Internet portal</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products" title="List of Google products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><a href="./Help:Authority_control" title="Help:Authority control">Authority control databases</a> <a href="https://www.wikidata.org/wiki/Q92764#identifiers" title="Edit this at Wikidata">Edit this at Wikidata</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>International</td>
+<td>- <a href="https://isni.org/isni/0000000078791368">ISNI</a> - <a href="https://viaf.org/viaf/120111435">VIAF</a> - <a href="https://d-nb.info/gnd/132711648">GND</a> - <a href="https://id.worldcat.org/fast/1619841">FAST</a> - <a href="https://id.oclc.org/worldcat/entity/E39PBJwD3bHyb94F4TrcBBh4MP">WorldCat</a></td>
+</tr>
+<tr>
+<td>National</td>
+<td>- <a href="https://id.loc.gov/authorities/no2005073928">United States</a> - <a href="https://aleph.nkp.cz/F/?func=find-c&amp;local_base=aut&amp;ccl_term=ica=vse2010558371&amp;CON_LNG=ENG">Czech Republic</a> - <a href="https://datos.bne.es/resource/XX4902579">Spain</a> - <a href="http://data.bibliotheken.nl/id/thes/p321646282">Netherlands</a> - <a href="https://kopkatalogs.lv/F?func=direct&amp;local_base=lnc10&amp;doc_number=000279772&amp;P_CON_LNG=ENG">Latvia</a> - <a href="https://catalogue.nlg.gr/cgi-bin/koha/opac-authoritiesdetail.pl?authid=264756">Greece</a> - <a href="https://dbn.bn.org.pl/descriptor-details/9810630820605606">Poland</a> - <a href="https://www.nli.org.il/en/authorities/987007447302505171">Israel</a></td>
+</tr>
+<tr>
+<td>Academics</td>
+<td>- <a href="https://dl.acm.org/profile/81100070777">Association for Computing Machinery</a> - <a href="https://dblp.org/pid/b/SergeyBrin">DBLP</a></td>
+</tr>
+<tr>
+<td>People</td>
+<td>- <a href="https://www.deutsche-digitale-bibliothek.de/person/gnd/132711648">DDB</a></td>
+</tr>
+<tr>
+<td>Other</td>
+<td>- <a href="https://www.idref.fr/169743705">IdRef</a> - <a href="https://lux.collections.yale.edu/view/person/e6b47513-86fa-46d6-b74f-3ba1166f4d23">Yale LUX</a></td>
+</tr>
+</tbody>
+</table>
+<p><a href="./Wikipedia:Contents/Portals" title="Wikipedia:Contents/Portals">Portals</a>:</p>
+<ul>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/en/thumb/6/69/P_vip.svg/20px-P_vip.svg.png"> <a href="./Portal:Biography" title="Portal:Biography">Biography</a></li>
+<li><a href="./File:Emblem-money.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Emblem-money.svg/20px-Emblem-money.svg.png"></a> <a href="./Portal:Business" title="Portal:Business">Business</a></li>
+<li><a href="./File:Octicons-terminal.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Octicons-terminal.svg/20px-Octicons-terminal.svg.png"></a> <a href="./Portal:Computer_programming" title="Portal:Computer programming">Computer programming</a></li>
+<li><a href="./File:Crystal_Clear_app_linneighborhood.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Crystal_Clear_app_linneighborhood.svg/20px-Crystal_Clear_app_linneighborhood.svg.png"></a> <a href="./Portal:Internet" title="Portal:Internet">Internet</a></li>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/4/49/Star_of_David.svg/20px-Star_of_David.svg.png"> <a href="./Portal:Judaism" title="Portal:Judaism">Judaism</a></li>
+<li><a href="./File:Nuvola_apps_edu_mathematics_blue-p.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Nuvola_apps_edu_mathematics_blue-p.svg/20px-Nuvola_apps_edu_mathematics_blue-p.svg.png"></a> <a href="./Portal:Mathematics" title="Portal:Mathematics">Mathematics</a></li>
+<li><a href="./File:Wind-turbine-icon.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Wind-turbine-icon.svg/20px-Wind-turbine-icon.svg.png"></a> <a href="./Portal:Renewable_energy" title="Portal:Renewable energy">Renewable energy</a></li>
+<li><a href="./File:Noun-technology.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Noun-technology.svg/20px-Noun-technology.svg.png"></a> <a href="./Portal:Technology" title="Portal:Technology">Technology</a></li>
+<li><img alt="flag" src="//upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/40px-Flag_of_the_United_States.svg.png"> <a href="./Portal:United_States" title="Portal:United States">United States</a></li>
+</ul></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

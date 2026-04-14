@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AdSense for Mobile</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link active" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>AdSense for Mobile</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Google_AdSense<br>
+Category: company__depth2<br>
+Depth: 2</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Google AdSense is a program and advertising network run by Google through which website publishers in the Google Network of content sites serve text, images, video, or interactive media advertisements that are targeted to the site content and audience. These advertisements are administered, sorted, and maintained by Google. They can generate revenue on either a per-click or per-impression basis. Google beta-tested a cost-per-action service, but discontinued it in October 2008 in favor of a DoubleClick offering. In Q1 2014, Google earned US$3.4 billion, or 22% of total revenue, through Google AdSense. In 2021, more than 38 million websites used AdSense. It is a participant in the AdChoices program, so AdSense ads typically include the triangle-shaped AdChoices icon. This program also operates on HTTP cookies.</p>
+<h2>Images</h2>
+<p><img alt="120px-Adsense_rebranded_with_a_new_logo" src="../images/120px-Adsense_rebranded_with_a_new_logo.png"></p>
+<h2>Full Article</h2>
+<p>Not to be confused with AdWords (now known as <a href="./Google_Ads" title="Google Ads">Google Ads</a>).</p>
+<p>Advertising program by Google</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>Some of this article's <a href="./Wikipedia:Citing_sources" title="Wikipedia:Citing sources">listed sources</a> <strong>may not be <a href="./Wikipedia:Reliable_sources" title="Wikipedia:Reliable sources">reliable</a></strong>. Please help improve this article by looking for better, more reliable sources. Unreliable citations may be challenged and removed. <em>(October 2016)</em> <em>(<a href="./Help:Maintenance_template_removal" title="Help:Maintenance template removal">Learn how and when to remove this message</a>)</em></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Google AdSense</strong> is a program and <a href="./Advertising_network" title="Advertising network">advertising network</a> run by <a href="./Google" title="Google">Google</a> through which website publishers in the <a href="./Google_Display_Network" title="Google Display Network">Google Network of content sites</a> serve text, images, video, or interactive media advertisements that are <a href="./Targeted_advertising" title="Targeted advertising">targeted</a> to the site content and audience. These advertisements are administered, sorted, and maintained by Google. They can generate revenue on either a <a href="./Pay_per_click" title="Pay per click">per-click</a> or <a href="./Cost_per_impression" title="Cost per impression">per-impression</a> basis. Google <a href="./Software_testing" title="Software testing">beta-tested</a> a <a href="./Cost_Per_Action" title="Cost Per Action">cost-per-action</a> service, but discontinued it in October 2008 in favor of a <a href="./DoubleClick" title="DoubleClick">DoubleClick</a> offering (also owned by Google). In Q1 2014, Google earned US$3.4 billion ($13.6 billion annualized), or 22% of total revenue, through Google AdSense. In 2021, more than 38 million websites used AdSense. It is a participant in the <a href="./AdChoices" title="AdChoices">AdChoices</a> program, so AdSense ads typically include the triangle-shaped <a href="./AdChoices" title="AdChoices">AdChoices</a> icon. This program also operates on <a href="./HTTP_cookies" title="HTTP cookies">HTTP cookies</a>.</p>
+<h2>Overview</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./File:Question_book-new.svg">icon</a></td>
+<td>This section <strong>needs additional citations for <a href="./Wikipedia:Verifiability" title="Wikipedia:Verifiability">verification</a></strong>. Please help <a href="./Special:EditPage/Google_AdSense" title="Special:EditPage/Google AdSense">improve this article</a> by <a href="./Help:Referencing_for_beginners" title="Help:Referencing for beginners">adding citations to reliable sources</a> in this section. Unsourced material may be challenged and removed. <em>(September 2010)</em> <em>(<a href="./Help:Maintenance_template_removal" title="Help:Maintenance template removal">Learn how and when to remove this message</a>)</em></td>
+</tr>
+</tbody>
+</table>
+<p>Google uses its technology to serve <a href="./Advertisements" title="Advertisements">advertisements</a> based on website content, the user's geographical location, and other factors. Those wanting to advertise with Google's targeted advertisement system may enroll through Google <a href="./AdWords" title="AdWords">Ads</a>. AdSense has become one of the most popular programs specializing in creating and placing banner and responsive ads on websites and blogs. Responsive ads adjust themselves based upon user's device size. These advertisements are less intrusive and the content of the advertisements is often relevant to the website. Many websites use AdSense to make revenue from their web content (website, online videos, online audio content, etc.), and it is the most popular advertising network. AdSense has proved particularly useful for generating advertising revenue for small websites that do not have sufficient resources or other major sources of revenue. To display contextually relevant advertisements on a website, webmasters place a brief JavaScript code on the website's pages. Websites that are content-rich have been very successful with this advertising program, as noted in a number of publisher case studies on the AdSense website. Google has removed the policy of limiting AdSense ads to three ads per page. Now, AdSense publishers can place several AdSense ads on a page given there is sufficient content on a webpage. According to Google guidelines on ensuring proper ad placement, advertising and promotional material should not exceed page content.</p>
+<p>Some webmasters put significant effort into maximizing their AdSense income. They do this mainly by following best practices:</p>
+<ol>
+<li>They produce good quality content that attracts and engages users and provides a good user experience.</li>
+<li>They follow webmaster guidelines.</li>
+<li>They avoid flooding their website with advertisements.</li>
+<li>They do not try methods that encourage users to click ads. Google prohibits webmasters from using phrases like "Click on my AdSense ads" to increase click rates. The phrases accepted are "Sponsored Links" and "Advertisements".</li>
+<li>They do not link or redirect to websites with a poor reputation.</li>
+</ol>
+<p>The source of all AdSense income is the Ads program, which in turn has a complex pricing model based on a <a href="./Vickrey_auction" title="Vickrey auction">Vickrey</a> second price auction. AdSense requires an advertiser to submit a sealed bid (i.e., a bid not observable by competitors). Additionally, for any given click received, advertisers only pay one bid increment above the second-highest bid. Google currently shares 68% of revenue generated by AdSense with content network partners, and 51% of revenue generated by AdSense with AdSense for Search partners. On June 18, 2015, Google announced rebranding of AdSense with a new logo.</p>
+<h2>History</h2>
+<p>Google launched its AdSense program, originally named "Content targeting advertising" in March 2003. The AdSense name was originally used by Applied Semantics, a competitive offering to AdSense. The name was adopted by Google after Google acquired Applied Semantics in April 2003. Some advertisers complained that AdSense yielded worse results than <a href="./Google_Ads" title="Google Ads">Google Ads</a>, since it served ads that related contextually to the content on a web page and that content was less likely to be related to a user's commercial desires than search results. For example, someone browsing a blog dedicated to flowers was less likely to be interested in ordering flowers than someone searching for terms related to flowers. As a result, in 2004 Google allowed its advertisers to opt-out of the AdSense network.</p>
+<p><a href="./Paul_Buchheit" title="Paul Buchheit">Paul Buchheit</a>, the founder of <a href="./Gmail" title="Gmail">Gmail</a>, had the idea to run ads within Google's e-mail service. But he and others say it was <a href="./Susan_Wojcicki" title="Susan Wojcicki">Susan Wojcicki</a>, with the backing of <a href="./Sergey_Brin" title="Sergey Brin">Sergey Brin</a>, who organized the team that adapted that idea into an enormously successful product. By early 2005 AdSense accounted for an estimated 15 percent of Google's total revenues. In 2009, Google AdSense announced that it would now be offering new features, including the ability to "enable multiple networks to display ads". In February 2010, Google AdSense started using search history in contextual matching to offer more relevant ads. On January 21, 2014, Google AdSense launched Direct Campaigns, a tool where publishers may directly sell ads. This feature was retired on February 10, 2015.</p>
+<h2>Types</h2>
+<h3>Content</h3>
+<p>The content-based advertisements can be targeted at users with certain interests or contexts. The targeting can be CPC (cost per click) or <a href="./Cost_per_mille" title="Cost per mille">CPM</a> (cost per thousand impressions) based, the only significant difference in CPC and CPM is that with CPC targeting, earnings are based on clicks while CPM earnings recently are actually based not just per views/impression but on a larger scale, per thousand impressions, therefore driving it from the market, which makes CPC ads more common.</p>
+<p>There are various ad sizes available for content ads. The ads can be simple text, image, animated image, <a href="./Flash_Video" title="Flash Video">flash Video</a>, video, or <a href="./Rich_media" title="Rich media">rich media</a> ads. At most ad sizes, users can change whether to show both text and multimedia ads or just one of them. As of November 2012<a href="https://en.wikipedia.org/w/index.php?title=Google_AdSense&amp;action=edit">[update]</a>, a grey arrow appears beneath AdSense text ads for easier identification. Google made a policy update regarding the number of ads per page, the three ads per page limit has been removed.</p>
+<p>Vignette ads appear when a person leaves a page rather than when a page first loads, so the person does not have to wait for it to load.</p>
+<h3>Search</h3>
+<p>AdSense for search allows publishers to <a href="./Display_ad" title="Display ad">display ads</a> relating to search terms on their site and receive 51% of the revenue generated from those ads. AdSense custom search ads can be displayed either alongside the results from an AdSense Custom Search Engine or alongside internal search results through the use of Custom Search Ads. Custom Search Ads are only available to "<a href="./White_list" title="White list">white-listed</a>" publishers. Although the revenue share from AdSense for Search (51%) is lower than from AdSense for Content (68%) higher returns can be achieved due to the potential for higher Click Through Rates.</p>
+<h3>Video</h3>
+<p>AdSense for video allows publishers with video content (e.g., video hosting websites) to generate revenue using ad placements from Google's extensive <a href="./Advertising_network" title="Advertising network">advertising network</a>. The publisher is able to decide what type of ads are shown with their video inventory. Formats available include linear video ads (pre-roll or post-roll), overlay ads that display AdSense text and display ads over the video content, and the TrueView format. Publishers can also display companion ads - display ads that run alongside video content outside the player. AdSense for video is for publishers running video content within a player and not for <a href="./YouTube" title="YouTube">YouTube</a> publishers.</p>
+<h3>Link units</h3>
+<p>Link units are closely targeted to the interests of users. Because users directly interact with the ad unit, they may be more interested in the ads they eventually see.</p>
+<p>AdSense publishers are paid for clicks on the ads that are linked from link unit topics, not for clicks on the initial topics themselves. The ads on the linked page are pay-per-click Google ads similar to those shown in regular AdSense ad units. <a href="https://support.google.com/adsense/answer/15817?hl=en">Link Units</a></p>
+<h2>Discontinued types</h2>
+<h3>Mobile content</h3>
+<p>AdSense for mobile content allowed publishers to generate earnings from their <a href="./Mobile_website" title="Mobile website">mobile websites</a> using targeted Google advertisements. Just like AdSense for content, Google matches advertisements to the content of a website — in this case, a mobile website. Instead of traditional JavaScript code, technologies such as Java and Objective-C are used. As of February 2012, AdSense for Mobile Content was rolled into the core AdSense for Content offering to better reflect the lessening separation between desktop and mobile content.</p>
+<h3>Domains</h3>
+<p>AdSense for domains allows advertisements to be placed on domain names that have not been developed. This offers domain name owners a way to monetize (make money from) domain names that are otherwise dormant or not in use. AdSense for domains is currently being offered to all AdSense publishers, but it wasn't always available to all. On December 12, 2008, <em><a href="./TechCrunch" title="TechCrunch">TechCrunch</a></em> reported that AdSense for Domains is available for all US publishers. On February 22, 2012, Google announced that it was shutting down its Hosted AdSense for Domains program.</p>
+<h3>Feeds</h3>
+<p>In May 2005, Google announced a limited-participation beta version of <strong>AdSense for Feeds</strong>, a version of AdSense that runs on <a href="./RSS" title="RSS">RSS</a> and <a href="./Atom_(standard)" title="Atom (standard)">Atom</a> <a href="./Web_feed" title="Web feed">feeds</a> that have more than 100 active subscribers. According to the Official Google Blog, "advertisers have their ads placed in the most appropriate feed articles; publishers are paid for their original content; readers see relevant advertising—and in the long run, more quality feeds to choose from." AdSense for Feeds works by inserting images into a feed. When the image is displayed by a RSS reader or Web browser, Google writes the advertising content into the image that it returns. The advertisement content is chosen based on the content of the feed surrounding the image. When the user clicks the image, he or she is redirected to the advertiser's website in the same way as regular AdSense advertisements. AdSense for Feeds remained in its beta state until August 15, 2008, when it became available to all AdSense users. On December 3, 2012, Google discontinued AdSense For Feeds program.</p>
+<h2>How it works</h2>
+<ul>
+<li>The <a href="./Webmaster" title="Webmaster">webmaster</a> who wishes to participate in AdSense inserts the AdSense <a href="./JavaScript" title="JavaScript">JavaScript</a> code into a webpage.</li>
+<li>Each time this page is visited by an <a href="./End_user" title="End user">end user</a> (e.g., a person surfing the <a href="./Internet" title="Internet">Internet</a>), the JavaScript code uses <a href="./Inline_expansion" title="Inline expansion">inlined</a> <a href="./JSON" title="JSON">JSON</a> to display content fetched from Google's servers.</li>
+<li>For <a href="./Contextual_advertising" title="Contextual advertising">contextual advertisements</a>, Google's servers use a <a href="./Web_cache" title="Web cache">web cache</a> of the page created by its <a href="./Mediabot" title="Mediabot">Mediabot</a> "<a href="./Webcrawler" title="Webcrawler">crawler</a>" to determine a set of high-value <a href="./Keyword_(Internet_search)" title="Keyword (Internet search)">keywords</a>. If keywords have been cached already, advertisements are served for those keywords based on the Ads <a href="./Bidding" title="Bidding">bidding</a> system.</li>
+<li>For website-targeted advertisements, the advertiser chooses the page(s) on which to display advertisements, and pays based on <a href="./Cost_per_mille" title="Cost per mille">cost per mille</a> (CPM), or the price advertisers choose to pay for every thousand advertisements displayed.</li>
+<li>For referrals, Google adds money to the advertiser's account when visitors either download the referred software or subscribe to the referred service. The referral program was retired in August 2008.</li>
+<li><a href="./Google_AdSense#AdSense_for_search">Search advertisements</a> are added to the list of results after the visitor/user performs a search.</li>
+<li>Because the JavaScript is sent to the Web browser when the page is requested, it is possible for other website owners to copy the JavaScript code into their own webpages. To protect against this type of <a href="./Fraud" title="Fraud">fraud</a>, AdSense publishers can specify the pages on which advertisements should be shown. AdSense then ignores clicks from pages other than those specified. (see <a href="./Click_fraud" title="Click fraud">Click fraud</a> for more information).</li>
+</ul>
+<h2>Reception</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./File:Question_book-new.svg">icon</a></td>
+<td>This section <strong>needs additional citations for <a href="./Wikipedia:Verifiability" title="Wikipedia:Verifiability">verification</a></strong>. Please help <a href="./Special:EditPage/Google_AdSense" title="Special:EditPage/Google AdSense">improve this article</a> by <a href="./Help:Referencing_for_beginners" title="Help:Referencing for beginners">adding citations to reliable sources</a> in this section. Unsourced material may be challenged and removed. <em>(June 2012)</em> <em>(<a href="./Help:Maintenance_template_removal" title="Help:Maintenance template removal">Learn how and when to remove this message</a>)</em></td>
+</tr>
+</tbody>
+</table>
+<p>Some <a href="./Webmaster" title="Webmaster">webmasters</a> create websites tailored to lure searchers from Google and other engines onto their AdSense website to make money from clicks. Such websites often contain nothing but a large amount of interconnected, automated content (e.g., a directory with content from the <a href="./Open_Directory_Project" title="Open Directory Project">Open Directory Project</a>, or <a href="./Scraper_site" title="Scraper site">"scraper" websites</a> relying on RSS feeds for content). Possibly the most popular form of such "AdSense farms" are <a href="./Splog" title="Splog">splogs</a> (<a href="./Spamming" title="Spamming">spam</a> blogs), which are poorly written content centered around known high-paying keywords. Many of these websites reuse content from other websites, such as <a href="./Wikipedia" title="Wikipedia">Wikipedia</a>, to attract visitors. These and related approaches are considered to be <a href="./Search_engine_spam" title="Search engine spam">search engine spam</a> and can be reported to Google. A <a href="./Scraper_site#Made_for_advertising" title="Scraper site">Made for AdSense</a> (MFA) website or webpage has little or no content, but is filled with advertisements so that users have no choice but to click on advertisements. Such pages were tolerated in the past, but due to complaints, Google now disables such accounts. There have also been reports of <a href="./Trojan_horse_(computing)" title="Trojan horse (computing)">Trojan horses</a> engineered to produce counterfeit Google advertisements that are formatted looking like legitimate ones. The Trojan uploads itself onto an unsuspecting user's computer through a webpage and then replaces the original advertisements with its own set of malicious advertisements.</p>
+<p>In May 2014, Hagens Berman law firm filed a national class-action lawsuit against Google, claiming the company unlawfully denies payments to thousands of website owners and operators who place ads on their sites sold through Google AdWords.</p>
+<p>There were numerous complaints in online discussion forums about a difference in treatment for publishers from China and India, namely that sites from those locations are required to be active for six months before being eligible for AdSense.<br>
+Due to alleged concerns about <a href="./Click_fraud" title="Click fraud">click fraud</a>, Google AdSense has been criticized by some <a href="./Search_engine_optimization" title="Search engine optimization">search engine optimization</a> firms as a large source of what Google calls "invalid clicks", in which one company clicks on a rival's search engine advertisements to drive up the other company's costs. The payment terms for webmasters have also been criticized. Google withholds payment until an account reaches US$100.</p>
+<p>Google came under fire when the official Google AdSense Blog showcased the French video website Imineo.com. This website violated Google's AdSense Program Policies by displaying AdSense alongside sexually explicit material.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>] Typically, websites displaying AdSense have been banned from showing such content. Using both AdSense and Google Ads may cause a website to pay Google a commission when the website advertises itself. In some cases, AdSense displays inappropriate or offensive ads. For example, in a news story about a terrorist attack in <a href="./India" title="India">India</a>, an advert was generated for a (presumably non-existent) educational qualification in terrorism. AdSense uses <a href="./Tracking_cookie" title="Tracking cookie">tracking cookies</a> that are viewed by some users as a threat to privacy. AdSense terms of service require that sites using AdSense explain the use of these cookies in their privacy policy.</p>
+<h2>See also</h2>
+<ul>
+<li><a href="./Ad_blocking" title="Ad blocking">Ad blocking</a></li>
+<li><a href="./Google_Ads" title="Google Ads">Google Ads</a></li>
+<li><a href="./List_of_Google_products" title="List of Google products">List of Google products</a></li>
+<li><a href="./Pay_per_play" title="Pay per play">Pay per play</a></li>
+<li><a href="./DoubleClick" title="DoubleClick">DoubleClick</a></li>
+<li><a href="./Native_advertising" title="Native advertising">Native advertising</a></li>
+</ul>
+<h2>References</h2>
+<h2>External links</h2>
+<ul>
+<li><a href="https://adsense.google.com/">Official website</a></li>
+<li><a href="http://appft1.uspto.gov/netacgi/nph-Parser?Sect1=PTO2&amp;Sect2=HITOFF&amp;p=1&amp;u=%2Fnetahtml%2FPTO%2Fsearch-bool.html&amp;r=1&amp;f=G&amp;l=50&amp;co1=AND&amp;d=PG01&amp;s1=20040059708&amp;OS=20040059708&amp;RS=20040059708">Google AdSense patent application</a> <a href="https://web.archive.org/web/20190219235349/http://appft1.uspto.gov/netacgi/nph-Parser?Sect1=PTO2&amp;Sect2=HITOFF&amp;p=1&amp;u=%2Fnetahtml%2FPTO%2Fsearch-bool.html&amp;r=1&amp;f=G&amp;l=50&amp;co1=AND&amp;d=PG01&amp;s1=20040059708&amp;OS=20040059708&amp;RS=20040059708">Archived</a> 2019-02-19 at the <a href="./Wayback_Machine" title="Wayback Machine">Wayback Machine</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_Ads_navbox" title="Template:Google Ads navbox">v</a> - <a href="./Template_talk:Google_Ads_navbox" title="Template talk:Google Ads navbox">t</a> - <a href="./Special:EditPage/Template:Google_Ads_navbox" title="Special:EditPage/Template:Google Ads navbox">e</a>  <a href="./Google_Ads" title="Google Ads">Google Ads</a></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Web</td>
+<td>- <a href="./Google_Ad_Manager" title="Google Ad Manager">Google Ad Manager</a> - <a href="./Google_AdSense">Google AdSense</a> - <a href="./Google_Marketing_Platform" title="Google Marketing Platform">Google Marketing Platform</a></td>
+<td><a href="./File:Google_Ads_logo.svg" title="Google Ads marker">Google Ads marker</a></td>
+</tr>
+<tr>
+<td>Mobile</td>
+<td>- <a href="./AdMob" title="AdMob">AdMob</a> - <a href="./Adscape" title="Adscape">Adscape</a></td>
+<td></td>
+</tr>
+<tr>
+<td>Other</td>
+<td>- <a href="./DoubleClick" title="DoubleClick">DoubleClick</a> - <a href="./Google_Analytics" title="Google Analytics">Google Analytics</a> - <a href="./Google_Contributor" title="Google Contributor">Google Contributor</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Help:Authority_control" title="Help:Authority control">Authority control databases</a> <a href="https://www.wikidata.org/wiki/Q183480#identifiers" title="Edit this at Wikidata">Edit this at Wikidata</a></td>
+<td>- <a href="https://d-nb.info/gnd/7672485-2">GND</a></td>
+</tr>
+</tbody>
+</table>
+<p><a href="./Wikipedia:Contents/Portals" title="Wikipedia:Contents/Portals">Portal</a>:</p>
+<ul>
+<li><a href="./File:Crystal_Clear_app_linneighborhood.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Crystal_Clear_app_linneighborhood.svg/20px-Crystal_Clear_app_linneighborhood.svg.png"></a> <a href="./Portal:Internet" title="Portal:Internet">Internet</a></li>
+</ul></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

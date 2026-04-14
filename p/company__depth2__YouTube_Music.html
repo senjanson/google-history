@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YouTube Music</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link active" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>YouTube Music</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/YouTube_Music<br>
+Category: company__depth2<br>
+Depth: 2</p>
+</blockquote>
+<h2>Summary</h2>
+<p>YouTube Music is a music streaming service developed by the American video platform YouTube, a subsidiary of Google. The service is designed with an interface that allows users to simultaneously explore music audios and music videos from YouTube-based genres, playlists and recommendations. On December 1, 2020, YouTube Music replaced Google Play Music as Google's primary brand for music streaming. In April 2023, the service expanded its offerings to include support for podcasts shortly before Google Podcasts was shut down.</p>
+<h2>Images</h2>
+<p><img alt="Youtube_Music_UI_2C_playing_Kevin_MacLeod_2C_2025" src="../images/Youtube_Music_UI_2C_playing_Kevin_MacLeod_2C_2025.png"><br>
+<img alt="330px-Youtube_Music_UI_2C_playing_Kevin_MacLeod_2C_2025" src="../images/330px-Youtube_Music_UI_2C_playing_Kevin_MacLeod_2C_2025.png"><br>
+<img alt="250px-Youtube_Music_UI_2C_playing_Kevin_MacLeod_2C_2025" src="../images/250px-Youtube_Music_UI_2C_playing_Kevin_MacLeod_2C_2025.png"><br>
+<img alt="960px-Availability_of_Youtube_Music_in_the_World.svg" src="../images/960px-Availability_of_Youtube_Music_in_the_World.svg.png"></p>
+<h2>Full Article</h2>
+<p>Music streaming service by YouTube</p>
+<p><strong>YouTube Music</strong> is a <a href="./Music_streaming_service" title="Music streaming service">music streaming service</a> developed by the American video platform <a href="./YouTube" title="YouTube">YouTube</a>, a <a href="./Subsidiary" title="Subsidiary">subsidiary</a> of <a href="./Google" title="Google">Google</a>. The service is designed with an interface that allows users to simultaneously explore music audios and <a href="./Music_video" title="Music video">music videos</a> from YouTube-based genres, playlists and recommendations. On December 1, 2020, YouTube Music replaced <a href="./Google_Play_Music" title="Google Play Music">Google Play Music</a> as Google's primary brand for music streaming. In April 2023, the service expanded its offerings to include support for <a href="./Podcasts" title="Podcasts">podcasts</a> shortly before <a href="./Google_Podcasts" title="Google Podcasts">Google Podcasts</a> was shut down.</p>
+<p>YouTube Music also features a premium tier that provides several benefits to paying subscribers. These include ad-free playback, the ability to play audio in the background, and the option to download songs for offline listening. These benefits are also bundled with and available to subscribers of <a href="./YouTube_Premium" title="YouTube Premium">YouTube Premium</a>.</p>
+<h2>History</h2>
+<p>The YouTube Music app was unveiled in October 2015 and released the following month; its release came alongside the unveiling of <a href="./YouTube_Premium" title="YouTube Premium">YouTube Premium</a> (originally called <em>YouTube Red</em>), a larger subscription service that covers the entirety of the YouTube platform, including the Music app. Although redundant to <a href="./Google" title="Google">Google</a>'s existing <a href="./Google_Play_Music" title="Google Play Music">Google Play Music</a> All Access subscription service, the app was designed for users who primarily consume music through YouTube.</p>
+<p>On May 17, 2018, YouTube announced a new version of the YouTube Music service, including a web-based desktop player and redesigned mobile app, more dynamic recommendations based on various factors, and Google artificial intelligence technology to search songs based on lyrics and descriptions. In addition, YouTube Music became a separate subscription service (positioned as a more direct competitor to <a href="./Apple_Music" title="Apple Music">Apple Music</a> and <a href="./Spotify" title="Spotify">Spotify</a>), offering ad-free and background/audio-only streaming, and downloading for offline playback, for music content on YouTube. The service's benefits continued to be available as part of the existing YouTube Premium service and to Google Play Music All Access subscribers. The YouTube Music subscription was priced in line with its competitors at US$9.99 per month; the price of YouTube Premium was concurrently increased to $11.99 for new subscribers.</p>
+<p>In 2018, YouTube Music reached multiple sponsorship agreements with <a href="./Dick_Clark_Productions" title="Dick Clark Productions">Dick Clark Productions</a> to serve as a partner for its television specials <em><a href="./Dick_Clark's_New_Year's_Rockin'_Eve" title="Dick Clark's New Year's Rockin' Eve">Dick Clark's New Year's Rockin' Eve</a></em> and the <a href="./American_Music_Awards" title="American Music Awards">American Music Awards</a>.</p>
+<p>YouTube Music became available on <a href="./Google_Assistant" title="Google Assistant">Google Assistant</a> <a href="./Smart_speaker" title="Smart speaker">smart speakers</a> (including <a href="./Google_Nest_(smart_speakers)" title="Google Nest (smart speakers)">Google Nest</a> smart speakers) on April 18, 2019, with feature-limited ad-supported playback available for non-subscribers in only a limited number of countries.</p>
+<p>In July 2024, YouTube Music became available for <a href="./Tesla,_Inc." title="Tesla, Inc.">Tesla</a> cars.</p>
+<h2>Features</h2>
+<p>The availability of music encompasses numerous releases from mainstream artists and extends to any video categorized as music on the YouTube platform.</p>
+<p>YouTube Music initially operated in parallel with Google Play Music, but the latter was shut down in December 2020. Product manager Elias Roman stated in 2018 that they aimed to reach feature parity with Google Play Music before migrating users to it, but as of 2024 this has not been achieved.</p>
+<p>In September 2019, YouTube Music replaced Google Play Music in the core <a href="./Google_Mobile_Services" title="Google Mobile Services">Google Mobile Services</a> bundle distributed on new <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> devices. In May 2020, an update was released to allow imports from Google Play Music, including purchased music, <a href="./Playlist" title="Playlist">playlists</a>, cloud libraries, and <a href="./Recommendations" title="Recommendations">recommendations</a>.</p>
+<p>A "<a href="./Pre-save" title="Pre-save">pre-save</a>" feature for upcoming releases was added in May 2020.</p>
+<p>In 2021, YouTube Music introduced a seasonal recap feature, which serves as a culmination of a user's top artists, songs, albums and playlists, in a similar style to <a href="./Spotify_Wrapped" title="Spotify Wrapped">Spotify Wrapped</a>.</p>
+<p>In February 2023, YouTube Music launched Radio Builder, a free and from anywhere accessible web service for both paying subscribers and free users with <a href="./IOS" title="IOS">iOS</a> or <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> devices. It allows users to create a custom radio station, selecting up to 30 artists with an option to hear only their songs or from comparable musicians.</p>
+<p>In April 2023, podcasts were added to the service, initially for users in the US only with a worldwide rollout planned at a later date. <a href="./Google_Podcasts" title="Google Podcasts">Google Podcasts</a> was shut down worldwide in June 2024 with YouTube Music replacing it.</p>
+<h3>Subscriptions</h3>
+<p>The free tier plays songs in its <a href="./Music_video" title="Music video">music video</a> version where applicable. The premium tier plays official tracks of the <a href="./Album" title="Album">album</a> unless the user searches for the music video version. YouTube Music Premium and YouTube Premium subscribers can switch to an audio-only mode that can play in the background while the application is not in use. The free tier does not allow audio-only mode with background playback as it displays video advertisements.</p>
+<p>The free tier's audio quality supports up to 128 kbit/s, in <a href="./Advanced_Audio_Coding" title="Advanced Audio Coding">AAC</a> and <a href="./Opus_(audio_format)" title="Opus (audio format)">Opus</a> audio formats. When on premium, you have access to 256 kbit/s.</p>
+<p>YouTube Music Premium and YouTube Premium plans are available in individual and family variants. A family plan allows up to six family members from the same household to access plan features. Eligible students can obtain a discount on an individual plan.</p>
+<table>
+<thead>
+<tr>
+<th>Subscription tiers</th>
+<th>Ads</th>
+<th>Skipping and <a href="./Scrubbing_(audio)" title="Scrubbing (audio)">scrubbing</a></th>
+<th>Offline mode</th>
+<th>Background playback</th>
+<th>Audio quality</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Music Free</td>
+<td>Yes</td>
+<td>Unlimited</td>
+<td>Podcast only</td>
+<td>Podcast only</td>
+<td>50, 70, 128 kbit/s <a href="./Variable_bitrate" title="Variable bitrate">VBR</a> <a href="./Opus_(audio_format)" title="Opus (audio format)">Opus</a>  48 kbit/s <a href="./High-Efficiency_Advanced_Audio_Coding" title="High-Efficiency Advanced Audio Coding">HE-AAC</a>, 128 kbit/s <a href="./Constant_bitrate" title="Constant bitrate">CBR</a> <a href="./Advanced_Audio_Coding" title="Advanced Audio Coding">AAC</a></td>
+</tr>
+<tr>
+<td>Music Premium</td>
+<td>No</td>
+<td>Unlimited</td>
+<td>Available</td>
+<td>Available</td>
+<td>All free tier qualities, including 256 kbit/s AAC &amp; Opus</td>
+</tr>
+<tr>
+<td>Premium</td>
+<td>No</td>
+<td>Unlimited</td>
+<td>Available</td>
+<td>Available</td>
+<td>All free tier qualities, including 256 kbit/s AAC &amp; Opus</td>
+</tr>
+</tbody>
+</table>
+<h2>Geographic availability</h2>
+<p>As of March 2024, YouTube Music is available in most of the <a href="./Americas" title="Americas">Americas</a>, <a href="./Europe" title="Europe">Europe</a> and <a href="./Oceania" title="Oceania">Oceania</a>, as well as parts of <a href="./Africa" title="Africa">Africa</a> and <a href="./Asia" title="Asia">Asia</a>, with a total availability in 119 markets. Following the <a href="./Russian_invasion_of_Ukraine" title="Russian invasion of Ukraine">Russian invasion of Ukraine</a>, Google indefinitely suspended all of its all payment and subscription-based services in the country, including YouTube Music.</p>
+<table>
+<thead>
+<tr>
+<th>History of expansion</th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Date</td>
+<td>Countries/regions</td>
+<td>Ref.</td>
+</tr>
+<tr>
+<td><strong>May 22, 2018</strong></td>
+<td>- <a href="./Australia" title="Australia">Australia</a> Australia - <a href="./Mexico" title="Mexico">Mexico</a> Mexico - <a href="./New_Zealand" title="New Zealand">New Zealand</a> New Zealand - <a href="./South_Korea" title="South Korea">South Korea</a> South Korea (paid only) - <a href="./United_States" title="United States">United States</a> United States</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>June 18, 2018</strong></td>
+<td>- <a href="./Austria" title="Austria">Austria</a> Austria - <a href="./Canada" title="Canada">Canada</a> Canada - <a href="./Finland" title="Finland">Finland</a> Finland - <a href="./France" title="France">France</a> France - <a href="./Germany" title="Germany">Germany</a> Germany - <a href="./Republic_of_Ireland" title="Republic of Ireland">Republic of Ireland</a> Ireland - <a href="./Italy" title="Italy">Italy</a> Italy - <a href="./Norway" title="Norway">Norway</a> Norway - <a href="./Russia" title="Russia">Russia</a> Russia (suspended on March 10, 2022 until further notice) - <a href="./Spain" title="Spain">Spain</a> Spain - <a href="./Sweden" title="Sweden">Sweden</a> Sweden - <a href="./United_Kingdom" title="United Kingdom">United Kingdom</a> United Kingdom</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>August 29, 2018</strong></td>
+<td>- <a href="./Belgium" title="Belgium">Belgium</a> Belgium - <a href="./Netherlands" title="Netherlands">Netherlands</a> Netherlands - <a href="./Denmark" title="Denmark">Denmark</a> Denmark - <a href="./Luxembourg" title="Luxembourg">Luxembourg</a> Luxembourg</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>September 26, 2018</strong></td>
+<td>- <a href="./Brazil" title="Brazil">Brazil</a> Brazil</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>November 14, 2018</strong></td>
+<td>- <a href="./Chile" title="Chile">Chile</a> Chile - <a href="./Colombia" title="Colombia">Colombia</a> Colombia - <a href="./Japan" title="Japan">Japan</a> Japan - <a href="./Peru" title="Peru">Peru</a> Peru - <a href="./Portugal" title="Portugal">Portugal</a> Portugal - <a href="./Switzerland" title="Switzerland">Switzerland</a> Switzerland - <a href="./Ukraine" title="Ukraine">Ukraine</a> Ukraine</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>March 13, 2019</strong></td>
+<td>- <a href="./Argentina" title="Argentina">Argentina</a> Argentina - <a href="./Bolivia" title="Bolivia">Bolivia</a> Bolivia - <a href="./Costa_Rica" title="Costa Rica">Costa Rica</a> Costa Rica - <a href="./Dominican_Republic" title="Dominican Republic">Dominican Republic</a> Dominican Republic - <a href="./Ecuador" title="Ecuador">Ecuador</a> Ecuador - <a href="./El_Salvador" title="El Salvador">El Salvador</a> El Salvador - <a href="./Guatemala" title="Guatemala">Guatemala</a> Guatemala - <a href="./Honduras" title="Honduras">Honduras</a> Honduras - <a href="./India" title="India">India</a> India - <a href="./Nicaragua" title="Nicaragua">Nicaragua</a> Nicaragua - <a href="./Panama" title="Panama">Panama</a> Panama - <a href="./Paraguay" title="Paraguay">Paraguay</a> Paraguay - <a href="./South_Africa" title="South Africa">South Africa</a> South Africa - <a href="./Uruguay" title="Uruguay">Uruguay</a> Uruguay</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>May 16, 2019</strong></td>
+<td>- <a href="./Bulgaria" title="Bulgaria">Bulgaria</a> Bulgaria - <a href="./Cyprus" title="Cyprus">Cyprus</a> Cyprus - <a href="./Czech_Republic" title="Czech Republic">Czech Republic</a> Czech Republic - <a href="./Hungary" title="Hungary">Hungary</a> Hungary - <a href="./North_Macedonia" title="North Macedonia">North Macedonia</a> North Macedonia - <a href="./Poland" title="Poland">Poland</a> Poland - <a href="./Romania" title="Romania">Romania</a> Romania</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>July 17, 2019</strong></td>
+<td>- <a href="./Bosnia_and_Herzegovina" title="Bosnia and Herzegovina">Bosnia and Herzegovina</a> Bosnia &amp; Herzegovina - <a href="./Croatia" title="Croatia">Croatia</a> Croatia - <a href="./Estonia" title="Estonia">Estonia</a> Estonia - <a href="./Greece" title="Greece">Greece</a> Greece - <a href="./Iceland" title="Iceland">Iceland</a> Iceland - <a href="./Latvia" title="Latvia">Latvia</a> Latvia - <a href="./Liechtenstein" title="Liechtenstein">Liechtenstein</a> Liechtenstein - <a href="./Lithuania" title="Lithuania">Lithuania</a> Lithuania - <a href="./Malta" title="Malta">Malta</a> Malta - <a href="./Serbia" title="Serbia">Serbia</a> Serbia - <a href="./Slovakia" title="Slovakia">Slovakia</a> Slovakia - <a href="./Slovenia" title="Slovenia">Slovenia</a> Slovenia - <a href="./Turkey" title="Turkey">Turkey</a> Turkey</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>September 11, 2019</strong></td>
+<td>- <a href="./Bahrain" title="Bahrain">Bahrain</a> Bahrain - <a href="./Israel" title="Israel">Israel</a> Israel - <a href="./Kuwait" title="Kuwait">Kuwait</a> Kuwait - <a href="./Lebanon" title="Lebanon">Lebanon</a> Lebanon - <a href="./Oman" title="Oman">Oman</a> Oman - <a href="./Qatar" title="Qatar">Qatar</a> Qatar - <a href="./Saudi_Arabia" title="Saudi Arabia">Saudi Arabia</a> Saudi Arabia - <a href="./United_Arab_Emirates" title="United Arab Emirates">United Arab Emirates</a> United Arab Emirates</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>November 6, 2019</strong></td>
+<td>- <a href="./Hong_Kong" title="Hong Kong">Hong Kong</a> Hong Kong - <a href="./Indonesia" title="Indonesia">Indonesia</a> Indonesia - <a href="./Malaysia" title="Malaysia">Malaysia</a> Malaysia - <a href="./Philippines" title="Philippines">Philippines</a> Philippines - <a href="./Singapore" title="Singapore">Singapore</a> Singapore - <a href="./Taiwan" title="Taiwan">Taiwan</a> Taiwan - <a href="./Thailand" title="Thailand">Thailand</a> Thailand</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>March 10, 2020</strong></td>
+<td>- <a href="./Nigeria" title="Nigeria">Nigeria</a> Nigeria - <a href="./Turks_and_Caicos_Islands" title="Turks and Caicos Islands">Turks and Caicos Islands</a> Turks and Caicos Islands - <a href="./Venezuela" title="Venezuela">Venezuela</a> Venezuela</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>June 10, 2020</strong></td>
+<td>- <a href="./American_Samoa" title="American Samoa">American Samoa</a> American Samoa - <a href="./Aruba" title="Aruba">Aruba</a> Aruba - <a href="./Belarus" title="Belarus">Belarus</a> Belarus - <a href="./Bermuda" title="Bermuda">Bermuda</a> Bermuda - <a href="./Cayman_Islands" title="Cayman Islands">Cayman Islands</a> Cayman Islands - <a href="./Egypt" title="Egypt">Egypt</a> Egypt - <a href="./French_Guiana" title="French Guiana">French Guiana</a> French Guiana - <a href="./French_Polynesia" title="French Polynesia">French Polynesia</a> French Polynesia - <a href="./Guadeloupe" title="Guadeloupe">Guadeloupe</a> Guadeloupe - <a href="./Guam" title="Guam">Guam</a> Guam - <a href="./Northern_Mariana_Islands" title="Northern Mariana Islands">Northern Mariana Islands</a> Northern Mariana Islands - <a href="./Papua_New_Guinea" title="Papua New Guinea">Papua New Guinea</a> Papua New Guinea - <a href="./Puerto_Rico" title="Puerto Rico">Puerto Rico</a> Puerto Rico - <a href="./United_States_Virgin_Islands" title="United States Virgin Islands">United States Virgin Islands</a> U.S. Virgin Islands</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>April 12, 2023</strong></td>
+<td>- <a href="./Vietnam" title="Vietnam">Vietnam</a> Vietnam</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>August 2, 2023</strong></td>
+<td>- <a href="./Bangladesh" title="Bangladesh">Bangladesh</a> Bangladesh - <a href="./Nepal" title="Nepal">Nepal</a> Nepal - <a href="./Pakistan" title="Pakistan">Pakistan</a> Pakistan - <a href="./Sri_Lanka" title="Sri Lanka">Sri Lanka</a> Sri Lanka</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>December 5, 2023</strong></td>
+<td>- <a href="./Algeria" title="Algeria">Algeria</a> Algeria - <a href="./Cambodia" title="Cambodia">Cambodia</a> Cambodia - <a href="./Georgia_(country)" title="Georgia (country)">Georgia (country)</a> Georgia - <a href="./Ghana" title="Ghana">Ghana</a> Ghana - <a href="./Iraq" title="Iraq">Iraq</a> Iraq - <a href="./Jordan" title="Jordan">Jordan</a> Jordan - <a href="./Kenya" title="Kenya">Kenya</a> Kenya - <a href="./Laos" title="Laos">Laos</a> Laos - <a href="./Senegal" title="Senegal">Senegal</a> Senegal - <a href="./Tunisia" title="Tunisia">Tunisia</a> Tunisia</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>March 14, 2024</strong></td>
+<td>- <a href="./Azerbaijan" title="Azerbaijan">Azerbaijan</a> Azerbaijan - <a href="./Jamaica" title="Jamaica">Jamaica</a> Jamaica - <a href="./Kazakhstan" title="Kazakhstan">Kazakhstan</a> Kazakhstan - <a href="./Libya" title="Libya">Libya</a> Libya - <a href="./Morocco" title="Morocco">Morocco</a> Morocco - <a href="./Réunion" title="Réunion">Réunion</a> Réunion - <a href="./Tanzania" title="Tanzania">Tanzania</a> Tanzania - <a href="./Uganda" title="Uganda">Uganda</a> Uganda - <a href="./Yemen" title="Yemen">Yemen</a> Yemen - <a href="./Zimbabwe" title="Zimbabwe">Zimbabwe</a> Zimbabwe</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2>See also</h2>
+<ul>
+<li><a href="./File:Crystal_Clear_app_linneighborhood.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Crystal_Clear_app_linneighborhood.svg/40px-Crystal_Clear_app_linneighborhood.svg.png"></a><a href="./Portal:Internet" title="Portal:Internet">Internet portal</a></li>
+<li>
+<p><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/ff/GClef.svg/20px-GClef.svg.png"><a href="./Portal:Music" title="Portal:Music">Music portal</a></p>
+</li>
+<li>
+<p><a href="./Comparison_of_music_streaming_services" title="Comparison of music streaming services">Comparison of music streaming services</a></p>
+</li>
+<li><a href="./List_of_podcast_clients" title="List of podcast clients">List of podcast clients</a></li>
+</ul>
+<h2>Notes</h2>
+<h2>References</h2>
+<h2>External links</h2>
+<ul>
+<li><a href="https://www.youtube.com/musicpremium">Official website</a></li>
+<li><a href="https://music.youtube.com">Official web player</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:YouTube_navbox" title="Template:YouTube navbox">v</a> - <a href="./Template_talk:YouTube_navbox" title="Template talk:YouTube navbox">t</a> - <a href="./Special:EditPage/Template:YouTube_navbox" title="Special:EditPage/Template:YouTube navbox">e</a>  <a href="./YouTube" title="YouTube">YouTube</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>- <a href="./Google" title="Google">Google</a> (parent) - <a href="./History_of_YouTube" title="History of YouTube">History</a> - <a href="./Social_impact_of_YouTube" title="Social impact of YouTube">Social impact</a></td>
+<td></td>
+</tr>
+<tr>
+<td>People</td>
+<td></td>
+</tr>
+<tr>
+<td>Channels</td>
+<td>- <a href="./List_of_most-subscribed_YouTube_channels" title="List of most-subscribed YouTube channels">Most-subscribed channels</a> - <a href="./List_of_most-viewed_YouTube_channels" title="List of most-viewed YouTube channels">Most-viewed channels</a> - <a href="./Multi-channel_network" title="Multi-channel network">Multi-channel network</a> (<a href="./List_of_multi-channel_networks" title="List of multi-channel networks">list</a>) - <a href="./YouTube_(YouTube_channel)" title="YouTube (YouTube channel)">Official channel</a> - <a href="./YouTube_Original_Channel_Initiative" title="YouTube Original Channel Initiative">Original channels</a></td>
+</tr>
+<tr>
+<td>Culture and videos</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Criticism_of_YouTube" title="Criticism of YouTube">Criticism</a></td>
+<td>- <a href="./Censorship_by_YouTube" title="Censorship by YouTube">Censorship</a> - <a href="./YouTube_copyright_issues" title="YouTube copyright issues">Copyright issues</a>   - <a href="./Content_ID" title="Content ID">Content ID</a>   - <a href="./YouTube_copyright_strike" title="YouTube copyright strike">Copyright strike</a>   - <em><a href="./Viacom_International,_Inc._v._YouTube,_Inc." title="Viacom International, Inc. v. YouTube, Inc.">Viacom International, Inc. v. YouTube, Inc.</a></em> - <a href="./YouTube_moderation" title="YouTube moderation">Moderation</a>   - <a href="./Elsagate" title="Elsagate">Elsagate</a> - <a href="./Fantastic_Adventures_scandal" title="Fantastic Adventures scandal">Fantastic Adventures scandal</a> - <em><a href="./Garcia_v._Google,_Inc." title="Garcia v. Google, Inc.">Garcia v. Google, Inc.</a></em> - <a href="./Kohistan_honour_killing" title="Kohistan honour killing">Kohistan honour killing</a> - <a href="./2020_Korean_YouTube_backdoor_advertising_controversy" title="2020 Korean YouTube backdoor advertising controversy">Korean backdoor advertisement controversy</a> - <a href="./YouTube_and_privacy" title="YouTube and privacy">Privacy</a> - <a href="./Reactions_to_Innocence_of_Muslims" title="Reactions to Innocence of Muslims">Reactions to <em>Innocence of Muslims</em></a> - <a href="./2011_Slovenian_YouTube_incident" title="2011 Slovenian YouTube incident">Slovenian government incident</a></td>
+</tr>
+<tr>
+<td>Apps and services</td>
+<td>- <a href="./YouTube_BrandConnect" title="YouTube BrandConnect">BrandConnect</a> - <a href="./YouTube_Kids" title="YouTube Kids">Kids</a> - <a href="./YouTube_Music">Music</a> - <a href="./YouTube_Premium" title="YouTube Premium">Premium</a>   - <a href="./List_of_YouTube_Premium_original_programming" title="List of YouTube Premium original programming">original programming</a> - <a href="./YouTube_Shorts" title="YouTube Shorts">Shorts</a> - <a href="./YouTube_Studio" title="YouTube Studio">Studio</a> - <a href="./YouTube_TV" title="YouTube TV">TV</a> - <a href="./YouTube_VR" title="YouTube VR">VR</a></td>
+</tr>
+<tr>
+<td>Events</td>
+<td>- <a href="./YouTube_Awards" title="YouTube Awards">Awards</a> - <a href="./CNN/YouTube_presidential_debates" title="CNN/YouTube presidential debates">CNN/YouTube presidential debates</a> - <a href="./YouTube_Comedy_Week" title="YouTube Comedy Week">Comedy Week</a> - <a href="./Creator_Clash" title="Creator Clash">Creator Clash</a> - <a href="./KSI_vs_Logan_Paul" title="KSI vs Logan Paul">KSI vs Logan Paul</a>   - <a href="./KSI_vs._Logan_Paul_II" title="KSI vs. Logan Paul II">rematch</a> - <a href="./YouTube_Live" title="YouTube Live">Live</a> - <a href="./YouTube_Music_Awards" title="YouTube Music Awards">Music Awards</a>   - <a href="./2013_YouTube_Music_Awards" title="2013 YouTube Music Awards">2013</a>   - <a href="./2015_YouTube_Music_Awards" title="2015 YouTube Music Awards">2015</a> - <a href="./Open_Sauce" title="Open Sauce">Open Sauce</a> - <a href="./Playlist_Live" title="Playlist Live">Playlist Live</a> - <a href="./Project_for_Awesome" title="Project for Awesome">Project for Awesome</a> - <a href="./Sidemen_Charity_Match" title="Sidemen Charity Match">Sidemen Charity Match</a> - <a href="./Social_in_the_City" title="Social in the City">Social in the City</a> - <a href="./Streamy_Awards" title="Streamy Awards">Streamy Awards</a> - <a href="./YouTube_Space_Lab" title="YouTube Space Lab">Space Lab</a> - <a href="./YouTube_Symphony_Orchestra" title="YouTube Symphony Orchestra">Symphony Orchestra</a>   - <em><a href="./Internet_Symphony_No._1" title="Internet Symphony No. 1">Internet Symphony No. 1</a></em>   - <a href="./Mothership_(composition)" title="Mothership (composition)"><em>Mothership</em></a> - <a href="./Tubecon" title="Tubecon">Tubecon</a> - <a href="./VidCon" title="VidCon">VidCon</a></td>
+</tr>
+<tr>
+<td>Related</td>
+<td>- <a href="./Censorship_of_YouTube" title="Censorship of YouTube">Censorship of YouTube</a>   - <a href="./Blocking_of_YouTube_videos_in_Germany" title="Blocking of YouTube videos in Germany">Germany</a> - <a href="./YouTube_Select" title="YouTube Select">YouTube Select</a> - <a href="./YouTube_headquarters_shooting" title="YouTube headquarters shooting">Headquarters shooting</a> - <a href="./YouTube_in_education" title="YouTube in education">In education</a> - <a href="./Vevo" title="Vevo">Vevo</a> - <a href="./Comparison_of_YouTube_downloaders" title="Comparison of YouTube downloaders">YouTube downloaders</a> - <a href="./YouTube_Instant" title="YouTube Instant">YouTube Instant</a> - <a href="./YouTube_Space" title="YouTube Space">YouTube Space</a> - <a href="./YouTube_Theater" title="YouTube Theater">YouTube Theater</a> - <a href="./Creator_Economy_Caucus" title="Creator Economy Caucus">Creator Economy Caucus</a></td>
+</tr>
+<tr>
+<td>- <a href="./Category:YouTube" title="Category:YouTube">Category</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Music_streaming_services" title="Template:Music streaming services">v</a> - <a href="./Template_talk:Music_streaming_services" title="Template talk:Music streaming services">t</a> - <a href="./Special:EditPage/Template:Music_streaming_services" title="Special:EditPage/Template:Music streaming services">e</a>  <a href="./Music_streaming_service" title="Music streaming service">Music streaming services</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>- <a href="./Comparison_of_music_streaming_services" title="Comparison of music streaming services">Comparison of music streaming services</a> - <a href="./Streaming_media" title="Streaming media">Streaming media</a> - <a href="./Internet_radio" title="Internet radio">Internet radio</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Free_music" title="Free music">Free</a></td>
+<td>- <a href="./AccuRadio" title="AccuRadio">AccuRadio</a> - <a href="./Boomplay" title="Boomplay">Boomplay</a> - <a href="./Claro_Música" title="Claro Música">Claro Música</a> - <a href="./Jango_(website)" title="Jango (website)">Jango</a> - <a href="./Joox" title="Joox">Joox</a> - <a href="./KuGou" title="KuGou">KuGou</a> - <a href="./Mziiki" title="Mziiki">Mziiki</a> - <a href="./NetEase_Cloud_Music" title="NetEase Cloud Music">NetEase Cloud Music</a> - <a href="./Patari_(service)" title="Patari (service)">Patari</a> - <a href="./Raaga.com" title="Raaga.com">Raaga.com</a> - <a href="./Sua_Música" title="Sua Música">Sua Música</a> - <a href="./Yandex_Music" title="Yandex Music">Yandex Music</a></td>
+</tr>
+<tr>
+<td>Subscription</td>
+<td>- <a href="./Amazon_Music" title="Amazon Music">Amazon Music</a> - <a href="./Anghami" title="Anghami">Anghami</a> - <a href="./Audiomack" title="Audiomack">Audiomack</a> - <a href="./Apple_Music" title="Apple Music">Apple Music</a> - <a href="./Gaana_(music_streaming_service)" title="Gaana (music streaming service)">Gaana</a> - <a href="./IHeartRadio" title="IHeartRadio">iHeartRadio</a> - <a href="./KKBox" title="KKBox">KKBox</a> - <a href="./Line_Music" title="Line Music">Line Music</a> - <a href="./Melon_(online_music_service)" title="Melon (online music service)">Melon</a> - <a href="./Moov" title="Moov">Moov</a> - <a href="./Napster_(streaming_music_service)" title="Napster (streaming music service)">Napster</a> - <a href="./Nintendo_Music" title="Nintendo Music">Nintendo Music</a> - <a href="./Qobuz" title="Qobuz">Qobuz</a> - <a href="./QQ_Music" title="QQ Music">QQ Music</a> - <a href="./Tidal_(service)" title="Tidal (service)">Tidal</a></td>
+</tr>
+<tr>
+<td>Hybrid</td>
+<td>- <a href="./Deezer" title="Deezer">Deezer</a> - <a href="./IDAGIO" title="IDAGIO">IDAGIO</a> - <a href="./JioSaavn" title="JioSaavn">JioSaavn</a> - <a href="./Pandora_(service)" title="Pandora (service)">Pandora</a> - <a href="./SoundCloud" title="SoundCloud">SoundCloud</a> (<a href="./SoundCloud#SoundCloud_Go" title="SoundCloud">SoundCloud Go</a>) - <a href="./Spotify" title="Spotify">Spotify</a> - <a href="./Xite" title="Xite">Xite</a> - <a href="./YouTube_Music">YouTube Music</a></td>
+</tr>
+<tr>
+<td><a href="./Gen_AI" title="Gen AI">Gen AI</a></td>
+<td>- <a href="./Riffusion" title="Riffusion">Riffusion</a> - <a href="./Suno_AI" title="Suno AI">Suno AI</a> - <a href="./Udio" title="Udio">Udio</a></td>
+</tr>
+<tr>
+<td>Defunct</td>
+<td>- <a href="./AliMusic" title="AliMusic">AliMusic</a> - <a href="./Baidu_Music" title="Baidu Music">Baidu Music</a> - <a href="./Beats_Music" title="Beats Music">Beats Music</a> - <a href="./Blinkbox_Music" title="Blinkbox Music">Blinkbox Music</a> - <a href="./Google_Play_Music" title="Google Play Music">Google Play Music</a> - <a href="./Groove_Music" title="Groove Music">Groove Music</a> - <a href="./Grooveshark" title="Grooveshark">Grooveshark</a> - <a href="./Guvera" title="Guvera">Guvera</a> - <a href="./KakaoMusic" title="KakaoMusic">KakaoMusic</a> - <a href="./Primephonic" title="Primephonic">Primephonic</a> - <a href="./Rdio" title="Rdio">Rdio</a> - <a href="./Songza" title="Songza">Songza</a> - <a href="./Wynk_Music" title="Wynk Music">Wynk</a> - <a href="./Yahoo!_Music_Radio" title="Yahoo! Music Radio">Yahoo! Music Radio</a> - <a href="./Yahoo!_Music_Unlimited" title="Yahoo! Music Unlimited">Yahoo! Music Unlimited</a></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Music_digital_distribution_platforms" title="Template:Music digital distribution platforms">v</a> - <a href="./Template_talk:Music_digital_distribution_platforms" title="Template talk:Music digital distribution platforms">t</a> - <a href="./Special:EditPage/Template:Music_digital_distribution_platforms" title="Special:EditPage/Template:Music digital distribution platforms">e</a>  Music <a href="./Digital_distribution" title="Digital distribution">digital distribution</a> platforms</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>- <a href="./Digital_library" title="Digital library">Digital library</a> - <a href="./Music_streaming_service" title="Music streaming service">Music streaming service</a> - <a href="./Digital_music_store" title="Digital music store">Digital music store</a> - <a href="./Music_download" title="Music download">Music download</a></td>
+<td></td>
+</tr>
+<tr>
+<td>Active</td>
+<td>- <a href="./7digital" title="7digital">7digital</a> - <a href="./Amazon_Music" title="Amazon Music">Amazon Music</a> - <a href="./Amuse_(music_company)" title="Amuse (music company)">Amuse</a> - <a href="./Apple_Music" title="Apple Music">Apple Music</a> - <a href="./Anghami" title="Anghami">Anghami</a> - <a href="./Audacy" title="Audacy">Audacy</a> - <a href="./Audiomack" title="Audiomack">Audiomack</a> - <a href="./Bandcamp" title="Bandcamp">Bandcamp</a> - <a href="./Beatport" title="Beatport">Beatport</a> - <a href="./Believe_Music" title="Believe Music">Believe</a> - <a href="./Bleep.com" title="Bleep.com">Bleep.com</a> - <a href="./Boomplay" title="Boomplay">Boomplay</a> - <a href="./CD_Baby" title="CD Baby">CD Baby</a> - <a href="./Classical_Archives" title="Classical Archives">Classical Archives</a> - <a href="./CloudLibrary" title="CloudLibrary">cloudLibrary</a> - <a href="./Deezer" title="Deezer">Deezer</a> - <a href="./DI.FM" title="DI.FM">Digitally Imported</a> - <a href="./DistroKid" title="DistroKid">DistroKid</a> - <a href="./Ditto_Music" title="Ditto Music">Ditto Music</a> - <a href="./Djshop" title="Djshop">Djshop</a> - <a href="./EmuBands" title="EmuBands">EmuBands</a> - <a href="./EMusic" title="EMusic">eMusic</a> - <a href="./HDtracks" title="HDtracks">HDtracks</a> - <a href="./Hoopla_(digital_media_service)" title="Hoopla (digital media service)">Hoopla</a> - <a href="./Icecast" title="Icecast">Icecast</a> - <a href="./IDAGIO" title="IDAGIO">IDAGIO</a> - <a href="./IHeartRadio" title="IHeartRadio">iHeartRadio</a> - <a href="./ITunes_Store" title="ITunes Store">iTunes Store</a> - <a href="./Jamendo" title="Jamendo">Jamendo</a> - <a href="./Juno_Records" title="Juno Records">Juno Records</a> - <a href="./Labelcaster?action=edit&amp;redlink=1" title="Labelcaster">Labelcaster</a> - <a href="./LANDR" title="LANDR">LANDR</a> - <a href="./Last.fm" title="Last.fm">Last.fm</a> - <a href="./Line_Music" title="Line Music">Line Music</a> - <a href="./Live365" title="Live365">Live365</a> - <a href="./LiveOne" title="LiveOne">LiveOne (Live X Live / Slacker)</a> - <a href="./MAD_Solutions" title="MAD Solutions">MAD Solutions</a> - <a href="./Melon_(online_music_service)" title="Melon (online music service)">Melon</a> - <a href="./Mixcloud" title="Mixcloud">Mixcloud</a> - <a href="./Moov" title="Moov">MOOV</a> - <a href="./Mora_(music_store)" title="Mora (music store)">mora</a> - <a href="./Music_Glue" title="Music Glue">Music Glue</a> - <a href="./Napster_(streaming_service)" title="Napster (streaming service)">Napster (Rhapsody)</a> - <a href="./Nintendo_Music" title="Nintendo Music">Nintendo Music</a> - <a href="./ONErpm" title="ONErpm">ONErpm</a> - <a href="./Pandora_(service)" title="Pandora (service)">Pandora</a> - <a href="./Patari_(service)" title="Patari (service)">Patari</a> - <a href="./Qobuz" title="Qobuz">Qobuz</a> - <a href="./RockMyRun" title="RockMyRun">RockMyRun</a> - <a href="./ROXi" title="ROXi">ROXi</a> - <a href="./Spinlet" title="Spinlet">Spinlet</a> - <a href="./Spotify" title="Spotify">Spotify</a> - <a href="./SoundCloud" title="SoundCloud">SoundCloud</a> - <a href="./Sua_Música" title="Sua Música">Sua Música</a> - <a href="./Symphonic_Distribution" title="Symphonic Distribution">Symphonic Distribution</a> - <a href="./Tidal_(service)" title="Tidal (service)">Tidal</a> - <a href="./TuneCore" title="TuneCore">TuneCore</a> - <a href="./UnitedMasters" title="UnitedMasters">UnitedMasters</a> - <a href="./Yandex_Music" title="Yandex Music">Yandex Music</a> - <a href="./YouTube_Music">YouTube Music</a></td>
+</tr>
+<tr>
+<td>Discontinued</td>
+<td>- <a href="./8tracks.com" title="8tracks.com">8tracks.com</a> - <a href="./AOL_Radio" title="AOL Radio">AOL Radio/Radio@AOL</a> - <a href="./AllOfMP3" title="AllOfMP3">AllOfMP3</a> - <a href="./Amie_Street" title="Amie Street">Amie Street</a> - <a href="./Aupeo" title="Aupeo">Aupeo</a> - <a href="./Bandit.fm" title="Bandit.fm">Bandit.fm</a> - <a href="./BlackBerry_World" title="BlackBerry World">BlackBerry World</a> - <a href="./BuyMusic" title="BuyMusic">BuyMusic</a> - <a href="./Electric_Jukebox" title="Electric Jukebox">Electric Jukebox</a> - <a href="./GhostTunes" title="GhostTunes">GhostTunes</a> - <a href="./GoMusicNow" title="GoMusicNow">GoMusicNow</a> - <a href="./Google_Play_Music" title="Google Play Music">Google Play Music</a> - <a href="./Grooveshark" title="Grooveshark">Grooveshark</a> - <a href="./Guvera" title="Guvera">Guvera</a> - <a href="./Internet_Underground_Music_Archive" title="Internet Underground Music Archive">Internet Underground Music Archive</a> - <a href="./Imeem" title="Imeem">imeem</a> - <a href="./IMesh" title="IMesh">iMesh</a> - <a href="./Kazaa" title="Kazaa">Kazaa</a> - <a href="./Magnatune" title="Magnatune">Magnatune</a> - <a href="./Mixcrate" title="Mixcrate">Mixcrate</a> - <a href="./MOG_(online_music)" title="MOG (online music)">Mog</a> - <a href="./MP3.com" title="MP3.com">MP3.com</a> - <a href="./MSN_Music" title="MSN Music">MSN Music</a> - <a href="./Murfie" title="Murfie">Murfie</a> - <a href="./Sony_Entertainment_Network" title="Sony Entertainment Network">Music Unlimited</a> - <a href="./Ovi_(Nokia)" title="Ovi (Nokia)">Nokia Store</a> - <a href="./MixRadio" title="MixRadio">MixRadio</a> - <a href="./MusicStation" title="MusicStation">MusicStation</a> - <a href="./Nimbit" title="Nimbit">Nimbit</a> - <a href="./NoiseTrade" title="NoiseTrade">NoiseTrade</a> - <a href="./Rakuten.co.uk" title="Rakuten.co.uk">Play.com</a> - <a href="./PlayNow_Arena" title="PlayNow Arena">PlayNow Arena</a> - <a href="./Pono_(digital_music_service)" title="Pono (digital music service)">Pono</a> - <a href="./PressPlay" title="PressPlay">PressPlay</a> - <a href="./Puretracks" title="Puretracks">Puretracks</a> - <a href="./Radical.fm" title="Radical.fm">Radical.fm</a> - <a href="./Radionomy" title="Radionomy">Radionomy</a> - <a href="./Rara_(service)" title="Rara (service)">rara</a> - <a href="./Simfy" title="Simfy">Simfy</a> - <a href="./Sony_Connect" title="Sony Connect">Sony Connect</a> - <a href="./Spinner_(website)" title="Spinner (website)">Spinner</a> - <a href="./SpiralFrog" title="SpiralFrog">SpiralFrog</a> - <a href="./Stardock_Central" title="Stardock Central">Stardock Central</a> - <a href="./Streamwaves" title="Streamwaves">Streamwaves</a> - <a href="./Style_Jukebox" title="Style Jukebox">Style Jukebox</a> - <a href="./Taazi" title="Taazi">Taazi</a> - <a href="./TuneTribe" title="TuneTribe">TuneTribe</a> - <a href="./WiMP" title="WiMP">WiMP</a> - <a href="./Wowloud" title="Wowloud">Wowloud</a> - <a href="./Yahoo!_Music_Radio" title="Yahoo! Music Radio">Yahoo! Music Radio / LAUNCHcast</a> - <a href="./Yahoo!_Music_Unlimited" title="Yahoo! Music Unlimited">Yahoo! Music Unlimited</a> - <a href="./Zune_software" title="Zune software">Zune Marketplace</a></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Podcast_clients" title="Template:Podcast clients">v</a> - <a href="./Template_talk:Podcast_clients" title="Template talk:Podcast clients">t</a> - <a href="./Special:EditPage/Template:Podcast_clients" title="Special:EditPage/Template:Podcast clients">e</a>  <a href="./List_of_podcast_clients" title="List of podcast clients">Podcast clients</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Active</td>
+<td>- <a href="./Amazon_Music" title="Amazon Music">Amazon Music</a> - <a href="./AntennaPod" title="AntennaPod">AntennaPod</a> - <a href="./Audible_(service)" title="Audible (service)">Audible</a> - <a href="./Apple_Podcasts" title="Apple Podcasts">Apple Podcasts</a> - <a href="./Audacy" title="Audacy">Audacy</a> - <a href="./Castbox" title="Castbox">Castbox</a> - <a href="./Deezer" title="Deezer">Deezer</a> - <a href="./IHeartRadio" title="IHeartRadio">iHeartRadio</a> - <a href="./Liferea" title="Liferea">Liferea</a> - <a href="./MediaMonkey" title="MediaMonkey">MediaMonkey</a> - <a href="./MusicBee" title="MusicBee">MusicBee</a> - <a href="./Overcast_(app)" title="Overcast (app)">Overcast</a> - <a href="./Player_FM" title="Player FM">Player FM</a> - <a href="./Pocket_Casts" title="Pocket Casts">Pocket Casts</a> - <a href="./Spotify" title="Spotify">Spotify</a> - <a href="./Spreaker" title="Spreaker">Spreaker</a> - <a href="./TuneIn" title="TuneIn">TuneIn</a> - <a href="./YouTube_Music">YouTube Music</a></td>
+</tr>
+<tr>
+<td>Defunct</td>
+<td>- <a href="./Google_Play_Music" title="Google Play Music">Google Play Music</a> - <a href="./Google_Podcasts" title="Google Podcasts">Google Podcasts</a> - <a href="./RadioPublic" title="RadioPublic">RadioPublic</a> - <a href="./Stitcher" title="Stitcher">Stitcher</a></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

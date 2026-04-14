@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Larry Page</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link active" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Larry Page</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Larry_Page<br>
+Category: founders_and_leaders<br>
+Depth: 1</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Lawrence Edward Page is an American businessman and computer scientist who co-founded Google with Sergey Brin. Page is a centibillionaire and among the richest people in the world. According to Bloomberg Billionaires Index and Forbes, as of 2026, Page's estimated net worth stood at US$269 billion, making him the second-richest individual in the world.</p>
+<h2>Images</h2>
+<p><img alt="Larry_Page_in_the_European_Parliament_2C_17.06.2009__28cropped_29" src="../images/Larry_Page_in_the_European_Parliament_2C_17.06.2009__28cropped_29.jpg"><br>
+<img alt="330px-Larry_Page_in_the_European_Parliament_2C_17.06.2009__28cropped_29" src="../images/330px-Larry_Page_in_the_European_Parliament_2C_17.06.2009__28cropped_29.jpg"><br>
+<img alt="250px-Larry_Page_in_the_European_Parliament_2C_17.06.2009__28cropped_29" src="../images/250px-Larry_Page_in_the_European_Parliament_2C_17.06.2009__28cropped_29.jpg"><br>
+<img alt="250px-PageRanks-Example.svg" src="../images/250px-PageRanks-Example.svg.png"><br>
+<img alt="250px-Larry_Page" src="../images/250px-Larry_Page.jpg"><br>
+<img alt="250px-Schmidt-Brin-Page-20080520" src="../images/250px-Schmidt-Brin-Page-20080520.jpg"><br>
+<img alt="250px-Luxury_yacht_Senses_2" src="../images/250px-Luxury_yacht_Senses_2.JPG"></p>
+<h2>Full Article</h2>
+<p>American businessman (born 1973)</p>
+<p>"Lawrence Page" redirects here. For the American ichthyologist, see <a href="./Lawrence_M._Page" title="Lawrence M. Page">Lawrence M. Page</a>. For the English pop singer, see <a href="./Larry_Page_(singer)" title="Larry Page (singer)">Larry Page (singer)</a>.</p>
+<p><strong>Lawrence Edward Page</strong> (born March 26, 1973) is an American businessman and computer scientist who co-founded <a href="./Google" title="Google">Google</a> with <a href="./Sergey_Brin" title="Sergey Brin">Sergey Brin</a>. Page is a <a href="./Centibillionaire" title="Centibillionaire">centibillionaire</a> and among the <a href="./The_World's_Billionaires" title="The World's Billionaires">richest people in the world</a>. According to <a href="./Bloomberg_Billionaires_Index" title="Bloomberg Billionaires Index">Bloomberg Billionaires Index</a> and <a href="./Forbes" title="Forbes">Forbes</a>, as of 2026, Page's estimated net worth stood at US$269 billion, making him the second-richest individual in the world.</p>
+<p>Page was chief executive officer of <a href="./Google" title="Google">Google</a> from 1997 until August 2001 when he was succeeded by <a href="./Eric_Schmidt" title="Eric Schmidt">Eric Schmidt</a>, and then again from April 2011 until July 2015 when he became CEO of its newly formed parent organization <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc.</a> He held that post until December 4, 2019, when he and Brin stepped down from all executive positions and day-to-day roles within the company. He remains an Alphabet <a href="./Board_member" title="Board member">board member</a>, employee, and <a href="./Controlling_shareholder" title="Controlling shareholder">controlling shareholder</a>.</p>
+<p>Page is the co-creator and namesake of <a href="./PageRank" title="PageRank">PageRank</a>, a <a href="./Search_ranking_algorithm" title="Search ranking algorithm">search ranking algorithm</a> for Google for which he received the <a href="./Marconi_Prize" title="Marconi Prize">Marconi Prize</a> in 2004 along with co-writer Brin.</p>
+<h2>Early life</h2>
+<p>Lawrence Edward Page was born on March 26, 1973, in <a href="./Lansing,_Michigan" title="Lansing, Michigan">Lansing, Michigan</a>. His mother is <a href="./Jewish" title="Jewish">Jewish</a>; his maternal grandfather later <a href="./Aliyah" title="Aliyah">emigrated</a> to <a href="./Israel" title="Israel">Israel</a>, though Page's household while growing up was secular. His father, Carl Victor Page Sr., earned a PhD in <a href="./Computer_science" title="Computer science">computer science</a> from the <a href="./University_of_Michigan" title="University of Michigan">University of Michigan</a>. <a href="./BBC" title="BBC">BBC</a> reporter Will Smale described him as a "pioneer in <a href="./Computer_science" title="Computer science">computer science</a> and <a href="./Artificial_intelligence" title="Artificial intelligence">artificial intelligence</a>". Page's paternal grandparents came from a <a href="./Protestant" title="Protestant">Protestant</a> background.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>] Page's father was a <a href="./Computer_science" title="Computer science">computer science</a> professor at <a href="./Michigan_State_University" title="Michigan State University">Michigan State University</a> and his mother Gloria was an instructor in <a href="./Computer_programming" title="Computer programming">computer programming</a> at <a href="./Lyman_Briggs_College" title="Lyman Briggs College">Lyman Briggs College</a> at the same institution. Larry's parents divorced when he was eight years old, but he maintained a good relationship both with his mother Gloria and his father's long-term partner and MSU professor Joyce Wildenthal.</p>
+<p>When Larry Page was six years old, in 1979, his father brought home an <a href="./Exidy_Sorcerer" title="Exidy Sorcerer">Exidy Sorcerer</a> computer, which Larry soon mastered and began using for schoolwork.</p>
+<p>During an interview, Page recalled his childhood home "was usually a mess, with computers, science, and technology magazines and <em><a href="./Popular_Science" title="Popular Science">Popular Science</a></em> magazines all over the place", an environment in which he immersed himself. Page was an avid reader during his youth, writing in his 2013 Google founders letter: "I remember spending a huge amount of time pouring [sic] over books and magazines". According to writer Nicholas Carlson, the combined influence of Page's home atmosphere and his attentive parents "fostered creativity and invention". Page also played instruments and studied <a href="./Music_composition" title="Music composition">music composition</a> while growing up. His parents sent him to music summer camp—<a href="./Interlochen_Arts_Camp" title="Interlochen Arts Camp">Interlochen Arts Camp</a> in <a href="./Interlochen,_Michigan" title="Interlochen, Michigan">Interlochen, Michigan</a>, and Page has mentioned that his musical education inspired his impatience and obsession with speed in computing. "In some sense, I feel like music training led to the high-speed legacy of Google for me". In an interview Page said that "In music, you're very cognizant of time. Time is like the primary thing" and that "If you think about it from a music point of view, if you're a percussionist, you hit something, it's got to happen in <a href="./Milliseconds" title="Milliseconds">milliseconds</a>, fractions of a second".</p>
+<p>Page was first attracted to computers when he was six years old, as he was able to "play with the stuff lying around"—first-generation personal computers—that had been left by his mother and father. He became the "first kid in his elementary school to turn in an assignment from a <a href="./Word_processor" title="Word processor">word processor</a>". His older brother Carl Victor Page Jr. also taught him to take things apart and before long he was taking "everything in his house apart to see how it worked". He said that "from a very early age, I also realized I wanted to invent things. So I became interested in technology and business. Probably from when I was 12, I knew I was going to start a company eventually."</p>
+<h2>Education</h2>
+<p>Page attended Okemos <a href="./Montessori" title="Montessori">Montessori</a> School (now called Montessori Radmoor) in <a href="./Okemos,_Michigan" title="Okemos, Michigan">Okemos, Michigan</a>, from ages two to seven (1975 to 1979). He attended <a href="./East_Lansing_High_School" title="East Lansing High School">East Lansing High School</a>, graduating in 1991. In summer school, he attended <a href="./Interlochen_Center_for_the_Arts" title="Interlochen Center for the Arts">Interlochen Center for the Arts</a> at <a href="./Interlochen,_Michigan" title="Interlochen, Michigan">Interlochen, Michigan</a>, playing flute but mainly saxophone for two summers.</p>
+<p>Page received a <a href="./Bachelor_of_Science_in_Engineering" title="Bachelor of Science in Engineering">Bachelor of Science in Engineering</a> with a major in <a href="./Computer_engineering" title="Computer engineering">computer engineering</a> with honors from the <a href="./University_of_Michigan" title="University of Michigan">University of Michigan</a> in 1995 and a <a href="./Master_of_Science" title="Master of Science">Master of Science</a> in <a href="./Computer_science" title="Computer science">computer science</a> from <a href="./Stanford_University" title="Stanford University">Stanford University</a> in 1998.</p>
+<p>While at the University of Michigan, Page created an <a href="./Inkjet_printer" title="Inkjet printer">inkjet printer</a> made of <a href="./Lego" title="Lego">Lego</a> bricks (literally a <a href="./Line_plotter" title="Line plotter">line plotter</a>), after he thought it possible to print large posters cheaply with the use of inkjet cartridges—Page <a href="./Reverse-engineer" title="Reverse-engineer">reverse-engineered</a> the <a href="./Ink_cartridge" title="Ink cartridge">ink cartridge</a> and built the <a href="./Electronics" title="Electronics">electronics</a> and <a href="./Mechanics" title="Mechanics">mechanics</a> to drive it. Page served as the president of the Beta Epsilon chapter of the <a href="./Eta_Kappa_Nu" title="Eta Kappa Nu">Eta Kappa Nu</a> honor society, and was a member of the <a href="./1993_" title="Maize_&amp;_Blue&quot;_University_of_Michigan_Solar_Car &quot;1993 \&quot;Maize &amp; Blue\&quot; University of Michigan Solar Car">1993 "Maize &amp; Blue" University of Michigan Solar Car</a> team. As an undergraduate at the University of Michigan, he proposed that the school replace its bus system with a <a href="./Personal_rapid_transit" title="Personal rapid transit">personal rapid-transit system</a>, which is essentially a driverless <a href="./Monorail" title="Monorail">monorail</a> with separate cars for every passenger. He also developed a business plan for a company that would use software to build a <a href="./Music_synthesizer" title="Music synthesizer">music synthesizer</a> during this time.</p>
+<h2>PhD studies and research</h2>
+<p>After enrolling in a <a href="./Computer_science" title="Computer science">computer science</a> PhD program at <a href="./Stanford_University" title="Stanford University">Stanford University</a>, Page was in search of a <a href="./Dissertation" title="Dissertation">dissertation</a> theme and considered exploring the mathematical properties of the <a href="./World_Wide_Web" title="World Wide Web">World Wide Web</a>, understanding its link structure as a huge <a href="./Graph_(discrete_mathematics)" title="Graph (discrete mathematics)">graph</a>. His supervisor, <a href="./Terry_Winograd" title="Terry Winograd">Terry Winograd</a>, encouraged him to pursue the idea, and Page recalled in 2008 that it was the best advice he had ever received. He also considered doing research on <a href="./Telepresence" title="Telepresence">telepresence</a> and <a href="./Self-driving_car" title="Self-driving car">self-driving cars</a> during this time.</p>
+<p>Page focused on the problem of finding out which web pages linked to a given page, considering the number and nature of such backlinks as valuable information for that page. The role of <a href="./Citation" title="Citation">citations</a> in <a href="./Academic_publishing" title="Academic publishing">academic publishing</a> would also become pertinent for the research. <a href="./Sergey_Brin" title="Sergey Brin">Sergey Brin</a>, a fellow Stanford PhD student, would soon join Page's research project, nicknamed "<a href="./BackRub" title="BackRub">BackRub</a>." Together, the pair authored a research paper titled "The Anatomy of a Large-Scale <a href="./Hypertext" title="Hypertext">Hypertextual</a> Web Search Engine", which became one of the most downloaded scientific documents in the history of the Internet at the time.</p>
+<p><a href="./John_Battelle" title="John Battelle">John Battelle</a>, co-founder of <em><a href="./Wired_(magazine)" title="Wired (magazine)">Wired</a></em> magazine, wrote that Page had reasoned that:</p>
+<blockquote>
+<p>[the] entire Web was loosely based on the premise of citation—after all, what is a link but a citation? If he could devise a method to count and qualify each backlink on the Web, as Page puts it "the Web would become a more valuable place."</p>
+</blockquote>
+<p>Battelle further described how Page and Brin began working together on the project:</p>
+<blockquote>
+<p>At the time Page conceived of BackRub, the Web comprised an estimated 10 million documents, with an untold number of links between them. The computing resources required to crawl such a beast were well beyond the usual bounds of a student project. Unaware of exactly what he was getting into, Page began building out his crawler. The idea's complexity and scale lured Brin to the job. A <a href="./Polymath" title="Polymath">polymath</a> who had jumped from project to project without settling on a thesis topic, he found the premise behind BackRub fascinating. "I talked to lots of research groups" around the school, Brin recalls, "and this was the most exciting project, both because it tackled the Web, which represents human knowledge, and because I liked Larry."</p>
+</blockquote>
+<h3>Search engine development</h3>
+<p>To convert the backlink data gathered by BackRub's <a href="./Web_crawler" title="Web crawler">web crawler</a> into a measure of importance for a given web page, Brin and Page developed the PageRank algorithm and realized that it could be used to build a <a href="./Search_engine" title="Search engine">search engine</a> far superior to existing ones. The algorithm relied on a new technology that analyzed the relevance of the <a href="./Backlink" title="Backlink">backlinks</a> that connected one web page to another.</p>
+<p>Combining their ideas, the pair began utilizing Page's dormitory room as a machine laboratory, and extracted spare parts from inexpensive computers to create a device that they used to connect the now nascent search engine with Stanford's broadband campus network. After filling Page's room with equipment, they then converted Brin's dorm room into an office and programming center, where they tested their new search engine designs on the Web. The rapid growth of their project caused Stanford's computing infrastructure to experience problems.</p>
+<p>Page and Brin used the former's basic <a href="./HTML" title="HTML">HTML</a> programming skills to set up a simple search page for users, as they did not have a web page developer to create anything visually elaborate. They also began using any computer part they could find to assemble the necessary computing power to handle searches by multiple users. As their search engine grew in popularity among Stanford users, it required additional <a href="./Server_(computing)" title="Server (computing)">servers</a> to process the queries. In August 1996, the initial version of Google, still on the Stanford University website, was made available to Internet users.</p>
+<p>By early 1997, the BackRub page described the state as follows:</p>
+<blockquote>
+<p>"Some Rough Statistics (from August 29, 1996)</p>
+<p>Total indexable HTML URLs: 75.2306 Million</p>
+<p>Total content downloaded: 207.022 gigabytes</p>
+<p>...</p>
+<p>BackRub is written in Java and Python and runs on several Sun Ultras and Intel Pentiums running <a href="./Linux" title="Linux">Linux</a>. The primary database is kept on a <a href="./Sun_Ultra_series" title="Sun Ultra series">Sun Ultra series</a> II with 28GB of a disk. Scott Hassan and Alan Steremberg have provided a great deal of very talented implementation help. Sergey Brin has also been very involved and deserves many thanks."</p>
+</blockquote>
+<p>— Larry Page page<img alt="@" src="//upload.wikimedia.org/wikipedia/commons/thumb/8/88/At_sign.svg/20px-At_sign.svg.png">cs.stanford.edu</p>
+<p>BackRub already exhibited the rudimentary functions and characteristics of a search engine: a query input was entered and it provided a list of backlinks ranked by importance. Page recalled: "We realized that we had a querying tool. It gave you a good overall ranking of pages and ordering of follow-up pages." Page said that in mid-1998 they finally realized the further potential of their project: "Pretty soon, we had 10,000 searches a day. And we figured, maybe this is real."</p>
+<p>Page and Brin's vision has been compared to that of <a href="./Johannes_Gutenberg" title="Johannes Gutenberg">Johannes Gutenberg</a>, the inventor of modern printing:</p>
+<blockquote>
+<p>In 1440, Johannes Gutenberg introduced Europe to the mechanical printing press, printing Bibles for mass consumption. The technology allowed for books and manuscripts – originally replicated by hand – to be printed at a much faster rate, thus spreading knowledge and helping to usher in the European Renaissance [...] Google has done a similar job.</p>
+</blockquote>
+<p>The comparison was also noted by the authors of <em>The Google Story</em>: "Not since Gutenberg [...] has any new invention empowered individuals, and transformed <a href="./Access_to_information" title="Access to information">access to information</a>, as profoundly as Google." Also, not long after the two "cooked up their new engine for web searches, they began thinking about information that was at the time beyond the web" such as digitizing books and expanding health information.</p>
+<h2>Google</h2>
+<h3>1998–2000</h3>
+<h4>Founding</h4>
+<p>Mark Malseed wrote in a 2003 <a href="./Feature_story" title="Feature story">feature story</a>:</p>
+<blockquote>
+<p>Soliciting funds from faculty members, family and friends, Brin and Page scraped together enough to buy some servers and rent that famous garage in <a href="./Menlo_Park,_California" title="Menlo Park, California">Menlo Park</a>. [Soon after], <a href="./Sun_Microsystems" title="Sun Microsystems">Sun Microsystems</a> co-founder <a href="./Andy_Bechtolsheim" title="Andy Bechtolsheim">Andy Bechtolsheim</a> wrote a $100,000 cheque to "Google, Inc." The only problem was, "Google, Inc." did not yet exist—the company hadn't yet been incorporated. For two weeks, as they handled the paperwork, the young men had nowhere to deposit the money.</p>
+</blockquote>
+<p>In 1998, Brin and Page incorporated Google, Inc. with the initial domain name of "<a href="./Googol" title="Googol">Googol</a>", derived from a number that consists of one followed by one hundred zeros representing the vast amount of data that the search engine was intended to explore. Using the garage in their friend <a href="./Susan_Wojcicki" title="Susan Wojcicki">Susan Wojcicki</a>'s <a href="./Menlo_Park,_California" title="Menlo Park, California">Menlo Park</a> home for $1,700 a month, Page and Brin were able to successfully build the Google search engine. Following inception, Page appointed himself as CEO, while Brin, named Google's co-founder, was Google's president. Writer Nicholas Carlson wrote in 2014:</p>
+<blockquote>
+<p>The pair's mission was "to organize the world's information and make it universally accessible and useful." With a <a href="./United_States_dollar" title="United States dollar">US$</a>1-million loan from friends and family, the inaugural team moved into a Mountain View office by the start of 2000. In 1999, Page experimented with smaller servers so Google could fit more into each square meter of the third-party warehouses the company rented for their servers. This eventually led to a search engine that ran much faster than Google's competitors at the time.</p>
+</blockquote>
+<p>By June 2000, Google had indexed one billion Internet URLs (<a href="./Uniform_Resource_Locators" title="Uniform Resource Locators">Uniform Resource Locators</a>), making it the most comprehensive search engine on the Web at the time. The company cited <a href="./NEC" title="NEC">NEC</a> Research Institute data in its June 26 press release, stating that "there are more than 1 billion web pages online today", with Google "providing access to 560 million full-text indexed web pages and 500 million partially indexed URLs."</p>
+<h4>Early management style</h4>
+<p>During his first tenure as CEO, Page embarked on an attempt to fire all of Google's project managers in 2001. Page's plan involved all of Google's engineers reporting to a VP of engineering, who would then report directly to him—Page explained that he did not like non-engineers supervising engineers due to their limited technical knowledge. Page even documented his management tenets for his team to use as a reference:</p>
+<ul>
+<li>Do not delegate: Do everything you can yourself to make things go faster.</li>
+<li>Do not get in the way if you're not adding value. Let the people doing the work talk to each other while you go do something else.</li>
+<li>Do not be a <a href="./Bureaucrat" title="Bureaucrat">bureaucrat</a>.</li>
+<li>Ideas are more important than age. Just because someone is junior does not mean they do not deserve respect and cooperation.</li>
+<li>The worst thing you can do is stop someone from doing something by saying, "No. Period." If you say no, you have to help them find a better way to get it done.</li>
+</ul>
+<p>Even though Page's new model was unsustainable and led to disgruntlement among the affected employees, his issue with engineers being managed by non-engineering staff gained traction. Page also believed that the faster Google's search engine returned answers, the more it would be used. He fretted over <a href="./Milliseconds" title="Milliseconds">milliseconds</a> and pushed his engineers—from those who developed <a href="./Algorithm" title="Algorithm">algorithms</a> to those who built <a href="./Data_center" title="Data center">data centers</a>—to think about <a href="./Latency_(engineering)" title="Latency (engineering)">lag times</a>. He also pushed for keeping Google's home page famously sparse in its design because it would help the page load faster.</p>
+<h3>2001–2011</h3>
+<h4>Changes in management and expansion</h4>
+<p>Before Silicon Valley's two most prominent investors, <a href="./Kleiner_Perkins" title="Kleiner Perkins">Kleiner Perkins</a> and <a href="./Sequoia_Capital" title="Sequoia Capital">Sequoia Capital</a>, agreed to invest a combined total of $50 million in Google, they applied pressure on Page to step down as CEO so that a more experienced leader could build a "world-class management team." Page eventually became amenable to the idea after meeting with other technology CEOs, including <a href="./Steve_Jobs" title="Steve Jobs">Steve Jobs</a> and Intel's <a href="./Andrew_Grove" title="Andrew Grove">Andrew Grove</a>. <a href="./Eric_Schmidt" title="Eric Schmidt">Eric Schmidt</a>, who had been hired as chairman of Google in March 2001, left his full-time position as the CEO of <a href="./Novell" title="Novell">Novell</a> to take the same role at Google in August of the same year, and Page moved aside to assume the president of products role.</p>
+<p>Under Schmidt's leadership, Google underwent a period of major growth and expansion, which included its <a href="./Initial_public_offering" title="Initial public offering">initial public offering</a> (IPO) on August 20, 2004. He always acted in consultation with Page and Brin when he embarked on initiatives such as the hiring of an executive team and the creation of a <a href="./Sales_force_management_system" title="Sales force management system">sales force management system</a>. Page remained the boss at Google in the eyes of the employees, as he gave final approval on all new hires, and it was Page who provided the signature for the IPO, the latter making him a billionaire at the age of 30.</p>
+<p>Page led the acquisition of <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> for $50 million in 2005 to fulfill his ambition to place handheld computers in the possession of consumers so that they could access Google anywhere. The purchase was made without Schmidt's knowledge, but the CEO was not perturbed by the relatively small acquisition. Page became passionate about Android and spent large amounts of time with Android CEO and cofounder <a href="./Andy_Rubin" title="Andy Rubin">Andy Rubin</a>. By September 2008, <a href="./T-Mobile_US" title="T-Mobile US">T-Mobile</a> launched the G1, the first phone using Android software and, by 2010, 17.2% of the handset market consisted of Android sales, overtaking Apple for the first time. Android became the world's most popular mobile operating system shortly afterward.</p>
+<h4>Assumption of CEO position at Google</h4>
+<p>Following a January 2011 announcement, Page officially became the chief executive of Google on April 4, 2011, while Schmidt stepped down to become executive chairman. By this time, Google had over $180 billion market capitalization and more than 24,000 employees. Reporter Max Nisen described the decade prior to Page's second appointment as Google's CEO as Page's "lost decade" saying that while he exerted significant influence at Google via product development and other operations, he became increasingly disconnected and less responsive over time.</p>
+<p>Schmidt announced the end of his tenure as CEO on January 20, 2011, jokingly tweeting on Twitter: "Adult-supervision no longer needed."</p>
+<h3>2011–2013</h3>
+<p>As Google's new CEO, Page's two key goals were the development of greater autonomy for the executives overseeing the most important divisions, and higher levels of collaboration, communication, and unity among the teams. Then Page also formed what the media called the "L-Team", a group of senior vice-presidents who reported directly to him and worked near his office for a portion of the working week. Additionally, he reorganized the company's senior management, placing a CEO-like manager at the top of Google's most important product divisions, including YouTube, <a href="./Google_Ads" title="Google Ads">AdWords</a>, and <a href="./Google_Search" title="Google Search">Google Search</a>.</p>
+<p>Following a more cohesive team environment, Page declared a new "zero tolerance for fighting" policy that contrasted with his approach during the early days of Google, when he would use his harsh and intense arguments with Brin as an exemplar for senior management. Page had changed his thinking during his time away from the CEO role, as he eventually concluded that ambitious goals required a harmonious team dynamic. As part of Page's collaborative rejuvenation process, Google's products and applications were consolidated and underwent an <a href="./Aesthetic" title="Aesthetic">aesthetic</a> overhaul.</p>
+<h4>Changes and consolidation process</h4>
+<p>At least 70 of Google's products, features and services were eventually shut down by March 2013, while the appearance and nature of the remaining ones were unified. Jon Wiley, lead designer of Google Search at the time, codenamed Page's redesign overhaul, which officially commenced on April 4, 2011, "Project Kennedy", based on Page's use of the term "moonshots" to describe ambitious projects in a January 2013 <em><a href="./Wired_magazine" title="Wired magazine">Wired</a></em> interview. An initiative named "Kanna" previously attempted to create a uniform design aesthetic for Google's range of products, but it was too difficult at that point in the company's history for one team to drive such change. Matias Duarte, senior director of the <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> user experience when "Kennedy" started, explained in 2013 that "Google passionately cares about design." Page proceeded to consult with the Google Creative Lab design team, based in New York City, to find an answer to his question of what a "cohesive vision" of Google might look like.</p>
+<p>The eventual results of "Kennedy" which were progressively rolled out from June 2011 until January 2013, were described by <a href="./The_Verge" title="The Verge">The Verge</a> technology publication as focused upon "refinement, white space, cleanliness, elasticity, usefulness, and most of all simplicity." The final products were aligned with Page's aim for a consistent suite of products that can "move fast", and "Kennedy" was called a "design revolution" by Duarte. Page's "UXA" (user/graphics interface) design team then emerged from the "Kennedy" project, tasked with "designing and developing a true <a href="./User_interface" title="User interface">UI</a> framework that transforms Google's <a href="./Application_software" title="Application software">application software</a> into a beautiful, mature, accessible and consistent platform for its users." Unspoken of in public, the small UXA unit was designed to ensure that "Kennedy" became an "institution."</p>
+<h4>Acquisition strategy and new products</h4>
+<p>When acquiring products and companies for Google, Page asked whether the <a href="./Business_acquisition" title="Business acquisition">business acquisition</a> passed the toothbrush test as an initial qualifier, asking the question "Is it something you will use once or twice a day, and does it make your life better?". This approach looked for usefulness above profitability, and long-term potential over near-term financial gain, which has been noted as rare in business acquiring processes.</p>
+<p>With Facebook's influence rapidly expanding during the start of Page's second tenure, he finally responded to the intensive competition with Google's own social network, <a href="./Google+" title="Google+">Google+</a>, in mid-2011. After several delays, the social network was released through a very limited field test and was led by <a href="./Vic_Gundotra" title="Vic Gundotra">Vic Gundotra</a>, Google's then senior vice president of social.</p>
+<p>In August 2011, Page announced that Google would spend $12.5 billion to acquire <a href="./Motorola_Mobility" title="Motorola Mobility">Motorola Mobility</a>. The purchase was primarily motivated by Google's need to secure <a href="./Patents" title="Patents">patents</a> to protect Android from lawsuits by companies including <a href="./Apple_Inc" title="Apple Inc">Apple Inc</a>. Page wrote on Google's official blog on August 15, 2011, that "companies including Microsoft and Apple are banding together in anti-competitive patent attacks on Android. The <a href="./United_States_Department_of_Justice" title="United States Department of Justice">United States Department of Justice</a> had to intervene in the results of one recent patent auction to 'protect competition and innovation in the <a href="./Open_source_software" title="Open source software">open source software</a> community' [...] Our acquisition of Motorola will increase competition by strengthening Google's patent portfolio, which will enable us to better protect Android from anti-competitive threats from Microsoft, Apple and other companies". In 2014, Page sold Motorola Mobility for $2.9 billion to Personal Computer maker, Lenovo which represented a loss in value of $9.5 billion over two years.</p>
+<p>Page also ventured into hardware and Google unveiled the <a href="./Chromebook" title="Chromebook">Chromebook</a> in May 2012. The hardware product was a laptop that ran on a Google operating system, <a href="./ChromeOS" title="ChromeOS">ChromeOS</a>.</p>
+<h3>2013–2015</h3>
+<p>In January 2013, Page participated in a rare interview with <em><a href="./Wired_(magazine)" title="Wired (magazine)">Wired</a></em>, in which writer Steven Levy discussed Page's "10X" mentality—Google employees are expected to create products and services that are at least 10 times better than those of its competitors—in the introductory <a href="./Blurb" title="Blurb">blurb</a>. <a href="./Astro_Teller" title="Astro Teller">Astro Teller</a>, the head of <a href="./Google_X" title="Google X">Google X</a>, explained to Levy that 10X is "just core to who he [Page] is", while Page's "focus is on where the next 10X will come from." In his interview with Levy, Page referred to the success of YouTube and Android as examples of "crazy" ideas that investors were not initially interested in, saying: "If you're not doing some things that are crazy, then you're doing the wrong things." Page also stated he was "very happy" with the status of Google+, and discussed concerns over the Internet concerning the <a href="./SOPA" title="SOPA">SOPA</a> bill and an <a href="./International_Telecommunication_Union" title="International Telecommunication Union">International Telecommunication Union</a> proposal that had been recently introduced:</p>
+<blockquote>
+<p>"I do think the Internet's under much greater attack than it has been in the past. Governments are now afraid of the Internet because of the Middle East stuff, and so they're a little more willing to listen to what I see as a lot of commercial interests that just want to make money by restricting people's freedoms. But they've also seen a tremendous user reaction, like the backlash against SOPA. I think that governments fight users' freedoms at their peril."</p>
+</blockquote>
+<p>At the May 2013 I/O developers conference in San Francisco, Page delivered a keynote address and said "We're at maybe 1% of what is possible. Despite the faster change, we're still moving slow relative to the opportunities we have. I think a lot of that is because of the negativity [...] Every story I read is Google vs someone else. That's boring. We should be focusing on building the things that don't exist" and that he was "sad the Web isn't advancing as fast as it should be", citing a perceived focus on negativity and zero-sum games among some in the technology sector as a cause. In response to an audience question, Page noted an issue that Google had been experiencing with <a href="./Microsoft" title="Microsoft">Microsoft</a>, whereby the latter made its Outlook program interoperable with Google but did not allow for <a href="./Backward_compatibility" title="Backward compatibility">backward compatibility</a>—he referred to Microsoft's practice as "milking off". During the question-and-answer section of his keynote, Page expressed interest in <a href="./Burning_Man" title="Burning Man">Burning Man</a>, which Brin had previously praised—it was a motivating factor for the latter during Schmidt's hiring process, as Brin liked that Schmidt had attended the week-long annual event.</p>
+<p>In September 2013, Page launched the independent <a href="./Calico_(company)" title="Calico (company)">Calico</a> initiative, a <a href="./R&amp;D" title="R&amp;D">R&amp;D</a> project in the field of <a href="./Biotechnology" title="Biotechnology">biotechnology</a>. Google announced that Calico seeks to innovate and make improvements in the field of human health, and appointed Art Levinson, chairman of Apple's board and former CEO of <a href="./Genentech" title="Genentech">Genentech</a>, to be the new division's CEO. Page's official statement read: "Illness and aging affect all our families. With some longer term, moonshot thinking around healthcare and <a href="./Biotechnology" title="Biotechnology">biotechnology</a>, I believe we can improve millions of lives."</p>
+<p>Page participated in a March 2014 TedX conference that was held in <a href="./Vancouver" title="Vancouver">Vancouver, British Columbia</a>, Canada. The presentation was scripted by Page's chief <a href="./Public_relations" title="Public relations">PR</a> executive Rachel Whetstone, and Google's <a href="./Chief_marketing_officer" title="Chief marketing officer">CMO</a> Lorraine Twohill, and a demonstration of an artificially intelligent computer program was displayed on a large screen.</p>
+<p>Page responded to a question about corporations, noting that corporations largely get a "bad rap", which he stated was because they were probably doing the same incremental things they were doing "50 or 20 years ago". He went on to juxtapose that kind of incremental approach to his vision of Google counteracting calcification through driving technology innovation at a high rate. Page mentioned <a href="./Elon_Musk" title="Elon Musk">Elon Musk</a> and <a href="./SpaceX" title="SpaceX">SpaceX</a>:</p>
+<blockquote>
+<p>"He [Musk] wants to go to Mars to back up humanity. That's a worthy goal. We have a lot of employees at Google who've become pretty wealthy. You're working because you want to change <a href="./Earth" title="Earth">the world</a> and make it better [...] I'd like for us to help out more than we are."</p>
+</blockquote>
+<p>Page also mentioned <a href="./Nikola_Tesla" title="Nikola Tesla">Nikola Tesla</a> with regard to invention and commercialization:</p>
+<blockquote>
+<p>"Invention is not enough. [Nikola] Tesla invented the electric power we use, but he struggled to get it out to people. [You have to] combine both things []... invention and innovation focus, plus [...] a company that can really commercialize things and get them to people."</p>
+</blockquote>
+<p>Page announced a major management restructure in October 2014 so that he would no longer need to be responsible for day-to-day product-related decision making. In a memo, Page said that Google's core businesses would be able to progress in a typical manner, while he could focus on the next generation of ambitious projects, including <a href="./Google_X" title="Google X">Google X</a> initiatives; access and energy, including <a href="./Google_Fiber" title="Google Fiber">Google Fiber</a>; smart-home automation through <a href="./Nest_Labs" title="Nest Labs">Nest Labs</a>; and <a href="./Biotechnology" title="Biotechnology">biotechnology</a> innovations under Calico. Page maintained that he would continue as the unofficial "chief product officer". Subsequent to the announcement, the executives in charge of Google's core products reported to then Google Senior Vice President <a href="./Sundar_Pichai" title="Sundar Pichai">Sundar Pichai</a>, who reported directly to Page.</p>
+<p>In a November 2014 interview, Page stated that he prioritized the maintenance of his "deep knowledge" of Google's products and breadth of projects, as it had been a key motivating factor for team members. About his then role as the company's CEO, Page said: "I think my job as CEO—I feel like it's always to be pushing people ahead."</p>
+<p>On August 10, 2015, Page announced on Google's official blog that Google had restructured into a number of subsidiaries of a new <a href="./Holding_company" title="Holding company">holding company</a> known as <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc</a> with Page becoming CEO of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc</a> and <a href="./Sundar_Pichai" title="Sundar Pichai">Sundar Pichai</a> assuming the position of CEO of <a href="./Google_Inc." title="Google Inc.">Google Inc.</a> In his announcement, Page described the planned holding company as follows:</p>
+<blockquote>
+<p>"Alphabet is mostly a collection of companies. The largest of which, of course, is Google. This newer Google is a bit slimmed down, with the companies that are pretty far afield of our main Internet products contained in Alphabet instead. [...] Fundamentally, we believe this allows us more management scale, as we can run things independently that aren't very related."</p>
+</blockquote>
+<p>As well as explaining the origin of the company's name:</p>
+<blockquote>
+<p>"We liked the name Alphabet because it means a collection of letters that represent language, one of humanity's most important innovations, and is the core of how we index with Google search! We also like that it means alpha‑bet (<a href="./Alpha_(finance)" title="Alpha (finance)">Alpha</a> is investment return above benchmark), which we strive for!"</p>
+</blockquote>
+<p>Page wrote that the motivation behind the reorganization is to make Google "cleaner and more accountable." He also wrote that there was a desire to improve "the transparency and oversight of what we're doing" and to allow greater control of unrelated companies previously within the Google ecosystem.</p>
+<p>Page has not been on any press conferences since 2015 and has not presented at product launches or earnings calls since 2013. The <em><a href="./Bloomberg_Businessweek" title="Bloomberg Businessweek">Bloomberg Businessweek</a></em> termed the reorganization into Alphabet a clever retirement plan allowing Page to retain control over Google, at the same time relinquishing all responsibilities over it. Executives at Alphabet describe Page as a "futurist", highly detached from day-to-day business dealings, and more focused on moon-shot projects. While some managers of Alphabet companies speak of Page as intensely involved, others say that his rare office check-ins are "akin to a royal visit".</p>
+<h3>2019</h3>
+<p>On December 3, 2019, Larry Page announced that he would step down from the position of Alphabet CEO and be replaced by Google CEO Sundar Pichai. Pichai also continued as Google CEO. Page and Google co-founder and Alphabet president Sergey Brin announced the change in a joint blog post, "With Alphabet now well-established, and Google and the Other Bets operating effectively as independent companies, it's the natural time to simplify our management structure. We've never been ones to hold on to management roles when we think there's a better way to run the company. And Alphabet and Google no longer need two CEOs and a President."</p>
+<h2>Other interests</h2>
+<p>Page is an investor in <a href="./Tesla_Motors" title="Tesla Motors">Tesla Motors</a> co-founded by friend and fellow billionaire <a href="./Elon_Musk" title="Elon Musk">Elon Musk</a>. He has invested in <a href="./Renewable_energy" title="Renewable energy">renewable energy</a> technology, and with the help of <a href="./Google.org" title="Google.org">Google.org</a>, Google's philanthropic arm, promotes the adoption of <a href="./Plug-in_hybrid" title="Plug-in hybrid">plug-in hybrid</a> electric cars and other alternative energy investments. He also was a strategic backer in the Opener and <a href="./Kitty_Hawk_Corporation" title="Kitty Hawk Corporation">Kitty Hawk</a> startups, developing aerial vehicles for consumer travel. The company has ceased all activities. It was merged into the <a href="./Wisk_Aero" title="Wisk Aero">Wisk Aero</a> joint venture with <a href="./Boeing" title="Boeing">Boeing</a> in September 2022. Page founded Dynatomics, a Palo Alto-based startup established in 2023, that uses artificial intelligence to optimize product manufacturing processes.</p>
+<p>Page is interested in the socio-economic effects of advanced intelligent systems and how advanced digital technologies can be used to create abundance (as described in <a href="./Abundance:_The_Future_Is_Better_Than_You_Think" title="Abundance: The Future Is Better Than You Think">Peter Diamandis' book</a>), provide for people's needs, shorten the workweek, and mitigate the potential detrimental effects of <a href="./Technological_unemployment" title="Technological unemployment">technological unemployment</a>.</p>
+<p>Page helped to set up <a href="./Singularity_University" title="Singularity University">Singularity University</a>, a <a href="./Transhumanism" title="Transhumanism">transhumanist</a> think-tank.</p>
+<h2>Personal life</h2>
+<p>In the early 2000s, Page briefly dated <a href="./Marissa_Mayer" title="Marissa Mayer">Marissa Mayer</a>, American business leader and former CEO of <a href="./Yahoo!" title="Yahoo!">Yahoo!</a>, who was a Google employee at that time.</p>
+<p>On February 18, 2005, Page bought a 9,000 square feet (840 m2) <a href="./Spanish_Colonial_Revival_architecture" title="Spanish Colonial Revival architecture">Spanish Colonial Revival architecture</a> house in <a href="./Palo_Alto" title="Palo Alto">Palo Alto</a>, California, designed by American artistic <a href="./Polymath" title="Polymath">polymath</a> <a href="./Pedro_Joseph_de_Lemos" title="Pedro Joseph de Lemos">Pedro Joseph de Lemos</a>, a former curator of the Stanford Art Museum and founder of the Carmel Art Institute, after the historic building had been on the market for years with an asking price of <a href="./United_States_dollar" title="United States dollar">US$</a>7.95 million. A two-story <a href="./Stucco" title="Stucco">stucco</a> archway spans the <a href="./Driveway" title="Driveway">driveway</a> and the home features intricate stucco work, as well as stone and tile in California <a href="./Arts_and_Crafts_movement" title="Arts and Crafts movement">Arts and Crafts movement</a> style built to resemble de Lemos's family's castle in Spain. The <a href="./Pedro_de_Lemos_House" title="Pedro de Lemos House">Pedro de Lemos House</a> was constructed between 1931 and 1941 by de Lemos. It is also on the <a href="./National_Register_of_Historic_Places" title="National Register of Historic Places">National Register of Historic Places</a>.</p>
+<p>In 2007, Page married Lucinda Southworth on <a href="./Necker_Island_(British_Virgin_Islands)" title="Necker Island (British Virgin Islands)">Necker Island</a>, the Caribbean island owned by <a href="./Richard_Branson" title="Richard Branson">Richard Branson</a>. Southworth is a research scientist and the sister of American actress and model <a href="./Carrie_Southworth" title="Carrie Southworth">Carrie Southworth</a>. Page and Southworth have two children, born in 2009 and 2011 respectively.</p>
+<p>In 2009, Page began purchasing properties and tearing down homes adjacent to his home in <a href="./Palo_Alto" title="Palo Alto">Palo Alto</a> to make room for a large <a href="./Ecohouse" title="Ecohouse">ecohouse</a>. The existing buildings were "deconstructed" and the materials donated for reuse. The ecohouse was designed to "minimize the impact on the environment." Page worked with an <a href="./Arborist" title="Arborist">arborist</a> to replace some trees that were in poor health with others that used less water to maintain. Page also applied for Green Point Certification, with points given for use of recycled and low or no-VOC (<a href="./Volatile_organic_compound" title="Volatile organic compound">volatile organic compound</a>) materials and for a roof garden with <a href="./Solar_panels" title="Solar panels">solar panels</a>. The house's exterior features <a href="./Zinc" title="Zinc">zinc</a> <a href="./Cladding_(construction)" title="Cladding (construction)">cladding</a> and plenty of windows, including a wall of sliding-glass doors in the rear. It includes eco-friendly elements such as <a href="./Permeable_paving" title="Permeable paving">permeable paving</a> in the parking court and a pervious path through the trees on the property. The 6,000 square feet (560 m2) house also observes other green home design features such as <a href="./Organic_architecture" title="Organic architecture">organic architecture</a> building materials and low <a href="./Volatile_organic_compound" title="Volatile organic compound">volatile organic compound</a> paint.</p>
+<p>In 2011, Page bought the $45-million 193-foot (59 m) <a href="./Superyacht" title="Superyacht">superyacht</a> <em>Senses</em>. Later on, Page announced on his <a href="./Google+" title="Google+">Google+</a> profile in May 2013 that his right <a href="./Vocal_cord" title="Vocal cord">vocal cord</a> is paralyzed from a cold that he contracted the previous summer, while his left cord was paralyzed in 1999, and that the doctors were unable to identify the exact cause. The Google+ post also revealed that Page had made a large donation to a vocal-cord nerve-function research program at the Voice Health Institute in <a href="./Boston" title="Boston">Boston</a>. An anonymous source stated that the donation exceeded $20 million. In October 2013, <em><a href="./Business_Insider" title="Business Insider">Business Insider</a></em> reported that Page's paralysis were caused by an <a href="./Autoimmune_disease" title="Autoimmune disease">autoimmune disease</a> called <a href="./Hashimoto's_thyroiditis" title="Hashimoto's thyroiditis">Hashimoto's thyroiditis</a>, and prevented him from undertaking Google quarterly earnings conference calls for an indefinite period.</p>
+<p>In November 2014, Page's family foundation, the Carl Victor Page Memorial Fund, reportedly holding assets in excess of a billion dollars at the end of 2013, gave $15 million to aid the effort against the <a href="./Ebola_virus_epidemic_in_West_Africa" title="Ebola virus epidemic in West Africa">Ebola virus epidemic in West Africa</a>. Page wrote on his Google+ page that "My wife and I just donated $15 million [...] Our hearts go out to everyone affected."</p>
+<p>In August 2021 it was revealed that Page holds a <a href="./New_Zealand" title="New Zealand">New Zealand</a> resident's visa and had traveled to the country on a <a href="./Medical_evacuation" title="Medical evacuation">medivac</a> flight from <a href="./Fiji" title="Fiji">Fiji</a> for his son's treatment in New Zealand. The flight took place on January 12, 2021. Page had been living in Fiji with his family during the duration of the <a href="./COVID-19_pandemic" title="COVID-19 pandemic">COVID-19 pandemic</a>.</p>
+<p>In 2023, the <a href="./Us_virgin_islands" title="Us virgin islands">US Virgin Islands</a> tried several times to serve Page a subpoena in the lawsuit over <a href="./JPMorgan_Chase" title="JPMorgan Chase">JPMorgan Chase</a>'s links to <a href="./Jeffrey_Epstein" title="Jeffrey Epstein">Jeffrey Epstein</a>.</p>
+<p>Page has purchased multiple private islands across the Caribbean and South Pacific, including the <a href="./Hans_Lollik_Island" title="Hans Lollik Island">Hans Lollik Island</a> in 2014, <a href="./Eustatia_Island" title="Eustatia Island">Eustatia Island</a>, <a href="./Cayo_Norte" title="Cayo Norte">Cayo Norte</a> in 2018, and <a href="./Tavarua" title="Tavarua">Tavarua</a> in 2020.</p>
+<p>In December 2025, Page and Brin, worth a combined $520 billion, terminated or moved out of California sixty limited liability companies that hold their assets.</p>
+<h2>Awards and accolades</h2>
+<h3>1998–2009</h3>
+<ul>
+<li><em><a href="./PC_Magazine" title="PC Magazine">PC Magazine</a></em> has praised Google as among the Top 100 Web Sites and Search Engines (1998) and awarded Google the Technical Excellence Award for Innovation in Web Application Development in 1999. In 2000, Google earned a <a href="./Webby_Award" title="Webby Award">Webby Award</a>, a People's Voice Award for technical achievement, and in 2001, was awarded Outstanding Search Service, Best Image Search Engine, Best Design, Most Webmaster Friendly Search Engine, and Best Search Feature at the Search Engine Watch Awards.</li>
+<li>In 2002, Page was named a <a href="./World_Economic_Forum" title="World Economic Forum">World Economic Forum</a> Global Leader for Tomorrow and along with Brin, was named by the <a href="./Massachusetts_Institute_of_Technology" title="Massachusetts Institute of Technology">Massachusetts Institute of Technology</a> (MIT)'s <em><a href="./Technology_Review" title="Technology Review">Technology Review</a></em> publication as one of the top 100 innovators in the world under the age of 35, as part of its yearly <a href="./TR35" title="TR35">TR100</a> listing (changed to "TR35" after 2005).</li>
+<li>In 2003, both Page and Brin received an MBA from <a href="./IE_Business_School" title="IE Business School">IE Business School</a>, in an <a href="./Honorary_degree" title="Honorary degree">honorary</a> capacity, "for embodying the entrepreneurial spirit and lending momentum to the creation of new businesses."</li>
+<li>In 2004, they received the <a href="./Marconi_Foundation" title="Marconi Foundation">Marconi Foundation</a>'s prize and were elected <a href="./Fellow" title="Fellow">Fellows</a> of the Marconi Foundation at <a href="./Columbia_University" title="Columbia University">Columbia University</a>. In announcing their selection, John Jay Iselin, the Foundation's president, congratulated the two men for "their invention that has fundamentally changed the way information is retrieved today."</li>
+<li>In 2004, Page and Brin received the Golden Plate Award of the <a href="./Academy_of_Achievement" title="Academy of Achievement">American Academy of Achievement</a>.</li>
+<li>Page and Brin were also Award Recipients and National Finalists for the EY Entrepreneur of the Year Award in 2003.</li>
+<li>Also in 2004, X PRIZE chose Page as a trustee of their board and he was elected to the National Academy of Engineering.</li>
+<li>In 2005, Brin and Page were elected Fellows of the <a href="./American_Academy_of_Arts_and_Sciences" title="American Academy of Arts and Sciences">American Academy of Arts and Sciences</a>.</li>
+<li>In 2008 Page received the <a href="./Princess_of_Asturias_Awards#Communications_and_Humanities_(Comunicación_y_Humanidades)" title="Princess of Asturias Awards">Communication Award</a> from <a href="./Felipe_VI_of_Spain" title="Felipe VI of Spain">Prince Felipe</a> at the <a href="./Prince_of_Asturias_Awards" title="Prince of Asturias Awards">Prince of Asturias Awards</a> on behalf of Google.</li>
+</ul>
+<h3>Since 2009</h3>
+<ul>
+<li>In 2009, Page received an honorary doctorate from the University of Michigan during a graduation commencement ceremony. In 2011, he was ranked 24th on the <a href="./Forbes_list_of_billionaires" title="Forbes list of billionaires">Forbes list of billionaires</a>, and as the 11th richest person in the U.S.</li>
+<li>In 2015, Page's "Powerful People" profile on the <em>Forbes</em> site states that Google is "the most influential company of the digital era".</li>
+<li>As of July 2014, the Bloomberg Billionaires Index lists Page as the 17th richest man in the world, with an estimated net worth of $32.7 billion.</li>
+<li>At the completion of 2014, <em>Fortune</em> magazine named Page its "Businessperson of the Year", declaring him "the world's most daring CEO".</li>
+<li>In October 2015, Page was named number one on the <em><a href="./Forbes" title="Forbes">Forbes</a></em> "America's Most Popular Chief Executives" list, as voted by Google's employees.</li>
+<li>In August 2017, Page was awarded honorary citizenship of <a href="./Agrigento" title="Agrigento">Agrigento</a>, Italy.</li>
+</ul>
+<h2>In popular culture</h2>
+<p>A fictionalized version of Larry Page portrayed by actor <a href="./Ben_Feldman" title="Ben Feldman">Ben Feldman</a> appeared in the <a href="./Showtime_(TV_network)" title="Showtime (TV network)">Showtime</a> drama series <a href="./Super_Pumped_(TV_series)" title="Super Pumped (TV series)"><em>Super Pumped</em></a>.</p>
+<h2>References</h2>
+<h2>External links</h2>
+<p><strong>Larry Page</strong> at Wikipedia's <a href="./Wikipedia:Wikimedia_sister_projects" title="Wikipedia:Wikimedia sister projects">sister projects</a></p>
+<ul>
+<li><a href="./File:Commons-logo.svg"><img alt="Wikimedia Commons logo" src="//upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/20px-Commons-logo.svg.png"></a><a href="https://commons.wikimedia.org/wiki/Larry%20Page" title="c:Larry Page">Media</a> from Commons</li>
+<li>
+<p><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Wikiquote-logo.svg/40px-Wikiquote-logo.svg.png"><a href="https://en.wikiquote.org/wiki/Larry%20Page" title="q:Larry Page">Quotations</a> from Wikiquote</p>
+</li>
+<li>
+<p><a href="https://www.bloomberg.com/billionaires/profile/larry-page">Larry Page</a> at <a href="./Bloomberg_L.P." title="Bloomberg L.P.">Bloomberg L.P.</a></p>
+</li>
+<li><a href="https://www.forbes.com/profile/larry-page/">Larry Page</a> on <em><a href="./Forbes" title="Forbes">Forbes</a></em></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Business positions</th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Preceded by Company founded</td>
+<td><strong>CEO of Google</strong>  1998–2001</td>
+<td>Succeeded by <a href="./Eric_Schmidt" title="Eric Schmidt">Eric Schmidt</a></td>
+</tr>
+<tr>
+<td>Preceded by <a href="./Eric_Schmidt" title="Eric Schmidt">Eric Schmidt</a></td>
+<td><strong>CEO of Google</strong>  2011–2015</td>
+<td>Succeeded by <a href="./Sundar_Pichai" title="Sundar Pichai">Sundar Pichai</a></td>
+</tr>
+<tr>
+<td>Preceded by Company founded</td>
+<td><strong>CEO of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc.</a></strong>  2015–2019</td>
+<td>Succeeded by <a href="./Sundar_Pichai" title="Sundar Pichai">Sundar Pichai</a></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Alphabet_Inc." title="Template:Alphabet Inc.">v</a> - <a href="./Template_talk:Alphabet_Inc." title="Template talk:Alphabet Inc.">t</a> - <a href="./Special:EditPage/Template:Alphabet_Inc." title="Special:EditPage/Template:Alphabet Inc.">e</a>  <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc.</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Subsidiaries</td>
+<td></td>
+</tr>
+<tr>
+<td>People</td>
+<td></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Alphabet_Inc." title="Category:Alphabet Inc.">Category</a> - <a href="./Portal:Companies" title="Portal:Companies">Companies portal</a> - <a href="./File:Crystal_Clear_app_linneighborhood.svg">icon</a> <a href="./Portal:Internet" title="Portal:Internet">Internet portal</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products" title="List of Google products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><a href="./Help:Authority_control" title="Help:Authority control">Authority control databases</a> <a href="https://www.wikidata.org/wiki/Q4934#identifiers" title="Edit this at Wikidata">Edit this at Wikidata</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>International</td>
+<td>- <a href="https://isni.org/isni/0000000430764124">ISNI</a> - <a href="https://viaf.org/viaf/35624513">VIAF</a> - <a href="https://d-nb.info/gnd/13271163X">GND</a> - <a href="https://id.worldcat.org/fast/1628778">FAST</a> - <a href="https://id.oclc.org/worldcat/entity/E39PBJfRFK9CPpxHPdPHK7gMyd">WorldCat</a></td>
+</tr>
+<tr>
+<td>National</td>
+<td>- <a href="https://id.loc.gov/authorities/n2005086596">United States</a> - <a href="https://aleph.nkp.cz/F/?func=find-c&amp;local_base=aut&amp;ccl_term=ica=vse2010558370&amp;CON_LNG=ENG">Czech Republic</a> - <a href="http://id.bnportugal.gov.pt/aut/catbnp/1650484">Portugal</a> - <a href="http://data.bibliotheken.nl/id/thes/p321646290">Netherlands</a> - <a href="https://kopkatalogs.lv/F?func=direct&amp;local_base=lnc10&amp;doc_number=000279754&amp;P_CON_LNG=ENG">Latvia</a> - <a href="http://www.bncatalogo.cl/F?func=direct&amp;local_base=red10&amp;doc_number=000849341">Chile</a> - <a href="https://catalogue.nlg.gr/cgi-bin/koha/opac-authoritiesdetail.pl?authid=264755">Greece</a> - <a href="https://lod.nl.go.kr/resource/KAC2018P7702">Korea</a> - <a href="https://dbn.bn.org.pl/descriptor-details/9810630826605606">Poland</a> - <a href="https://www.nli.org.il/en/authorities/987007571014105171">Israel</a></td>
+</tr>
+<tr>
+<td>Academics</td>
+<td>- <a href="https://dblp.org/pid/p/LawrencePage">DBLP</a></td>
+</tr>
+<tr>
+<td>People</td>
+<td>- <a href="https://trove.nla.gov.au/people/1818647">Trove</a> - <a href="https://www.deutsche-digitale-bibliothek.de/person/gnd/13271163X">DDB</a></td>
+</tr>
+<tr>
+<td>Other</td>
+<td>- <a href="https://www.idref.fr/169742857">IdRef</a> - <a href="https://snaccooperative.org/ark:/99166/w6r50mkf">SNAC</a> - <a href="https://lux.collections.yale.edu/view/person/6f612f22-5950-43cf-a49a-d3d87726ee34">Yale LUX</a></td>
+</tr>
+</tbody>
+</table>
+<p><a href="./Wikipedia:Contents/Portals" title="Wikipedia:Contents/Portals">Portals</a>:</p>
+<ul>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/en/thumb/6/69/P_vip.svg/20px-P_vip.svg.png"> <a href="./Portal:Biography" title="Portal:Biography">Biography</a></li>
+<li><a href="./File:Emblem-money.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Emblem-money.svg/20px-Emblem-money.svg.png"></a> <a href="./Portal:Business" title="Portal:Business">Business</a></li>
+<li><a href="./File:Octicons-terminal.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Octicons-terminal.svg/20px-Octicons-terminal.svg.png"></a> <a href="./Portal:Computer_programming" title="Portal:Computer programming">Computer programming</a></li>
+<li><a href="./File:Crystal_Clear_app_linneighborhood.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Crystal_Clear_app_linneighborhood.svg/20px-Crystal_Clear_app_linneighborhood.svg.png"></a> <a href="./Portal:Internet" title="Portal:Internet">Internet</a></li>
+<li><a href="./File:Nuvola_apps_edu_mathematics_blue-p.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Nuvola_apps_edu_mathematics_blue-p.svg/20px-Nuvola_apps_edu_mathematics_blue-p.svg.png"></a> <a href="./Portal:Mathematics" title="Portal:Mathematics">Mathematics</a></li>
+<li><a href="./File:Wind-turbine-icon.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Wind-turbine-icon.svg/20px-Wind-turbine-icon.svg.png"></a> <a href="./Portal:Renewable_energy" title="Portal:Renewable energy">Renewable energy</a></li>
+<li><a href="./File:Noun-technology.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Noun-technology.svg/20px-Noun-technology.svg.png"></a> <a href="./Portal:Technology" title="Portal:Technology">Technology</a></li>
+<li><img alt="flag" src="//upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/40px-Flag_of_the_United_States.svg.png"> <a href="./Portal:United_States" title="Portal:United States">United States</a></li>
+</ul></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

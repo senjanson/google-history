@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gmail</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link active" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Gmail</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Gmail<br>
+Category: products_consumer<br>
+Depth: 1</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Gmail is a mailbox provider by Google. It is the largest email service worldwide, with 1.8 billion users. It is accessible via a web browser (webmail), mobile app, or through third-party email clients via the POP and IMAP protocols. Users can also connect non-Gmail e-mail accounts to their Gmail inbox. The service was launched as Google Mail in a beta version in 2004. It came out of beta in 2009.</p>
+<h2>Images</h2>
+<p><img alt="960px-Gmail_icon__282020_29.svg" src="../images/960px-Gmail_icon__282020_29.svg.png"><br>
+<img alt="330px-Gmail_icon__282020_29.svg" src="../images/330px-Gmail_icon__282020_29.svg.png"><br>
+<img alt="120px-Gmail_icon__282020_29.svg" src="../images/120px-Gmail_icon__282020_29.svg.png"><br>
+<img alt="330px-Gmail_screenshot" src="../images/330px-Gmail_screenshot.png"><br>
+<img alt="250px-Gmail_2004" src="../images/250px-Gmail_2004.png"><br>
+<img alt="250px-Gmail_inbox_in_Japanese" src="../images/250px-Gmail_inbox_in_Japanese.png"><br>
+<img alt="250px-Delivery_Status_Notification__28Delay_29_in_Gmail" src="../images/250px-Delivery_Status_Notification__28Delay_29_in_Gmail.png"><br>
+<img alt="250px-Gmail_icon__282020_29.svg" src="../images/250px-Gmail_icon__282020_29.svg.png"><br>
+<img alt="Gmail_for_Android_screenshot" src="../images/Gmail_for_Android_screenshot.png"><br>
+<img alt="250px-Gmail-transport-encryption" src="../images/250px-Gmail-transport-encryption.png"><br>
+<img alt="250px-Google_Account_2FA" src="../images/250px-Google_Account_2FA.png"><br>
+<img alt="250px-Gmail_Icon__282013-2020_29.svg" src="../images/250px-Gmail_Icon__282013-2020_29.svg.png"></p>
+<h2>Full Article</h2>
+<p>Email service provided by Google</p>
+<p><strong>Gmail</strong> is a <a href="./Mailbox_provider" title="Mailbox provider">mailbox provider</a> by <a href="./Google" title="Google">Google</a>. It is the largest email service worldwide, with 1.8 billion <a href="./User_(computing)" title="User (computing)">users</a>. It is accessible via a <a href="./Web_browser" title="Web browser">web browser</a> (<a href="./Webmail" title="Webmail">webmail</a>), <a href="./Mobile_app" title="Mobile app">mobile app</a>, or through third-party <a href="./Email_client" title="Email client">email clients</a> via the <a href="./Post_Office_Protocol" title="Post Office Protocol">POP</a> and <a href="./Internet_Message_Access_Protocol" title="Internet Message Access Protocol">IMAP</a> protocols. Users can also connect non-Gmail <a href="./Email" title="Email">e-mail</a> accounts to their Gmail inbox. The service was launched as <strong>Google Mail</strong> in a <a href="./Beta_version" title="Beta version">beta version</a> in 2004. It came out of beta in 2009.</p>
+<p>The service includes 15 <a href="./Gigabyte" title="Gigabyte">gigabytes</a> of <a href="./Cloud_storage" title="Cloud storage">storage</a> for free for individual users, which includes any use by other Google services such as <a href="./Google_Drive" title="Google Drive">Google Drive</a> and <a href="./Google_Photos" title="Google Photos">Google Photos</a>; the limit can be increased via a paid subscription to <a href="./Google_One" title="Google One">Google One</a>. Users can receive emails up to 50 <a href="./Megabyte" title="Megabyte">megabytes</a> in size, including <a href="./Email_attachment" title="Email attachment">attachments</a>, and can send emails up to 25 megabytes in size. Gmail supports integration with Google Drive, allowing for larger attachments. The <a href="./Gmail_interface" title="Gmail interface">Gmail interface</a> has a <a href="./Search_engine" title="Search engine">search engine</a> and supports a <a href="./Gmail_interface#Conversation_view" title="Gmail interface">"conversation view"</a> similar to an <a href="./Internet_forum" title="Internet forum">Internet forum</a>. The service is notable among <a href="./Web_developer" title="Web developer">website developers</a> for its early adoption of <a href="./Ajax_(programming)" title="Ajax (programming)">Ajax</a>.</p>
+<p>Google's <a href="./Message_transfer_agent" title="Message transfer agent">mail servers</a> automatically scan emails to filter <a href="./Spamming" title="Spamming">spam</a> and <a href="./Malware" title="Malware">malware</a>.</p>
+<h2>Features</h2>
+<h3>Storage</h3>
+<p>On April 1, 2004, Gmail was launched with one <a href="./Gigabyte" title="Gigabyte">gigabyte</a> (GB) of <a href="./Computer_data_storage" title="Computer data storage">storage</a> space, a significantly higher amount than <a href="./List_of_email_clients" title="List of email clients">competitors</a> offered at the time.<br>
+The limit was doubled to two gigabytes of storage on April 1, 2005, the first anniversary of Gmail. Georges Harik, the <a href="./Product_management" title="Product management">product management</a> director for Gmail, stated that Google would "keep giving people more space forever."</p>
+<p>In October 2007, Gmail increased storage to 4 gigabytes, after recent changes from competitors <a href="./Yahoo_Mail" title="Yahoo Mail">Yahoo</a> and <a href="./Microsoft_Mail" title="Microsoft Mail">Microsoft</a>.<br>
+On April 24, 2012, Google announced the increase of storage included in Gmail from 7.5 to 10 gigabytes ("and counting") as part of the launch of <a href="./Google_Drive" title="Google Drive">Google Drive</a>.<br>
+On May 13, 2013, Google announced the overall merge of storage across Gmail, Google Drive, and <a href="./Picasa" title="Picasa">Google+ Photos</a>, allowing users 15 gigabytes of included storage among three services.<br>
+On August 15, 2018, Google launched <a href="./Google_One" title="Google One">Google One</a>, a service where users can pay for additional storage, shared among Gmail, <a href="./Google_Drive" title="Google Drive">Google Drive</a> and <a href="./Google_Photos" title="Google Photos">Google Photos</a>, through a monthly <a href="./Subscription_business_model" title="Subscription business model">subscription</a> plan. As of 2021<a href="https://en.wikipedia.org/w/index.php?title=Gmail&amp;action=edit">[update]</a>, storage of up to 15 gigabytes is included, and paid plans are available for up to 2 <a href="./Terabyte" title="Terabyte">terabytes</a> for personal use.</p>
+<p>There are also storage limits to individual Gmail messages. Initially, one message, including all attachments, could not be larger than 25 <a href="./Megabyte" title="Megabyte">megabytes</a>. This was changed in March 2017 to allow receiving an email of up to 50 megabytes, while the limit for sending an email stayed at 25 megabytes. In order to send larger <a href="./Computer_file" title="Computer file">files</a>, users can insert files from <a href="./Google_Drive" title="Google Drive">Google Drive</a> into the message.</p>
+<h3>Interface</h3>
+<p>Main article: <a href="./Gmail_interface" title="Gmail interface">Gmail interface</a></p>
+<p>The Gmail <a href="./User_interface" title="User interface">user interface</a> initially differed from other web-mail systems with its focus on <a href="./Search_engine" title="Search engine">search</a> and <a href="./Conversation_threading" title="Conversation threading">conversation threading</a> of emails, grouping several messages between two or more people onto a single page, an approach that was later copied by its competitors. Gmail's user interface designer, <a href="./Kevin_Fox_(designer)" title="Kevin Fox (designer)">Kevin Fox</a>, intended users to feel as if they were always on one page and just changing things on that page, rather than having to navigate to other places.</p>
+<p>Gmail's interface also makes use of "labels" (<a href="./Tag_(metadata)" title="Tag (metadata)">tags</a>) that replace conventional folders and provide a more flexible method of organizing emails; filters for automatically organizing, deleting or forwarding incoming emails to other addresses; and importance markers for automatically marking messages as 'important'.</p>
+<p>In November 2011, Google began rolling out a redesign of its interface that "simplified" the look of Gmail into a more <a href="./Minimalism_(computing)" title="Minimalism (computing)">minimalist</a> design to provide a more consistent look throughout its products and services as part of an overall Google design change. Substantially redesigned elements included a streamlined conversation view, configurable density of information, new higher-quality themes, a resizable navigation bar with always-visible labels and contacts, and better search. Users were able to preview the new interface design for months prior to the official release, as well as revert to the old interface, until March 2012, when Google discontinued the ability to revert and completed the transition to the new design for all users.</p>
+<p>In May 2013, Google updated the Gmail inbox with tabs which allow the application to categorize the user's emails. The five tabs are: Primary, Social, Promotions, Updates, and Forums. In addition to customization options, the entire update can be disabled, allowing users to return to the traditional inbox structure.</p>
+<p>In April 2018, Google introduced a new web UI for Gmail. The new redesign follows Google's <a href="./Material_Design" title="Material Design">Material Design</a>, and changes in the user interface include the use of Google's <a href="./Product_Sans" title="Product Sans">Product Sans</a> font. Other updates include a <em>Confidential mode</em>, which allows the sender to set an expiration date for a sensitive message or to revoke it entirely, <a href="./Information_rights_management" title="Information rights management">integrated rights management</a> and <a href="./Multi-factor_authentication" title="Multi-factor authentication">two-factor authentication</a>.</p>
+<p>On 16 November 2020, <a href="./Google" title="Google">Google</a> announced new settings for smart features and personalization in Gmail. Under the new settings users were given control of their data in Gmail, Chat, and Meet, offering smart features like Smart Compose and Smart Reply.</p>
+<p>On 6 April 2021, Google rolled out Google Chat and Room (early access) feature to all Gmail users.</p>
+<p>On 28 July 2022, Google rolled out <a href="./Material_You" title="Material You">Material You</a> to all Gmail users.</p>
+<h3>Spam filter</h3>
+<p>Gmail's <a href="./Email_filtering" title="Email filtering">spam filtering</a> features a community-driven system: when any user marks an email as <a href="./Email_spam" title="Email spam">spam</a>, this provides information to help the system identify similar future messages for all Gmail users.</p>
+<h3>Gmail Labs</h3>
+<p>The Gmail Labs feature, introduced on June 5, 2008, allows users to test new or experimental features of Gmail. Users can enable or disable Labs features selectively and provide feedback about each of them. This allows Gmail engineers to obtain user input about new features to improve them and also to assess their popularity. Popular features, like the "Undo Send" option, often "graduate" from Gmail Labs to become a formal setting in Gmail. All Labs features are experimental and are subject to termination at any time.</p>
+<h3>Search</h3>
+<p>Gmail incorporates a search bar for searching emails. The search bar can also search contacts, files stored in <a href="./Google_Drive" title="Google Drive">Google Drive</a>, events from <a href="./Google_Calendar" title="Google Calendar">Google Calendar</a>, and <a href="./Google_Sites" title="Google Sites">Google Sites</a>.</p>
+<p>In May 2012, Gmail improved the search functionality to include auto-complete predictions from the user's emails.</p>
+<p>Gmail's search functionality does not support searching for word fragments (also known as 'substring search' or partial word search). Workarounds exist.</p>
+<h3>Language support</h3>
+<p>As of March 2015<a href="https://en.wikipedia.org/w/index.php?title=Gmail&amp;action=edit">[update]</a>, the Gmail interface supports 72 languages, including: <a href="./Arabic_language" title="Arabic language">Arabic</a>, <a href="./Basque_language" title="Basque language">Basque</a>, <a href="./Bulgarian_language" title="Bulgarian language">Bulgarian</a>, <a href="./Catalan_language" title="Catalan language">Catalan</a>, <a href="./Simplified_Chinese_character" title="Simplified Chinese character">Chinese (simplified)</a>, <a href="./Traditional_Chinese_characters" title="Traditional Chinese characters">Chinese (traditional)</a>, <a href="./Croatian_language" title="Croatian language">Croatian</a>, <a href="./Czech_language" title="Czech language">Czech</a>, <a href="./Danish_language" title="Danish language">Danish</a>, <a href="./Dutch_language" title="Dutch language">Dutch</a>, <a href="./British_English" title="British English">English (UK)</a>, <a href="./American_English" title="American English">English (US)</a>, <a href="./Estonian_language" title="Estonian language">Estonian</a>, <a href="./Finnish_language" title="Finnish language">Finnish</a>, <a href="./French_language" title="French language">French</a>, <a href="./German_language" title="German language">German</a>, <a href="./Greek_language" title="Greek language">Greek</a>, <a href="./Gujarati_language" title="Gujarati language">Gujarati</a>, <a href="./Hebrew_language" title="Hebrew language">Hebrew</a>, <a href="./Hindi_language" title="Hindi language">Hindi</a>, <a href="./Hungarian_language" title="Hungarian language">Hungarian</a>, <a href="./Icelandic_language" title="Icelandic language">Icelandic</a>, <a href="./Indonesian_language" title="Indonesian language">Indonesian</a>, <a href="./Italian_language" title="Italian language">Italian</a>, <a href="./Japanese_language" title="Japanese language">Japanese</a>, <a href="./Kannada_language" title="Kannada language">Kannada</a>, <a href="./Korean_language" title="Korean language">Korean</a>, <a href="./Latvian_language" title="Latvian language">Latvian</a>, <a href="./Lithuanian_language" title="Lithuanian language">Lithuanian</a>, <a href="./Malay_language" title="Malay language">Malay</a>, <a href="./Malayalam_language" title="Malayalam language">Malayalam</a>, <a href="./Marathi_language" title="Marathi language">Marathi</a>, <a href="./Bokmål" title="Bokmål">Norwegian (Bokmål)</a>, <a href="./Odia_language" title="Odia language">Odia</a>, <a href="./Persian_language" title="Persian language">Persian</a>, <a href="./Polish_language" title="Polish language">Polish</a>, <a href="./Punjabi_language" title="Punjabi language">Punjabi</a>, <a href="./Brazilian_Portuguese" title="Brazilian Portuguese">Portuguese (Brazil)</a>, <a href="./Portuguese_language" title="Portuguese language">Portuguese (Portugal)</a>, <a href="./Romanian_language" title="Romanian language">Romanian</a>, <a href="./Russian_language" title="Russian language">Russian</a>, <a href="./Serbian_language" title="Serbian language">Serbian</a>, <a href="./Sinhala_language" title="Sinhala language">Sinhala</a>, <a href="./Slovak_language" title="Slovak language">Slovak</a>, <a href="./Slovene_language" title="Slovene language">Slovenian</a>, <a href="./Spanish_language" title="Spanish language">Spanish</a>, <a href="./Swedish_language" title="Swedish language">Swedish</a>, <a href="./Filipino_language" title="Filipino language">Tagalog (Filipino)</a>, <a href="./Tamil_language" title="Tamil language">Tamil</a>, <a href="./Telugu_language" title="Telugu language">Telugu</a>, <a href="./Thai_language" title="Thai language">Thai</a>, <a href="./Turkish_language" title="Turkish language">Turkish</a>, <a href="./Ukrainian_language" title="Ukrainian language">Ukrainian</a>, <a href="./Urdu_language" title="Urdu language">Urdu</a>, <a href="./Vietnamese_language" title="Vietnamese language">Vietnamese</a>, <a href="./Welsh_language" title="Welsh language">Welsh</a> and <a href="./Zulu_language" title="Zulu language">Zulu</a>.</p>
+<h3>Automated error messages</h3>
+<p>If you encounter an email from Mail Delivery Subsystem, it indicates that you encountered an error when trying to email someone but it is unsuccess full. This can be because of an invalid email address, timed out email, full inbox or whatever reason.</p>
+<h4>Language input styles</h4>
+<p>In October 2012, Google added over 100 virtual keyboards, <a href="./Transliteration" title="Transliteration">transliterations</a>, and <a href="./Input_method" title="Input method">input method</a> editors to Gmail, enabling users different types of input styles for different languages in an effort to help users write in languages that are not "limited by the language of your keyboard."</p>
+<p>In October 2013, Google added handwriting input support to Gmail.</p>
+<p>In August 2014, Gmail became the first major email provider to let users send and receive emails from addresses with accent marks and letters from outside the <a href="./Latin_alphabet" title="Latin alphabet">Latin alphabet</a>.</p>
+<h2>Platforms</h2>
+<h3>Web browsers</h3>
+<p>The modern AJAX version is officially supported in the current and previous major releases of <a href="./Google_Chrome" title="Google Chrome">Google Chrome</a>, <a href="./Firefox" title="Firefox">Firefox</a>, <a href="./Microsoft_Edge" title="Microsoft Edge">Microsoft Edge</a> and <a href="./Safari_(web_browser)" title="Safari (web browser)">Safari</a> web browsers on a rolling basis.</p>
+<p>Gmail's "basic HTML" version works on almost all browsers. This version of Gmail has been discontinued from January 2024.</p>
+<p>In August 2011, Google introduced Gmail Offline, an <a href="./HTML5" title="HTML5">HTML5</a>-powered app for providing access to the service while offline. Gmail Offline runs on the <a href="./Google_Chrome" title="Google Chrome">Google Chrome</a> browser and can be downloaded from the <a href="./Chrome_Web_Store" title="Chrome Web Store">Chrome Web Store</a>.</p>
+<p>In addition to the native apps on iOS and Android, users can access Gmail through the web browser on a mobile device.</p>
+<h3>Mobile</h3>
+<p>Gmail has native applications for <a href="./IOS" title="IOS">iOS</a> devices (including <a href="./IPhone" title="IPhone">iPhone</a>, <a href="./IPad" title="IPad">iPad</a>, and <a href="./IPod_Touch" title="IPod Touch">iPod Touch</a>) and for <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> devices.</p>
+<p>In November 2014, Google introduced functionality in the Gmail Android app that enabled sending and receiving emails from non-Gmail addresses (such as <a href="./Yahoo!_Mail" title="Yahoo! Mail">Yahoo! Mail</a> and <a href="./Outlook.com" title="Outlook.com">Outlook.com</a>) through POP or IMAP.</p>
+<p>In November 2016, Google redesigned the Gmail app for the iOS platform, bringing the first complete visual overhaul in "nearly four years". The update added much more use of colors, sleeker transitions, and the addition of several "highly-requested" features, including Undo Send, faster search with instant results and spelling suggestions, and Swipe to Archive/Delete.</p>
+<p>In May 2017, Google updated Gmail on Android to feature protection from <a href="./Phishing" title="Phishing">phishing</a> attacks. Media outlets noticed that the new protection was announced amid a <a href="./Google_Docs#2017_phishing_incident" title="Google Docs">widespread phishing attack on a combination of Gmail and Google's Docs document service</a> that occurred on the same day.</p>
+<p>Later in May, Google announced the addition of "Smart Reply" to Gmail on Android and iOS. "Smart Reply", a feature originally launched for Google's <a href="./Inbox_by_Gmail" title="Inbox by Gmail">Inbox by Gmail</a> service, scans a message for information and uses <a href="./Machine_intelligence" title="Machine intelligence">machine intelligence</a> to offer three responses the user can optionally edit and send. The feature is limited to the English language at launch, with additional support for Spanish, followed by other languages arriving later.</p>
+<p>Inbox by Gmail, another app from the Gmail team, was also available for iOS and Android devices. It was discontinued in April 2019.</p>
+<p>Third-party programs can be used to access Gmail, using the <a href="./Post_Office_Protocol" title="Post Office Protocol">POP</a> or <a href="./Internet_Message_Access_Protocol" title="Internet Message Access Protocol">IMAP</a> protocols. In 2019, <a href="./Google" title="Google">Google</a> rolled out dark mode for its mobile apps in <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> and <a href="./IOS" title="IOS">iOS</a>.</p>
+<h2>Inbox by Gmail</h2>
+<p>Main article: <a href="./Inbox_by_Gmail" title="Inbox by Gmail">Inbox by Gmail</a></p>
+<p>In October 2014, Google introduced <strong>Inbox by Gmail</strong> on an invitation-only basis. Developed by the Gmail team, but serving as a "completely different type of inbox", the service is made to help users deal with the challenges of an active email. Citing issues such as distractions, difficulty in finding important information buried in messages, and receiving more emails than ever, Inbox by Gmail has several important differences from Gmail, including bundles that automatically sort emails of the same topic together, highlights that surface key information from messages, and reminders, assists, and snooze, that help the user in handling incoming emails at appropriate times.</p>
+<p>Inbox by Gmail became publicly available in May 2015. In September 2018, Google announced it would end the service at the end of March 2019, most of its key features having been incorporated into the standard Gmail service. The service was discontinued on April 2, 2019.</p>
+<h2>Integration with Google products</h2>
+<p>In August 2010, Google released a plugin that provides integrated telephone service within Gmail's <a href="./Google_Talk" title="Google Talk">Google Chat</a> interface. The feature initially lacked an official name, with Google referring to it as both "Google Voice in Gmail chat" and "Call Phones in Gmail". The service logged over one million calls in 24 hours. In March 2014, Google Voice was discontinued, and replaced with functionality from <a href="./Google_Hangouts" title="Google Hangouts">Google Hangouts</a>, another communication platform from Google.</p>
+<p>On February 9, 2010, Google commenced its new social networking tool, <a href="./Google_Buzz" title="Google Buzz">Google Buzz</a>, which integrated with Gmail, allowing users to share links and media, as well as status updates. Google Buzz was discontinued in October 2011, replaced with new functionality in <a href="./Google+" title="Google+">Google+</a>, Google's then-new social networking platform.</p>
+<p>Gmail was integrated with Google+ in December 2011, as part of an effort to have all Google information across one Google account, with a centralized Google+ user profile. Backlash from the move caused Google to step back and remove the requirement of a Google+ user account, keeping only a private Google account without a public-facing profile, starting in July 2015.</p>
+<p>In May 2013, Google announced the integration between <a href="./Google_Wallet" title="Google Wallet">Google Wallet</a> and Gmail, which would allow Gmail users to send money as email attachments. Although the sender must use a Gmail account, the recipient does not need to be using a Gmail address. The feature has no transaction fees, but there are limits to the amount of money that can be sent. Initially only available on the web, the feature was expanded to the Android app in March 2017, for people living in the United States.</p>
+<p>In September 2016, Google released <strong>Google Trips</strong>, an app that, based on information from a user's Gmail messages, automatically generates travel cards. A travel card contains itinerary details, such as plane tickets and car rentals, and recommends activities, food and drinks, and attractions based on location, time, and interests. The app also has offline functionality. In April 2017, Google Trips received an update adding several significant features. The app now also scans Gmail for bus and train tickets, and allows users to manually input trip reservations. Users can send trip details to other users' email, and if the recipient also has Google Trips, the information will be automatically available in their apps as well.</p>
+<h2>Security</h2>
+<h3>History</h3>
+<p>Google has supported the secure <a href="./HTTPS" title="HTTPS">HTTPS</a> since the day it launched. In the beginning, it was only default on the login page, a reason that Google engineer Ariel Rideout stated was because HTTPS made "your mail slower". However, users could manually switch to secure HTTPS mode inside the inbox after logging in. In July 2008, Google simplified the ability to manually enable secure mode, with a toggle in the settings menu.</p>
+<p>In 2007, Google fixed a <a href="./Cross-site_scripting" title="Cross-site scripting">cross-site scripting</a> security issue that could let attackers collect information from Gmail contact lists.</p>
+<p>In January 2010, Google began rolling out HTTPS as the default for all users.</p>
+<p>In June 2012, a new security feature was introduced to protect users from state-sponsored attacks. A banner will appear at the top of the page that warns users of an unauthorized account compromise.</p>
+<p>In March 2014, Google announced that an encrypted HTTPS connection would be used for the sending and receiving of all Gmail emails, and "every single email message you send or receive —100% of them —is encrypted while moving internally" through the company's systems.</p>
+<p>Whenever possible, Gmail uses <a href="./Transport_layer_security" title="Transport layer security">transport layer security</a> (TLS) to automatically encrypt emails sent and received. On the web and on Android devices, users can check if a message is encrypted by checking if the message has a closed or open red padlock.</p>
+<p>Gmail automatically scans all incoming and outgoing e-mails for viruses in email attachments. For security reasons, some file types, including executables, are not allowed to be sent in emails.</p>
+<p>At the end of May 2017, Google announced that it had applied <a href="./Machine_learning" title="Machine learning">machine learning</a> technology to identify emails with phishing and spam, having a 99.9% detection accuracy. The company also announced that Gmail would selectively delay some messages, approximately 0.05% of all, to perform more detailed analysis and aggregate details to improve its algorithms.</p>
+<p>In November 2020, Google started adding click-time link protection by redirecting clicked links to Google in official Gmail clients.</p>
+<h3>Third-party encryption in transit</h3>
+<p>In Google's Transparency Report under the Safer email section, it provides information on the percentage of emails encrypted in transit between Gmail and third-party email providers.</p>
+<h3>Two-step verification</h3>
+<p>Gmail supports <a href="./Multi-factor_authentication" title="Multi-factor authentication">two-step verification</a>, an optional additional measure for users to protect their accounts when logging in.</p>
+<p>Once 2-Step Verification (2SV) is enabled, logging in from a new device requires an additional verification method, even after the username and password have been entered. These methods, which verify the user's identity, can include responding to a push notification on the user's Android/iOS device, entering a code generated by the <a href="./Google_Authenticator" title="Google Authenticator">Google Authenticator</a> smartphone app, or inserting a physical security key into the computer's USB port."</p>
+<p>Using a security key for two-step verification was made available as an option in October 2014.</p>
+<h3>24-hour lockdowns</h3>
+<p>If an algorithm detects what Google calls "abnormal usage that may indicate that your account has been compromised", the account can be automatically locked down for between one minute and 24 hours, depending on the type of activity detected. Listed reasons for a lock-down include:</p>
+<ul>
+<li>Receiving, deleting, or downloading large amounts of mail from POP/IMAP client within a short period of time.</li>
+<li>Sending a large number of messages which fail to deliver.</li>
+<li>Using software which automatically logs into one's account.</li>
+<li>Leaving multiple instances of Gmail open.</li>
+</ul>
+<h3>Anti-child pornography policy</h3>
+<p>Google combats <a href="./Child_pornography" title="Child pornography">child pornography</a> through Gmail's servers in conjunction with the <a href="./National_Center_for_Missing_&amp;_Exploited_Children" title="National Center for Missing &amp; Exploited Children">National Center for Missing &amp; Exploited Children</a> (NCMEC) to find children suffering abuse around the world. In collaboration with the NCMEC, Google creates a database of child pornography pictures. Each one of the images is given a unique numerical number known as a <a href="./Checksum" title="Checksum">hash</a>. Google then scans Gmail looking for the unique hashes. When suspicious images are located, Google reports the incident to the appropriate national authorities.</p>
+<h2>History</h2>
+<p>Main article: <a href="./History_of_Gmail" title="History of Gmail">History of Gmail</a></p>
+<p>The idea for Gmail was developed by <a href="./Paul_Buchheit" title="Paul Buchheit">Paul Buchheit</a> several years before it was announced to the public. The project was known by the code name <em>Caribou</em>. During early development, the project was kept secret from most of Google's own engineers. This changed once the project improved, and by early 2004, most employees were using it to access the company's internal email system.</p>
+<p>Gmail was announced to the public by Google on April 1, 2004, as a limited <a href="./Software_release_life_cycle" title="Software release life cycle">beta release</a>.</p>
+<p>In November 2006, Google began offering a <a href="./Java_(programming_language)" title="Java (programming language)">Java</a>-based application of Gmail for mobile phones.</p>
+<p>In October 2007, Google began a process of rewriting parts of the code that Gmail used, which would make the service faster and add new features, such as custom keyboard shortcuts and the ability to bookmark specific messages and email searches. Gmail also added IMAP support in October 2007. An update around January 2008 changed elements of Gmail's use of <a href="./JavaScript" title="JavaScript">JavaScript</a>, and resulted in the failure of a third-party script some users had been using. Google acknowledged the issue and helped users with workarounds.</p>
+<p>Gmail exited beta status on July 7, 2009.</p>
+<p>Prior to December 2013, users had to approve to see images in emails, which acted as a security measure. This changed in December 2013, when Google, citing improved image handling, enabled images to be visible without user approval. Images are now routed through Google's secure proxy servers rather than the original external host servers. <em>MarketingLand</em> noted that the change to image handling means email marketers will no longer be able to track the recipient's <a href="./IP_address" title="IP address">IP address</a> or information about what kind of device the recipient is using. However, <em><a href="./Wired_(website)" title="Wired (website)">Wired</a></em> stated that the new change means senders can track the time when an email is first opened, as the initial loading of the images requires the system to make a "callback" to the original server.</p>
+<h3>Growth</h3>
+<p>In June 2012, Google announced that Gmail had 425 million active users globally. In May 2015, Google announced that Gmail had 900 million active users, 75% of whom were using the service on mobile devices. In February 2016, Google announced that Gmail had passed 1 billion active users. In July 2017, Google announced that Gmail had passed 1.2 billion active users.</p>
+<p>In the business sector, <em><a href="./Quartz_(publication)" title="Quartz (publication)">Quartz</a></em> reported in August 2014 that, among 150 companies checked in three major categories in the United States (<a href="./Fortune_500" title="Fortune 500">Fortune 50</a> largest companies, mid-size tech and media companies, and <a href="./Startup_company" title="Startup company">startup companies</a> from the last <a href="./Y_Combinator" title="Y Combinator">Y Combinator</a> incubator class), only one Fortune 50 company used Gmail – Google itself – while 60% of mid-sized companies and 92% of startup companies were using Gmail.</p>
+<p>In May 2014, Gmail became the first app on the <a href="./Google_Play" title="Google Play">Google Play</a> Store to hit one billion installations on <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> devices.</p>
+<h3>Gamil Design company and misspellings</h3>
+<p>Before the introduction of Gmail, the website of product and graphic design from Gamil Design in <a href="./Raleigh,_North_Carolina" title="Raleigh, North Carolina">Raleigh, North Carolina</a>, received 3,000 hits per month. In May 2004, a Google engineer who had accidentally gone to the Gamil site a number of times contacted the company and asked if the site had experienced an increase in traffic. In fact, the site's activity had doubled. Two years later, with 600,000 hits per month, the <a href="./Internet_service_provider" title="Internet service provider">Internet service provider</a> wanted to charge more, and Gamil posted the message on its site "You may have arrived here by misspelling Gmail. We understand. Typing fast is not our strongest skill. But since you've typed your way here, let's share."</p>
+<h2>Google Workspace</h2>
+<p>Main article: <a href="./Google_Workspace" title="Google Workspace">Google Workspace</a></p>
+<p>As part of Google Workspace (formerly <em>G Suite</em>), Google's business-focused offering, Gmail comes with additional features, including:</p>
+<ul>
+<li>Email addresses with the customer's domain name (@yourcompany.com)</li>
+<li>99.9% guaranteed uptime with zero scheduled downtime for maintenance</li>
+<li>Either 30 GB or unlimited storage shared with Google Drive, depending on the plan</li>
+<li>24/7 phone and email support</li>
+<li>Synchronization compatibility with <a href="./Microsoft_Outlook" title="Microsoft Outlook">Microsoft Outlook</a> and other email providers</li>
+<li>Support for add-ons that integrate third-party apps purchased from the Google Workspace Marketplace with Gmail</li>
+</ul>
+<h2>Criticism</h2>
+<p>See also: <a href="./Criticism_of_Google" title="Criticism of Google">Criticism of Google</a></p>
+<h3>Privacy</h3>
+<p>Main article: <a href="./Privacy_concerns_with_Google" title="Privacy concerns with Google">Privacy concerns with Google</a></p>
+<p>Google has one <a href="./Privacy_policy" title="Privacy policy">privacy policy</a> that covers all of its services. Google claims that they "will not <a href="./Ad_targeting" title="Ad targeting">target ads</a> based on <a href="./Sensitive_information" title="Sensitive information">sensitive information</a>, such as race, religion, sexual orientation, health, or sensitive financial categories."</p>
+<h3>Automated scanning of email content</h3>
+<p>Google's mail servers automatically scan emails for multiple purposes, including <a href="./Spam_filter" title="Spam filter">filtering spam</a> and malware, and (until 2017) adding context-sensitive advertisements next to emails.</p>
+<p>Privacy advocates raised concerns about this practice; concerns included that allowing email content to be read by a machine (as opposed to a person) can allow Google to keep unlimited amounts of information forever; the automated background scanning of data raises the risk that the <a href="./Expectation_of_privacy" title="Expectation of privacy">expectation of privacy</a> in email usage will be reduced or eroded; information collected from emails could be retained by Google for years after its current relevancy to build complete profiles on users; emails sent by users from other email providers get scanned despite never having agreed to Google's privacy policy or terms of service; Google can change its privacy policy unilaterally, and for minor changes to the policy it can do so without informing users; in court cases, governments and organizations can potentially find it easier to legally monitor email communications; at any time, Google can change its current company policies to allow combining information from emails with data gathered from use of its other services; and any internal security problem on Google's systems can potentially expose many – or all – of its users.</p>
+<p>In 2004, thirty-one privacy and civil liberties organizations wrote a letter calling upon Google to suspend its Gmail service until the privacy issues were adequately addressed. The letter also called upon Google to clarify its written information policies regarding data retention and data sharing among its business units. The organizations also voiced their concerns about Google's plan to scan the text of all incoming messages for the purposes of ad placement, noting that the scanning of confidential email for inserting third-party ad content violates the implicit trust of an email service provider.</p>
+<p>On June 23, 2017, Google announced that, later in 2017, it would phase out the scanning of email content to generate <a href="./Contextual_advertising" title="Contextual advertising">contextual advertising</a>, relying on <a href="./Personal_data" title="Personal data">personal data</a> collected through other Google services instead. The company stated that this change was meant to clarify its practices and quell concerns among enterprise <a href="./G_Suite" title="G Suite">G Suite</a> (now Google Workspace) customers who felt an ambiguous distinction between the free consumer and paid professional variants, the latter being advertising-free.</p>
+<h3>Lawsuits</h3>
+<p>In March 2011, a former Gmail user in Texas sued Google, claiming that its Gmail service violates users' privacy by scanning e-mail messages to serve relevant ads.</p>
+<p>In July 2012, some California residents filed two class action lawsuits against Google and <a href="./Yahoo!" title="Yahoo!">Yahoo!</a>, claiming that they illegally intercept emails sent by individual non-Gmail or non-Yahoo! email users to Gmail and Yahoo! recipients without the senders' knowledge, consent or permission. A motion filed by Google's attorneys in the case concedes that Gmail users have "no expectation of privacy".</p>
+<p>A court filing uncovered by advocacy group Consumer Watchdog in August 2013 revealed that Google stated in a court filing that no "reasonable expectation" exists among Gmail users in regard to the assured confidentiality of their emails. In response to a lawsuit filed in May 2013, Google explained:</p>
+<blockquote>
+<p>"All users of email must necessarily expect that their emails will be subject to automated processing. Just as a sender of a letter to a business colleague cannot be surprised that the recipient's assistant opens the letter, people who use web-based email today cannot be surprised if their communications are processed by the recipient's ECS [electronic communications service] provider in the course of delivery.</p>
+</blockquote>
+<p>A Google spokesperson stated to the media on August 15, 2013, that the corporation takes the privacy and security concerns of Gmail users "very seriously".</p>
+<h3>April 2014 Terms of service update</h3>
+<p>Google updated its terms of service for Gmail in April 2014 to create full transparency for its users in regard to the scanning of email content. The relevant revision states: "Our automated systems analyze your content (including emails) to provide you personally relevant product features, such as customized search results, tailored advertising, and spam and malware detection. This analysis occurs as the content is sent, received, and when it is stored." A Google spokesperson explained that the corporation wishes for its policies "to be simple and easy for users to understand."</p>
+<p>In response to the update, Jim Killock, executive director of the Open Rights Group, stated: "The really dangerous things that Google is doing are things like the information held in Analytics, cookies in advertising and the profiling that it is able to do on individual accounts".</p>
+<h3>Microsoft ad campaign against Google</h3>
+<p>In 2013, Microsoft launched an advertising campaign to attack Google for scanning email messages, arguing that most consumers are not aware that Google monitors their personal messages to deliver targeted ads. Microsoft claims that its email service Outlook does not scan the contents of messages and a Microsoft spokesperson called the issue of privacy "Google's kryptonite". In response, Google stated; "We work hard to make sure that ads are safe, unobtrusive and relevant ... No humans read your e-mail or Google Account information in order to show you advertisements or related information. An automated algorithm — similar to that used for features like Priority Inbox or spam filtering — determines which ads are shown." <em><a href="./The_New_York_Times" title="The New York Times">The New York Times</a></em> cites "Google supporters", who say that "Microsoft's ads are distasteful, the last resort of a company that has been unsuccessful at competing against Google on the more noble battleground of products".</p>
+<h3>Other privacy issues</h3>
+<h4>2010 attack from China</h4>
+<p>In January 2010, Google detected a "highly sophisticated" cyberattack on its infrastructure that originated from China. The targets of the attack were Chinese human rights activists, but Google discovered that accounts belonging to European, American and Chinese activists for <a href="./Human_rights_in_China" title="Human rights in China">human rights in China</a> had been "routinely accessed by third parties". Additionally, Google stated that their investigation revealed that "at least" 20 other large companies from a "wide range of businesses" - including the Internet, finance, technology, media and chemical sectors – had been similarly targeted. Google was in the process of notifying those companies and it had also worked with relevant US authorities. In light of the attacks, Google enhanced the security and architecture of its infrastructure, and advised individual users to install anti-virus and anti-spyware on their computers, update their operating systems and web browsers, and be cautious when clicking on Internet links or when sharing personal information in instant messages and emails.</p>
+<h4>Social network integration</h4>
+<p>The February 2010 launch of <a href="./Google_Buzz" title="Google Buzz">Google Buzz</a>, a now defunct social network linked to Gmail, immediately drew criticism for publicly sharing details of users' contacts unless the default settings were changed. A new Gmail feature was launched in January 2014, whereby users could email people with Google+ accounts even though they do not know the email address of the recipient. <a href="./Marc_Rotenberg" title="Marc Rotenberg">Marc Rotenberg</a>, President of the <a href="./Electronic_Privacy_Information_Center" title="Electronic Privacy Information Center">Electronic Privacy Information Center</a>, called the feature "troubling", and compared it to the initial privacy flaw of Google Buzz's launch.</p>
+<h4>Update to DoubleClick privacy policy</h4>
+<p>In June 2016, <a href="./Julia_Angwin" title="Julia Angwin">Julia Angwin</a> of <a href="./ProPublica" title="ProPublica">ProPublica</a> wrote about Google's updated privacy policy, which deleted a clause that had stated Google would not combine DoubleClick web browsing cookie information with <a href="./Personally_identifiable_information" title="Personally identifiable information">personally identifiable information</a> from its other services. This change has allowed Google to merge users' personally identifiable information from different Google services to create one unified ad profile for each user. After publication of the article, Google reached out to ProPublica to say that the merge would not include Gmail keywords in ad targeting.</p>
+<h3>Outages</h3>
+<p>Gmail suffered at least seven outages in 2009, causing doubts about the reliability of its service. It suffered a new outage on February 28, 2011, in which a bug caused Gmail accounts to seem empty. Google stated in a blog post that "email was never lost" and restoration was in progress. Other outages occurred on April 17, 2012, September 24, 2013, January 24, 2014, January 29, 2019 and August 20, 2020.</p>
+<p>Google has stated that "Gmail remains more than 99.9% available to all users, and we're committed to keeping events like [the 2009 outage] notable for their rarity."</p>
+<h3>"On behalf of" tag</h3>
+<p>In May 2009, <a href="./Farhad_Manjoo" title="Farhad Manjoo">Farhad Manjoo</a> wrote on <em><a href="./The_New_York_Times" title="The New York Times">The New York Times</a></em> blog about Gmail's "on behalf of" tag. Manjoo explained: "The problems <em>[sic]</em> is, when you try to send outbound mail from your Gmail universal inbox, Gmail adds a tag telling your recipients that you're actually using Gmail and not your office e-mail. If your recipient is using <a href="./Microsoft_Outlook" title="Microsoft Outlook">Microsoft Outlook</a>, he'll see a message like, 'From youroffice@domain.com on behalf of yourgmail@gmail.com.'" Manjoo further wrote that "Google explains that it adds the tag in order to prevent your e-mail from being considered spam by your recipient; the theory is that if the e-mail is honest about its origins, it shouldn't arouse suspicion by spam checking software". The following July, Google announced a new option that would remove the "On behalf of" tag, by sending the email from the server of the other email address instead of using Gmail's servers.</p>
+<h2>See also</h2>
+<ul>
+<li>
+<p><a href="./File:Crystal_Clear_app_linneighborhood.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Crystal_Clear_app_linneighborhood.svg/40px-Crystal_Clear_app_linneighborhood.svg.png"></a><a href="./Portal:Internet" title="Portal:Internet">Internet portal</a></p>
+</li>
+<li>
+<p><a href="./Comparison_of_mail_servers" title="Comparison of mail servers">Comparison of mail servers</a></p>
+</li>
+<li><a href="./Comparison_of_webmail_providers" title="Comparison of webmail providers">Comparison of webmail providers</a></li>
+<li><a href="./GMail_Drive" title="GMail Drive">GMail Drive</a></li>
+<li><a href="./List_of_Google_products" title="List of Google products">List of Google products</a></li>
+</ul>
+<h2>Notes</h2>
+<h2>References</h2>
+<h2>External links</h2>
+<p><strong>Gmail</strong> at Wikipedia's <a href="./Wikipedia:Wikimedia_sister_projects" title="Wikipedia:Wikimedia sister projects">sister projects</a></p>
+<ul>
+<li><a href="./File:Commons-logo.svg"><img alt="Wikimedia Commons logo" src="//upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/20px-Commons-logo.svg.png"></a><a href="https://commons.wikimedia.org/wiki/Gmail" title="c:Gmail">Media</a> from Commons</li>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Wikiquote-logo.svg/40px-Wikiquote-logo.svg.png"><a href="https://en.wikiquote.org/wiki/Gmail" title="q:Gmail">Quotations</a> from Wikiquote</li>
+<li>
+<p><a href="./File:Wikibooks-logo.svg"><img alt="Wikibooks logo" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Wikibooks-logo.svg/40px-Wikibooks-logo.svg.png"></a><a href="https://en.wikibooks.org/wiki/Gmail" title="b:Gmail">Textbooks</a> from Wikibooks</p>
+</li>
+<li>
+<p><a href="https://workspace.google.com/products/gmail/">Official website</a> <a href="https://www.wikidata.org/wiki/Q9334#P856" title="Edit this at Wikidata"><img alt="Edit this at Wikidata" src="//upload.wikimedia.org/wikipedia/en/thumb/8/8a/OOjs_UI_icon_edit-ltr-progressive.svg/20px-OOjs_UI_icon_edit-ltr-progressive.svg.png"></a></p>
+</li>
+<li><a href="https://gsuite.google.com/products/gmail/">Official Website for Gmail for Work</a></li>
+<li><a href="https://m.gmail.com/">Gmail official mobile site</a> (multi-language)</li>
+<li><a href="https://www.britannica.com/topic/Gmail">Gmail</a> at britannica.com</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products" title="List of Google products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Android_(operating_system)" title="Template:Android (operating system)">v</a> - <a href="./Template_talk:Android_(operating_system)" title="Template talk:Android (operating system)">t</a> - <a href="./Special:EditPage/Template:Android_(operating_system)" title="Special:EditPage/Template:Android (operating system)">e</a>  <a href="./Android_(operating_system)" title="Android (operating system)">Android</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>- <a href="./Android_Go" title="Android Go">Android Go</a>   - <a href="./Comparison_of_Android_Go_products" title="Comparison of Android Go products">Comparison of products</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Android_software_development" title="Android software development">Software development</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Android_version_history" title="Android version history">Releases</a></td>
+<td>- <a href="./Android_Cupcake" title="Android Cupcake">Cupcake (1.5)</a> - <a href="./Android_Donut" title="Android Donut">Donut (1.6)</a> - <a href="./Android_Eclair" title="Android Eclair">Eclair (2.0–2.1)</a> - <a href="./Android_Froyo" title="Android Froyo">Froyo (2.2)</a> - <a href="./Android_Gingerbread" title="Android Gingerbread">Gingerbread (2.3)</a> - <a href="./Android_Honeycomb" title="Android Honeycomb">Honeycomb (3.x)</a> - <a href="./Android_Ice_Cream_Sandwich" title="Android Ice Cream Sandwich">Ice Cream Sandwich (4.0)</a> - <a href="./Android_Jelly_Bean" title="Android Jelly Bean">Jelly Bean (4.1–4.3)</a> - <a href="./Android_KitKat" title="Android KitKat">KitKat (4.4)</a> - <a href="./Android_Lollipop" title="Android Lollipop">Lollipop (5.x)</a> - <a href="./Android_Marshmallow" title="Android Marshmallow">Marshmallow (6.x)</a> - <a href="./Android_Nougat" title="Android Nougat">Nougat (7.x)</a> - <a href="./Android_Oreo" title="Android Oreo">Oreo (8.x)</a> - <a href="./Android_Pie" title="Android Pie">Pie (9)</a> - <a href="./Android_10" title="Android 10">10</a> - <a href="./Android_11" title="Android 11">11</a> - <a href="./Android_12" title="Android 12">12</a> - <a href="./Android_13" title="Android 13">13</a> - <a href="./Android_14" title="Android 14">14</a> - <a href="./Android_15" title="Android 15">15</a> - <a href="./Android_16" title="Android 16">16</a></td>
+</tr>
+<tr>
+<td>Derivatives</td>
+<td>- <a href="./Android_Automotive" title="Android Automotive">Android Automotive</a> - <a href="./Android_Things" title="Android Things">Android Things</a> - <a href="./Android_TV" title="Android TV">TV</a>   - <a href="./List_of_Android_TV_devices" title="List of Android TV devices">devices</a> - <a href="./Android_XR" title="Android XR">Android XR</a> - <a href="./Wear_OS" title="Wear OS">Wear OS</a></td>
+</tr>
+<tr>
+<td>Devices</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./List_of_custom_Android_distributions" title="List of custom Android distributions">Custom distributions</a></td>
+<td>- <a href="./AliOS" title="AliOS">AliOS</a> - <a href="./Android-x86" title="Android-x86">Android-x86</a>   - <a href="./Remix_OS" title="Remix OS">Remix OS</a> - <a href="./AOKP" title="AOKP">AOKP</a> - <a href="./Baidu_Yi" title="Baidu Yi">Baidu Yi</a> - <a href="./Barnes_&amp;_Noble_Nook" title="Barnes &amp; Noble Nook">Barnes &amp; Noble Nook</a> - <a href="./CalyxOS" title="CalyxOS">CalyxOS</a> - <a href="./ColorOS" title="ColorOS">ColorOS</a>   - <a href="./OxygenOS" title="OxygenOS">OxygenOS</a>   - <a href="./Realme" title="Realme">realme UI</a> - <a href="./CopperheadOS" title="CopperheadOS">CopperheadOS</a> - <a href="./EMUI" title="EMUI">EMUI</a>   - <a href="./Honor_(brand)" title="Honor (brand)">MagicOS</a> - <a href="./Fire_OS" title="Fire OS">Fire OS</a> - <a href="./Meizu#Flyme" title="Meizu">Flyme OS</a> - <a href="./GrapheneOS" title="GrapheneOS">GrapheneOS</a> - <a href="./LeWa_OS" title="LeWa OS">LeWa OS</a> - <a href="./LineageOS" title="LineageOS">LineageOS</a>   - <a href=".//e/_(operating_system)" title="/e/ (operating system)">/e/</a>   - <a href="./CrDroid" title="CrDroid">CrDroid</a>   - <a href="./CyanogenMod" title="CyanogenMod">CyanogenMod</a>   - <a href="./DivestOS" title="DivestOS">DivestOS</a>   - <a href="./IodéOS" title="IodéOS">iodéOS</a>   - <a href="./Kali_NetHunter" title="Kali NetHunter">Kali NetHunter</a> - <a href="./LiteOS" title="LiteOS">LiteOS</a> - <a href="./Meta_Horizon_OS" title="Meta Horizon OS">Meta Horizon OS</a> - <a href="./MicroG" title="MicroG">MicroG</a> - <a href="./Nokia_X_family#Nokia_X_software_platform" title="Nokia X family">Nokia X software platform</a> - <a href="./OmniROM" title="OmniROM">OmniROM</a> - <a href="./OPhone" title="OPhone">OPhone</a> - <a href="./PixelExperience" title="PixelExperience">PixelExperience</a> - <a href="./Google_Pixel#Pixel_UI_(Pixel_Launcher)" title="Google Pixel">Pixel UI</a> - <a href="./Replicant_(operating_system)" title="Replicant (operating system)">Replicant</a> - <a href="./Resurrection_Remix_OS" title="Resurrection Remix OS">Resurrection Remix OS</a> - <a href="./SlimRoms" title="SlimRoms">SlimRoms</a> - <a href="./TCL_Technology" title="TCL Technology">TCL UI</a> - <a href="./Ubuntu_Touch#Ubuntu_for_Android" title="Ubuntu Touch">Ubuntu for Android</a> - <a href="./Xiaomi_HyperOS" title="Xiaomi HyperOS">Xiaomi HyperOS</a>   - <a href="./MIUI" title="MIUI">MIUI</a> - <a href="./XobotOS" title="XobotOS">XobotOS</a> - <a href="./Lenovo_smartphones" title="Lenovo smartphones">ZUI</a></td>
+</tr>
+<tr>
+<td>Booting and recovery</td>
+<td>- <a href="./Booting_process_of_Android_devices" title="Booting process of Android devices">Booting process</a> - <a href="./Android_recovery_mode" title="Android recovery mode">Recovery mode</a>   - <a href="./TWRP_(software)" title="TWRP (software)">TWRP</a>   - <a href="./ClockworkMod" title="ClockworkMod">ClockworkMod</a> - <a href="./Fastboot" title="Fastboot">Fastboot</a></td>
+</tr>
+<tr>
+<td><a href="./API" title="API">APIs</a></td>
+<td>- <a href="./Google_Maps" title="Google Maps">Google Maps</a> - <a href="./Google_Play_Services" title="Google Play Services">Google Play Services</a>   - <a href="./SafetyNet" title="SafetyNet">SafetyNet/Play Integrity API</a> - <a href="./Google_Search" title="Google Search">Google Search</a></td>
+</tr>
+<tr>
+<td>Alternative <a href="./User_interface" title="User interface">UIs</a></td>
+<td>- <a href="./Cherry_OS_(operating_system)" title="Cherry OS (operating system)">Cherry OS</a> - <a href="./ColorOS" title="ColorOS">ColorOS</a> - <a href="./EMUI" title="EMUI">EMUI</a> - <a href="./Funtouch_OS" title="Funtouch OS">Funtouch OS</a> - <a href="./Meizu#Flyme" title="Meizu">Flyme OS</a> - <a href="./HiOS" title="HiOS">HiOS</a> - <a href="./Hive_UI" title="Hive UI">Hive UI (XOLO Hive)</a> - <a href="./HTC_Sense" title="HTC Sense">HTC Sense</a> - <a href="./LG_UX" title="LG UX">LG UX</a>   - <a href="./Optimus_UI" title="Optimus UI">Optimus UI</a> - <a href="./Motoblur" title="Motoblur">Motoblur</a> - <a href="./Nothing_OS" title="Nothing OS">Nothing OS</a> - <a href="./One_UI" title="One UI">One UI</a>   - <a href="./Samsung_Experience" title="Samsung Experience">Experience</a>   - <a href="./TouchWiz" title="TouchWiz">TouchWiz</a> - <a href="./Origin_OS" title="Origin OS">Origin OS</a> - <a href="./OxygenOS" title="OxygenOS">OxygenOS</a> - <a href="./Google_Pixel#Pixel_UI_(Pixel_Launcher)" title="Google Pixel">Pixel UI</a> - <a href="./XOS_(operating_system)" title="XOS (operating system)">XOS</a> - Xperia UI - <a href="./Asus_ZenFone#ZenUI_interface" title="Asus ZenFone">ZenUI</a></td>
+</tr>
+<tr>
+<td><a href="./Rooting_(Android)" title="Rooting (Android)">Rooting</a></td>
+<td>- <a href="./SuperSU" title="SuperSU">SuperSU</a> - <a href="./Magisk_(software)" title="Magisk (software)">Magisk</a> - <a href="./Kingo_Root" title="Kingo Root">Kingo Root</a> - <a href="./Kernel_Assisted_Superuser" title="Kernel Assisted Superuser">Kernel Assisted Superuser</a></td>
+</tr>
+<tr>
+<td>Lists</td>
+<td>- <a href="./List_of_custom_Android_distributions" title="List of custom Android distributions">Custom distributions</a> - <a href="./List_of_features_in_Android" title="List of features in Android">Features</a> - <a href="./List_of_free_and_open-source_Android_applications" title="List of free and open-source Android applications">Free and open-source applications</a> - <a href="./List_of_Android_apps_by_Google" title="List of Android apps by Google">Google apps</a> - <a href="./List_of_Android_launchers" title="List of Android launchers">Launchers</a></td>
+</tr>
+<tr>
+<td>Related topics</td>
+<td>- <a href="./Index_of_Android_OS_articles" title="Index of Android OS articles">Index of articles</a> - <a href="./Androidland" title="Androidland">Androidland</a> - <a href="./Chromecast" title="Chromecast">Chromecast</a> - <a href="./Google" title="Google">Google</a> - <a href="./Comparison_of_Java_and_Android_API" title="Comparison of Java and Android API">Java vs. Android API</a> - <a href="./Android_lawn_statues" title="Android lawn statues">Lawn statues</a> - <a href="./BlueStacks" title="BlueStacks">BlueStacks</a> - Legal issues   - <em><a href="./Google_LLC_v._Oracle_America,_Inc." title="Google LLC v. Oracle America, Inc.">Google v. Oracle</a></em>   - <a href="./Smartphone_patent_wars" title="Smartphone patent wars">smartphone patent wars</a> - <a href="./Google_App_Runtime_for_Chrome" title="Google App Runtime for Chrome">Android Runtime for Chrome</a></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Android_(operating_system)_development_software" title="Category:Android (operating system) development software">Category:Android development</a> - <a href="./Category:Mobile_telecommunications" title="Category:Mobile telecommunications">Category:Mobile telecommunications</a> - <a href="./Portal:Software" title="Portal:Software">Software portal</a> - <a href="./Portal:Telecommunication" title="Portal:Telecommunication">Telecommunication portal</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><a href="./Help:Authority_control" title="Help:Authority control">Authority control databases</a> <a href="https://www.wikidata.org/wiki/Q9334#identifiers" title="Edit this at Wikidata">Edit this at Wikidata</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>International</td>
+<td>- <a href="https://viaf.org/viaf/180389477">VIAF</a> - <a href="https://d-nb.info/gnd/7532053-8">GND</a></td>
+</tr>
+<tr>
+<td>National</td>
+<td>- <a href="https://id.loc.gov/authorities/n2005076485">United States</a> - <a href="https://www.nli.org.il/en/authorities/987007381985205171">Israel</a></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

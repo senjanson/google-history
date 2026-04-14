@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Google Photos</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link active" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Google Photos</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Google_Photos<br>
+Category: products_consumer<br>
+Depth: 1</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Google Photos is a photo sharing and storage service developed by Google. It was announced in May 2015 and spun off from Google+, the company's former social network.</p>
+<h2>Images</h2>
+<p><img alt="960px-Google_Photos__282025_29.svg" src="../images/960px-Google_Photos__282025_29.svg.png"><br>
+<img alt="330px-Google_Photos__282025_29.svg" src="../images/330px-Google_Photos__282025_29.svg.png"><br>
+<img alt="250px-Google_Photos__282025_29.svg" src="../images/250px-Google_Photos__282025_29.svg.png"><br>
+<img alt="250px-Screenshot_in_the_Album_section_of_Google_Photos" src="../images/250px-Screenshot_in_the_Album_section_of_Google_Photos.jpg"><br>
+<img alt="250px-Google_Photos_icon__282015-2020_29.svg" src="../images/250px-Google_Photos_icon__282015-2020_29.svg.png"></p>
+<h2>Full Article</h2>
+<p>Photo storage service</p>
+<p>Not to be confused with <a href="./Google_Images" title="Google Images">Google Images</a>.</p>
+<p><strong>Google Photos</strong> is a <a href="./Photo_sharing" title="Photo sharing">photo sharing</a> and <a href="./Cloud_storage" title="Cloud storage">storage service</a> developed by <a href="./Google" title="Google">Google</a>. It was announced in May 2015 and spun off from <a href="./Google+" title="Google+">Google+</a>, the company's former <a href="./Social_networking_service" title="Social networking service">social network</a>.</p>
+<p>Google Photos shares the 15 gigabytes of free storage space with other Google services, such as <a href="./Google_Drive" title="Google Drive">Google Drive</a> and <a href="./Gmail" title="Gmail">Gmail</a>. Users can upload their photos and videos in either quality setting, original or compressed (photos and videos up to 16 <a href="./Megapixel" title="Megapixel">megapixels</a> and 1080p <a href="./Display_resolution" title="Display resolution">resolution</a>, respectively), that will count towards the free storage tier (compressed items uploaded before June 1, 2021, along with items uploaded via <a href="./Google_Pixel" title="Google Pixel">Pixel</a> phones released before that date, are unlimited). Users can expand their storage through paid <a href="./Google_One" title="Google One">Google One</a> subscriptions.</p>
+<p>The service automatically analyzes photos, identifying various visual features and subjects. Users can search for anything in photos, with the service returning results from three major categories: People, Places, and Things. The <a href="./Computer_vision" title="Computer vision">computer vision</a> of Google Photos recognizes faces (not only those of humans, but pets as well), grouping similar ones together (this feature is only available in certain countries due to privacy laws); geographic landmarks (such as the <a href="./Eiffel_Tower" title="Eiffel Tower">Eiffel Tower</a>); and subject matter, including birthdays, buildings, animals, food, and more.</p>
+<p>Different forms of <a href="./Machine_learning" title="Machine learning">machine learning</a> in the Photos service allow <a href="./Object_recognition" title="Object recognition">recognition</a> of photo contents, automatically generate albums, animate similar photos into quick videos, surface memories at significant times, and improve the quality of photos and videos. In May 2017, Google announced several updates to Google Photos, including reminders for and suggested sharing of photos, shared photo libraries between two users, and physical albums. Photos automatically suggested collections based on face, location, trip, or other distinction.</p>
+<p>Google Photos received critical acclaim after its decoupling from Google+ in 2015. Reviewers praised the updated Photos service for its recognition technology, search, apps, and loading times. Nevertheless, <a href="./Privacy_concerns_regarding_Google" title="Privacy concerns regarding Google">privacy concerns</a> were raised, including Google's motivation for building the service, as well as its relationship to governments and possible laws requiring Google to hand over a user's entire photo history. Google Photos has seen strong user adoption. It reached 100 million users after five months, 200 million after one year, 500 million after two years, and passed the 1 billion user mark in 2019, four years after its initial launch. Google reports as of 2020, approximately 28 billion photos and videos are uploaded to the service every week, and more than 4 trillion photos are stored in the service total.</p>
+<h2>History</h2>
+<p>Google Photos is the standalone successor to the photo features previously embedded in <a href="./Google+" title="Google+">Google+</a>, the company's social network. Google launched the social network to compete with <a href="./Facebook" title="Facebook">Facebook</a>, but the service never became as popular as Facebook for social networking and photo sharing. Google+ offered photo storage and organizational tools that surpassed Facebook's in power, though Google+ lacked the user base to use it. By leaving the social network affiliation, the Photos service changed its association from a sharing platform to a private library platform.</p>
+<p>In December 2015, Google added shared albums to Google Photos. Users pool photos and videos into an album, and then share the album with other Google Photos users. The recipient "can join to add their own photos and videos, and also get notifications when new pics are added". Users can also save photos and videos from shared albums to add them to their own, private collection. Unlike the native Photos service within iOS, Google Photos permits full resolution sharing across Android and iOS platforms and between the two.</p>
+<p>On February 12, 2016, Google announced that the <a href="./Picasa" title="Picasa">Picasa desktop application</a> would be discontinued on March 15, 2016, followed by the closure of the Picasa Web Albums service on May 1, 2016. Google stated that the primary reason for retiring <a href="./Picasa" title="Picasa">Picasa</a> was that it wanted to focus its efforts "entirely on a single photo service"; the cross-platform, web-based Google Photos.</p>
+<p>In June 2016, Google updated Photos to include automatically generated albums. After an event or trip, Photos will group some of the photos together and suggest creating an album with them, alongside maps to show geographic travel and location pins for exact places. Users can also add text captions to describe photos. In October, Google announced multiple significant updates; Google Photos now surfaces old memories with people identified in users' recent photos; it occasionally highlights a subset of photos when a user has recently taken a lot of images of a specific subject; it now makes animations from videos as well as photos (photo animations have been present since the start), displaying specific photos intermixed with short excerpts from longer videos in videos; and it now attempts to detect sideways and upside down photos and prompts the user to accept or reject a different orientation. For all of these features, Google touts <a href="./Machine_learning" title="Machine learning">machine learning</a> does the work, with no user interaction required.</p>
+<p>In November, Google released a separate app – PhotoScan – for users to scan printed photos into the service. The app, released for iOS and Android, uses a scanning process in which users must center their camera over four dots that overlay the printed image, so that the software can combine the photographs for a high-resolution digital image with the fewest possible defects. Later that month, Google added a "Deep blue" slider feature that lets users change the color and saturation of skies, without degrading image quality or inadvertently changing colors of other objects or elements in photos.</p>
+<p>In February 2017, Google updated the "Albums" tab on the Android app to include three separate sections; one for the phone's camera roll, with different views for sorting options (such as people or location); another for photos taken inside other apps; and a third for the actual photo albums. In March, Google added an automatic white balance feature to the service. The Android app and website were the first to receive the feature, with a later rollout to the iOS app. Later in March, updates to the service enabled uploading of photos in a "lightweight preview" quality for immediate viewing on slow cellular networks before a higher-quality upload later while on faster Wi-Fi. The feature also extends to sharing photos, in which a low-resolution image will be sent before being updated with a higher-quality version. In April, Google added <a href="./Video_stabilization" title="Video stabilization">video stabilization</a>. The feature creates a duplicate video to avoid overwriting the original clip.</p>
+<p>In May 2017, Google announced several updates to Google Photos. "Suggested Sharing" reminds users to share captured photos after the fact, and also groups photos based on faces and suggests recipients based on facial recognition. "Shared Libraries" lets two users share a central repository for all photos or specific categories of images. "Photo Books" are physical collections of photos, offered either as softcover or hardcover albums, with Photos automatically suggesting collections based on face, location, trip, or other distinction. Towards the end of the month, Google introduced an "Archive" feature that lets users hide photos from the main timeline view without deleting them. Archived content still appears in relevant albums and in search. In June, the new sharing features announced in May began rolling out to users.</p>
+<p>In December 2018, Google doubled the number of photos and videos users can store in a private Google Photos Live Album. The number increased from 10,000 to 20,000 photos, which is equivalent to the capacity for shared albums.</p>
+<p>In September 2019, Google Photos introduced a new <a href="./Social_media" title="Social media">social media</a>-like feature called "Memories" similar to the Stories feature in <a href="./Instagram" title="Instagram">Instagram</a> and <a href="./Facebook_Stories" title="Facebook Stories">Facebook</a> which highlights past photos to give their users a nostalgic feeling.</p>
+<p>On June 25, 2020, Google Photos introduced a major redesign to the mobile and web apps, accompanied by a new, simplified logo.</p>
+<p>In March 2024, <em><a href="./The_New_York_Times" title="The New York Times">The New York Times</a></em> reported that Google Photos was being used in a facial recognition program by <a href="./Unit_8200" title="Unit 8200">Unit 8200</a>, a surveillance unit of the <a href="./Israel_Defense_Forces" title="Israel Defense Forces">Israeli Defense Forces</a>, to surveil <a href="./Palestinians" title="Palestinians">Palestinians</a> in <a href="./Gaza_Strip" title="Gaza Strip">Gaza</a> amid the <a href="./Gaza_war" title="Gaza war">Gaza war</a>. Intelligence officers told the Times that the unit uploads databases of known faces to the service and uses its search functions to identify individuals. A Google spokesman commented that the service is free and "does not provide identities for unknown people in photographs."</p>
+<h2>Features</h2>
+<p>The service has apps for the <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> and <a href="./IOS" title="IOS">iOS</a> operating systems, and a website. Users back up their photos to the cloud service, which becomes accessible for all of their devices.</p>
+<p>The Photos service analyzes and organizes images into groups and can identify features such as beaches, skylines, or "snowstorm in Toronto." From the application's search window, users are shown potential searches for groups of photos in three major categories: People, Places, and Things. The service analyzes photos for similar faces and groups them together in the People category. It can also track faces as they age. The Places category uses <a href="./Geotagging" title="Geotagging">geotagging</a> data but can also determine locations in older pictures by analyzing for major landmarks (e.g., photos containing the <a href="./Eiffel_Tower" title="Eiffel Tower">Eiffel Tower</a>). The Things category processes photos for their subject matter: birthdays, buildings, cats, concerts, food, graduations, posters, screenshots, etc. Users can manually remove categorization errors. <a href="./Google_Lens" title="Google Lens">Google Lens</a> is also integrated into the service.</p>
+<p>Recipients of shared images can view web galleries without needing to download the app. Users can swipe their fingers across the screen to adjust the service's photo editing settings, as opposed to using sliders. Images can be easily shared with social networks (Google+, Facebook, <a href="./Twitter" title="Twitter">Twitter</a>) and other services. The application generates web links that both Google Photos users and non-users can access.</p>
+<p>A new feature showing a <a href="./Heat_map" title="Heat map">heat map</a> of photo locations was added in 2020.</p>
+<h3>Outstanding issues</h3>
+<p>There are issues about data sharing and exporting, such as not being able to download pictures and videos in their original quality or with all the original data, notably GPS location info. Even downloading via the <a href="./Google_Takeout" title="Google Takeout">Google Takeout</a> feature results in some of the original information missing. This could potentially lead to <a href="./Vendor_lock_in" title="Vendor lock in">vendor lock in</a> if the user wants to keep using features requiring those missing pieces of data.</p>
+<h2>Storage</h2>
+<p>Google Photos has three storage settings: "Storage saver" (formerly "High quality"), "Original quality" and "Express quality" (unavailable in certain locations). Storage saver includes photo and video storage for photos up to 16 <a href="./Megapixels" title="Megapixels">megapixels</a> and videos up to <a href="./1080p" title="1080p">1080p</a> resolution (the maximum <a href="./Image_resolution" title="Image resolution">resolutions</a> for average <a href="./Smartphone" title="Smartphone">smartphone</a> users in 2015). Original quality preserves the original resolution and quality of the photos and videos. Express quality includes photo and video storage for photos up to 3 megapixels and videos up to <a href="./480p" title="480p">480p</a> resolution.</p>
+<p>For the first three generations of the <a href="./Google_Pixel" title="Google Pixel">Google Pixel</a> phones, Google Photos offers unlimited storage at "Original quality" for free. The original Pixel had no limits to this offer, while the Pixel 2 and 3 only offered unlimited storage at "Original quality" for photos and videos taken before January 16, 2021, and January 31, 2022, respectively, with all photos and videos taken after those dates being uploaded at "Storage saver" instead. The Pixel 3a and onwards do not offer unlimited storage at "Original quality", with the Pixel 4, Pixel 4a, Pixel 4a (5G), and Pixel 5 offering a 3-month trial for the 100 GB <a href="./Google_One" title="Google One">Google One</a> plan to new members instead.</p>
+<p>In November 2020, Google Photos announced that it would be ending its offering of free unlimited storage for photos uploaded in "High quality" or "Express quality" starting on June 1, 2021, due to rising demand for storage. On June 1, 2021, Google Photos changed the name of "High quality" to "Storage saver". The move was part of an effort to reduce Google's reliance on ad-based revenue and increase subscriptions. Existing photos will remain unaffected, and new photos will count towards the user's storage quota shared across <a href="./Google_Drive" title="Google Drive">Google Drive</a>, <a href="./Gmail" title="Gmail">Gmail</a>, and Google Photos. Owners of the <a href="./Google_Pixel" title="Google Pixel">Google Pixel</a> smartphones up until the <a href="./Pixel_5" title="Pixel 5">Pixel 5</a> will remain exempt from this change.</p>
+<h2>Growth</h2>
+<p>In October 2015, five months after the launch of the service, Google announced that Google Photos had 100 million users, who had uploaded 3.72 <a href="./Petabyte" title="Petabyte">petabytes</a> of photos and videos.</p>
+<p>In May 2016, one year after the release of Google Photos, Google announced the service had over 200 million monthly <a href="./Active_users" title="Active users">active users</a>. Other statistics it revealed was at least 13.7 <a href="./Petabyte" title="Petabyte">petabytes</a> of photos/videos had been uploaded, 2 trillion labels had been applied (24 billion of those being selfies), and 1.6 billion animations, collages and effects had been created based on user content.</p>
+<p>In May 2017, Google announced that Google Photos has over 500 million users, who upload over 1.2 billion photos every day.</p>
+<p>In November 2020, Google announced that more than 4 trillion photos are stored in Google Photos, and every week 28 billion new photos and videos are uploaded.</p>
+<h2>Reception</h2>
+<p>At the May 2015 release of Google Photos, reviewers wrote that the service was among the best of its kind. <a href="./Walt_Mossberg" title="Walt Mossberg">Walt Mossberg</a> of <em><a href="./Recode" title="Recode">Recode</a></em> declared the service the best in cloud photo storage, against its competition from <a href="./Amazon_(company)" title="Amazon (company)">Amazon</a> (<a href="./Amazon_Drive" title="Amazon Drive">Amazon Drive</a>), <a href="./Apple_Inc." title="Apple Inc.">Apple</a> (<a href="./ICloud" title="ICloud">iCloud</a>), <a href="./Dropbox" title="Dropbox">Dropbox</a>, and <a href="./Microsoft" title="Microsoft">Microsoft</a> (<a href="./OneDrive#Photos_and_videos" title="OneDrive">OneDrive</a>). Jacob Kastrenakes of <em><a href="./The_Verge" title="The Verge">The Verge</a></em> wrote that the release made Google a major competitor in the photo storage market, and that its pricing structure obsoleted the idea of paying for photo storage. Sarah Mitroff and Lynn La of <em><a href="./CNET" title="CNET">CNET</a></em> wrote that the service's phone and tablet apps were particularly good, and that Google Photos had a more streamlined design than <a href="./Yahoo!" title="Yahoo!">Yahoo</a>'s <a href="./Flickr" title="Flickr">Flickr</a> and more organizing features than Apple's <a href="./ICloud" title="ICloud">iCloud</a> photo service.</p>
+<p>Kastrenakes described the service's May 2015 release as evidence that Google was spinning out the "best features" of its Google+ social network. He stated that the Photos service was "always excellent", and liked that users would be able to use the service "without signing up for a new social network". Mossberg described the release as "liberation day" for the photos features that were "effectively hidden" in the "widely ignored social network". The service's strategy, as described by Josh Lowensohn of <em>The Verge</em>, was to put all data on Google's servers so that it can be accessed universally.</p>
+<p>Mossberg liked the service's search function, writing that a search for "Massachusetts" "instantly brought up loads of photos of subjects". Lowensohn noted the service's speed and intelligence, especially in its ability to sort unorganized photos, as well as its photo loading times, search speeds, and simple <a href="./Image_editing" title="Image editing">photo editing</a> tools. Kastrenakes compared the service's new image analysis to technology unveiled by Flickr earlier in the same month. Mossberg thought the face grouping feature was "remarkably accurate", but was most impressed by the subject-based grouping. He was surprised that a search for "boats" found both <a href="./Cape_Cod" title="Cape Cod">Cape Cod</a> <a href="./Fishing_boat" title="Fishing boat">fishing boats</a> and <a href="./Venice" title="Venice">Venetian</a> <a href="./Gondola" title="Gondola">gondolas</a>, but also noted errors such as a professional photograph registering as a screenshot.</p>
+<p><em><a href="./PC_Magazine" title="PC Magazine">PC Magazine</a></em>'s <a href="./John_C._Dvorak" title="John C. Dvorak">John C. Dvorak</a> was concerned about the service's privacy. He was particularly concerned about Google's motivation for building the service, the company's relationships with existing governments, and potential laws that would require Google to provide a user's entire history of photos upon request. Dvorak compared such a scenario to inviting others to "scrounge through your underwear drawer". He criticized the service's sync functions, and preferred folders of images over an unsorted "flat database". Dvorak also highlighted the service's poor choice of photos to animate and lack of longevity guarantees, considering the company's abrupt cancellation of <a href="./Google_Reader" title="Google Reader">Google Reader</a>. He ultimately suggested that users instead use a portable hard drive, which he considered safer and cheap.</p>
+<h2>See also</h2>
+<ul>
+<li><a href="./Amazon_Photos" title="Amazon Photos">Amazon Photos</a></li>
+<li><a href="./Flickr" title="Flickr">Flickr</a> – Image and video hosting website</li>
+<li><a href="./Photos_(Apple)" title="Photos (Apple)">Photos</a> – Digital photograph manipulation app by Apple</li>
+<li><a href="./Picasa_Web_Albums" title="Picasa Web Albums">Picasa Web Albums</a> – Image sharing service from Google</li>
+</ul>
+<h2>Footnotes</h2>
+<h2>References</h2>
+<h2>External links</h2>
+<ul>
+<li><a href="https://photos.google.com/">Official website</a> <a href="https://www.wikidata.org/wiki/Q20007086#P856" title="Edit this at Wikidata"><img alt="Edit this at Wikidata" src="//upload.wikimedia.org/wikipedia/en/thumb/8/8a/OOjs_UI_icon_edit-ltr-progressive.svg/20px-OOjs_UI_icon_edit-ltr-progressive.svg.png"></a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products" title="List of Google products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

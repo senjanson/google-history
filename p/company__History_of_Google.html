@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>History of Google</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link active" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>History of Google</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/History_of_Google<br>
+Category: company<br>
+Depth: 1</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Google was officially launched in 1998 by Larry Page and Sergey Brin to market Google Search, which has become the most used web-based search engine. Larry Page and Sergey Brin, students at Stanford University in California, developed a search algorithm first (1996) known as "BackRub", with the help of Scott Hassan and Alan Steremberg. The search engine soon proved successful, and the expanding company moved several times, finally settling at Mountain View in 2003. This marked a phase of rapid growth, with the company making its initial public offering in 2004 and quickly becoming one of the world's largest media companies. The company launched Google News in 2002, Gmail in 2004, Google Maps in 2005, Google Chrome in 2008, and the social network known as Google+ in 2011, in addition to many other products. The company set up a charitable offshoot, Google.org, in 2005. In 2015, Google became the main subsidiary of the holding company Alphabet Inc.</p>
+<h2>Images</h2>
+<p><img alt="250px-Google_page_brin" src="../images/250px-Google_page_brin.jpg"><br>
+<img alt="250px-The_first_Google_computer_at_Stanford" src="../images/250px-The_first_Google_computer_at_Stanford.jpg"><br>
+<img alt="250px-Google_E2_80_99s_First_Production_Server" src="../images/250px-Google_E2_80_99s_First_Production_Server.jpg"><br>
+<img alt="250px-Google_Baidu_and_Yahoo" src="../images/250px-Google_Baidu_and_Yahoo.JPG"></p>
+<h2>Full Article</h2>
+<p><a href="./Google" title="Google">Google</a> was officially launched in 1998 by <a href="./Larry_Page" title="Larry Page">Larry Page</a> and <a href="./Sergey_Brin" title="Sergey Brin">Sergey Brin</a> to market <a href="./Google_Search" title="Google Search">Google Search</a>, which has become the most used <a href="./Web_search_engine" title="Web search engine">web-based search engine</a>. Larry Page and Sergey Brin, students at <a href="./Stanford_University" title="Stanford University">Stanford University</a> in California, developed a <a href="./Search_algorithm" title="Search algorithm">search algorithm</a> first (1996) known as "BackRub", with the help of <a href="./Scott_Hassan" title="Scott Hassan">Scott Hassan</a> and Alan Steremberg. The search engine soon proved successful, and the expanding company moved several times, finally settling at <a href="./Mountain_View,_Santa_Clara_County,_California" title="Mountain View, Santa Clara County, California">Mountain View</a> in 2003. This marked a phase of rapid growth, with the company making its <a href="./Initial_public_offering" title="Initial public offering">initial public offering</a> in 2004 and quickly becoming one of the world's largest media companies. The company launched <a href="./Google_News" title="Google News">Google News</a> in 2002, <a href="./Gmail" title="Gmail">Gmail</a> in 2004, <a href="./Google_Maps" title="Google Maps">Google Maps</a> in 2005, <a href="./Google_Chrome" title="Google Chrome">Google Chrome</a> in 2008, and the <a href="./Social_network" title="Social network">social network</a> known as <a href="./Google+" title="Google+">Google+</a> in 2011 (which was shut down in April 2019), in addition to <a href="./List_of_Google_products" title="List of Google products">many other products</a>. The company set up a charitable offshoot, <a href="./Google.org" title="Google.org">Google.org</a>, in 2005. In 2015, Google became the main subsidiary of the holding company <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc.</a></p>
+<p>The search engine has gone through many updates in attempts to eradicate <a href="./Search_engine_optimization" title="Search engine optimization">search engine optimization</a>.</p>
+<p>The name Google is a misspelling of <a href="./Googol" title="Googol">Googol</a>, the number 1 followed by 100 zeros, which was picked to signify that the search engine was intended to provide large quantities of information.</p>
+<h2>History</h2>
+<h3>Beginnings</h3>
+<p>Google has its origins in "<strong>BackRub</strong>", a research project started in 1996 by <a href="./Larry_Page" title="Larry Page">Larry Page</a> and <a href="./Sergey_Brin" title="Sergey Brin">Sergey Brin</a> when they were both PhD students at <a href="./Stanford_University" title="Stanford University">Stanford University</a> in <a href="./Stanford,_California" title="Stanford, California">Stanford, California</a>. The project initially involved an unofficial "third founder", lead programmer <a href="./Scott_Hassan" title="Scott Hassan">Scott Hassan</a>, who left before Google was officially founded as a company.</p>
+<p>While finding a topic for his doctoral thesis in 1995, Page considered exploring the mathematical properties of the <a href="./World_Wide_Web" title="World Wide Web">World Wide Web</a> by understanding its link structure as a huge <a href="./Graph_(discrete_mathematics)" title="Graph (discrete mathematics)">graph</a>. His supervisor, <a href="./Terry_Winograd" title="Terry Winograd">Terry Winograd</a>, encouraged him to pick this idea (which Page later recalled as "the best advice I ever got"). Page focused on the problem of finding out which web pages link to a given page, comparing the importance of tracking such <a href="./Backlink" title="Backlink">backlinks</a> to the role of <a href="./Citation" title="Citation">citations</a> in <a href="./Academic_publishing" title="Academic publishing">academic publishing</a>. Page told his ideas to Hassan, who began writing the code to implement Page's ideas.</p>
+<p>The research project was nicknamed "BackRub", and it was soon joined by Brin, who was supported by a <a href="./NSF-GRF" title="NSF-GRF">National Science Foundation Graduate Fellowship</a>. The two had first met in the summer of 1995, when Page was part of a group of potential new students that Brin had volunteered to give a tour around the campus and nearby San Francisco. Both Brin and Page were working on the <a href="./Stanford_Digital_Library_Project" title="Stanford Digital Library Project">Stanford Digital Library Project</a> (SDLP), whose goal was "to develop the enabling technologies for a single, integrated and universal digital library". The SDLP was funded through U.S. federal agencies including the <a href="./National_Science_Foundation" title="National Science Foundation">National Science Foundation</a>. Brin and Page also received funding from Massive Digital Data Systems (MDDS), a program by the <a href="./Central_Intelligence_Agency" title="Central Intelligence Agency">Central Intelligence Agency</a> (CIA) and the <a href="./National_Security_Agency" title="National Security Agency">National Security Agency</a> (NSA) to fund the improvement of <a href="./Intelligence_(information)" title="Intelligence (information)">intelligence</a> databases on the disorganized World Wide Web.</p>
+<p>Page's <a href="./Web_crawler" title="Web crawler">web crawler</a> began exploring the web in March 1996, with Page's own Stanford home page serving as the only starting point. Brin and Page developed the <a href="./PageRank" title="PageRank">PageRank</a> algorithm to convert the backlink data they gathered for a given web page into a measure of importance. The pair realized that a search engine based on PageRank would produce better results than existing search engines, which ranked results according to how many times the search term appeared on a page.</p>
+<p>Convinced that the pages with the most links to them from other highly relevant Web pages must be the most relevant pages associated with the search, Page and Brin tested their thesis as part of their studies and laid the foundation for their search engine. The first version of Google was released in August 1996 on the Stanford website and used nearly half of Stanford's entire network bandwidth.</p>
+<blockquote>
+<p>Some Rough Statistics (from August 29, 1996)</p>
+<p>Total indexable HTML urls: 75.2306 Million</p>
+<p>Total content downloaded: 207.022 gigabytes</p>
+<p>...</p>
+<p>BackRub is written in Java and Python and runs on several Sun Ultras and Intel Pentiums running Linux. The primary database is kept on a Sun Ultra II with 28GB of disk. Scott Hassan and Alan Steremberg have provided a great deal of very talented implementation help. Sergey Brin has also been very involved and deserves many thanks.</p>
+</blockquote>
+<p>— Larry Page</p>
+<p>Scott Hassan and Alan Steremberg were cited by Page and Brin as being critical to the development of Google. <a href="./Rajeev_Motwani" title="Rajeev Motwani">Rajeev Motwani</a> and <a href="./Terry_Winograd" title="Terry Winograd">Terry Winograd</a> later co-authored with Page and Brin the first paper about the project, describing PageRank and the initial prototype of the Google search engine, published in 1998. <a href="./Héctor_García-Molina" title="Héctor García-Molina">Héctor García-Molina</a> and <a href="./Jeff_Ullman" title="Jeff Ullman">Jeff Ullman</a> were also cited as contributors to the project.</p>
+<p>PageRank was influenced by a similar page-ranking and site-scoring algorithm earlier used for <a href="./RankDex" title="RankDex">RankDex</a>, developed by <a href="./Robin_Li" title="Robin Li">Robin Li</a> in 1996. Larry Page's patent for PageRank filed in 1998 includes a citation to Li's earlier patent. Li later went on to create the Chinese search engine <a href="./Baidu" title="Baidu">Baidu</a> in 2000.</p>
+<h3>Late 1990s</h3>
+<p>Originally the search engine used Stanford's website with the domains <em>google.stanford.edu</em> and <em>z.stanford.edu</em>. The domain <em>google.com</em> was registered on September 15, 1997. They formally incorporated their company, <em>Google</em>, on September 4, 1998, in their friend <a href="./Susan_Wojcicki" title="Susan Wojcicki">Susan Wojcicki</a>'s garage in <a href="./Menlo_Park,_California" title="Menlo Park, California">Menlo Park, California</a>. Wojcicki eventually became an executive at Google and CEO at <a href="./YouTube" title="YouTube">YouTube</a>. Page invited <a href="./Craig_Nevill-Manning" title="Craig Nevill-Manning">Craig Nevill-Manning</a>, whom he had met while Nevill-Manning was a postdoctoral fellow at Stanford, to join Google. Nevill-Manning declined and joined years later.</p>
+<p>Both Brin and Page had been against using advertising pop-ups in a search engine, or an "advertising funded search engines" model, and they wrote a research paper in 1998 on the topic while still students. They changed their minds early on and allowed simple text ads.</p>
+<p>By the end of 1998, Google had an index of about 60 million pages. The home page was still marked "<a href="./Beta_test" title="Beta test">BETA</a>", but an article in <a href="./Salon.com" title="Salon.com">Salon.com</a> already argued that Google's search results were better than those of competitors like <a href="./Hotbot" title="Hotbot">Hotbot</a> or <a href="./Excite.com" title="Excite.com">Excite.com</a>, and praised it for being more technologically innovative than the overloaded <a href="./Web_portal" title="Web portal">portal sites</a> (like <a href="./Yahoo!" title="Yahoo!">Yahoo!</a>, Excite.com, <a href="./Lycos" title="Lycos">Lycos</a>, Netscape's <a href="./Netscape" title="Netscape">Netcenter</a>, <a href="./AOL.com" title="AOL.com">AOL.com</a>, <a href="./Go.com" title="Go.com">Go.com</a> and <a href="./MSN.com" title="MSN.com">MSN.com</a>) which, during the growing <a href="./Dot-com_bubble" title="Dot-com bubble">dot-com bubble</a>, were seen as "the future of the Web", especially by stock market investors.</p>
+<p>Early in 1999, Brin and Page decided they wanted to sell Google to <a href="./Excite_(web_portal)" title="Excite (web portal)">Excite</a>. They went to Excite CEO George Bell and offered to sell it to him for $1 million. He rejected the offer. <a href="./Vinod_Khosla" title="Vinod Khosla">Vinod Khosla</a>, one of Excite's venture capitalists, talked the duo down to $750,000, but Bell still rejected it.</p>
+<p>In March 1999, the company moved into offices at <a href="./165_University_Avenue" title="165 University Avenue">165 University Avenue</a> in <a href="./Palo_Alto,_California" title="Palo Alto, California">Palo Alto</a>, home to several other noted <a href="./Silicon_Valley" title="Silicon Valley">Silicon Valley</a> technology startups. After quickly outgrowing two other sites, the company leased a complex of buildings in <a href="./Mountain_View,_Santa_Clara_County,_California" title="Mountain View, Santa Clara County, California">Mountain View</a> at 1600 Amphitheatre Parkway from <a href="./Silicon_Graphics" title="Silicon Graphics">Silicon Graphics</a> (SGI) in 2003. The company has remained at this location ever since, and the complex has since become known as the <a href="./Googleplex" title="Googleplex">Googleplex</a> (a play on the word <a href="./Googolplex" title="Googolplex">googolplex</a>, a number that is equal to 1 followed by a <a href="./Googol" title="Googol">googol</a> of zeros). In 2006, Google bought the property from SGI for US$319 million.</p>
+<h3>2000s</h3>
+<p>The Google search engine attracted a loyal following among the growing number of Internet users, who liked its simple design. In 2000, Google began selling <a href="./Advertising" title="Advertising">advertisements</a> associated with search <a href="./Keyword_(internet_search)" title="Keyword (internet search)">keywords</a>. The ads were text-based to maintain an uncluttered page design and to maximize page loading speed. Keywords were sold based on a combination of price bid and click-throughs, with bidding starting at $.05 per click. This model of selling keyword advertising was first pioneered by <a href="./Goto.com" title="Goto.com">Goto.com</a>, an Idealab spin-off created by <a href="./Bill_T._Gross" title="Bill T. Gross">Bill Gross</a>. When the company changed names to Overture Services, it sued Google over alleged infringements of the company's pay-per-click and bidding patents. Overture Services would later be bought by <a href="./Yahoo!" title="Yahoo!">Yahoo!</a> and renamed <a href="./Yahoo!_Search_Marketing" title="Yahoo! Search Marketing">Yahoo! Search Marketing</a>. The case was then settled out of court; Google agreed to issue shares of common stock to Yahoo! in exchange for a perpetual license. While many of its <a href="./Dot-com_company" title="Dot-com company">dot-com</a> rivals failed in the new Internet marketplace, Google quietly rose in stature while generating revenue.</p>
+<p>Google's declared <a href="./Code_of_conduct" title="Code of conduct">code of conduct</a> is "<a href="./Don't_be_evil" title="Don't be evil">Don't be evil</a>", a phrase which they went so far as to include in their <a href="./Prospectus_(finance)" title="Prospectus (finance)">prospectus</a> (aka "S-1") for their 2004 <a href="./Initial_public_offering" title="Initial public offering">IPO</a>, noting that "We believe strongly that in the long term, we will be better served—as shareholders and in all other ways—by a company that does good things for the world even if we forgo some short term gains."</p>
+<p>In February 2003, Google acquired <a href="./Pyra_Labs" title="Pyra Labs">Pyra Labs</a>, owner of the Blogger website. The acquisition secured the company's competitive ability to use information gleaned from blog postings to improve the speed and relevance of articles contained in a companion product to the search engine <a href="./Google_News" title="Google News">Google News</a>.</p>
+<p>In February 2004, Yahoo! dropped its partnership with Google, providing an independent search engine of its own. This cost Google some <a href="./Market_share" title="Market share">market share</a>, yet Yahoo!'s move highlighted Google's own distinctiveness. The verb "<a href="./Google_(verb)" title="Google (verb)">to google</a>" has entered a number of languages (first as a <a href="./Slang" title="Slang">slang</a> verb and now as a standard word), meaning "to perform a web search" (a possible indication of "Google" becoming a <a href="./Genericized_trademark" title="Genericized trademark">genericized trademark</a>).</p>
+<p>After the IPO, Google's stock market capitalization rose greatly and the stock price more than quadrupled. On August 19, 2004, the number of <a href="./Shares_outstanding" title="Shares outstanding">shares outstanding</a> was 172.85 million while the "<a href="./Float_(finance)" title="Float (finance)">free float</a>" was 19.60 million (which makes 89% held by insiders). Google has a dual-class stock structure in which each Class B share gets ten votes compared to each Class A share getting one. Page said in the <a href="./Prospectus_(finance)" title="Prospectus (finance)">prospectus</a> that Google has "a dual-class structure that is biased toward stability and independence and that requires investors to bet on the team, especially Sergey and me."</p>
+<p>In June 2005, Google was valued at nearly $52 billion, making it one of the world's biggest media companies by stock market value.</p>
+<p>On August 18, 2005 (one year after the initial IPO), Google announced that it would sell 14,159,265 (another mathematical reference as <a href="./Pi" title="Pi">π</a> ≈ 3.14159265) more shares of its stock to raise money. The move would double Google's cash stockpile to $7 billion. Google said it would use the money for "acquisitions of complementary businesses, technologies or other assets".</p>
+<p>With Google's increased size came more competition from large mainstream technology companies. One such example is the rivalry between Microsoft and Google. Microsoft had been touting its <a href="./Bing_(search_engine)" title="Bing (search engine)">Bing</a> search engine to counter Google's competitive position. Furthermore, the two companies are increasingly offering overlapping services, such as <a href="./Web-based_email" title="Web-based email">webmail</a> (Gmail vs. <a href="./Hotmail" title="Hotmail">Hotmail</a>), search (both online and local desktop searching), and other applications (for example, Microsoft's <a href="./Windows_Live_Local" title="Windows Live Local">Windows Live Local</a> competes with <a href="./Google_Earth" title="Google Earth">Google Earth</a>). In addition to an <a href="./Internet_Explorer" title="Internet Explorer">Internet Explorer</a> replacement, Google designed its own <a href="./Linux" title="Linux">Linux</a>-based <a href="./Operating_system" title="Operating system">operating system</a> called <a href="./ChromeOS" title="ChromeOS">ChromeOS</a> to directly compete with <a href="./Microsoft_Windows" title="Microsoft Windows">Microsoft Windows</a>. There were also rumors of a Google <a href="./Web_browser" title="Web browser">web browser</a>, fueled much by the fact that Google was the owner of the <a href="./Domain_name" title="Domain name">domain name</a> "gbrowser.com".[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>] These were later proven when Google released <a href="./Google_Chrome" title="Google Chrome">Google Chrome</a>. This corporate feud boiled over into the courts when <a href="./Kai-Fu_Lee" title="Kai-Fu Lee">Kai-Fu Lee</a>, a former vice-president of Microsoft, quit Microsoft to work for Google. Microsoft sued to stop his move by citing Lee's <a href="./Non-compete_clause" title="Non-compete clause">non-compete contract</a> (he had access to much sensitive information regarding Microsoft's plans in <a href="./China" title="China">China</a>). Google and Microsoft reached a settlement out of court on December 22, 2005, the terms of which are confidential.</p>
+<p><a href="./Click_fraud" title="Click fraud">Click fraud</a> also became a growing problem for Google's business strategy. Google's CFO George Reyes said in a December 2004 investor conference that "something has to be done about this really, really quickly, because I think, potentially, it threatens our business model."</p>
+<p>While the company's primary market is in the web content arena, Google has experimented with other markets, such as radio and print publications. On January 17, 2006, Google announced that it had purchased the radio advertising company <a href="./DMarc" title="DMarc">dMarc</a>, which provides an automated system that allows companies to advertise on the radio. Google also began an experiment in selling advertisements from its advertisers in offline newspapers and magazines, with select advertisements in the <em><a href="./Chicago_Sun-Times" title="Chicago Sun-Times">Chicago Sun-Times</a></em>.</p>
+<p>During the third quarter of 2005 Google Conference Call, Eric Schmidt said, "We don't do the same thing as everyone else does. And so if you try to predict our product strategy by simply saying well so and so has this and Google will do the same thing, it's almost always the wrong answer. We look at markets as they exist and we assume they are pretty well served by their existing players. We try to see new problems and new markets using the technology that others use and we build."</p>
+<p>After months of speculation, Google was added to the <a href="./Standard_&amp;_Poor's" title="Standard &amp; Poor's">Standard &amp; Poor's</a> 500 index (S&amp;P 500) on March 31, 2006. Google replaced <a href="./Burlington_Resources" title="Burlington Resources">Burlington Resources</a>, a major oil producer based in <a href="./Houston,_Texas" title="Houston, Texas">Houston</a> that had been acquired by <a href="./ConocoPhillips" title="ConocoPhillips">ConocoPhillips</a>. The day after the announcement Google's share price rose by 7%.</p>
+<p>In 2008, Google launched <a href="./Knol" title="Knol">Knol</a>, their own equivalent of Wikipedia, which failed four years later.</p>
+<h4>Use of cookies</h4>
+<p>Although Google was already deriving the vast majority of its income from advertising at the time of its 2004 IPO, it did not use any <a href="./HTTP_cookie" title="HTTP cookie">HTTP cookie</a>-based <a href="./Web_tracking" title="Web tracking">web tracking</a> until 2007. By 2006, Google's Ad revenue was already facing signs of decline, as "a growing number of advertisers were refusing to buy display ads from Google." The <a href="./Great_Recession" title="Great Recession">Great Recession</a> led Google to institute a hiring freeze.</p>
+<p>In 2007, Google agreed to buy <a href="./DoubleClick" title="DoubleClick">DoubleClick</a> for $3.1 billion, marking the start of its use of cookie-based tracking. Even with the purchase, Google only ended up with a 3% revenue in the second quarter of 2009, in the depth of the recession.</p>
+<p>Google initially separated the browsing habits collected from AD tracking from data collected by its other services by default. Google removed this last layer of protection in 2016, making its tracking personally-identifiable.</p>
+<h3>2010s</h3>
+<p>In 2011, the company launched <a href="./Google+" title="Google+">Google+</a>, its fourth foray into social networking, following <a href="./Google_Buzz" title="Google Buzz">Google Buzz</a> (launched 2010, retired in 2011), <a href="./Google_Friend_Connect" title="Google Friend Connect">Google Friend Connect</a> (launched 2008, retired by March 1, 2012), and <a href="./Orkut" title="Orkut">Orkut</a> (launched in 2004, retired in September 2014)</p>
+<p>As of November 2014, Google operated over 70 offices in more than 41 countries.</p>
+<p>In 2015, Google reorganized its interests as a holding company, <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc.</a>, with Google as its leading subsidiary. Google continued to serve as the umbrella for Alphabet's Internet interests. On September 1, 2017, Google Inc. announced its plans of restructuring as a <a href="./Limited_liability_company" title="Limited liability company">limited liability company</a>, Google LLC, as a wholly owned subsidiary of <a href="./XXVI_Holdings,_Inc." title="XXVI Holdings, Inc.">XXVI Holdings, Inc.</a>, which is formed as a subsidiary of Alphabet Inc. to hold the equity of its other subsidiaries, including Google LLC and other bets.</p>
+<p>Between 2018 and 2019, <a href="./Google_worker_organization" title="Google worker organization">tensions between the company's leadership and its workers escalated</a> as staff protested company decisions on internal sexual harassment, <a href="./Dragonfly_(search_engine)" title="Dragonfly (search engine)">Dragonfly</a>, a censored Chinese search engine, and <a href="./Project_Maven" title="Project Maven">Project Maven</a>, a military drone artificial intelligence, which had been seen as areas of revenue growth for the company. On 25 October 2018, <em><a href="./The_New_York_Times" title="The New York Times">The New York Times</a></em> published an exposé, "How Google Protected <a href="./Andy_Rubin" title="Andy Rubin">Andy Rubin</a>, the 'Father of Android'". The company subsequently announced that "48 employees have been fired over the last two years" for sexual misconduct. On 1 November 2018, Google employees staged a global walk-out to protest the company's handling of sexual harassment complaints, including the <a href="./Golden_parachute" title="Golden parachute">golden parachute</a> exit of former executive <a href="./Andy_Rubin" title="Andy Rubin">Andy Rubin</a>; more than 20,000 employees and contractors participated. CEO <a href="./Sundar_Pichai" title="Sundar Pichai">Sundar Pichai</a> was reported to be in support of the protests.</p>
+<p>On March 19, 2019, Google announced that it would enter the video game market, launching a <a href="./Cloud_gaming" title="Cloud gaming">cloud gaming</a> platform called <a href="./Google_Stadia" title="Google Stadia">Google Stadia</a>.</p>
+<p>On June 3, 2019, the <a href="./United_States_Department_of_Justice" title="United States Department of Justice">United States Department of Justice</a> reported that it would investigate Google for <a href="./Antitrust" title="Antitrust">antitrust</a> violations. This led to the filing of an antitrust lawsuit in October 2020, on the grounds the company had abused a monopoly position in the <a href="./Web_search_engine" title="Web search engine">search</a> and <a href="./Search_advertising" title="Search advertising">search advertising</a> markets.</p>
+<p>In December 2019, former <a href="./PayPal" title="PayPal">PayPal</a> <a href="./Chief_operating_officer" title="Chief operating officer">chief operating officer</a> <a href="./Bill_Ready" title="Bill Ready">Bill Ready</a> became Google's new commerce chief. Ready's role will not be directly involved with <a href="./Google_Pay_(2018–2022)" title="Google Pay (2018–2022)">Google Pay</a>.</p>
+<h3>2020s</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>This section needs to be <strong>updated</strong>. Please help update this article to reflect recent events or newly available information. <em>(April 2023)</em></td>
+</tr>
+</tbody>
+</table>
+<p>In April 2020, Google announced several cost-cutting measures due to the <a href="./COVID-19_pandemic" title="COVID-19 pandemic">COVID-19 pandemic</a>. Such measures included slowing down hiring for the remainder of 2020, except for a small number of strategic areas, recalibrating the focus and pace of investments in areas like data centers and machines, and non-business essential marketing and travel.</p>
+<p>Google and Apple collaborated on the development of smartphone-based contact tracing solutions to address the COVID-19 pandemic. Prominent examples of government initiatives in this field include Singapore's TraceTogether and Australia's COVID Safe apps. TraceTogether was notably the first national Bluetooth contact tracing app to be launched globally, debuting in March 2020.</p>
+<p>The <a href="./2020_Google_services_outages" title="2020 Google services outages">2020 Google services outages</a> disrupted Google services: one in August that affected Google Drive among others, another in November affecting YouTube, and a third in December affecting the entire suite of Google applications. All three outages were resolved within hours.</p>
+<p>In January 2021, the <a href="./Australian_Government" title="Australian Government">Australian Government</a> proposed legislation that would require Google and Facebook to pay media companies for the right to use their content. In response, Google threatened to close off access to its search engine in Australia.</p>
+<p>In March 2021, Google reportedly paid $20 million for <a href="./Ubisoft" title="Ubisoft">Ubisoft</a> ports on <a href="./Google_Stadia" title="Google Stadia">Google Stadia</a>. Google spent "tens of millions of dollars" on getting major publishers such as <a href="./Ubisoft" title="Ubisoft">Ubisoft</a> and Take-Two to bring some of their biggest games to Stadia.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>]</p>
+<p>In April 2021, <em><a href="./The_Wall_Street_Journal" title="The Wall Street Journal">The Wall Street Journal</a></em> reported that Google ran a years-long program called 'Project Bernanke' that used data from past advertising bids to gain an advantage over competing ad services. This was revealed in documents concerning the antitrust lawsuit filed by ten US states against Google in December.</p>
+<p>In June 2023, Google stated it would remove Canadian news links from its services throughout the country due to <a href="./Online_News_Act" title="Online News Act">legislation</a> from the <a href="./Canadian_government" title="Canadian government">Canadian government</a> (Bill C-11) that would require Google and other online platforms such as Facebook to pay for news articles being shown on their platforms.</p>
+<p>In September 2024, Google and its parent company <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc.</a> were fined 2.42 billion euros by the <a href="./European_Commission" title="European Commission">European Commission</a> for an antitrust case surrounding Google's shopping service. The decision was later upheld by both the <a href="./General_Court_(European_Union)" title="General Court (European Union)">General Court (European Union)</a> and the <a href="./European_Court_of_Justice" title="European Court of Justice">European Court of Justice</a>.</p>
+<p>In October 2024, the U.S. Department of Justice (DOJ) formally proposed a range of structural and behavioral remedies against Google, including the potential break-up of the company. These proposals explored banning default search placement payments, regulating the use of artificial intelligence in search results, mandating licensing of Google’s search data to competitors, and requiring increased transparency in online ad pricing.</p>
+<p>In November 2024, the U.S. Department of Justice (DoJ) urged a federal court to impose significant changes on Google to address its monopoly in online search. The proposed measures included forcing Google to sell its Chrome browser, sharing data and search results with competitors, and implementing various other restrictions. The DoJ also sought to prohibit Google from re-entering the browser market for five years, selling its Android OS if needed, and halting investments in rival search engines or AI. It also pushed to end exclusive deals where Google paid device makers like Apple to set its search engine as the default. Google called these measures excessive and harmful for consumers, vowing to appeal and a trial was set for April 2025.</p>
+<p>In December 2024, Google responded with a counter‑proposal advocating for a narrower, three‑year ban on exclusive default search engine deals, including its long-standing arrangement with Apple. Rather than accepting divestitures of Chrome or Android, Google offered increased flexibility for browser developers and annual renegotiation of default search engine status. Privacy-focused competitors like DuckDuckGo criticized this as inadequate and insufficient to restore market competition. Both parties were expected to submit final remedy proposals ahead of the scheduled remedies trial in April 2025.</p>
+<p>In early February 2025, Google announced it was ending its targets for minority recruitment and reevaluating other <a href="./Diversity,_equity,_and_inclusion" title="Diversity, equity, and inclusion">diversity, equity, and inclusion</a> efforts.</p>
+<p>In April 2025, the remedies trial commenced in Washington, D.C. before Judge Amit P. Mehta. The DOJ argued for substantial structural reforms and ongoing oversight, while Google maintained that such measures were excessive and would hinder innovation in the digital and AI sectors.</p>
+<p>In September 2025, Mehta ruled that Google would not be required to divest of <a href="./Google_Chrome" title="Google Chrome">Chrome</a> or Android, but could no longer include <a href="./Google_Search" title="Google Search">search</a> in exclusive contracts. Mehta also ruled that Google would be required to share certain <a href="./Search_engine_indexing" title="Search engine indexing">search index</a> and user interaction data with competitors.</p>
+<p>In April 2026, Alphabet Google's parent company announced a $180 billion spending plan for the company for AI infrastructure, data centers, and servers. Mainly for the development of Google's AI <a href="./Google_Gemini" title="Google Gemini">Gemini</a>.</p>
+<h2>Financing and initial public offering</h2>
+<p>The first funding for Google as a company was secured in August 1998 in the form of a US$100,000 contribution from <a href="./Andy_Bechtolsheim" title="Andy Bechtolsheim">Andy Bechtolsheim</a>, co-founder of <a href="./Sun_Microsystems" title="Sun Microsystems">Sun Microsystems</a>, given to a corporation which did not yet exist.</p>
+<p>On June 7, 1999, a round of equity funding totalling $25 million was announced, the major investors being rival venture capital firms <a href="./Kleiner,_Perkins,_Caufield_&amp;_Byers" title="Kleiner, Perkins, Caufield &amp; Byers">Kleiner, Perkins, Caufield &amp; Byers</a> and <a href="./Sequoia_Capital" title="Sequoia Capital">Sequoia Capital</a>. While Google still needed more funding for their further expansion, Brin and Page were hesitant to take the company public, despite their financial issues. They were not ready to give up control over Google.</p>
+<p>Following the closing of the $25 million financing round, Sequoia encouraged Brin and Page to hire a CEO. Brin and Page ultimately acquiesced and hired <a href="./Eric_Schmidt" title="Eric Schmidt">Eric Schmidt</a> as Google's first CEO in August 2001.</p>
+<p>In October 2003, while discussing a possible <a href="./Initial_public_offering" title="Initial public offering">initial public offering</a> of shares (IPO), <a href="./Microsoft" title="Microsoft">Microsoft</a> approached the company about a possible partnership or <a href="./Mergers_and_acquisitions" title="Mergers and acquisitions">merger</a>. The deal never materialized. In January 2004, Google announced the hiring of <a href="./Morgan_Stanley" title="Morgan Stanley">Morgan Stanley</a> and <a href="./Goldman_Sachs_Group" title="Goldman Sachs Group">Goldman Sachs Group</a> to arrange an IPO. The IPO was projected to raise as much as $4 billion.</p>
+<p>Google's initial public offering took place on August 19, 2004. A total of 19,605,052 <a href="./Capital_stock" title="Capital stock">shares</a> were offered at a price of $85 per share. Of that, 14,142,135 (another mathematical reference as <a href="./Square_root_of_two" title="Square root of two">√2</a> ≈ 1.4142135) were floated by Google and 5,462,917 by selling stockholders. The sale raised US$1.67 billion, and gave Google a <a href="./Market_capitalization" title="Market capitalization">market capitalization</a> of more than $23 billion. Many of Google's employees became instant paper millionaires. Yahoo!, a competitor of Google, also benefited from the IPO because it owned 2.7 million shares of Google.</p>
+<p>Following the company's IPO in 2004, founders Sergey Brin and Larry Page and CEO Eric Schmidt requested that their <a href="./One-dollar_salary" title="One-dollar salary">base salary be cut to $1</a>. Subsequent offers by the company to increase their salaries were turned down, primarily because their main compensation continues to come from owning stock in Google. Before 2004, Schmidt made $250,000 per year, and Page and Brin each received an annual salary of $150,000.</p>
+<p>There were concerns that Google's IPO would lead to changes in company culture. Reasons ranged from shareholder pressure for employee benefit reductions to the fact that many company executives would become instant paper millionaires. As a reply to this concern, co-founders Brin and Page promised in a report to potential investors that the IPO would not change the company's culture.</p>
+<p>The company was listed on the <a href="./NASDAQ" title="NASDAQ">NASDAQ</a> stock exchange under the <a href="./Ticker_symbol" title="Ticker symbol">ticker symbol</a> <strong>GOOG</strong>. When Alphabet was created as Google's parent company, it retained Google's stock price history and ticker symbol.</p>
+<h2>Name</h2>
+<p>The name "Google" originated from a misspelling of "<a href="./Googol" title="Googol">googol</a>", which refers to the number represented by a 1 followed by one-hundred zeros. Page and Brin write in their first paper on <a href="./PageRank" title="PageRank">PageRank</a>: "We chose our systems name, Google, because it is a common spelling of googol, or 10100 and fits well with our goal of building very large-scale search engines."</p>
+<p>There are uses of the name going back at least as far as the creation of the <a href="./Comic_strip" title="Comic strip">comic strip</a> character <a href="./Barney_Google_and_Snuffy_Smith" title="Barney Google and Snuffy Smith">Barney Google</a> in 1919. British children's author <a href="./Enid_Blyton" title="Enid Blyton">Enid Blyton</a> used the phrase "Google Bun" in <em><a href="./The_Magic_Faraway_Tree_(novel)" title="The Magic Faraway Tree (novel)">The Magic Faraway Tree</a></em> (published 1941) and <em><a href="./The_Faraway_Tree#The_Folk_of_the_Faraway_Tree" title="The Faraway Tree">The Folk of the Faraway Tree</a></em> (published 1946), and called a clown character "Google" in <em><a href="./The_Circus_Series" title="The Circus Series">Circus Days Again</a></em> (published 1942). In April 1953 <em><a href="./Clifford_D._Simak_bibliography" title="Clifford D. Simak bibliography">Clifford D Simak</a></em>s short story "Retrograde Evolution" was published in <em><a href="./Science_Fiction_Plus" title="Science Fiction Plus">Science Fiction Plus</a></em> magazine wherein an alien race called "Googles" evolves from savages to geniuses overnight. There is also the <a href="./Googleplex_Star_Thinker" title="Googleplex Star Thinker">Googleplex Star Thinker</a> from <a href="./Douglas_Adams" title="Douglas Adams">Douglas Adams</a>' <em><a href="./The_Hitchhiker's_Guide_to_the_Galaxy" title="The Hitchhiker's Guide to the Galaxy">The Hitchhiker's Guide to the Galaxy</a></em>. Hank McCoy, The Beast, uses the word (spelled Google) in Uncanny X-Men #308. In March 1996, a business called Groove Track Productions applied for a United States trademark for "Google" for various products including several categories of clothing, stuffed toys, board games, and candy. The firm abandoned its application in July 1997.</p>
+<p>Having found its way increasingly into everyday language, the verb "<a href="./Google_(verb)" title="Google (verb)">google</a>" was added to the <em><a href="./Merriam-Webster" title="Merriam-Webster">Merriam Webster Collegiate Dictionary</a></em> and the <em>Oxford English Dictionary</em> in 2006, meaning "to use the Google search engine to obtain information on the internet." The use of the term itself reflects their mission to organize a seemingly infinite amount of information on the web. The first use of "Google" as a verb in <a href="./Pop_culture" title="Pop culture">pop culture</a> happened on the TV series <em><a href="./Buffy_the_Vampire_Slayer" title="Buffy the Vampire Slayer">Buffy the Vampire Slayer</a></em>, in 2002. In November 2009, the <a href="./Global_Language_Monitor" title="Global Language Monitor">Global Language Monitor</a> named "Google" No. 7 on its Top Words of the Decade list. In December 2009 the <a href="./BBC" title="BBC">BBC</a> highlighted Google in their "Portrait of the Decade (Words)" series. In May 2012, David Elliott filed a complaint against Google, Inc. claiming that Google's once distinctive mark GOOGLE® has become generic and lacks trademark significance due to its common use as a transitive verb. After losing to Google in <a href="./UDRP" title="UDRP">UDRP</a> proceedings involving many "Google-related" domain name registrations that he owns, Elliott later sought a declaratory judgment that his domain names are rightfully his, that they do not infringe any trademark rights Google may own, and that all Google's registered GOOGLE® marks should be cancelled since "Google" is now a common generic word worldwide that means "to search the internet."</p>
+<h2>Partnerships</h2>
+<p>Google has worked with several corporations, in order to improve production and services.<br>
+On September 28, 2005, Google announced a long-term research partnership with NASA which would involve Google building a 1,000,000-square-foot (93,000 m2) R&amp;D center at NASA's <a href="./Ames_Research_Center" title="Ames Research Center">Ames Research Center</a>. NASA and Google are planning to work together on a variety of areas, including large-scale data management, massively distributed computing, <a href="./Biotechnology" title="Biotechnology">bio</a>-<a href="./Information_technology" title="Information technology">info</a>-<a href="./Nano_technology" title="Nano technology">nano</a> convergence, and encouragement of the <a href="./Entrepreneurial_space_industry" title="Entrepreneurial space industry">entrepreneurial space industry</a>. The new building would also include labs, offices, and housing for Google engineers. In October 2006, Google formed a partnership with <a href="./Sun_Microsystems" title="Sun Microsystems">Sun Microsystems</a> to help share and distribute each other's technologies. As part of the partnership Google will hire employees to help the <a href="./Open-source_license" title="Open-source license">open source</a> office program <a href="./OpenOffice.org" title="OpenOffice.org">OpenOffice.org</a>.</p>
+<p><a href="./Time_Warner" title="Time Warner">Time Warner</a>'s <a href="./AOL" title="AOL">AOL</a> unit and Google unveiled an expanded partnership on December 21, 2005, including an enhanced global advertising partnership and a US$1 billion investment by Google for a 5% stake in AOL. As part of the collaboration, Google plans to work with AOL on <a href="./Video_search" title="Video search">video search</a> and offer AOL's premium video service within <a href="./Google_Video" title="Google Video">Google Video</a>. This did not allow users of Google Video to search for AOL's premium-video services. Display advertising throughout the Google network will also increase.</p>
+<p>In August 2006, Google signed a $900 million offer with <a href="./News_Corporation_(1980–2013)" title="News Corporation (1980–2013)">News Corp.'s</a> Fox Interactive Media unit to provide search and advertising on <a href="./MySpace" title="MySpace">MySpace</a> and other News Corp. websites including <a href="./IGN" title="IGN">IGN</a>, <a href="./American_Idol" title="American Idol">AmericanIdol.com</a>, <a href="./Fox.com" title="Fox.com">Fox.com</a>, and <a href="./Rotten_Tomatoes" title="Rotten Tomatoes">Rotten Tomatoes</a>, although <a href="./Fox_Sports_(USA)" title="Fox Sports (USA)">Fox Sports</a> is not included as a deal already exists between News Corp. and <a href="./MSN" title="MSN">MSN</a>.</p>
+<p>On December 6, 2006, <a href="./British_Sky_Broadcasting" title="British Sky Broadcasting">British Sky Broadcasting</a> released details of a Sky and Google alliance. This includes a feature where Gmail will link with Sky and host a mail service for Sky, incorporating the email domain "@sky.com".</p>
+<p>In 2007, Google displaced <a href="./AOL" title="AOL">America Online</a> as a key partner and sponsor of the <a href="./NORAD_Tracks_Santa" title="NORAD Tracks Santa">NORAD Tracks Santa</a> program. <a href="./Google_Earth" title="Google Earth">Google Earth</a> was used for the first time to give visitors to the website the impression that they were following <a href="./Santa_Claus" title="Santa Claus">Santa Claus</a>' progress in <a href="./3D_computer_graphics" title="3D computer graphics">3-D</a>. The program also made its presence known on <a href="./YouTube" title="YouTube">YouTube</a> in 2007 as part of its partnership with Google.</p>
+<p>In 2008, Google developed a partnership with <a href="./GeoEye" title="GeoEye">GeoEye</a> to launch a satellite providing Google with high-resolution (0.41 m monochrome, 1.65 m color) imagery for Google Earth. The satellite was launched from <a href="./Vandenberg_Air_Force_Base" title="Vandenberg Air Force Base">Vandenberg Air Force Base</a> on September 6, 2008. Google also announced in 2008 that it was hosting an archive of <em><a href="./Life_(magazine)" title="Life (magazine)">Life Magazine</a></em>'s photographs.</p>
+<p>In January 2009, Google announced a partnership with the <a href="./Pontifical_Council_for_Social_Communications" title="Pontifical Council for Social Communications">Pontifical Council for Social Communications</a>, allowing the <a href="./Pope" title="Pope">Pope</a> to have his own channel on <a href="./YouTube" title="YouTube">YouTube</a>.</p>
+<p>In January 2013, Google announced a partnership with <a href="./Kia_Motors" title="Kia Motors">Kia Motors</a> and <a href="./Hyundai_Motor_Company" title="Hyundai Motor Company">Hyundai</a>. The partnership integrates Google Maps and Place into new car models to be released later in 2013.</p>
+<p>The <a href="./Alliance_for_Affordable_Internet" title="Alliance for Affordable Internet">Alliance for Affordable Internet</a> (A4AI) was launched in October 2013; Google is part of the coalition of public and private organizations that also includes <a href="./Facebook" title="Facebook">Facebook</a>, <a href="./Intel" title="Intel">Intel</a>, and <a href="./Microsoft" title="Microsoft">Microsoft</a>. Led by <a href="./Sir_Tim_Berners-Lee" title="Sir Tim Berners-Lee">Sir Tim Berners-Lee</a>, the A4AI seeks to make Internet access more affordable so that access is broadened in the developing world, where only 31% of people are online. Google will help to decrease Internet access prices so they fall below the UN Broadband Commission's worldwide target of 5% of monthly income.</p>
+<p>On September 21, 2017, <a href="./HTC" title="HTC">HTC</a> announced a "cooperation agreement" in which it would sell non-exclusive rights to certain intellectual property, as well as smartphone talent, to Google for $1.1 billion.</p>
+<h2>See also</h2>
+<ul>
+<li><a href="./Timeline_of_Google_Search" title="Timeline of Google Search">Timeline of Google Search</a></li>
+<li><a href="./Criticism_of_Google" title="Criticism of Google">Criticism of Google</a></li>
+<li><a href="./Google_logo" title="Google logo">Google logo</a></li>
+<li><a href="./List_of_Google_Easter_eggs" title="List of Google Easter eggs">List of Google Easter eggs</a></li>
+<li><a href="./Timeline_of_Mountain_View,_California" title="Timeline of Mountain View, California">Timeline of Mountain View, California</a>, headquarters of Google since 1999</li>
+</ul>
+<h2>References</h2>
+<h2>Further reading</h2>
+<ul>
+<li><a href="./Ken_Auletta" title="Ken Auletta">Auletta, Ken</a> (2009). <em>Googled: The End of the World as We Know It</em>. New York: Penguin Press. <a href="./ISBN_(identifier)" title="ISBN (identifier)">ISBN</a> <a href="./Special:BookSources/978-1-59420-235-3" title="Special:BookSources/978-1-59420-235-3">978-1-59420-235-3</a>. <a href="./OCLC_(identifier)" title="OCLC (identifier)">OCLC</a> <a href="https://search.worldcat.org/oclc/318411527">318411527</a>.</li>
+<li><a href="./John_Battelle" title="John Battelle">Battelle, John</a> (2005). <a href="https://archive.org/details/searchhowgooglei0000batt_n2l8/mode/2up"><em>The Search: How Google and Its Rivals Rewrote the Rules of Business and Transformed Our Culture</em></a>. New York: Portfolio. <a href="./ISBN_(identifier)" title="ISBN (identifier)">ISBN</a> <a href="./Special:BookSources/1-59184-088-0" title="Special:BookSources/1-59184-088-0">1-59184-088-0</a>. <a href="./OCLC_(identifier)" title="OCLC (identifier)">OCLC</a> <a href="https://search.worldcat.org/oclc/72691962">72691962</a>.</li>
+<li>Bottando, Evelyn.  "Hedging the commons: Google Books, libraries, and open access to knowledge" (PhD Dissertation, University of Iowa; ProQuest Dissertations &amp; Theses,  2012. 3526789).</li>
+<li>Gray, Joanne Elizabeth. <em>Google Rules: The History and Future of Copyright Under the Influence of Google</em> (Oxford University Press, 2020)</li>
+<li><a href="./Steven_Levy" title="Steven Levy">Levy, Steven</a> (2011). <a href="https://books.google.com/books?id=V1u1f8sv3k8C"><em>In the Plex: How Google Thinks, Works, and Shapes Our Lives</em></a>. Simon and Schuster. <a href="./ISBN_(identifier)" title="ISBN (identifier)">ISBN</a> <a href="./Special:BookSources/978-1-41659-671-4" title="Special:BookSources/978-1-41659-671-4">978-1-41659-671-4</a>.</li>
+<li>Marcum, Deanna, and Roger C. Schonfeld. <em>Along Came Google: A History of Library Digitization</em> (Princeton University Press, 2021)</li>
+<li>Redding, Anna Crowley. <em>Google It: A History of Google</em> (2018)</li>
+<li>Stross, Randall (2008). <a href="https://books.google.com/books?id=xOk3EIUW9VgC"><em>Planet Google: One Company's Audacious Plan to Organize Everything We Know</em></a>. New York: Free Press. <a href="./ISBN_(identifier)" title="ISBN (identifier)">ISBN</a> <a href="./Special:BookSources/978-1-4165-4691-7" title="Special:BookSources/978-1-4165-4691-7">978-1-4165-4691-7</a>. <a href="./OCLC_(identifier)" title="OCLC (identifier)">OCLC</a> <a href="https://search.worldcat.org/oclc/261376729">261376729</a>.</li>
+<li><a href="./David_A._Vise" title="David A. Vise">Vise, David A</a>; <a href="./Mark_Malseed" title="Mark Malseed">Malseed, Mark</a> (2005). <a href="https://books.google.com/books?id=lYe1AAAAIAAJ"><em>The Google Story</em></a>. Delacorte Press. <a href="./ISBN_(identifier)" title="ISBN (identifier)">ISBN</a> <a href="./Special:BookSources/978-0-55380-457-7" title="Special:BookSources/978-0-55380-457-7">978-0-55380-457-7</a>. <a href="./OCLC_(identifier)" title="OCLC (identifier)">OCLC</a> <a href="https://search.worldcat.org/oclc/607806212">607806212</a>.</li>
+<li>Yeo, ShinJoung (2023). <em>Behind the Search Box: Google and the Global Internet Industry</em>. U of Illinois Press. <a href="./ISBN_(identifier)" title="ISBN (identifier)">ISBN</a> <a href="./Special:BookSources/0252087127" title="Special:BookSources/0252087127">0252087127</a> <a href="https://www.jstor.org/stable/10.5406/jj.4116455">online</a></li>
+</ul>
+<h2>External links</h2>
+<ul>
+<li><a href="https://www.google.com/intl/en/corporate/history.html">Google Corporate History (official)</a></li>
+<li>David Hart: <a href="https://www.nsf.gov/discoveries/disc_summ.jsp?cntn_id=100660&amp;org=NSF">On the Origins of Google</a> <a href="./National_Science_Foundation" title="National Science Foundation">National Science Foundation</a>, August 17, 2004</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products" title="List of Google products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

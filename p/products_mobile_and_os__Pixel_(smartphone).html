@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pixel (smartphone)</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link active" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Pixel (smartphone)</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Google_Pixel<br>
+Category: products_mobile_and_os<br>
+Depth: 1</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Google Pixel is a brand of portable consumer electronic devices that is developed by Google that runs the Pixel version of the Android operating system or the ChromeOS operating system. The primary line of Pixel products consists of Android-powered smartphones, produced since October 2016 as the replacement for the older Nexus line, with the current models being the Pixel 10, Pixel 10 Pro, Pixel 10 Pro XL, Pixel 10 Pro Fold, and Pixel 10a. The Pixel brand also includes laptop and tablet computers, as well as several accessories, and was originally introduced in February 2013 with the Chromebook Pixel.</p>
+<h2>Images</h2>
+<p><img alt="250px-Pixel_wordmark.svg" src="../images/250px-Pixel_wordmark.svg.png"><br>
+<img alt="330px-Pixel_wordmark.svg" src="../images/330px-Pixel_wordmark.svg.png"><br>
+<img alt="250px-Pixel_1_and_1_XL_front.svg" src="../images/250px-Pixel_1_and_1_XL_front.svg.png"><br>
+<img alt="250px-Google_Pixel_and_Pixel_XL_smartphones__2830155272575_29" src="../images/250px-Google_Pixel_and_Pixel_XL_smartphones__2830155272575_29.jpg"><br>
+<img alt="250px-Pixel_2_and_2_XL_front.svg" src="../images/250px-Pixel_2_and_2_XL_front.svg.png"><br>
+<img alt="250px-Pixel_3_and_3_XL_front.svg" src="../images/250px-Pixel_3_and_3_XL_front.svg.png"><br>
+<img alt="250px-thumbnail" src="../images/250px-thumbnail.jpg"><br>
+<img alt="250px-GooglePixel3aAndroid12" src="../images/250px-GooglePixel3aAndroid12.jpg"><br>
+<img alt="250px-Google_Pixel_5_back" src="../images/250px-Google_Pixel_5_back.jpg"><br>
+<img alt="250px-Google_Pixel_5_front" src="../images/250px-Google_Pixel_5_front.jpg"><br>
+<img alt="250px-Pixel_8_and_8_Pro_front.svg" src="../images/250px-Pixel_8_and_8_Pro_front.svg.png"><br>
+<img alt="250px-Chromebook_Pixel__28WiFi_29_open" src="../images/250px-Chromebook_Pixel__28WiFi_29_open.JPG"></p>
+<h2>Full Article</h2>
+<p>Line of consumer electronic devices</p>
+<p>This article is about the line of hardware products. For the first-generation Pixel phone, see <a href="./Pixel_(1st_generation)" title="Pixel (1st generation)">Pixel (1st generation)</a>.</p>
+<p><strong>Google Pixel</strong> is a brand of portable <a href="./Consumer_electronics" title="Consumer electronics">consumer electronic</a> devices that is developed by <a href="./Google" title="Google">Google</a> that runs the Pixel version of the <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> operating system or the <a href="./ChromeOS" title="ChromeOS">ChromeOS</a> <a href="./Operating_system" title="Operating system">operating system</a>. The primary line of Pixel products consists of Android-powered smartphones, produced since October 2016 as the replacement for the older <a href="./Google_Nexus" title="Google Nexus">Nexus</a> line, with the current models being the <a href="./Pixel_10" title="Pixel 10">Pixel 10</a>, <a href="./Pixel_10_Pro" title="Pixel 10 Pro">Pixel 10 Pro</a>, <a href="./Pixel_10_Pro_XL" title="Pixel 10 Pro XL">Pixel 10 Pro XL</a>, <a href="./Pixel_10_Pro_Fold" title="Pixel 10 Pro Fold">Pixel 10 Pro Fold</a>, and <a href="./Pixel_10a" title="Pixel 10a">Pixel 10a</a>. The Pixel brand also includes laptop and tablet computers, as well as several accessories, and was originally introduced in February 2013 with the <a href="./Chromebook_Pixel" title="Chromebook Pixel">Chromebook Pixel</a>.</p>
+<h2>Phones</h2>
+<p>See also: <a href="./Comparison_of_Google_Pixel_smartphones" title="Comparison of Google Pixel smartphones">Comparison of Google Pixel smartphones</a></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Legend:</td>
+<td>Unsupported</td>
+<td>Supported</td>
+<td>Upcoming</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Announcement</th>
+<th>Release</th>
+<th></th>
+<th>Support</th>
+<th></th>
+<th>Lifespan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Date</td>
+<td>Launch OS</td>
+<td>Date</td>
+<td>Final OS</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_(1st_generation)" title="Pixel (1st generation)">Pixel / XL</a></td>
+<td>October 4, 2016</td>
+<td>October 20, 2016</td>
+<td><a href="./Android_Nougat" title="Android Nougat">7.1 Nougat</a></td>
+<td>December 2, 2019</td>
+<td><a href="./Android_10" title="Android 10">10</a></td>
+<td>3 years, 1 month</td>
+</tr>
+<tr>
+<td><a href="./Pixel_2" title="Pixel 2">Pixel 2 / XL</a></td>
+<td>October 4, 2017</td>
+<td>October 19, 2017</td>
+<td><a href="./Android_Oreo" title="Android Oreo">8.0 Oreo</a></td>
+<td>December 7, 2020</td>
+<td><a href="./Android_11" title="Android 11">11</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_3" title="Pixel 3">Pixel 3 / XL</a></td>
+<td>October 9, 2018</td>
+<td>October 18, 2018</td>
+<td><a href="./Android_Pie" title="Android Pie">9 Pie</a></td>
+<td>June 6, 2022</td>
+<td><a href="./Android_12" title="Android 12">12</a></td>
+<td>3 years, 7 months</td>
+</tr>
+<tr>
+<td><a href="./Pixel_3a" title="Pixel 3a">Pixel 3a / XL</a></td>
+<td>May 7, 2019</td>
+<td>May 15, 2019</td>
+<td>September 5, 2022</td>
+<td><a href="./Android_12" title="Android 12">12L</a></td>
+<td>3 years, 3 months</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_4" title="Pixel 4">Pixel 4 / XL</a></td>
+<td>October 15, 2019</td>
+<td>October 23, 2019</td>
+<td><a href="./Android_10" title="Android 10">10</a></td>
+<td>February 6, 2023</td>
+<td><a href="./Android_13" title="Android 13">13</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_4a" title="Pixel 4a">Pixel 4a</a></td>
+<td>August 3, 2020</td>
+<td>August 20, 2020</td>
+<td>November 6, 2023</td>
+<td>3 years, 2 months</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_4a" title="Pixel 4a">Pixel 4a (5G)</a></td>
+<td>November 5, 2020</td>
+<td><a href="./Android_11" title="Android 11">11</a></td>
+<td>February 5, 2024</td>
+<td><a href="./Android_14" title="Android 14">14</a></td>
+<td>3 years, 3 months</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_5" title="Pixel 5">Pixel 5</a></td>
+<td>September 30, 2020</td>
+<td>October 15, 2020</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_5a" title="Pixel 5a">Pixel 5a</a></td>
+<td>August 17, 2021</td>
+<td>August 26, 2021</td>
+<td>November 4, 2024</td>
+<td>3 years, 2 months</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_6" title="Pixel 6">Pixel 6 / Pro</a></td>
+<td>October 19, 2021</td>
+<td>October 28, 2021</td>
+<td><a href="./Android_12" title="Android 12">12</a></td>
+<td>At least October 2026</td>
+<td>—</td>
+<td>4 years, 5 months</td>
+</tr>
+<tr>
+<td><a href="./Pixel_6a" title="Pixel 6a">Pixel 6a</a></td>
+<td>May 11, 2022</td>
+<td>July 21, 2022</td>
+<td>At least July 2027</td>
+<td>3 years, 8 months</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_7" title="Pixel 7">Pixel 7 / Pro</a></td>
+<td>October 6, 2022</td>
+<td>October 13, 2022</td>
+<td><a href="./Android_13" title="Android 13">13</a></td>
+<td>At least October 2027</td>
+<td>3 years, 6 months</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_7a" title="Pixel 7a">Pixel 7a</a></td>
+<td>May 10, 2023</td>
+<td>May 10, 2023</td>
+<td>At least May 2028</td>
+<td>2 years, 11 months</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_Fold" title="Pixel Fold">Pixel Fold</a></td>
+<td>June 20, 2023</td>
+<td>At least June 2028</td>
+<td>2 years, 9 months</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_8" title="Pixel 8">Pixel 8 / Pro</a></td>
+<td>October 4, 2023</td>
+<td>October 12, 2023</td>
+<td><a href="./Android_14" title="Android 14">14</a></td>
+<td>At least October 2030</td>
+<td>2 years, 6 months</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_8a" title="Pixel 8a">Pixel 8a</a></td>
+<td>May 7, 2024</td>
+<td>May 14, 2024</td>
+<td>At least May 2031</td>
+<td>1 year, 11 months</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_9" title="Pixel 9">Pixel 9 / Pro / Pro XL</a></td>
+<td>August 13, 2024</td>
+<td>August 22, 2024</td>
+<td>At least August 2031</td>
+<td>1 year, 7 months</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_9_Pro_Fold" title="Pixel 9 Pro Fold">Pixel 9 Pro Fold</a></td>
+<td>September 4, 2024</td>
+<td>At least September 2031</td>
+<td>1 year, 7 months</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_9a" title="Pixel 9a">Pixel 9a</a></td>
+<td>March 19, 2025</td>
+<td>April 10, 2025</td>
+<td><a href="./Android_15" title="Android 15">15</a></td>
+<td>At least March 2032</td>
+<td>1 year</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_10" title="Pixel 10">Pixel 10</a></td>
+<td>August 20, 2025</td>
+<td>August 28, 2025</td>
+<td><a href="./Android_16" title="Android 16">16</a></td>
+<td>At least August 2032</td>
+<td>7 months</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_10_Pro" title="Pixel 10 Pro">Pixel 10 Pro / Pro XL</a></td>
+<td>August 28, 2025</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_10_Pro_Fold" title="Pixel 10 Pro Fold">Pixel 10 Pro Fold</a></td>
+<td>October 9, 2025</td>
+<td>At least October 2032</td>
+<td>6 months</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Pixel_10a" title="Pixel 10a">Pixel 10a</a></td>
+<td>February 18, 2026</td>
+<td>March 5, 2026</td>
+<td><a href="./Android_16" title="Android 16">16</a></td>
+<td>At least February 2033</td>
+<td>1 month</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3>Pixel and Pixel XL</h3>
+<p>Main article: <a href="./Pixel_(1st_generation)" title="Pixel (1st generation)">Pixel (1st generation)</a></p>
+<p>Google announced the first generation Pixel smartphones, the <strong>Pixel,</strong> and the <strong>Pixel XL</strong>, on October 4, 2016, during the #MadeByGoogle event. Google emphasized the camera on the two phones, which ranked as the best smartphone camera on DxOMarkMobile with 90 points until <a href="./HTC" title="HTC">HTC</a> released the <a href="./HTC_U11" title="HTC U11">U11</a>, which also scored 90 points. This is largely due to software optimizations such as HDR+. The Pixel phones also include unlimited cloud storage for pictures on <a href="./Google_Photos" title="Google Photos">Google Photos</a> and, for devices purchased directly from Google, an <a href="./Bootloader_unlocking" title="Bootloader unlocking">unlockable bootloader</a>. In 2019, a class action lawsuit over faulty microphones in some devices enabled Pixel owners to claim up to $500 in compensation.</p>
+<ul>
+<li>Display: 5.0" 60 <a href="./Refresh_rate" title="Refresh rate">Hz</a> AMOLED display with 1080×1920 pixel resolution (Pixel); 5.5" AMOLED 60 Hz display with 1440×2560 pixel resolution (Pixel XL)</li>
+<li>Processor: Qualcomm <a href="./List_of_Qualcomm_Snapdragon_systems_on_chips#Snapdragon_800_series_(2013–2021)" title="List of Qualcomm Snapdragon systems on chips">Snapdragon 821</a></li>
+<li>Storage: UFS 2.0 with 32 GB or 128 GB</li>
+<li><a href="./Random-access_memory" title="Random-access memory">RAM</a>: 4 GB <a href="./LPDDR#LPDDR4" title="LPDDR">LPDDR4</a></li>
+<li>Cameras: 12.3 <a href="./Pixel#Megapixel" title="Pixel">MP</a> rear camera Sony Exmor IMX378 sensor with f/2.0 lens and IR laser-assisted autofocus; 1.55 μm pixel size. 8 MP front camera with f/2.4 lens</li>
+<li>Headphone Jack</li>
+<li>Battery: 2,770 mAh (Pixel); 3,450 mAh (Pixel XL); both are non-removable and have fast charging</li>
+<li>Materials: Aluminum unibody design with hybrid coating; IP53 water and dust resistance</li>
+<li>Colors: Very Silver  , Quite Black   or Really Blue   (Limited Edition)</li>
+<li>Operating system: <a href="./Android_Nougat" title="Android Nougat">Android 7.1 Nougat</a>; upgradable to <a href="./Android_10" title="Android 10">Android 10</a></li>
+</ul>
+<h3>Pixel 2 and 2 XL</h3>
+<p>Main article: <a href="./Pixel_2" title="Pixel 2">Pixel 2</a></p>
+<p>Google announced the Pixel 2 series, consisting of the <strong>Pixel 2</strong> and <strong>Pixel 2 XL</strong>, on October 4, 2017.</p>
+<ul>
+<li>Display: 5.0" AMOLED 60 Hz display with 1080×1920 pixel resolution (Pixel 2); 6" P-OLED 60 Hz display with 1440×2880 pixel resolution (Pixel 2 XL); Both displays have Corning Gorilla Glass 5</li>
+<li>Processor: Qualcomm <a href="./List_of_Qualcomm_Snapdragon_systems_on_chips#Snapdragon_800_series_(2013–2021)" title="List of Qualcomm Snapdragon systems on chips">Snapdragon 835</a></li>
+<li>Storage: UFS 2.1 with 64 GB or 128 GB</li>
+<li>RAM: 4 GB <a href="./LPDDR#LPDDR4X" title="LPDDR">LPDDR4X</a></li>
+<li>Cameras: 12.2 <a href="./Pixel#Megapixel" title="Pixel">MP</a> rear camera Sony Exmor IMX362 with f/1.8 lens, IR laser-assisted autofocus, optical and electronic <a href="./Image_stabilization" title="Image stabilization">image stabilization</a>; 8 MP front camera with f/2.4 lens</li>
+<li>Battery: 2,700 mAh (Pixel 2); 3,520 mAh (Pixel 2 XL); both are non-removable and have fast charging</li>
+<li>Materials: Aluminum unibody design with hybrid coating; IP67 water and dust resistance</li>
+<li>Colors: Just Black  , Clearly White   or Kinda Blue   (Pixel 2); Just Black   or Black and White    (Pixel 2 XL)</li>
+<li>Operating system: <a href="./Android_Oreo" title="Android Oreo">Android 8.0 Oreo</a>; upgradable to <a href="./Android_11" title="Android 11">Android 11</a></li>
+</ul>
+<h3>Pixel 3 and 3 XL</h3>
+<p>Main article: <a href="./Pixel_3" title="Pixel 3">Pixel 3</a></p>
+<p>Google announced the <strong>Pixel 3</strong> and <strong>Pixel 3 XL</strong> at an event on October 9, 2018, alongside several other products.</p>
+<ul>
+<li>Display: Pixel 3 5.5" OLED, 60 Hz, 2160×1080 (18:9) pixel resolution; Pixel 3 XL 6.3" OLED, 60 Hz, 2960×1440 (18.5:9) pixel resolution; both displays have Corning Gorilla Glass 5.</li>
+<li>Processor: Qualcomm <a href="./List_of_Qualcomm_Snapdragon_systems_on_chips#Snapdragon_800_series_(2013–2021)" title="List of Qualcomm Snapdragon systems on chips">Snapdragon 845</a></li>
+<li>Storage: UFS 2.1 with 64 GB or 128 GB</li>
+<li>RAM: 4 GB <a href="./LPDDR#LPDDR4X" title="LPDDR">LPDDR4X</a></li>
+<li>Cameras: 12.2 <a href="./Pixel#Megapixel" title="Pixel">MP</a> rear camera Sony Exmor IMX363 with f/1.8 lens, IR laser-assisted autofocus, optical and electronic image stabilization; 8 MP front camera with f/1.8 lens and 75° lens, second front camera with 8 MP, f/2.2, fixed focus and 97° lens; <a href="./Stereophonic_sound" title="Stereophonic sound">stereo audio</a> added to video recording</li>
+<li>Battery: 2,915 mAh (Pixel 3); 3,430 mAh (Pixel 3 XL); both are non-removable and have fast charging and wireless charging</li>
+<li>Materials: Aluminum frame, matte glass back, IP68 water and dust resistance</li>
+<li>Colors: Just Black  , Clearly White  , and Not Pink</li>
+<li>Operating system: <a href="./Android_Pie" title="Android Pie">Android 9.0 Pie</a>; upgradable to <a href="./Android_12" title="Android 12">Android 12</a></li>
+</ul>
+<h3>Pixel 3a and 3a XL</h3>
+<p>Main article: <a href="./Pixel_3a" title="Pixel 3a">Pixel 3a</a></p>
+<p>On May 7, at <a href="./Google_I/O#2019" title="Google I/O">I/O 2019</a>, Google announced the <strong>Pixel 3a</strong> and <strong>Pixel 3a XL</strong>, budget alternatives to the original two Pixel 3 devices.</p>
+<ul>
+<li>Display: Pixel 3a 5.6" OLED, 60 Hz, 2220×1080 (18.5:9) pixel resolution; Pixel 3a XL 6" OLED, 60 Hz, 2160×1080 (18:9) pixel resolution; both displays have Asahi <a href="./Dragontrail" title="Dragontrail">Dragontrail</a> Glass</li>
+<li>Processor: Qualcomm <a href="./List_of_Qualcomm_Snapdragon_systems_on_chips#Snapdragon_600_series_(2013–2023)" title="List of Qualcomm Snapdragon systems on chips">Snapdragon 670</a></li>
+<li>Storage: 64 GB</li>
+<li>RAM: 4 GB <a href="./LPDDR#LPDDR4X" title="LPDDR">LPDDR4X</a></li>
+<li>Cameras: 12.2 <a href="./Pixel#Megapixel" title="Pixel">MP</a> rear camera with f/1.8 lens, IR laser-assisted autofocus, optical and electronic image stabilization; 8 MP front camera with f/2.0 lens and 84° lens</li>
+<li>Headphone Jack</li>
+<li>Battery: 3,000 mAh (Pixel 3a); 3700 mAh (Pixel 3a XL); both are non-removable and have fast charging, but no wireless charging</li>
+<li>Materials: Polycarbonate body</li>
+<li>Colors: Just Black  , Clearly White   and Purple-ish</li>
+<li>Operating system: <a href="./Android_9" title="Android 9">Android 9</a>, upgradable to <a href="./Android_12" title="Android 12">Android 12</a></li>
+</ul>
+<h3>Pixel 4 and 4 XL</h3>
+<p>Main article: <a href="./Pixel_4" title="Pixel 4">Pixel 4</a></p>
+<p>Google announced the <strong>Pixel 4</strong> and <strong>Pixel 4 XL</strong> at an event on October 15, 2019, alongside several other products.</p>
+<ul>
+<li>Display: Pixel 4 5.7" OLED, 90 Hz, 2280×1080 (19:9) pixel resolution; Pixel 4 XL 6.3" OLED, 90 Hz, 3040×1440 (19:9) pixel resolution; both displays have Corning Gorilla Glass 5.</li>
+<li>Processor: Qualcomm <a href="./List_of_Qualcomm_Snapdragon_systems_on_chips#Snapdragon_800_series_(2013–2021)" title="List of Qualcomm Snapdragon systems on chips">Snapdragon 855</a></li>
+<li>Storage: 64 GB or 128 GB</li>
+<li>RAM: 6 GB <a href="./LPDDR#LPDDR4X" title="LPDDR">LPDDR4X</a></li>
+<li>Cameras: 12.2 <a href="./Pixel#Megapixel" title="Pixel">MP</a> sensor with f/1.8 lens and 16 MP telephoto sensor with f/2.4 lens, IR laser-assisted autofocus, optical and electronic image stabilization; 8 MP front camera with f/2.0 lens and 90° lens</li>
+<li>Battery: 2,800 mAh (Pixel 4); 3,700 mAh (Pixel 4 XL); both are non-removable and have fast charging and wireless charging</li>
+<li>Materials: Aluminum frame, matte or glossy glass back, IP68 water and dust resistance</li>
+<li>Colors: Just Black  , Clearly White   and Oh So Orange</li>
+<li>Operating system: <a href="./Android_10" title="Android 10">Android 10</a>, upgradable to <a href="./Android_13" title="Android 13">Android 13</a></li>
+</ul>
+<p>In 2019, Google offered a <a href="./Bug_bounty_program" title="Bug bounty program">bug bounty program</a> of up to $1.5 million for the <a href="./List_of_Google_products#Processors" title="List of Google products">Titan M</a> security chip built into Pixel 3, Pixel 3a and Pixel 4.</p>
+<h3>Pixel 4a and 4a (5G)</h3>
+<p>Main article: <a href="./Pixel_4a" title="Pixel 4a">Pixel 4a</a></p>
+<p>Google announced the <strong>Pixel 4a</strong> on August 3, 2020, and the <strong>Pixel 4a (5G)</strong> on September 30, 2020, as budget alternatives to the original two Pixel 4 devices.</p>
+<ul>
+<li>Display: 5.8" OLED (4a) 6.2" OLED (4a 5G), 60 Hz, 2340×1080 (19.5:9) pixel resolution; the display uses Corning Gorilla Glass 3. Both have a hole punch for the front camera.</li>
+<li>Processor: Qualcomm <a href="./List_of_Qualcomm_Snapdragon_systems_on_chips#Snapdragon_700_series_(2018–2022)" title="List of Qualcomm Snapdragon systems on chips">Snapdragon 730G</a> (4a); Qualcomm <a href="./List_of_Qualcomm_Snapdragon_systems_on_chips#Snapdragon_700_series_(2018–2022)" title="List of Qualcomm Snapdragon systems on chips">Snapdragon 765G</a> (4a 5G)</li>
+<li>Storage: 128 GB</li>
+<li>RAM: 6 GB <a href="./LPDDR#LPDDR4X" title="LPDDR">LPDDR4X</a></li>
+<li>Camera: 12.2 <a href="./Pixel#Megapixel" title="Pixel">MP</a> dual-pixel sensor with f/1.7 lens, autofocus with dual-pixel phase detection, optical and electrical image stabilization. In addition, the 4a 5G has a 16 MP ultrawide sensor with f/2.2 lens. Both have an 8 MP front camera with f/2.0 lens.</li>
+<li>Battery: 3,140 mAh (4a); Typical - 3,885 mAh, Minimum - 3,800 mAh (4a 5G); both are non-removable and feature all day battery as well as fast charging</li>
+<li>3.5 mm headset jack</li>
+<li>Materials: Polycarbonate body</li>
+<li>Colors: Just Black   or Barely Blue   (Limited Edition) (Pixel 4a); Just Black   or Clearly White   (Pixel 4a 5G)</li>
+<li>Operating System: <a href="./Android_10" title="Android 10">Android 10</a>, upgradable to <a href="./Android_13" title="Android 13">Android 13</a> (4a); Android 11 (4a 5G), upgradable to <a href="./Android_14" title="Android 14">Android 14</a></li>
+</ul>
+<h3>Pixel 5</h3>
+<p>Main article: <a href="./Pixel_5" title="Pixel 5">Pixel 5</a></p>
+<p>Google announced the <strong>Pixel 5</strong> on September 30, 2020.</p>
+<ul>
+<li>Display: 6.0" OLED, 90 Hz, 2340×1080 (19.5:9) pixel resolution; the display uses Corning Gorilla Glass 6.</li>
+<li>Processor: Qualcomm <a href="./List_of_Qualcomm_Snapdragon_systems_on_chips#Snapdragon_700_series_(2018–2022)" title="List of Qualcomm Snapdragon systems on chips">Snapdragon 765G</a></li>
+<li>Storage: 128 GB</li>
+<li>RAM: 8 GB <a href="./LPDDR#LPDDR4X" title="LPDDR">LPDDR4X</a></li>
+<li>Camera: 12.2 <a href="./Pixel#Megapixel" title="Pixel">MP</a> sensor with f/1.7 lens and 16 MP ultrawide sensor with f/2.2 lens, autofocus with dual-pixel phase detection, optical and electrical image stabilization; 8 MP front camera with f/2.0 lens.</li>
+<li>Battery: 4,080 mAh; it is non-removable and features fast charging and wireless charging, all day battery, and Battery Share.</li>
+<li>Materials: Brushed aluminum body, IP68 water and dust resistance</li>
+<li>Colors: Just Black   and Sorta Sage</li>
+<li>Operating System: <a href="./Android_11" title="Android 11">Android 11</a>, upgradable to <a href="./Android_14" title="Android 14">Android 14</a></li>
+</ul>
+<h3>Pixel 5a</h3>
+<p>Main article: <a href="./Pixel_5a" title="Pixel 5a">Pixel 5a</a></p>
+<p>Google announced the <strong>Pixel 5a</strong> on August 17, 2021.</p>
+<ul>
+<li>Display: 6.34" OLED, 60 Hz, 2400×1080 (20:9) pixel resolution; the display uses Corning Gorilla Glass 3. It has a hole punch for the front camera.</li>
+<li>Processor: Qualcomm <a href="./List_of_Qualcomm_Snapdragon_systems_on_chips#Snapdragon_700_series_(2018–2022)" title="List of Qualcomm Snapdragon systems on chips">Snapdragon 765G</a></li>
+<li>Storage: 128 GB</li>
+<li>RAM: 6 GB <a href="./LPDDR#LPDDR4X" title="LPDDR">LPDDR4X</a></li>
+<li>Camera: 12.2 <a href="./Pixel#Megapixel" title="Pixel">MP</a> sensor with f/1.7 lens and 16 MP ultrawide sensor with f/2.2 lens, autofocus with dual-pixel phase detection, optical and electrical image stabilization; 8 MP front camera with f/2.0 lens.</li>
+<li>Battery: 4,680 mAh; non-removable and features all day battery as well as fast charging</li>
+<li>Materials: Brushed aluminum body, IP67 water and dust resistance</li>
+<li>Colors: Mostly Black</li>
+<li>Operating System: <a href="./Android_11" title="Android 11">Android 11</a>, upgradable to <a href="./Android_14" title="Android 14">Android 14</a></li>
+</ul>
+<h3>Pixel 6 and 6 Pro</h3>
+<p>Main article: <a href="./Pixel_6" title="Pixel 6">Pixel 6</a></p>
+<p>Google announced the <strong>Pixel 6</strong> and <strong>Pixel 6 Pro</strong> on October 19, 2021.</p>
+<ul>
+<li>Display: Pixel 6 6.4" OLED, 90 Hz, 2400×1080 FHD+ pixel resolution; Pixel 6 Pro 6.7" LTPO OLED, 120 Hz, 3120×1440 QHD+ pixel resolution; both have Corning Gorilla Glass Victus.</li>
+<li>Processor: <a href="./Google_Tensor" title="Google Tensor">Google Tensor</a></li>
+<li>Storage: Pixel 6 128 or 256 GB; Pixel 6 Pro 128, 256, or 512 GB</li>
+<li>RAM: 8 GB <a href="./LPDDR#LPDDR5" title="LPDDR">LPDDR5</a> (Pixel 6); 12 GB <a href="./LPDDR#LPDDR5" title="LPDDR">LPDDR5</a> (Pixel 6 Pro)</li>
+<li>Cameras:</li>
+<li>Pixel 6: Rear 50 <a href="./Pixel#Megapixel" title="Pixel">MP</a> sensor with f/1.85 lens, laser detect autofocus, optical image stabilization; Rear 12 MP ultrawide sensor with f/2.2 lens; Front 8 MP sensor with f/2.0 lens and 84° field of view;</li>
+<li>Pixel 6 Pro: Rear 50 <a href="./Pixel#Megapixel" title="Pixel">MP</a> sensor with f/1.85 lens, laser detect autofocus, optical image stabilization; Rear 12 MP ultrawide sensor with f/2.2 lens; Rear 48 MP telephoto sensor with f/3.5 lens; Front 11.1 MP front camera with f/2.2 lens and 94° field of view.</li>
+<li>Battery: 4,614 mAh (Pixel 6); 5,003 mAh (Pixel 6 Pro); both are non-removable and have fast charging, wireless charging and reverse wireless charging</li>
+<li>Materials: Aluminum frame, glass back, IP68 water and dust resistance</li>
+<li>Colors: Pixel 6 Stormy Black  , Kinda Coral   and Sorta Seafoam   ; Pixel 6 Pro Stormy Black  , Cloudy White   and Sorta Sunny</li>
+<li>Operating system: <a href="./Android_12" title="Android 12">Android 12</a>, upgradable to <a href="./Android_16" title="Android 16">Android 16</a>, with minimum 5 years of major OS/security update support.</li>
+</ul>
+<h3>Pixel 6a</h3>
+<p>Main article: <a href="./Pixel_6a" title="Pixel 6a">Pixel 6a</a></p>
+<p>Google announced the <strong>Pixel 6a</strong> on May 11, 2022.</p>
+<ul>
+<li>Display: 6.1" OLED, 60 Hz, 2400×1080 (20:9) pixel resolution; the display uses Corning Gorilla Glass 3. It has a hole punch for the front camera.</li>
+<li>Processor: <a href="./Google_Tensor" title="Google Tensor">Google Tensor</a></li>
+<li>Storage: 128 GB</li>
+<li>RAM: 6 GB <a href="./LPDDR#LPDDR5" title="LPDDR">LPDDR5</a></li>
+<li>Camera: 12.2 <a href="./Pixel#Megapixel" title="Pixel">MP</a> sensor with f/1.7 lens and 12 MP ultrawide sensor with f/2.2 lens, autofocus with dual-pixel phase detection, optical and electrical image stabilization; 8 MP front camera with f/2.0 lens.</li>
+<li>Battery: 4,410 mAh; non-removable battery with 18 W charging</li>
+<li>Materials: Aluminum frame, plastic back, IP67 water and dust resistance</li>
+<li>Colors: Charcoal  , Chalk   and Sage</li>
+<li>Operating System: <a href="./Android_12" title="Android 12">Android 12</a>, upgradable to <a href="./Android_16" title="Android 16">Android 16</a>, with minimum 5 years of major OS/security update support.</li>
+</ul>
+<h3>Pixel 7 and 7 Pro</h3>
+<p>Main article: <a href="./Pixel_7" title="Pixel 7">Pixel 7</a></p>
+<p>Google announced the <strong>Pixel 7</strong> and <strong>Pixel 7 Pro</strong> on October 6, 2022.</p>
+<ul>
+<li>Display: <em>Pixel 7</em> 6.3" OLED, 90 Hz, 2400×1080 FHD+ pixel resolution; <em>Pixel 7 Pro</em> 6.7" LTPO OLED, 120 Hz, 3120×1440 QHD+ pixel resolution; both have Corning Gorilla Glass Victus.</li>
+<li>Processor: <a href="./Google_Tensor#G2" title="Google Tensor">Google Tensor G2</a></li>
+<li>Storage: <em>Pixel 7</em> 128 or 256 GB; <em>Pixel 7 Pro</em> 128, 256, or 512 GB</li>
+<li>RAM: 8 GB <a href="./LPDDR#LPDDR5" title="LPDDR">LPDDR5</a> (Pixel 7); 12 GB <a href="./LPDDR#LPDDR5" title="LPDDR">LPDDR5</a> (Pixel 7 Pro)</li>
+<li>Cameras: <em>Pixel 7</em> Rear 50 <a href="./Pixel#Megapixel" title="Pixel">MP</a> sensor with f/1.85 lens and 12 MP ultrawide sensor with f/2.2 lens, front 8 MP sensor with f/2.2 lens and 92.8° field of view; <em>Pixel 7 Pro</em> Rear 50 <a href="./Pixel#Megapixel" title="Pixel">MP</a> sensor with f/1.85 lens, 12 MP ultrawide sensor with f/2.2 lens and 48 MP telephoto sensor with f/3.5 lens, front 11.1 MP sensor with f/2.2 lens and 92.8° field of view; Laser detect autofocus, optical image stabilization.</li>
+<li>Battery: 4,355 mAh (Pixel 7); 5,000 mAh (Pixel 7 Pro); both are non-removable and have fast charging, wireless charging and reverse-wireless charging</li>
+<li>Materials: Aluminum frame, glass back, IP68 water and dust resistance</li>
+<li>Colors: <em>Pixel 7</em> Obsidian  , Snow   and Lemongrass   ; <em>Pixel 7</em> Pro Obsidian  , Snow   and Hazel</li>
+<li>Operating system: <a href="./Android_13" title="Android 13">Android 13</a>, with minimum 5 years of major OS/security update support.</li>
+</ul>
+<h3>Pixel 7a</h3>
+<p>Main article: <a href="./Pixel_7a" title="Pixel 7a">Pixel 7a</a></p>
+<p>Google announced the <strong>Pixel 7a</strong> at its annual <a href="./Google_I/O" title="Google I/O">Google I/O</a> on May 10, 2023.</p>
+<ul>
+<li>Display: 6.1" FHD OLED (2400×1080, 429 ppi) 90 Hz, and has Corning Gorilla Glass 3</li>
+<li>Processor: Google Tensor G2</li>
+<li>Storage: 128 GB</li>
+<li>Memory: 8 GB</li>
+<li>Camera: Rear 64 MP (f/1.89) main; 13 MP (f/2.2) (ultrawide); Front 13 MP (f/2.2)</li>
+<li>Battery: Non-removable 4385 mAh battery, with 18 W fast charging and 7.5 W Qi wireless charging</li>
+<li>Materials: Aluminium frame, plastic back, IP67 dust/water-resistant</li>
+<li>Colors: Charcoal  , Sea  , Snow   and Coral</li>
+<li>Operating System: <a href="./Android_13" title="Android 13">Android 13</a></li>
+</ul>
+<h3>Pixel Fold</h3>
+<p>Main article: <a href="./Pixel_Fold" title="Pixel Fold">Pixel Fold</a></p>
+<p>Google announced the <strong>Pixel Fold</strong> at its annual <a href="./Google_I/O" title="Google I/O">Google I/O</a> on May 10, 2023.</p>
+<ul>
+<li>Display: 5.8-inch FHD OLED (1080×2092, 408 PPI) 120 Hz with Corning Gorilla Glass Victus [External Cover Display]; 7.6" OLED (2208×1840, 380 ppi) 120 Hz [Internal Folding Display]</li>
+<li>Processor: Google Tensor G2</li>
+<li>Storage: 256 or 512 GB</li>
+<li>RAM: 12 GB LPDDR5</li>
+<li>Camera: <em>Rear</em> 48 MP (f/1.7) main, 10.8 MP (f/2.2) ultrawide, 10.8 MP (f/3.05) telephoto; <em>Front</em> 9.5 MP (f/2.2); <em>Inner</em> 8 MP (f/2.0)</li>
+<li>Battery: Non-removable 4821 mAh (typical) battery with Qi-certified wireless charging</li>
+<li>Materials: Aluminum frame, Stainless-steel hinge, Corning <a href="./Gorilla_Glass" title="Gorilla Glass">Gorilla Glass</a> Victus Back, IPX8 water resistance</li>
+<li>Colors: Obsidian   and Porcelain</li>
+<li>Operating System: <a href="./Android_13" title="Android 13">Android 13</a></li>
+</ul>
+<h3>Pixel 8 and 8 Pro</h3>
+<p>Main article: <a href="./Pixel_8" title="Pixel 8">Pixel 8</a></p>
+<p>Google announced the <strong>Pixel 8 and 8 Pro</strong> at a #MadeByGoogle event on October 4, 2023. They were released 8 days later on October 12, 2023.</p>
+<ul>
+<li>Display: <em>Pixel 8</em>: 6.2-inch OLED (1080×2400, 20:9, 428 ppi) Smooth display 60 HZ — 120 HZ; <em>Pixel 8 Pro</em>: 6.7" OLED (1344×2992, 20:9, 489 ppi) Smooth display 1 HZ — 120 HZ</li>
+<li>Processor: Google Tensor G3</li>
+<li>Storage: <em>Pixel 8</em>: 128 GB / 256 GB UFS 3.1; <em>Pixel 8 Pro</em>: 128 GB / 256 GB / 512 GB / 1 TB UFS 3.1</li>
+<li>Memory: <em>Pixel 8</em>: 8 GB LPDDR5X RAM; <em>Pixel 8 Pro</em>: 12 GB LPDDR5X RAM</li>
+<li>Camera: <em>Pixel 8</em>: <em>Rear</em> 50 MP Octa PD (f/1.68) main; 12 MP (f/2.2) ultrawide; <em>Front</em> 10.5 MP (f/2.2); <em>Pixel 8 Pro</em>: <em>Rear</em> 50 MP Octa PD (f/1.68) main; 48 MP Quad PD (f/1.95) ultrawide; 48 MP Quad PD (f/2.8) telephoto;<em>Front</em> 10.5 MP Dual PD (f/2.2)</li>
+<li>Battery: <em>Pixel 8</em>: Non-removable 4575 mAh battery, with fast and wireless charging; <em>Pixel 8 Pro</em>: Non-removable 5050 mAh battery, with fast and wireless charging</li>
+<li>Materials: <em>Pixel 8</em>: Aluminum housing &amp; frame, scratch-resistant Corning Gorilla Glass Victus cover glass, glass back; <em>Pixel 8 Pro</em>: Aluminum housing &amp; frame, scratch-resistant Corning Gorilla Glass Victus 2 cover glass, glass back</li>
+<li>Colors: Mint  , Obsidian  , Hazel   (Pixel 8 only), Rose   (Pixel 8 only), Bay   (Pixel 8 Pro only), and Porcelain   (Pixel 8 Pro only)</li>
+<li>Operating System: <a href="./Android_14" title="Android 14">Android 14</a>, with 7 years of OS/security updates for both</li>
+</ul>
+<h3>Pixel 8a</h3>
+<p>Main article: <a href="./Pixel_8a" title="Pixel 8a">Pixel 8a</a></p>
+<p>The Pixel 8a is a mid-range addition to the Pixel 8 series. It was announced on the <a href="./Made_by_Google" title="Made by Google">Made by Google</a> blog on May 7, 2024.</p>
+<ul>
+<li>Display: 6.1" OLED (1080×2400, 20:9, 430 ppi) Smooth display 60 HZ - 120 HZ</li>
+<li>Processor: Google Tensor G3</li>
+<li>Storage: 128 GB / 256 GB UFS 3.1</li>
+<li>Memory: 8 GB LPDDR5X RAM</li>
+<li>Camera: <em>Rear</em> 64 MP Octa PD (f/1.89) main; 13 MP (f/2.2) ultrawide; <em>Front</em> 13 MP (f/2.2)</li>
+<li>Battery: Non-removable 4492 mAh battery, with 18 W fast charging and 7.5 W Qi wireless charging</li>
+<li>Materials: Aluminum frame, scratch-resistant Corning Gorilla Glass 3 cover glass, plastic back, IP67 dust/water-resistant</li>
+<li>Colors: Aloe  , Bay  , Porcelain  , Obsidian</li>
+<li>Operating System: <a href="./Android_14" title="Android 14">Android 14</a>, with 7 years of OS/security updates</li>
+</ul>
+<h3>Pixel 9</h3>
+<p>Main article: <a href="./Pixel_9" title="Pixel 9">Pixel 9</a></p>
+<p>Google announced the <strong>Pixel 9</strong> at the <a href="./Made_by_Google" title="Made by Google">Made by Google</a> event, along with the <strong>Pixel 9 Pro, Pixel 9 Pro XL, and Pixel 9 Pro Fold</strong> on August 13, 2024.</p>
+<ul>
+<li>Display: 6.3" Actua (1080×2424 OLED, 20:9, 422 ppi) Smooth display 60-120 Hz</li>
+<li>Processor: Google Tensor G4</li>
+<li>Storage: 128 GB / 256 GB UFS 3.1</li>
+<li>Memory: 12 GB LPDDR5X RAM</li>
+<li>Camera: <em>Rear</em> 50 MP Octa PD (f/1.68) main; 48 MP Quad PD (f/1.7) ultrawide; <em>Front</em> 10.5 MP (f/2.2)</li>
+<li>Battery: 4558 mAh battery, with fast and wireless charging</li>
+<li>Materials: 100% recycled aluminum frame, scratch-resistant Corning Gorilla Glass Victus 2 cover glass, Corning Gorilla Glass Victus 2 polished back with satin finish metal frame, IP68 dust/water-resistant</li>
+<li>Colors: Peony  , Wintergreen  , Porcelain  , Obsidian</li>
+<li>Operating System: <a href="./Android_14" title="Android 14">Android 14</a>, with 7 years of OS/security updates</li>
+</ul>
+<h3>Pixel 9 Pro &amp; Pro XL</h3>
+<p>Main article: <a href="./Pixel_9_Pro" title="Pixel 9 Pro">Pixel 9 Pro</a></p>
+<p>Google announced the <strong>Pixel 9 Pro</strong> and <strong>Pixel 9 Pro XL</strong> at the <a href="./Made_by_Google" title="Made by Google">Made by Google</a> event, alongside the <strong>Pixel 9</strong> and the <strong>Pixel 9 Pro Fold</strong> on August 13, 2024.</p>
+<ul>
+<li>Display: 6.3" Super Actua (LTPO) display (1280×2856, 20:9, 495 ppi) Smooth display 1-120 Hz (Pro); 6.8" Super Actua (LTPO) display (1344×2992, 20:9, 486 ppi) Smooth display 1-120 Hz (Pro XL)</li>
+<li>Processor: Google Tensor G4</li>
+<li>Storage: 128 GB / 256 GB / 512 GB / 1 TB UFS 3.1</li>
+<li>Memory: 16 GB LPDDR5X RAM</li>
+<li>Camera: <em>Rear</em> 50 MP Octa PD (f/1.68) main; 48 MP Quad PD ultrawide (f/1.7); 48 MP Quad PD telephoto (f/2.8); 42 MP Dual PD selfie (f/2.2)</li>
+<li>Battery: 4558 mAh (Pro) and 4942 mAh (Pro XL) batteries, both with fast and wireless charging</li>
+<li>Materials: 100% recycled aluminum frame, scratch-resistant Corning Gorilla Glass Victus 2 cover glass, Corning Gorilla Glass Victus 2 silky matte back with polished finish metal frame, IP68 dust/water-resistant</li>
+<li>Colors: Rose Quartz  , Porcelain  , Hazel  , Obsidian</li>
+<li>Operating System: <a href="./Android_14" title="Android 14">Android 14</a>, with 7 years of OS/security updates</li>
+</ul>
+<h3>Pixel 9 Pro Fold</h3>
+<p>Main article: <a href="./Pixel_9_Pro_Fold" title="Pixel 9 Pro Fold">Pixel 9 Pro Fold</a></p>
+<p>Google announced the <strong>Pixel 9 Pro Fold</strong> at the <a href="./Made_by_Google" title="Made by Google">Made by Google</a> event, alongside the <strong>Pixel 9</strong> and the <strong>Pixel 9 Pro</strong> on August 13, 2024.</p>
+<ul>
+<li>Display (External Cover): 6.3" Actua display (1080×2424, 20:9, 422 PPI) Smooth Display (60-120Hz)</li>
+<li>Display (Internal Folding): 8" Super Actua Flex (LTPO) display (2076×2152, 373 PPI) Smooth Display (1-120Hz)</li>
+<li>Processor: Google Tensor G4</li>
+<li>Storage: 256 GB / 512 GB / UFS 3.1</li>
+<li>Memory: 16 GB LPDDR5X RAM</li>
+<li>Rear Camera: 48 MP Quad PD (f/1.7) main; 10.5 MP Dual PD ultrawide (f/2.2); 10.8 MP Dual PD telephoto (f/3.1)</li>
+<li>Front &amp; Inner Camera: 10 MP Dual PD (f/2.2)</li>
+<li>Battery: 4560 mAh, with fast and wireless charging</li>
+<li>Materials: 100% recycled aluminum frame, scratch-resistant Corning Gorilla Glass Victus 2 cover glass, Corning Gorilla Glass Victus 2 silky matte back with polished finish metal frame, IPX8 water-resistant</li>
+<li>Colors: Porcelain   and Obsidian</li>
+<li>Operating System: <a href="./Android_14" title="Android 14">Android 14</a>, with 7 years of OS/security updates</li>
+</ul>
+<h3>Pixel 9a</h3>
+<p>Main article: <a href="./Pixel_9a" title="Pixel 9a">Pixel 9a</a></p>
+<p>The <strong>Pixel 9a</strong> is a mid-range variant of the Pixel 9 series. It was announced on March 19, 2025, through a Google blog post.</p>
+<ul>
+<li>Display: 6.3" OLED (1080×2424, 20:9, 422.2 ppi) Smooth display (60-120 Hz)</li>
+<li>Processor: Google Tensor G4</li>
+<li>Storage: 128 GB / 256 GB UFS 3.1</li>
+<li>Memory: 8 GB LPDDR5X RAM</li>
+<li>Camera: <em>Rear</em> 48 MP Quad PD (f/1.7) main; 13 MP (f/2.2) ultrawide; <em>Front</em> 13 MP (f/2.2)</li>
+<li>Battery: 5100 mAh battery, with 23 W fast charging and 7.5 W Qi wireless charging</li>
+<li>Materials: 100% recycled aluminum frame, scratch-resistant Corning Gorilla Glass 3 cover glass, plastic back, IP68 dust/water-resistant</li>
+<li>Colors: Iris  , Peony  , Porcelain  , Obsidian</li>
+<li>Operating System: <a href="./Android_15" title="Android 15">Android 15</a>, with 7 years of OS/security updates</li>
+</ul>
+<h3>Pixel 10</h3>
+<p>Main article: <a href="./Pixel_10" title="Pixel 10">Pixel 10</a></p>
+<p>Google launched the <strong>Pixel 10</strong> at the 2025 <a href="./Made_by_Google" title="Made by Google">Made by Google</a> event, alongside the <strong>Pixel 10 Pro</strong>, <strong>Pixel 10 Pro XL</strong> and <strong>Pixel 10 Pro Fold</strong>.</p>
+<ul>
+<li>Display: 6.3" Actua display (1080×2424, 20:9, OLED, 422 ppi) Smooth Display (60-120 Hz)</li>
+<li>Processor: Google Tensor G5</li>
+<li>Storage: 128 GB / 256 GB</li>
+<li>Memory: 12 GB</li>
+<li>Camera: <em>Rear</em> 48 MP Quad PD main (f/1.7), 13 MP Quad PD ultrawide (f/1.7), 10.8 MP Dual PD telephoto (f/1.3); <em>Front</em> 10.5 MP Dual PD selfie (f/2.2)</li>
+<li>Battery: 4970 mAh battery with fast charging and Qi2-certified wireless charging</li>
+<li>Materials: 100% recycled aluminum frame, scratch-resistant Corning Gorilla Glass Victus 2 cover glass, glass back, IP68 dust/water-resistant</li>
+<li>Colors: Indigo  , Frost  , Lemongrass  , Obsidian</li>
+<li>Operating system: <a href="./Android_16" title="Android 16">Android 16</a>, with 7 years of OS/security updates</li>
+</ul>
+<h3>Pixel 10 Pro &amp; Pro XL</h3>
+<p>Main article: <a href="./Pixel_10_Pro" title="Pixel 10 Pro">Pixel 10 Pro</a></p>
+<p>Google launched the <strong>Pixel 10 Pro</strong> and the <strong>Pixel 10 Pro XL</strong> at the 2025 <a href="./Made_by_Google" title="Made by Google">Made by Google</a> event, alongside the <strong>Pixel 10</strong> and the <strong>Pixel 10 Pro Fold</strong>.</p>
+<ul>
+<li>Display: 6.3" Super Actua display (1280×2856, 20:9, LTPO OLED, 495 ppi) Smooth Display (1-120 Hz) (Pro); 6.8" Super Actua display (1344×2992, 20:9, LTPO OLED, 486 ppi) Smooth Display (1-120 Hz) (Pro XL)</li>
+<li>Processor: Google Tensor G5</li>
+<li>Storage: 128 GB (Pro only); 256 GB / 512 GB / 1 TB (Pro &amp; Pro XL)</li>
+<li>Memory: 16 GB</li>
+<li>Camera: <em>Rear</em> 50 MP Octa PD wide (f/1.68), 48 MP Quad PD ultrawide (f/1.7), 48 MP Quad PD telephoto (f/2.8); <em>Front</em> 42 MP Dual PD selfie (f/2.2)</li>
+<li>Battery: 4870 mAh battery with 30 W fast charging and 15 W Qi2-certified wireless charging (Pro); 5200mAh battery with 45W fast charging and 25W Qi2-certified wireless charging (Pro XL)</li>
+<li>Materials: 100% recycled aluminum frame, scratch-resistant Corning Gorilla Glass Victus 2 cover glass, glass back, IP68 dust/water-resistant</li>
+<li>Colors: Moonstone  , Jade  , Porcelain  , Obsidian</li>
+<li>Operating system: <a href="./Android_16" title="Android 16">Android 16</a>, with 7 years of OS/security updates</li>
+</ul>
+<h3>Pixel 10 Pro Fold</h3>
+<p>Main article: <a href="./Pixel_10_Pro_Fold" title="Pixel 10 Pro Fold">Pixel 10 Pro Fold</a></p>
+<p>Google launched the <strong>Pixel 10 Pro Fold</strong> at the 2025 <a href="./Made_by_Google" title="Made by Google">Made by Google</a> event, alongside the <strong>Pixel 10</strong>, <strong>Pixel 10 Pro</strong>, and <strong>Pixel 10 Pro Fold</strong>.</p>
+<ul>
+<li>Display (External Cover): 6.4" Actua display (1080×2364, 20:9, OLED, 408 ppi) Smooth Display (60-120 Hz)</li>
+<li>Display (Inner Folding): 8" Super Actua Flex display (2076×2152, OLED, 373 PPI) Smooth Display (1-120 Hz)</li>
+<li>Processor: Google Tensor G5</li>
+<li>Storage: 256 GB / 512 GB / 1 TB</li>
+<li>Memory: 16 GB</li>
+<li>Camera: <em>Rear</em> 48 MP Quad PD main (f/1.7), 10.8 MP Duel PD ultrawide (f/2.2), 10.8 MP Dual PD telephoto (f/3.1); <em>Inner</em> 10 MP Dual PD (f/2.2); <em>Front</em> 10 MP Dual PD selfie (f/2.2)</li>
+<li>Battery: 5015 mAh battery with 30 W fast charging and 15 W Qi2-certified wireless charging</li>
+<li>Materials: 100% recycled aluminum frame, scratch-resistant Corning Gorilla Glass Victus 2 cover glass, glass back, IP68 dust/water-resistant</li>
+<li>Colors: Moonstone  , Jade</li>
+<li>Operating system: <a href="./Android_16" title="Android 16">Android 16</a>, with 7 years of OS/security updates</li>
+</ul>
+<h3>Pixel 10a</h3>
+<p>Main article: <a href="./Pixel_10a" title="Pixel 10a">Pixel 10a</a></p>
+<p>Google announced the <strong>Pixel 10a</strong> through a blog post on February 18, 2026. It serves as a mid-range variant of the Pixel 10 series.</p>
+<ul>
+<li>Display: 6.3" OLED (1080×2424, 20:9, 422.2 ppi) Smooth display (60-120 Hz)</li>
+<li>Processor: Google Tensor G4</li>
+<li>Storage: 128 GB / 256 GB UFS 3.1</li>
+<li>Memory: 8 GB LPDDR5X RAM</li>
+<li>Camera: <em>Rear</em> 48 MP Quad PD (f/1.7) main; 13 MP (f/2.2) ultrawide; <em>Front</em> 13 MP (f/2.2)</li>
+<li>Battery: 5100 mAh battery, with 30 W fast charging and 10 W Qi wireless charging</li>
+<li>Materials: 100% recycled aluminum frame, scratch-resistant Corning Gorilla Glass 7i cover glass, plastic back, IP68 dust/water-resistant</li>
+<li>Colors: Lavender  , Berry  , Fog  , Obsidian</li>
+<li>Operating System: <a href="./Android_16" title="Android 16">Android 16</a>, with 7 years of OS/security updates</li>
+</ul>
+<h2>Tablets</h2>
+<h3>Pixel C</h3>
+<p>Main article: <a href="./Pixel_C" title="Pixel C">Pixel C</a></p>
+<p>The Pixel C was announced by Google at an event on September 29, 2015, alongside the <a href="./Nexus_5X" title="Nexus 5X">Nexus 5X</a> and <a href="./Nexus_6P" title="Nexus 6P">Nexus 6P</a> phones (among other products). The Pixel C includes a <a href="./USB-C" title="USB-C">USB-C</a> port and a 3.5 mm headphone jack. The device shipped with <a href="./Android_Marshmallow" title="Android Marshmallow">Android 6.0.1 Marshmallow</a>, and later received Android 7.x Nougat and Android 8.x Oreo. Google stopped selling the Pixel C in December 2017.</p>
+<ul>
+<li>Display: 10.2" display with 2560×1800 pixel resolution</li>
+<li>Processor: NVIDIA Tegra X1</li>
+<li>Storage: 32 or 64 GB</li>
+<li>RAM: 3 GB</li>
+<li>Cameras: 8 MP rear camera; 2 MP front camera</li>
+<li>Battery: 9000 mAh (non-removable)</li>
+</ul>
+<h3>Pixel Slate</h3>
+<p>Main article: <a href="./Pixel_Slate" title="Pixel Slate">Pixel Slate</a></p>
+<p>The Pixel Slate, a 12.3 in (31 cm) <a href="./2-in-1_laptop" title="2-in-1 laptop">2-in-1 tablet and laptop</a>, was announced by Google in New York City on October 9, 2018, alongside the Pixel 3 and 3 XL. The Pixel Slate includes two USB-C ports but omits the headphone jack. The device runs <a href="./ChromeOS" title="ChromeOS">ChromeOS</a> on <a href="./Intel" title="Intel">Intel</a> <a href="./Kaby_Lake" title="Kaby Lake">Kaby Lake</a> processors, with options ranging from a <a href="./Celeron" title="Celeron">Celeron</a> on the low end to an i7 on the high end. In June 2019, Google announced it will not further develop the product line, and cancelled two models that were under development.</p>
+<h3>Pixel Tablet</h3>
+<p>Main article: <a href="./Pixel_Tablet" title="Pixel Tablet">Pixel Tablet</a></p>
+<p>The Pixel Tablet was announced by Google at <a href="./Google_I/O#2022" title="Google I/O">I/O 2022</a>. It comes with a stand, similar to that of a <a href="./Google_Nest_(smart_speakers)#Home_Hub_/_Nest_Hub" title="Google Nest (smart speakers)">Home Hub</a>; however, it is detachable. It was released on June 20, 2023.</p>
+<ul>
+<li>Display: 10.95-inch LCD (2560×1600, 16:10 <a href="./Aspect_ratio" title="Aspect ratio">aspect ratio</a>), 60 Hz, 500 nits</li>
+<li>Processor: Google Tensor G2</li>
+<li>Storage: 128 GB or 256 GB; are non-expandable</li>
+<li>Memory: 8 GB LPDDR5 RAM</li>
+<li>Camera: Rear and front: 8 MP (ƒ/2.0, 1/4" sensor, 1.12 μm, 84° FoV) fixed-focus</li>
+<li>Battery: Non-removable 7,020 mAh; charges at 15 W, both wired and through the dock; No wireless charging supported.</li>
+<li>Materials: Aluminium frame, nano ceramic back, no water/dust resistance</li>
+<li>Colors: Hazel  , Porcelain   and Rose   ; not available in certain areas.</li>
+<li>Operating system: Android 13 with Pixel UI, at least 3 years of software updates and 5 years of security updates</li>
+</ul>
+<h2>Laptops</h2>
+<h3>Chromebook Pixel (2013)</h3>
+<p>Main article: <a href="./Chromebook_Pixel" title="Chromebook Pixel">Chromebook Pixel</a></p>
+<p>Google announced the first-generation Chromebook Pixel in a blog post on February 21, 2013. The laptop includes an SD/multi-card reader, <a href="./Mini_DisplayPort" title="Mini DisplayPort">Mini DisplayPort</a>, combination headphone/microphone jack, and two USB 2.0 ports. Some of the device's other features include a backlit keyboard, a "fully clickable etched glass touchpad," integrated stereo speakers, and two built-in microphones.</p>
+<ul>
+<li>Display: 12.85" display with 2560×1700 pixel resolution</li>
+<li>Processor: 3rd generation (<a href="./Ivy_Bridge_(microarchitecture)" title="Ivy Bridge (microarchitecture)">Ivy Bridge</a>) Intel Core i5 processor</li>
+<li>Storage: 32 GB internal storage and 1 TB <a href="./Google_Drive" title="Google Drive">Google Drive</a> storage for 3 years</li>
+<li>RAM: 4 GB</li>
+<li>Battery: 59 <a href="./Watt-hour" title="Watt-hour">Wh</a></li>
+</ul>
+<h3>Chromebook Pixel (2015)</h3>
+<p>Main article: <a href="./Chromebook_Pixel" title="Chromebook Pixel">Chromebook Pixel</a></p>
+<p>On March 11, 2015, Google announced the second generation of the Chromebook Pixel in a blog post. The laptop includes two USB-C ports, two USB 3.0 ports, an SD card slot, and a combination headphone/microphone jack. The device also has a backlit keyboard, a "multi-touch, clickable glass touchpad," built-in stereo speakers, and two built-in microphones, among other features.</p>
+<p>Google discontinued the 2015 Chromebook Pixel on August 29, 2016.</p>
+<ul>
+<li>Display: 12.85" display with 2560×1700 pixel resolution</li>
+<li>Processor: 5th generation (<a href="./Broadwell_(microarchitecture)" title="Broadwell (microarchitecture)">Broadwell</a>) Intel Core i5 or i7 processor</li>
+<li>Storage: 32 or 64 GB internal storage and 1 TB Google Drive storage for 3 years</li>
+<li>RAM: 8 or 16 GB</li>
+<li>Battery: 72 Wh</li>
+</ul>
+<h3>Pixelbook</h3>
+<p>Main article: <a href="./Pixelbook" title="Pixelbook">Pixelbook</a></p>
+<p>On October 4, 2017, Google launched the first generation of the Pixelbook at its Made by Google 2017 event.</p>
+<ul>
+<li>Display: 12.3" display with 2400×1600 pixel resolution (235 PPI)</li>
+<li>Processor: 7th generation (<a href="./Kaby_Lake" title="Kaby Lake">Kaby Lake</a>) Intel Core i5 or i7 processor</li>
+<li>Storage: 128, 256, or 512 GB internal storage</li>
+<li>RAM: 8 or 16 GB</li>
+</ul>
+<h3>Pixelbook Go</h3>
+<p>Main article: <a href="./Pixelbook_Go" title="Pixelbook Go">Pixelbook Go</a></p>
+<p>On October 15, 2019, Google announced a mid-range version of the Pixelbook, named the Pixelbook Go, at its Made by Google 2019 event.</p>
+<ul>
+<li>Display: 13.3" display with 1920×1080 pixel resolution (166 ppi) or "Molecular Display" 3840×2160 pixel resolution (331 PPI)</li>
+<li>Processor: 8th generation (<a href="./Kaby_Lake#Amber_Lake" title="Kaby Lake">Amber Lake</a>) Intel Core m3, i5 or i7 processor</li>
+<li>Storage: 64, 128, or 256 GB internal storage</li>
+<li>RAM: 8 or 16 GB</li>
+<li>Battery: 47 Wh, 56 Wh (Molecular Display)</li>
+</ul>
+<h2>Smartwatches</h2>
+<h3>Pixel Watch</h3>
+<p>Main article: <a href="./Pixel_Watch" title="Pixel Watch">Pixel Watch</a></p>
+<p>The Google Pixel Watch is a first-generation wearable made by Google that released in October 2022. It features a circular display. Multiple wristbands for the watch are available on the <a href="./Store.google.com" title="Store.google.com">Google Store</a> for purchase.</p>
+<h3>Pixel Watch 2</h3>
+<p>Main article: <a href="./Pixel_Watch_2" title="Pixel Watch 2">Pixel Watch 2</a></p>
+<p>The Pixel Watch 2 is a second-generation wearable made by Google that released in October 2023. It features a similar design to the first-generation <a href="./Pixel_Watch" title="Pixel Watch">Pixel Watch</a>'s circular display. Multiple wristbands for the watch are available on the <a href="./Store.google.com" title="Store.google.com">Google Store</a> for purchase.</p>
+<h3>Pixel Watch 3</h3>
+<p>Main article: <a href="./Pixel_Watch_3" title="Pixel Watch 3">Pixel Watch 3</a></p>
+<p>The Pixel Watch 3 is a third-generation wearable made by Google that released in August 2024.</p>
+<h3>Pixel Watch 4</h3>
+<p>Main article: <a href="./Pixel_Watch_4" title="Pixel Watch 4">Pixel Watch 4</a></p>
+<p>The Pixel Watch 4 is a fourth-generation wearable made by Google, announced in August 2025.</p>
+<h2>Accessories</h2>
+<h3>Pixel Buds</h3>
+<p>Main article: <a href="./Pixel_Buds" title="Pixel Buds">Pixel Buds</a></p>
+<p>At Google's October 2017 hardware event, a set of <a href="./Wireless_communication" title="Wireless communication">wireless</a> <a href="./Headphones#Earphones" title="Headphones">earbuds</a> were unveiled alongside the Pixel 2 smartphones. The earbuds are designed for phones running Android Marshmallow or higher, and work with <a href="./Google_Assistant" title="Google Assistant">Google Assistant</a>. In addition to audio playback and answering calls, the earbuds support translation in 40 languages through <a href="./Google_Translate" title="Google Translate">Google Translate</a>. The earbuds can auto-pair with the <a href="./Pixel_2" title="Pixel 2">Pixel 2</a> with the help of the <a href="./Google_Assistant" title="Google Assistant">Google Assistant</a> and "Nearby". The Pixel Buds are available in the colors Just Black, Clearly White and Kinda Blue. The earbuds have a battery capacity of 120 mAh, while the charging case that comes with the Pixel Buds have a battery capacity of 620 mAh. The earbuds are priced at $159.</p>
+<p>A <a href="./Pixel_Buds#Second_generation" title="Pixel Buds">second generation of Pixel Buds</a> were released in 2020, omitting the cord between the two earbuds. In June 2021, a mid-range variant of the second-generation earbuds were released as the <a href="./Pixel_Buds#Pixel_Buds_A-Series" title="Pixel Buds">Pixel Buds A-Series</a>.</p>
+<p>At the <a href="./Google_I/O#2022" title="Google I/O">2022 Google I/O event</a>, an enhanced version of the second-generation earbuds was announced and later released in May 2022, as the <a href="./Pixel_Buds#Pixel_Buds_Pro" title="Pixel Buds">Pixel Buds Pro</a>, which featured <a href="./Active_noise_control" title="Active noise control">Active Noise Cancellation</a> mode, transparency mode, and <a href="./3D_audio_effect" title="3D audio effect">spatial audio</a> (added in a subsequent software update). The "Pro" earbuds are priced at $199.</p>
+<p>At Google's 2025 Made by Google event, the <a href="./Pixel_Buds#Pixel_Buds_2a" title="Pixel Buds">Pixel Buds 2a</a> were announced.</p>
+<h3>Pixelbook Pen</h3>
+<p>Alongside the launch of the Pixelbook in October 2017, Google announced the Pixelbook Pen, a <a href="./Stylus" title="Stylus">stylus</a> to be used with the Pixelbook. It has pressure sensitivity as well as support for <a href="./Google_Assistant" title="Google Assistant">Google Assistant</a>. The Pen is powered by a replaceable <a href="./AAAA_battery" title="AAAA battery">AAAA battery</a> and is priced at US$99.</p>
+<h3>Pixel Stand</h3>
+<p>In October 2018, Google announced the Pixel Stand alongside the Pixel 3 smartphones. In addition to standard 5 watt <a href="./Qi_(standard)" title="Qi (standard)">Qi</a> wireless charging, the Pixel Stand has wireless 10 watt charging using a proprietary technology from Google. It also enables a software mode on the Pixel 3 that allows it to act as a <a href="./Smart_speaker" title="Smart speaker">smart display</a> similar to the <a href="./Google_Home_Hub" title="Google Home Hub">Google Home Hub</a>. In October 2021, alongside the release of the <a href="./Pixel_6" title="Pixel 6">Pixel 6</a> and <a href="./Pixel_6_Pro" title="Pixel 6 Pro">Pixel 6 Pro</a> smartphones, a second-generation Pixel Stand was made to support the phones' new wireless charging speeds of 23 watts.</p>
+<h2>Software</h2>
+<h3>Pixel UI (Pixel Launcher)</h3>
+<p>Linux distribution</p>
+<p>Google Pixel UI is an Android skin used for the Pixel phones and the Pixel Tablet, developed by Google. Beginning with the first generation of Google Pixel phones, Google replaced the launcher for their smartphones with Pixel Launcher instead of Google Now Launcher which is the default launcher for Nexus series.</p>
+<p>Unlike the Nexus phones, which Google shipped with "stock" Android (AOSP), the Pixel UI that came with the first generation Pixel phones were slightly modified compared to "stock" Android. Currently, Pixel UI and its home launcher are available on Pixel family devices only. (However, third-party modifications allow non-Pixel smartphones to install the Pixel Launcher with Google Now feed integration).</p>
+<p>During the launch of Android 4.x "Ice Cream Sandwich", Google had started to replace some stock Android apps with Google apps, including the stock Android music apps with Google Play Music, and Android browser with Google Chrome. By the launch of Android 4.4.x "KitKat", most of the stock Android apps had been replaced with Google apps, such as the stock Android gallery being replaced with Google Photos, etc. This also includes the Android home launcher being replaced with the Google Now Launcher, allowing users to access to their Google Now feed more conveniently. However, the rest of the UI was still similar to stock Android, including the settings menu and toggles buttons colors.</p>
+<p>Google officially launched the Pixel Launcher and Pixel UI together in the Pixel phones; unlike the Google Now Launcher which allowed non Nexus phones to install, the Pixel Launcher was only available on the Pixel phones. Most Android smartphones including Nexus phones are incompatible with the launcher. Some modifications Google had done to differentiate Pixel UI with stock Android included the setting toggle's buttons colors, and 24/7 online support which allowed the user to get direct support from Google's customer support.</p>
+<h3>Pixel Camera</h3>
+<p>Main article: <a href="./Pixel_Camera" title="Pixel Camera">Pixel Camera</a></p>
+<p>The <a href="./Pixel_Camera" title="Pixel Camera">Pixel Camera</a> is a camera software shipped with Pixel devices. The app features a basic <a href="./Camera" title="Camera">camera</a> interface along with several other features, such as Night Vision, Super Res Zoom, and Motion Photos. Initially released on April 16, 2014, as <a href="./Google_Camera" title="Google Camera">Google Camera</a>, the application could be used on the Google Pixel phone until October 2023, when the software was renamed and delisted from <a href="./Google_Play" title="Google Play">Google Play</a>. Multiple unofficial <a href="./Port_(computer_software)" title="Port (computer software)">ports</a> have been created to install features of the Pixel Camera on non-Google branded devices or older models of the phone.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>]</p>
+<h2>See also</h2>
+<ul>
+<li><a href="./List_of_Google_Play_edition_devices" title="List of Google Play edition devices">List of Google Play edition devices</a></li>
+<li><a href="./List_of_Google_products" title="List of Google products">List of Google products</a></li>
+</ul>
+<h2>Notes</h2>
+<h2>References</h2>
+<h2>External links</h2>
+<p><a href="./File:Commons-logo.svg"><img alt="Wikimedia Commons logo" src="//upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/40px-Commons-logo.svg.png"></a></p>
+<p>Wikimedia Commons has media related to <a href="https://commons.wikimedia.org/wiki/Category:Google%20Pixel" title="commons:Category:Google Pixel">Google Pixel</a>.</p>
+<ul>
+<li><a href="http://store.google.com/">Google Store</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_Pixel" title="Template:Google Pixel">v</a> - <a href="./Template_talk:Google_Pixel" title="Template talk:Google Pixel">t</a> - <a href="./Special:EditPage/Template:Google_Pixel" title="Special:EditPage/Template:Google Pixel">e</a>  <a href="./Google_Pixel">Google Pixel</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Comparison_of_Google_Pixel_smartphones" title="Comparison of Google Pixel smartphones">Smartphones</a></td>
+<td></td>
+</tr>
+<tr>
+<td>Computers</td>
+<td></td>
+</tr>
+<tr>
+<td>Wearables</td>
+<td>- <a href="./Pixel_Buds" title="Pixel Buds">Pixel Buds</a> - <a href="./Pixel_Watch" title="Pixel Watch">Pixel Watch</a> - <a href="./Pixel_Watch_2" title="Pixel Watch 2">Pixel Watch 2</a> - <a href="./Pixel_Watch_3" title="Pixel Watch 3">Pixel Watch 3</a> - <a href="./Pixel_Watch_4" title="Pixel Watch 4">Pixel Watch 4</a></td>
+</tr>
+<tr>
+<td>People</td>
+<td>- <a href="./Rick_Osterloh" title="Rick Osterloh">Rick Osterloh</a> - <a href="./Ivy_Ross" title="Ivy Ross">Ivy Ross</a> - <a href="./Marc_Levoy" title="Marc Levoy">Marc Levoy</a></td>
+</tr>
+<tr>
+<td>Related</td>
+<td>- <a href="./Pixel_Camera" title="Pixel Camera">Camera</a> - <a href="./Google_Nexus" title="Google Nexus">Nexus</a> - <a href="./Google_Tensor" title="Google Tensor">Tensor</a></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Google_Pixel" title="Category:Google Pixel">Category</a> - telephone icon <a href="./Portal:Telephones" title="Portal:Telephones">Telephones portal</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Android_(operating_system)" title="Template:Android (operating system)">v</a> - <a href="./Template_talk:Android_(operating_system)" title="Template talk:Android (operating system)">t</a> - <a href="./Special:EditPage/Template:Android_(operating_system)" title="Special:EditPage/Template:Android (operating system)">e</a>  <a href="./Android_(operating_system)" title="Android (operating system)">Android</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>- <a href="./Android_Go" title="Android Go">Android Go</a>   - <a href="./Comparison_of_Android_Go_products" title="Comparison of Android Go products">Comparison of products</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Android_software_development" title="Android software development">Software development</a></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Android_version_history" title="Android version history">Releases</a></td>
+<td>- <a href="./Android_Cupcake" title="Android Cupcake">Cupcake (1.5)</a> - <a href="./Android_Donut" title="Android Donut">Donut (1.6)</a> - <a href="./Android_Eclair" title="Android Eclair">Eclair (2.0–2.1)</a> - <a href="./Android_Froyo" title="Android Froyo">Froyo (2.2)</a> - <a href="./Android_Gingerbread" title="Android Gingerbread">Gingerbread (2.3)</a> - <a href="./Android_Honeycomb" title="Android Honeycomb">Honeycomb (3.x)</a> - <a href="./Android_Ice_Cream_Sandwich" title="Android Ice Cream Sandwich">Ice Cream Sandwich (4.0)</a> - <a href="./Android_Jelly_Bean" title="Android Jelly Bean">Jelly Bean (4.1–4.3)</a> - <a href="./Android_KitKat" title="Android KitKat">KitKat (4.4)</a> - <a href="./Android_Lollipop" title="Android Lollipop">Lollipop (5.x)</a> - <a href="./Android_Marshmallow" title="Android Marshmallow">Marshmallow (6.x)</a> - <a href="./Android_Nougat" title="Android Nougat">Nougat (7.x)</a> - <a href="./Android_Oreo" title="Android Oreo">Oreo (8.x)</a> - <a href="./Android_Pie" title="Android Pie">Pie (9)</a> - <a href="./Android_10" title="Android 10">10</a> - <a href="./Android_11" title="Android 11">11</a> - <a href="./Android_12" title="Android 12">12</a> - <a href="./Android_13" title="Android 13">13</a> - <a href="./Android_14" title="Android 14">14</a> - <a href="./Android_15" title="Android 15">15</a> - <a href="./Android_16" title="Android 16">16</a></td>
+</tr>
+<tr>
+<td>Derivatives</td>
+<td>- <a href="./Android_Automotive" title="Android Automotive">Android Automotive</a> - <a href="./Android_Things" title="Android Things">Android Things</a> - <a href="./Android_TV" title="Android TV">TV</a>   - <a href="./List_of_Android_TV_devices" title="List of Android TV devices">devices</a> - <a href="./Android_XR" title="Android XR">Android XR</a> - <a href="./Wear_OS" title="Wear OS">Wear OS</a></td>
+</tr>
+<tr>
+<td>Devices</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./List_of_custom_Android_distributions" title="List of custom Android distributions">Custom distributions</a></td>
+<td>- <a href="./AliOS" title="AliOS">AliOS</a> - <a href="./Android-x86" title="Android-x86">Android-x86</a>   - <a href="./Remix_OS" title="Remix OS">Remix OS</a> - <a href="./AOKP" title="AOKP">AOKP</a> - <a href="./Baidu_Yi" title="Baidu Yi">Baidu Yi</a> - <a href="./Barnes_&amp;_Noble_Nook" title="Barnes &amp; Noble Nook">Barnes &amp; Noble Nook</a> - <a href="./CalyxOS" title="CalyxOS">CalyxOS</a> - <a href="./ColorOS" title="ColorOS">ColorOS</a>   - <a href="./OxygenOS" title="OxygenOS">OxygenOS</a>   - <a href="./Realme" title="Realme">realme UI</a> - <a href="./CopperheadOS" title="CopperheadOS">CopperheadOS</a> - <a href="./EMUI" title="EMUI">EMUI</a>   - <a href="./Honor_(brand)" title="Honor (brand)">MagicOS</a> - <a href="./Fire_OS" title="Fire OS">Fire OS</a> - <a href="./Meizu#Flyme" title="Meizu">Flyme OS</a> - <a href="./GrapheneOS" title="GrapheneOS">GrapheneOS</a> - <a href="./LeWa_OS" title="LeWa OS">LeWa OS</a> - <a href="./LineageOS" title="LineageOS">LineageOS</a>   - <a href=".//e/_(operating_system)" title="/e/ (operating system)">/e/</a>   - <a href="./CrDroid" title="CrDroid">CrDroid</a>   - <a href="./CyanogenMod" title="CyanogenMod">CyanogenMod</a>   - <a href="./DivestOS" title="DivestOS">DivestOS</a>   - <a href="./IodéOS" title="IodéOS">iodéOS</a>   - <a href="./Kali_NetHunter" title="Kali NetHunter">Kali NetHunter</a> - <a href="./LiteOS" title="LiteOS">LiteOS</a> - <a href="./Meta_Horizon_OS" title="Meta Horizon OS">Meta Horizon OS</a> - <a href="./MicroG" title="MicroG">MicroG</a> - <a href="./Nokia_X_family#Nokia_X_software_platform" title="Nokia X family">Nokia X software platform</a> - <a href="./OmniROM" title="OmniROM">OmniROM</a> - <a href="./OPhone" title="OPhone">OPhone</a> - <a href="./PixelExperience" title="PixelExperience">PixelExperience</a> - <a href="./Google_Pixel#Pixel_UI_(Pixel_Launcher)">Pixel UI</a> - <a href="./Replicant_(operating_system)" title="Replicant (operating system)">Replicant</a> - <a href="./Resurrection_Remix_OS" title="Resurrection Remix OS">Resurrection Remix OS</a> - <a href="./SlimRoms" title="SlimRoms">SlimRoms</a> - <a href="./TCL_Technology" title="TCL Technology">TCL UI</a> - <a href="./Ubuntu_Touch#Ubuntu_for_Android" title="Ubuntu Touch">Ubuntu for Android</a> - <a href="./Xiaomi_HyperOS" title="Xiaomi HyperOS">Xiaomi HyperOS</a>   - <a href="./MIUI" title="MIUI">MIUI</a> - <a href="./XobotOS" title="XobotOS">XobotOS</a> - <a href="./Lenovo_smartphones" title="Lenovo smartphones">ZUI</a></td>
+</tr>
+<tr>
+<td>Booting and recovery</td>
+<td>- <a href="./Booting_process_of_Android_devices" title="Booting process of Android devices">Booting process</a> - <a href="./Android_recovery_mode" title="Android recovery mode">Recovery mode</a>   - <a href="./TWRP_(software)" title="TWRP (software)">TWRP</a>   - <a href="./ClockworkMod" title="ClockworkMod">ClockworkMod</a> - <a href="./Fastboot" title="Fastboot">Fastboot</a></td>
+</tr>
+<tr>
+<td><a href="./API" title="API">APIs</a></td>
+<td>- <a href="./Google_Maps" title="Google Maps">Google Maps</a> - <a href="./Google_Play_Services" title="Google Play Services">Google Play Services</a>   - <a href="./SafetyNet" title="SafetyNet">SafetyNet/Play Integrity API</a> - <a href="./Google_Search" title="Google Search">Google Search</a></td>
+</tr>
+<tr>
+<td>Alternative <a href="./User_interface" title="User interface">UIs</a></td>
+<td>- <a href="./Cherry_OS_(operating_system)" title="Cherry OS (operating system)">Cherry OS</a> - <a href="./ColorOS" title="ColorOS">ColorOS</a> - <a href="./EMUI" title="EMUI">EMUI</a> - <a href="./Funtouch_OS" title="Funtouch OS">Funtouch OS</a> - <a href="./Meizu#Flyme" title="Meizu">Flyme OS</a> - <a href="./HiOS" title="HiOS">HiOS</a> - <a href="./Hive_UI" title="Hive UI">Hive UI (XOLO Hive)</a> - <a href="./HTC_Sense" title="HTC Sense">HTC Sense</a> - <a href="./LG_UX" title="LG UX">LG UX</a>   - <a href="./Optimus_UI" title="Optimus UI">Optimus UI</a> - <a href="./Motoblur" title="Motoblur">Motoblur</a> - <a href="./Nothing_OS" title="Nothing OS">Nothing OS</a> - <a href="./One_UI" title="One UI">One UI</a>   - <a href="./Samsung_Experience" title="Samsung Experience">Experience</a>   - <a href="./TouchWiz" title="TouchWiz">TouchWiz</a> - <a href="./Origin_OS" title="Origin OS">Origin OS</a> - <a href="./OxygenOS" title="OxygenOS">OxygenOS</a> - <a href="./Google_Pixel#Pixel_UI_(Pixel_Launcher)">Pixel UI</a> - <a href="./XOS_(operating_system)" title="XOS (operating system)">XOS</a> - Xperia UI - <a href="./Asus_ZenFone#ZenUI_interface" title="Asus ZenFone">ZenUI</a></td>
+</tr>
+<tr>
+<td><a href="./Rooting_(Android)" title="Rooting (Android)">Rooting</a></td>
+<td>- <a href="./SuperSU" title="SuperSU">SuperSU</a> - <a href="./Magisk_(software)" title="Magisk (software)">Magisk</a> - <a href="./Kingo_Root" title="Kingo Root">Kingo Root</a> - <a href="./Kernel_Assisted_Superuser" title="Kernel Assisted Superuser">Kernel Assisted Superuser</a></td>
+</tr>
+<tr>
+<td>Lists</td>
+<td>- <a href="./List_of_custom_Android_distributions" title="List of custom Android distributions">Custom distributions</a> - <a href="./List_of_features_in_Android" title="List of features in Android">Features</a> - <a href="./List_of_free_and_open-source_Android_applications" title="List of free and open-source Android applications">Free and open-source applications</a> - <a href="./List_of_Android_apps_by_Google" title="List of Android apps by Google">Google apps</a> - <a href="./List_of_Android_launchers" title="List of Android launchers">Launchers</a></td>
+</tr>
+<tr>
+<td>Related topics</td>
+<td>- <a href="./Index_of_Android_OS_articles" title="Index of Android OS articles">Index of articles</a> - <a href="./Androidland" title="Androidland">Androidland</a> - <a href="./Chromecast" title="Chromecast">Chromecast</a> - <a href="./Google" title="Google">Google</a> - <a href="./Comparison_of_Java_and_Android_API" title="Comparison of Java and Android API">Java vs. Android API</a> - <a href="./Android_lawn_statues" title="Android lawn statues">Lawn statues</a> - <a href="./BlueStacks" title="BlueStacks">BlueStacks</a> - Legal issues   - <em><a href="./Google_LLC_v._Oracle_America,_Inc." title="Google LLC v. Oracle America, Inc.">Google v. Oracle</a></em>   - <a href="./Smartphone_patent_wars" title="Smartphone patent wars">smartphone patent wars</a> - <a href="./Google_App_Runtime_for_Chrome" title="Google App Runtime for Chrome">Android Runtime for Chrome</a></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Android_(operating_system)_development_software" title="Category:Android (operating system) development software">Category:Android development</a> - <a href="./Category:Mobile_telecommunications" title="Category:Mobile telecommunications">Category:Mobile telecommunications</a> - <a href="./Portal:Software" title="Portal:Software">Software portal</a> - <a href="./Portal:Telecommunication" title="Portal:Telecommunication">Telecommunication portal</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><a href="./Wikipedia:Contents/Portals" title="Wikipedia:Contents/Portals">Portal</a>:</p>
+<ul>
+<li><a href="./File:Crystal_Clear_app_linneighborhood.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Crystal_Clear_app_linneighborhood.svg/20px-Crystal_Clear_app_linneighborhood.svg.png"></a> <a href="./Portal:Internet" title="Portal:Internet">Internet</a></li>
+</ul></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

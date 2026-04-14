@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Google Docs</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link active" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Google Docs</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Google_Docs<br>
+Category: products_consumer<br>
+Depth: 1</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Google Docs is an online word processor and part of the free, web-based Google Docs Editors suite offered by Google. Google Docs is accessible via a web browser as a web-based application and is also available as a mobile app on Android and iOS and as a desktop application on Google's ChromeOS.</p>
+<h2>Images</h2>
+<p><img alt="Google_Docs_screenshot" src="../images/Google_Docs_screenshot.jpg"><br>
+<img alt="330px-Google_Docs_screenshot" src="../images/330px-Google_Docs_screenshot.jpg"><br>
+<img alt="120px-Google_Docs_2020_Logo.svg" src="../images/120px-Google_Docs_2020_Logo.svg.png"><br>
+<img alt="250px-Google_Docs_screenshot" src="../images/250px-Google_Docs_screenshot.jpg"></p>
+<h2>Full Article</h2>
+<p>Cloud-based word processing software</p>
+<p>This article is about the word processor. For the office suite, see <a href="./Google_Docs_Editors" title="Google Docs Editors">Google Docs Editors</a>.</p>
+<p><strong>Google Docs</strong> is an online <a href="./Word_processor" title="Word processor">word processor</a> and part of the free, web-based <a href="./Google_Docs_Editors" title="Google Docs Editors">Google Docs Editors</a> suite offered by <a href="./Google" title="Google">Google</a>. Google Docs is accessible via a <a href="./Web_browser" title="Web browser">web browser</a> as a <a href="./Web_application" title="Web application">web-based application</a> and is also available as a <a href="./Mobile_app" title="Mobile app">mobile app</a> on <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> and <a href="./IOS" title="IOS">iOS</a> and as a <a href="./Desktop_application" title="Desktop application">desktop application</a> on Google's <a href="./ChromeOS" title="ChromeOS">ChromeOS</a>.</p>
+<p>Google Docs allows users to create, edit and write documents online (Stories, Meeting notes, ETC) while collaborating with users in real-time. Edits are tracked by the user making the edit, with a revision history presenting changes. An editor's position is highlighted with an editor-specific color and cursor, and a permissions system regulates what users can do. Updates have introduced features using <a href="./Machine_learning" title="Machine learning">machine learning</a>, including "Explore", offering search results based on the contents of a document, and "Action items", allowing users to assign tasks to other users.</p>
+<p>Google Docs supports opening and saving documents in the standard <a href="./OpenDocument" title="OpenDocument">OpenDocument</a> format as well as in <a href="./Rich_text_format" title="Rich text format">Rich Text Format</a>, plain <a href="./Unicode" title="Unicode">Unicode</a> text, <a href="./ZIP_(file_format)" title="ZIP (file format)">zipped</a> <a href="./HTML" title="HTML">HTML</a>, and <a href="./Microsoft_Word" title="Microsoft Word">Microsoft Word</a>. Exporting to <a href="./PDF" title="PDF">PDF</a> and <a href="./EPUB" title="EPUB">EPUB</a> formats is implemented. Google Docs now also supports downloading files in <a href="./Markdown" title="Markdown">Markdown</a> format.</p>
+<h2>History</h2>
+<p>Google Docs originated from Writely, a <a href="./Web_application" title="Web application">web-based</a> word processor created by the software company Upstartle and launched in August 2005. It began as an experiment by programmers Sam Schillace, Steve Newman, and Claudia Carpenter, trying out the then-new <a href="./Ajax_(programming)" title="Ajax (programming)">Ajax</a> technology and the "ContentEditable" HTML feature. On March 9, 2006, Google announced that it had acquired Upstartle. Google would release a new product, based on Writely, called Google documents on October 10, 2006. In July 2009, Google dropped the <a href="./Software_release_life_cycle#Beta" title="Software release life cycle">beta testing status</a> from Google Docs. In March 2010, Google acquired DocVerse, an online document collaboration company. DocVerse allowed multiple users to collaborate online on <a href="./Microsoft_Word" title="Microsoft Word">Microsoft Word</a> documents, like other <a href="./Microsoft_Office" title="Microsoft Office">Microsoft Office</a> formats, such as <a href="./Microsoft_Excel" title="Microsoft Excel">Excel</a> and <a href="./Microsoft_PowerPoint" title="Microsoft PowerPoint">PowerPoint</a>. Improvements based on DocVerse were announced and deployed in April 2010. In June 2012, Google acquired <a href="./Quickoffice" title="Quickoffice">Quickoffice</a>, a freeware proprietary productivity suite for mobile devices. In October 2012, Google renamed the <a href="./Google_Drive" title="Google Drive">Google Drive</a> products, and Google Documents became Google Docs. At the same time, <a href="./Google_Chrome_App" title="Google Chrome App">Google Chrome App</a> versions of Google Docs, <a href="./Google_Sheets" title="Google Sheets">Google Sheets</a>, and <a href="./Google_Slides" title="Google Slides">Google Slides</a> were released, which provided shortcuts to the service on Chrome's new tab page. In February 2019, Google announced grammar suggestions in Docs, expanding their spell check using machine translation techniques to help catch tricky grammatical errors. In March 2023, Google Docs, with Slides and Sheets, introduced a new UI theme.</p>
+<h2>Platforms</h2>
+<p>Google Docs is available as a <a href="./Web_application" title="Web application">web application</a> supported on <a href="./Google_Chrome" title="Google Chrome">Google Chrome</a>, <a href="./Firefox" title="Firefox">Firefox</a>, <a href="./Microsoft_Edge" title="Microsoft Edge">Microsoft Edge</a>, and <a href="./Safari_(web_browser)" title="Safari (web browser)">Safari</a> web browsers. Users can access all Docs, as well as other files, collectively through the <a href="./Google_Drive" title="Google Drive">Google Drive</a> website. In June 2014, Google rolled out a dedicated website homepage for Docs that contains only files created with the service. In 2014, Google launched a dedicated mobile app for Docs on the <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> and <a href="./IOS" title="IOS">iOS</a> mobile operating systems. The mobile website for Docs was updated in 2015 with a "simpler, more uniform" interface, and while users can read files through the mobile websites, users trying to edit will be redirected towards the dedicated mobile app, thus preventing editing on the mobile web.</p>
+<h2>Features</h2>
+<h3>Editing</h3>
+<h4>Collaboration and revision history</h4>
+<p><a href="./Google" title="Google">Google</a> Docs and the other apps in the <a href="./Google_Drive" title="Google Drive">Google Drive</a> suite serve as a tool for <a href="./Collaborative_editing" title="Collaborative editing">collaborative editing</a> of documents in real time. Documents can be shared, opened, and edited by multiple users simultaneously, and users can see character-by-character changes as other collaborators make edits. Changes are automatically saved to <a href="./Google" title="Google">Google</a>'s servers, and a revision history is automatically kept so past edits may be viewed and reverted. To resolve concurrent edits from different users, Google Docs uses an <a href="./Operational_transformation" title="Operational transformation">operational transformation</a> method based on the Jupiter algorithm, where the document is stored as a <a href="./Changelog" title="Changelog">list of changes</a>.</p>
+<p>An editor's current position is represented with an editor-specific color/cursor, so if another editor happens to be viewing that part of the document, they can see edits as they occur. A sidebar chat functionality allows collaborators to discuss edits. The revision history allows users to see the additions made to a document, with each author distinguished by color. Only adjacent revisions can be compared, and users cannot control how frequently revisions are saved. Files can be exported to a user's local computer in a variety of formats (<a href="./OpenDocument" title="OpenDocument">ODF</a>, <a href="./HTML" title="HTML">HTML</a>, <a href="./Portable_Document_Format" title="Portable Document Format">PDF</a>, <a href="./Rich_Text_Format" title="Rich Text Format">RTF</a>, <a href="./Formatted_text" title="Formatted text">Text</a>, <a href="./Office_Open_XML" title="Office Open XML">Office Open XML</a>).</p>
+<h4>Explore</h4>
+<p>In March 2013, Google introduced add-ons, new tools from third-party developers that add more features to Google Docs. To view and edit documents offline on a computer, users need to use the Google Chrome web browser. A <a href="./Google_Chrome#Extensions" title="Google Chrome">Chrome extension</a>, Google Docs Offline, allows users to enable offline support for Docs files on the Google Drive website. The Android and iOS apps natively support offline editing.</p>
+<p>In June 2014, Google introduced "Suggested edits" in Google Docs; as part of the "commenting access" permission, participants can come up with suggestions for edits that the author can accept or reject, in contrast to full editing ability. In October 2016, Google announced "Action items" for Docs. If a user writes phrases such as "Ryan to follow up on the keynote script", the service will intelligently assign that action to "Ryan". Google states this will make it easier for other collaborators to see which person is responsible for what task. When a user visits Google Drive, Docs, Sheets, or Slides, any files with tasks assigned to them will be highlighted with a badge.</p>
+<p>A basic research tool was introduced in 2012. This was expanded into "Explore" in September 2016, which has additional functionality through <a href="./Machine_learning" title="Machine learning">machine learning</a>. In Google Docs, Explore shows relevant Google search results based on information in the document, simplifying information gathering. Users can also mark specific document text, press Explore, and see search results based on the marked text only.</p>
+<p>In December 2016, Google introduced a quick citations feature to Google Docs. The quick citation tool allows users to "insert citations as footnotes with the click of a button" on the web through the Explore feature introduced in September. The citation feature also marked the launch of the Explore functionalities in G Suite for Education accounts.</p>
+<h3>Files</h3>
+<h4>Supported file formats</h4>
+<ul>
+<li>For formatted text documents: <a href="./OpenDocument" title="OpenDocument">OpenDocument</a>, <a href="./Rich_text_format" title="Rich text format">Rich text format</a>, <a href="./ZIP_(file_format)" title="ZIP (file format)">zipped</a> <a href="./HTML" title="HTML">HTML</a>, <a href="./Unicode" title="Unicode">Unicode</a> <a href="./Plain_text" title="Plain text">plain text</a>, <a href="./Microsoft_Word" title="Microsoft Word">Microsoft Word</a>.</li>
+</ul>
+<h4>File limits</h4>
+<p>Limits to insertable file sizes, overall document length, and size are listed below:</p>
+<ul>
+<li>Up to 1.02 million characters, regardless of the number of pages or font size. Document files converted to .gdoc (Docs) format cannot be larger than 50 MB. Images inserted cannot be larger than 50 MB and must be in either .jpg, .png, or .gif formats.</li>
+</ul>
+<h3>Google Workspace</h3>
+<p>Google Docs and the <a href="./Google_Docs_Editors" title="Google Docs Editors">Google Docs Editors</a> suite are free of charge for use by individuals but are also available as part of Google's business-centered <a href="./Google_Workspace" title="Google Workspace">Google Workspace</a>, enabling additional business-focused functionality on payment of a monthly subscription.</p>
+<h3>Other functionality</h3>
+<p>A simple find-and-replace tool is available. Google offers an extension for the Google Chrome web browser called <em>Office editing for Docs, Sheets and Slides</em> that enables users to view and edit Microsoft Word documents on Google Chrome via the Docs app. The extension can be used for opening Office files stored on the computer using Chrome, as well as for opening Office files encountered on the web (in the form of email attachments, web search results, etc.) without having to download them. The extension is installed on ChromeOS by default. <a href="./Google_Cloud_Connect" title="Google Cloud Connect">Google Cloud Connect</a> was a plug-in for <a href="./Microsoft_Office" title="Microsoft Office">Microsoft Office</a> 2003, 2007, and 2010 that could automatically store and synchronize any <a href="./Microsoft_Word" title="Microsoft Word">Word</a> document to Google Docs (before the introduction of Drive) in Google Docs or Microsoft Office formats. The online copy was automatically updated each time the Microsoft Word document was saved. Microsoft Word documents could be edited offline and synchronized later when online. Google Cloud Connect maintained previous Microsoft Word document versions and allowed multiple users to collaborate by working on the same document at the same time. Google Cloud Connect was discontinued in April 2013 as, according to Google, Google Drive achieves all of the above tasks, "with better results".</p>
+<p>In January 2022, Google announced the <a href="./Watermark" title="Watermark">text watermark</a> feature to the word processor, allowing users to create or import watermarks to a document. In addition to text watermarks, image watermarks can also be added to the document.</p>
+<p>In July 2024, Google announced that Google Docs would begin fully supporting <a href="./Markdown" title="Markdown">Markdown</a> syntax. This built on Google's announcement in March 2022 that it had added an opt-in feature to automatically detect Markdown within Google Docs.</p>
+<h2>Reception</h2>
+<p>In a December 2016 review of Google Docs and the Drive software suite, Edward Mendelsohn of <em><a href="./PC_Magazine" title="PC Magazine">PC Magazine</a></em> wrote that the suite was "visually elegant" with "effortless collaboration", but that Docs, as paired with <a href="./Google_Sheets" title="Google Sheets">Sheets</a> and <a href="./Google_Slides" title="Google Slides">Slides</a>, was "less powerful than desktop-based suites". Comparing Google's Office suite with <a href="./Microsoft_Office" title="Microsoft Office">Microsoft Office</a> and Apple's <a href="./IWork" title="IWork">iWork</a>, he stated that "Docs exists <em>only</em> in your Web browser", meaning that users have a "more limited feature set" than "the spacious, high-powered setting of a desktop app". He wrote that offline support required a plug-in, describing it as "less convenient than a desktop app, and you have to remember to install it before you need it". Mendelsohn praised the <a href="./User_interface" title="User interface">user interface</a>, describing it as "elegant, highly usable" with "fast performance", and that the revision history "alerts you to recent changes, and stores fine-grained records of revisions". Regarding the Explore functionality, he credited it for being the "niftiest new feature" in the suite and that it surpassed comparable features in Microsoft Office. He described the quality of imports of Word files as "impressive fidelity". He summarized by praising Docs and the Drive suite for having "the best balance of speed and power, and the best collaboration features, too", while noting that "it lacks a few features offered by Microsoft Office 365, but it was also faster to load and save in our testing".</p>
+<h2>Issues</h2>
+<h3>2017 phishing incident</h3>
+<p>In May 2017, a phishing attack impersonated a Google Docs sharing email spread on the Internet. The attack sent emails pretending to be someone the target knew, requesting to share a document with them. Once the link in the email was pressed, users were directed to a real Google account permissions page where the phishing software, a third-party app named "Google Docs", requested access to the user's Google account. Once granted, the software received access to the user's <a href="./Gmail" title="Gmail">Gmail</a> messages and address book and sent new fraudulent document invitations to their contacts. The phishing attack was described by media outlets as "massive" and "widespread", and <em>The Next Web</em>'s Napier Lopez wrote that it's "very easy to fall for". One of the reasons the attack was so effective was that its email messages passed through spam and security software, and used a real Google address. Within hours, the attack was stopped and fixed by Google, with a spokesperson stating "We have taken action to protect users against an email impersonating Google Docs and have disabled offending accounts. We've removed the fake pages, pushed updates through Safe Browsing, and our abuse team is working to prevent this kind of spoofing from happening again".</p>
+<p>On the same day, Google updated Gmail on Android to feature protection from <a href="./Phishing" title="Phishing">phishing</a> attacks. Media outlets noticed that, while the added protection was announced on the same day as the attack, it "may not have prevented this week's attack, however, as that attack involved a malicious and fake 'Google Docs' app that was hosted on Google's own domain". In early May 2017, <em><a href="./Ars_Technica" title="Ars Technica">Ars Technica</a></em> reported that "at least three security researchers" had raised issues about the threat, one of them in October 2011, and that the attacker or attackers behind the actual incident "may have copied the technique from a proof of concept posted by one security researcher to <a href="./GitHub" title="GitHub">GitHub</a> in February". Furthermore, the report noted that Google had been repeatedly warned by researchers about the potential threat, with security researcher Greg Carson telling <em><a href="./Ars_Technica" title="Ars Technica">Ars Technica</a></em> that "I don't think Google fully understood how severely this could be abused, but certainly, hackers did".</p>
+<h3>2017 "Terms of Service" error</h3>
+<p>In October 2017, Google released a server-side update to its codebase, which started incorrectly flagging random documents as unspecified violations of its "Terms of Service" policies. A fix was released shortly afterward, though the issue became noteworthy for the extent of Google's control over users' content, including its analysis of the contents of documents, as well as for its ability to shut users out at any time, including during critical moments of work.</p>
+<h2>Notes</h2>
+<h2>References</h2>
+<h2>External links</h2>
+<ul>
+<li><a href="https://www.google.com/docs/about/">Official website</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Word_processors" title="Template:Word processors">v</a> - <a href="./Template_talk:Word_processors" title="Template talk:Word processors">t</a> - <a href="./Special:EditPage/Template:Word_processors" title="Special:EditPage/Template:Word processors">e</a>  <a href="./Word_processor_program" title="Word processor program">Word processor programs</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>- <a href="./List_of_word_processors" title="List of word processors">List</a> - <a href="./Comparison_of_word_processors" title="Comparison of word processors">Comparison</a>   - <a href="./Comparison_of_early_word_processors" title="Comparison of early word processors">of early word processor programs</a></td>
+<td></td>
+</tr>
+<tr>
+<td>Open-source</td>
+<td>- <a href="./AbiWord" title="AbiWord">AbiWord</a> - <a href="./Apache_OpenOffice" title="Apache OpenOffice">Apache OpenOffice Writer</a> - <a href="./Bean_(software)" title="Bean (software)">Bean</a> (up to v. 2.x) - <a href="./Calligra_Words" title="Calligra Words">Calligra Words</a> - <a href="./Collabora_Online" title="Collabora Online">Collabora Online Writer</a> - <a href="./Docs_(software)" title="Docs (software)">Docs</a> - <a href="./GNU_TeXmacs" title="GNU TeXmacs">GNU TeXmacs</a> - <a href="./LibreOffice_Writer" title="LibreOffice Writer">LibreOffice Writer</a> - <a href="./LyX" title="LyX">LyX</a> - <a href="./Ted_(word_processor)" title="Ted (word processor)">Ted</a> - <a href="./TextEdit" title="TextEdit">TextEdit</a></td>
+</tr>
+<tr>
+<td>Freeware</td>
+<td>- <a href="./Adobe_Document_Cloud#Buzzword" title="Adobe Document Cloud">Adobe Buzzword</a> - <a href="./Atlantis_Word_Processor" title="Atlantis Word Processor">Atlantis Nova</a> - <a href="./Bean_(software)" title="Bean (software)">Bean</a> (since v. 3.x) - <a href="./Jarte" title="Jarte">Jarte</a> (standard) - <a href="./TextMaker" title="TextMaker">TextMaker</a> (2008)</td>
+</tr>
+<tr>
+<td>Commercial</td>
+<td></td>
+</tr>
+<tr>
+<td>Discontinued</td>
+<td>- <a href="./1st_Word" title="1st Word">1st Word</a> - <a href="./Apple_Writer" title="Apple Writer">Apple Writer</a> - <a href="./AppleWorks" title="AppleWorks">AppleWorks</a> - <a href="./Atari_Word_Processor" title="Atari Word Processor">Atari Word Processor</a> - <a href="./AtariWriter" title="AtariWriter">AtariWriter</a> - <a href="./Bank_Street_Writer" title="Bank Street Writer">Bank Street Writer</a> - <a href="./ChiWriter" title="ChiWriter">ChiWriter</a> - <a href="./Cut_&amp;_Paste" title="Cut &amp; Paste">Cut &amp; Paste</a> - <a href="./Davka#davkawriter" title="Davka">davka writer</a> - <a href="./Electric_Pencil" title="Electric Pencil">Electric Pencil</a> - <a href="./The_First_XLEnt_Word_Processor" title="The First XLEnt Word Processor">The First XLEnt Word Processor</a> - <a href="./IBM_Lotus_Symphony" title="IBM Lotus Symphony">IBM Lotus Symphony</a> - <a href="./KWord" title="KWord">KWord</a> - <a href="./MacWrite" title="MacWrite">MacWrite</a> - <a href="./Magic_Desk" title="Magic Desk">Magic Desk</a> - <a href="./MultiMate" title="MultiMate">MultiMate</a> - <a href="./PaperClip" title="PaperClip">PaperClip</a> - <a href="./Perfect_Writer" title="Perfect Writer">Perfect Writer</a> - <a href="./Scripsit" title="Scripsit">Scripsit</a> - <a href="./SpeedScript" title="SpeedScript">SpeedScript</a> - <a href="./Sprint_(word_processor)" title="Sprint (word processor)">Sprint</a> - <a href="./WordPad" title="WordPad">WordPad</a> - <a href="./WordStar" title="WordStar">WordStar</a> - Writer   - <a href="./StarOffice" title="StarOffice">StarOffice</a>   - <a href="./OpenOffice.org" title="OpenOffice.org">OpenOffice.org</a>   - <a href="./Go-oo" title="Go-oo">Go-oo</a>   - <a href="./NeoOffice" title="NeoOffice">NeoOffice</a></td>
+</tr>
+<tr>
+<td>Hardware</td>
+<td>- <a href="./AlphaSmart" title="AlphaSmart">AlphaSmart</a> - <a href="./CPT_Corporation" title="CPT Corporation">CPT Corporation</a> - <a href="./Friden_Flexowriter" title="Friden Flexowriter">Friden Flexowriter</a> - <a href="./IBM_Displaywriter_System" title="IBM Displaywriter System">IBM Displaywriter System</a> - <a href="./IBM_MT/ST" title="IBM MT/ST">IBM MT/ST</a> - <a href="./Wang_Laboratories#The_Wang_1200" title="Wang Laboratories">Wang</a></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Word_processors" title="Category:Word processors">Category:Word processors</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products" title="List of Google products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

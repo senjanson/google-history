@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Google DeepMind</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link active" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Google DeepMind</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Google_DeepMind<br>
+Category: company__depth2<br>
+Depth: 2</p>
+</blockquote>
+<h2>Summary</h2>
+<p>DeepMind Technologies Limited, trading as Google DeepMind or simply DeepMind, is a British-American artificial intelligence (AI) research laboratory which serves as a subsidiary of Alphabet Inc. Founded in the UK in 2010, it was acquired by Google in 2014 and merged with Google AI's Google Brain division to become Google DeepMind in April 2023. The company is headquartered in London, with research centres in the United States, Canada, France, Germany, and Switzerland.</p>
+<h2>Images</h2>
+<p><img alt="120px-Dall-e_3__28jan__2724_29_artificial_intelligence_icon" src="../images/120px-Dall-e_3__28jan__2724_29_artificial_intelligence_icon.png"></p>
+<h2>Full Article</h2>
+<p>AI research laboratory</p>
+<p><strong>DeepMind Technologies Limited</strong>, <a href="./Trading_as" title="Trading as">trading as</a> <strong>Google DeepMind</strong> or simply <strong>DeepMind</strong>, is a British-American <a href="./Artificial_intelligence" title="Artificial intelligence">artificial intelligence</a> (AI) research laboratory which serves as a <a href="./Subsidiary" title="Subsidiary">subsidiary</a> of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc.</a> Founded in the UK in 2010, it was <a href="./List_of_mergers_and_acquisitions_by_Alphabet" title="List of mergers and acquisitions by Alphabet">acquired</a> by Google in 2014 and merged with <a href="./Google_AI" title="Google AI">Google AI</a>'s <a href="./Google_Brain" title="Google Brain">Google Brain</a> division to become Google DeepMind in April 2023. The company is headquartered in <a href="./London" title="London">London</a>, with research centres in the United States, Canada, France, Germany, and Switzerland.</p>
+<p>In 2014, DeepMind introduced <a href="./Neural_Turing_machine" title="Neural Turing machine">neural Turing machines</a> (<a href="./Neural_network_(machine_learning)" title="Neural network (machine learning)">neural networks</a> that can access external memory like a conventional <a href="./Turing_machine" title="Turing machine">Turing machine</a>). The company has created many neural network models trained with <a href="./Reinforcement_learning" title="Reinforcement learning">reinforcement learning</a> to play <a href="./Video_games" title="Video games">video games</a> and <a href="./Board_games" title="Board games">board games</a>. It made headlines in 2016 after its <a href="./AlphaGo" title="AlphaGo">AlphaGo</a> program beat <a href="./Lee_Sedol" title="Lee Sedol">Lee Sedol</a>, a <a href="./Go_(game)" title="Go (game)">Go</a> world champion, in <a href="./AlphaGo_versus_Lee_Sedol" title="AlphaGo versus Lee Sedol">a five-game match</a>, which was later featured in the documentary <em><a href="./AlphaGo_(film)" title="AlphaGo (film)">AlphaGo</a></em>. A more general program, <a href="./AlphaZero" title="AlphaZero">AlphaZero</a>, beat the most powerful programs playing go, <a href="./Chess" title="Chess">chess</a> and <a href="./Shogi" title="Shogi">shogi</a> (Japanese chess) after a few days of play against itself using reinforcement learning. DeepMind has since trained models for game-playing (<a href="./MuZero" title="MuZero">MuZero</a>, <a href="./AlphaStar_(software)" title="AlphaStar (software)">AlphaStar</a>), for geometry (<a href="./AlphaGeometry" title="AlphaGeometry">AlphaGeometry</a>), and for algorithm discovery (<a href="./AlphaEvolve" title="AlphaEvolve">AlphaEvolve</a>, <a href="./AlphaDev" title="AlphaDev">AlphaDev</a>, AlphaTensor).</p>
+<p>In 2020, DeepMind made significant advances in the problem of <a href="./Protein_structure_prediction" title="Protein structure prediction">protein folding</a> with <a href="./AlphaFold" title="AlphaFold">AlphaFold</a>, which achieved <a href="./State_of_the_art" title="State of the art">state of the art</a> records on <a href="./Benchmark_(computing)" title="Benchmark (computing)">benchmark tests</a> for protein folding prediction. In July 2022, it was announced that over 200 million predicted protein structures, representing virtually all known proteins, would be released on the AlphaFold database.</p>
+<p>Google DeepMind has become responsible for the development of <a href="./Gemini_(language_model)" title="Gemini (language model)">Gemini</a> (Google's family of <a href="./Large_language_model" title="Large language model">large language models</a>) and other <a href="./Generative_AI" title="Generative AI">generative AI</a> tools, such as the <a href="./Text-to-image_model" title="Text-to-image model">text-to-image</a> model <a href="./Imagen_(text-to-image_model)" title="Imagen (text-to-image model)">Imagen</a>, the <a href="./Text-to-video_model" title="Text-to-video model">text-to-video</a> model <a href="./Veo_(text-to-video_model)" title="Veo (text-to-video model)">Veo</a>, and the <a href="./Text-to-music_model" title="Text-to-music model">text-to-music</a> model Lyria.</p>
+<h2>History</h2>
+<p>The <a href="./Startup_company" title="Startup company">start-up</a> was founded by <a href="./Demis_Hassabis" title="Demis Hassabis">Demis Hassabis</a>, <a href="./Shane_Legg" title="Shane Legg">Shane Legg</a> and <a href="./Mustafa_Suleyman" title="Mustafa Suleyman">Mustafa Suleyman</a> in November 2010. Hassabis and Legg first met at the Gatsby Computational Neuroscience Unit at <a href="./University_College_London" title="University College London">University College London</a> (UCL).</p>
+<p>Demis Hassabis has said that the start-up began working on artificial intelligence technology by teaching it how to play old video games from the seventies and eighties, which are relatively primitive compared to the ones that are available today. Some of those games included <em><a href="./Breakout_(video_game)" title="Breakout (video game)">Breakout</a></em>, <em><a href="./Pong" title="Pong">Pong</a></em>, and <em><a href="./Space_Invaders" title="Space Invaders">Space Invaders</a></em>. AI was introduced to one game at a time, without any prior knowledge of its rules. After spending some time on learning the game, AI would eventually become an expert in it. "The cognitive processes which the AI goes through are said to be very like those of a human who had never seen the game would use to understand and attempt to master it." The goal of the founders is to create a general-purpose AI that can be useful and effective for almost anything.</p>
+<p>Major venture capital firms <a href="./Horizons_Ventures" title="Horizons Ventures">Horizons Ventures</a> and <a href="./Founders_Fund" title="Founders Fund">Founders Fund</a> invested in the company, as well as entrepreneurs <a href="./Scott_Banister" title="Scott Banister">Scott Banister</a>, <a href="./Peter_Thiel" title="Peter Thiel">Peter Thiel</a>, and <a href="./Elon_Musk" title="Elon Musk">Elon Musk</a>. <a href="./Jaan_Tallinn" title="Jaan Tallinn">Jaan Tallinn</a> was an early investor and an adviser to the company. On 26 January 2014, Google confirmed its acquisition of DeepMind for a price reportedly ranging between $400 million and $650 million. and that it had agreed to take over DeepMind Technologies. The sale to Google took place after <a href="./Facebook" title="Facebook">Facebook</a> reportedly ended negotiations with DeepMind Technologies in 2013. The company was afterwards renamed Google DeepMind and kept that name for about two years.</p>
+<p>In 2014, DeepMind received the "Company of the Year" award from <a href="./Cambridge_Computer_Laboratory" title="Cambridge Computer Laboratory">Cambridge Computer Laboratory</a>.</p>
+<p>In September 2015, DeepMind and the <a href="./Royal_Free_London_NHS_Foundation_Trust" title="Royal Free London NHS Foundation Trust">Royal Free NHS Trust</a> signed their initial information sharing agreement to co-develop a clinical task management app, Streams.</p>
+<p>After Google's acquisition the company established an <a href="./Ethics_of_artificial_intelligence" title="Ethics of artificial intelligence">artificial intelligence ethics</a> board. The ethics board for AI research remains a mystery, with both Google and DeepMind declining to reveal who sits on the board. DeepMind has opened a new unit called DeepMind Ethics and Society and focused on the ethical and societal questions raised by artificial intelligence featuring prominent philosopher <a href="./Nick_Bostrom" title="Nick Bostrom">Nick Bostrom</a> as advisor. In October 2017, DeepMind launched a new research team to investigate AI ethics.</p>
+<p>In December 2019, co-founder Suleyman announced he would be leaving DeepMind to join Google, working in a policy role. In March 2024, <a href="./Microsoft" title="Microsoft">Microsoft</a> appointed him as the EVP and CEO of its newly created consumer AI unit, Microsoft AI.</p>
+<p>In April 2023, DeepMind merged with <a href="./Google_AI" title="Google AI">Google AI</a>'s <a href="./Google_Brain" title="Google Brain">Google Brain</a> division to form Google DeepMind, as part of the company's continued efforts to accelerate work on AI in response to <a href="./OpenAI" title="OpenAI">OpenAI</a>'s <a href="./ChatGPT" title="ChatGPT">ChatGPT</a>. This marked the end of a years-long struggle from DeepMind executives to secure greater autonomy from Google.</p>
+<h2>Products and technologies</h2>
+<p>As of 2020, DeepMind has published over a thousand papers, including thirteen papers that were accepted by <em><a href="./Nature_(journal)" title="Nature (journal)">Nature</a></em> or <em><a href="./Science_(journal)" title="Science (journal)">Science</a></em>. DeepMind received media attention during the AlphaGo period; according to a <a href="./LexisNexis" title="LexisNexis">LexisNexis</a> search, 1842 published news stories mentioned DeepMind in 2016, declining to 1363 in 2019.</p>
+<h3>Games</h3>
+<p>Unlike earlier AIs, such as <a href="./IBM" title="IBM">IBM</a>'s <a href="./Deep_Blue_(chess_computer)" title="Deep Blue (chess computer)">Deep Blue</a> or <a href="./Watson_(computer)" title="Watson (computer)">Watson</a>, which were developed for a pre-defined purpose and only function within that scope, DeepMind's initial algorithms were intended to be general. They used <a href="./Reinforcement_learning" title="Reinforcement learning">reinforcement learning</a>, an algorithm that learns from experience using only raw pixels as data input. Their initial approach used <a href="./Q-learning#Deep_Q-learning" title="Q-learning">deep Q-learning</a> with a <a href="./Convolutional_neural_network" title="Convolutional neural network">convolutional neural network</a>. They tested the system on video games, notably early <a href="./Arcade_games" title="Arcade games">arcade games</a>, such as <em><a href="./Space_Invaders" title="Space Invaders">Space Invaders</a></em> or <em><a href="./Breakout_(video_game)" title="Breakout (video game)">Breakout</a></em>. Without altering the code, the same AI was able to play certain games more efficiently than any human ever could.</p>
+<p>In July 2018, researchers from DeepMind trained one of its systems to play the computer game <em><a href="./Quake_III_Arena" title="Quake III Arena">Quake III Arena</a></em>.</p>
+<p>In 2013, DeepMind published research on an AI system that surpassed human abilities in games such as <a href="./Pong" title="Pong">Pong</a>, <a href="./Breakout_(video_game)" title="Breakout (video game)">Breakout</a> and <a href="./Enduro_(video_game)" title="Enduro (video game)">Enduro</a>, while surpassing state of the art performance on <a href="./Seaquest_(video_game)" title="Seaquest (video game)">Seaquest</a>, <a href="./Beamrider" title="Beamrider">Beamrider</a>, and <a href="./Q*bert" title="Q*bert">Q*bert</a>. This work reportedly led to the company's acquisition by Google. DeepMind's AI had been applied to video games made in the 1970s and <a href="./History_of_video_games#1980s" title="History of video games">1980s</a>; work was ongoing for more complex 3D games such as <em><a href="./Quake_(video_game)" title="Quake (video game)">Quake</a></em>, which first appeared in the 1990s.</p>
+<p>In 2020, DeepMind published Agent57, an AI Agent which surpasses human level performance on all 57 games of the Atari 2600 suite. In July 2022, DeepMind announced the development of DeepNash, a model-free <a href="./Multi-agent_reinforcement_learning" title="Multi-agent reinforcement learning">multi-agent reinforcement learning</a> system capable of playing the board game <a href="./Stratego" title="Stratego">Stratego</a> at the level of a human expert.</p>
+<h4>AlphaGo and successors</h4>
+<p>Main articles: <a href="./AlphaGo" title="AlphaGo">AlphaGo</a>, <a href="./AlphaGo_Zero" title="AlphaGo Zero">AlphaGo Zero</a>, <a href="./AlphaZero" title="AlphaZero">AlphaZero</a>, and <a href="./MuZero" title="MuZero">MuZero</a></p>
+<p>In October 2015, a <a href="./Computer_Go" title="Computer Go">computer Go</a> program called AlphaGo, developed by DeepMind, beat the European Go champion <a href="./Fan_Hui" title="Fan Hui">Fan Hui</a>, a <a href="./Go_ranks_and_ratings" title="Go ranks and ratings">2 dan</a> (out of 9 dan possible) professional, five to zero. This was the first time an artificial intelligence (AI) defeated a professional Go player. Previously, computers were only known to have played Go at "amateur" level. Go is considered much more difficult for computers to win compared to other games like <a href="./Chess" title="Chess">chess</a>, due to the much larger number of possibilities, making it prohibitively difficult for traditional AI methods such as <a href="./Brute-force_search" title="Brute-force search">brute-force</a>.</p>
+<p>In March 2016 it beat <a href="./Lee_Sedol" title="Lee Sedol">Lee Sedol</a>, a <a href="./Go_ranks_and_ratings" title="Go ranks and ratings">9-dan</a> professional player, with a score of 4 to 1 in a <a href="./AlphaGo_versus_Lee_Sedol" title="AlphaGo versus Lee Sedol">five-game match</a>. In the 2017 <a href="./Future_of_Go_Summit" title="Future of Go Summit">Future of Go Summit</a>, AlphaGo won a <a href="./AlphaGo_versus_Ke_Jie" title="AlphaGo versus Ke Jie">three-game match with Ke Jie</a>, who had been the world's highest-ranked player for two years. In 2017, an improved version, <a href="./AlphaGo_Zero" title="AlphaGo Zero">AlphaGo Zero</a>, defeated AlphaGo in a hundred out of a hundred games. Later that year, <a href="./AlphaZero" title="AlphaZero">AlphaZero</a>, a modified version of AlphaGo Zero, gained superhuman abilities at chess and shogi. In 2019, DeepMind released a new model named <a href="./MuZero" title="MuZero">MuZero</a> that mastered the domains of <a href="./Go_(game)" title="Go (game)">Go</a>, <a href="./Chess" title="Chess">chess</a>, <a href="./Shogi" title="Shogi">shogi</a>, and <a href="./Atari_2600" title="Atari 2600">Atari 2600 games</a> without human data, domain knowledge, or known rules.</p>
+<p>AlphaGo technology was developed based on <a href="./Deep_reinforcement_learning" title="Deep reinforcement learning">deep reinforcement learning</a>, making it different from the AI technologies then on the market. The data fed into the AlphaGo algorithm consisted of various moves based on historical tournament data. The number of moves was increased gradually until over 30 million of them were processed. The aim was to have the system mimic the human player, as represented by the input data, and eventually become better. It played against itself and learned from the outcomes; thus, it learned to improve itself over the time and increased its winning rate as a result.</p>
+<p>AlphaGo used two deep neural networks: a policy network to evaluate move probabilities and a value network to assess positions. The policy network trained via supervised learning, and was subsequently refined by policy-gradient <a href="./Reinforcement_learning" title="Reinforcement learning">reinforcement learning</a>. The value network learned to predict winners of games played by the policy network against itself. After training, these networks employed a lookahead <a href="./Monte_Carlo_tree_search" title="Monte Carlo tree search">Monte Carlo tree search</a>, using the policy network to identify candidate high-probability moves, while the value network (in conjunction with Monte Carlo rollouts using a fast rollout policy) evaluated tree positions.</p>
+<p>In contrast, AlphaGo Zero was trained without being fed data of human-played games. Instead it generated its own data, playing millions of games against itself. It used a single neural network, rather than separate policy and value networks. Its simplified tree search relied upon this neural network to evaluate positions and sample moves. A new reinforcement learning algorithm incorporated lookahead search inside the training loop. AlphaGo Zero employed around 15 people and millions in computing resources. Ultimately, it needed much less computing power than AlphaGo, running on four specialized AI processors (Google <a href="./Tensor_processing_unit" title="Tensor processing unit">TPUs</a>), instead of AlphaGo's 48. It also required less training time, being able to beat its predecessor after just three days, compared with months required for the original AlphaGo. Similarly, AlphaZero also learned via <a href="./Self-play_(reinforcement_learning_technique)" title="Self-play (reinforcement learning technique)">self-play</a>.</p>
+<p>Researchers applied MuZero to solve the real world challenge of video compression with a set number of bits with respect to Internet traffic on sites such as <a href="./YouTube" title="YouTube">YouTube</a>, <a href="./Twitch_(service)" title="Twitch (service)">Twitch</a>, and <a href="./Google_Meet" title="Google Meet">Google Meet</a>. The goal of MuZero is to optimally compress the video so the quality of the video is maintained with a reduction in data. The final result using MuZero was a 6.28% average reduction in bitrate.</p>
+<h4>AlphaStar</h4>
+<p>Main article: <a href="./AlphaStar_(software)" title="AlphaStar (software)">AlphaStar (software)</a></p>
+<p>In 2016, Hassabis discussed the game <em><a href="./StarCraft" title="StarCraft">StarCraft</a></em> as a future challenge, since it requires strategic thinking and handling imperfect information.</p>
+<p>In January 2019, DeepMind introduced AlphaStar, a program playing the real-time strategy game <em><a href="./StarCraft_II" title="StarCraft II">StarCraft II</a></em>. AlphaStar used reinforcement learning based on replays from human players, and then played against itself to enhance its skills. At the time of the presentation, AlphaStar had knowledge equivalent to 200 years of playing time. It won 10 consecutive matches against two professional players, although it had the unfair advantage of being able to see the entire field, unlike a human player who has to move the camera manually. A preliminary version in which that advantage was fixed lost a subsequent match.</p>
+<p>In July 2019, AlphaStar began playing against random humans on the public 1v1 European multiplayer ladder. Unlike the first iteration of AlphaStar, which played only <a href="./Protoss" title="Protoss">Protoss</a> v. Protoss, this one played as all of the game's races, and had earlier unfair advantages fixed. By October 2019, AlphaStar had reached Grandmaster level on the <em>StarCraft II</em> ladder on all three <em>StarCraft</em> races, becoming the first AI to reach the top league of a widely popular <a href="./Esports" title="Esports">esport</a> without any game restrictions.</p>
+<h3>Datacenter operation</h3>
+<p>In 2014, a datacenter engineer at Google began using supervised machine learning to predict <a href="./Power_usage_effectiveness" title="Power usage effectiveness">power usage effectiveness</a> (PUE) of datacenters at Google. The system was deployed in production to allow operators to simulate control strategies and pick the one that saves the most energy. In 2016, inspired by AlphaGo, he contacted DeepMind to apply <a href="./Reinforcement_learning" title="Reinforcement learning">reinforcement learning</a> (RL) to train a system that could also recommend actions. It was tested on a live datacenter. The system read from sensor readings and recommended actions to take, and human engineers would implement the actions. Though the human engineers found its recommendations unintuitive, they satisfied all safety constraints, and led to a 15% saving in PUE. The system was deployed more widely across Google, with datacenter controllers receiving email recommendations from the system every 15 minutes.</p>
+<p>Eventually a more mature and more autonomous system was deployed, where the AI's actions are checked against safety constraints and implemented autonomously if verified safe, and human operators would supervise the AI and may override. The system led to a 30% saving in PUE. The system produced cooling strategies that surprised long-time operators, such as exploiting winter conditions to produce colder than normal water. Google subsequently collaborated with <a href="./Trane_Technologies" title="Trane Technologies">Trane Technologies</a> to deploy similar RL-based systems on <a href="./Heating,_ventilation,_and_air_conditioning" title="Heating, ventilation, and air conditioning">HVAC</a> of facilities outside of Google.</p>
+<h3>Protein folding</h3>
+<p>Main article: <a href="./AlphaFold" title="AlphaFold">AlphaFold</a></p>
+<p>In 2016, DeepMind turned its artificial intelligence to <a href="./Protein_structure_prediction" title="Protein structure prediction">protein folding</a>, a long-standing problem in <a href="./Molecular_biology" title="Molecular biology">molecular biology</a>. In December 2018, DeepMind's AlphaFold won the 13th <a href="./Critical_Assessment_of_Techniques_for_Protein_Structure_Prediction" title="Critical Assessment of Techniques for Protein Structure Prediction">Critical Assessment of Techniques for Protein Structure Prediction</a> (CASP) by successfully predicting the most accurate structure for 25 out of 43 proteins. "This is a lighthouse project, our first major investment in terms of people and resources into a fundamental, very important, real-world scientific problem," Hassabis said to <em>The Guardian</em>. In 2020, in the 14th CASP, AlphaFold's predictions achieved an accuracy score regarded as comparable with lab techniques. Andriy Kryshtafovych, one of the panel of scientific adjudicators, described the achievement as "truly remarkable", and said the problem of predicting how proteins fold had been "largely solved".</p>
+<p>In July 2021, the open-source RoseTTAFold and AlphaFold2 were released to allow scientists to run their own versions of the tools. A week later DeepMind announced that AlphaFold had completed its prediction of nearly all human proteins as well as the entire <a href="./Proteome" title="Proteome">proteomes</a> of 20 other widely studied organisms. The structures were released on the AlphaFold Protein Structure Database. In July 2022, it was announced that the predictions of over 200 million proteins, representing virtually all known proteins, would be released on the AlphaFold database.</p>
+<p>The most recent update, AlphaFold3, was released in May 2024, predicting the interactions of proteins with DNA, RNA, and various other molecules. In a particular <a href="./Benchmark_(computing)" title="Benchmark (computing)">benchmark test</a> on the problem of DNA interactions, AlphaFold3's attained an accuracy of 65%, significantly improving the previous state of the art of 28%.</p>
+<p>In October 2024, Hassabis and <a href="./John_M._Jumper" title="John M. Jumper">John Jumper</a> received half of the 2024 <a href="./Nobel_Prize_in_Chemistry" title="Nobel Prize in Chemistry">Nobel Prize in Chemistry</a> jointly for protein structure prediction, citing AlphaFold2 achievement.</p>
+<h3>Language models</h3>
+<p>In 2016, DeepMind introduced <a href="./WaveNet" title="WaveNet">WaveNet</a>, a <a href="./Text-to-speech" title="Text-to-speech">text-to-speech</a> system. It was originally too computationally intensive for use in consumer products, but in late 2017 it became ready for use in consumer applications such as <a href="./Google_Assistant" title="Google Assistant">Google Assistant</a>. In 2018 Google launched a commercial text-to-speech product, Cloud Text-to-Speech, based on WaveNet. In 2018, DeepMind introduced a more efficient model called WaveRNN co-developed with <a href="./Google_AI" title="Google AI">Google AI</a>. In 2020 WaveNetEQ, a packet loss concealment method based on a WaveRNN architecture, was presented. In 2019, Google started to roll WaveRNN with WavenetEQ out to <a href="./Google_Duo" title="Google Duo">Google Duo</a> users.</p>
+<p>Released in May 2022, <a href="./Gato_(DeepMind)" title="Gato (DeepMind)">Gato</a> is a polyvalent <a href="./Multimodal_learning" title="Multimodal learning">multimodal</a> model. It was trained on 604 tasks, such as image captioning, dialogue, or stacking blocks. On 450 of these tasks, Gato outperformed human experts at least half of the time, according to DeepMind. Unlike models like MuZero, Gato does not need to be retrained to switch from one task to the other.</p>
+<p><a href="./Sparrow_(chatbot)" title="Sparrow (chatbot)">Sparrow</a> is an artificial intelligence-powered <a href="./Chatbot" title="Chatbot">chatbot</a> developed by DeepMind to build safer machine learning systems by using a mix of human feedback and Google search suggestions.</p>
+<p><a href="./Chinchilla_(language_model)" title="Chinchilla (language model)">Chinchilla</a> is a language model developed by DeepMind.</p>
+<p>DeepMind posted a blog post on 28 April 2022 on a single visual language model (VLM) named Flamingo that can accurately describe a picture of something with just a few training images.</p>
+<h4>AlphaCode</h4>
+<p>In 2022, DeepMind unveiled AlphaCode, an <a href="./AI-assisted_software_development" title="AI-assisted software development">AI-powered coding engine</a> that creates <a href="./Computer_programs" title="Computer programs">computer programs</a> at a rate comparable to that of an average programmer, with the company testing the system against coding challenges created by <a href="./Codeforces" title="Codeforces">Codeforces</a> utilized in human <a href="./Competitive_programming" title="Competitive programming">competitive programming</a> competitions. AlphaCode earned a rank equivalent to 54% of the median score on Codeforces after being trained on <a href="./GitHub" title="GitHub">GitHub</a> data and Codeforce problems and solutions. The program was required to come up with a unique solution and stopped from duplicating answers.</p>
+<h4>Gemini</h4>
+<p>Main article: <a href="./Gemini_(language_model)" title="Gemini (language model)">Gemini (language model)</a></p>
+<p>Gemini is a <a href="./Multimodal_learning" title="Multimodal learning">multimodal</a> <a href="./Large_language_model" title="Large language model">large language model</a> which was released on 6 December 2023. It is the successor of Google's <a href="./LaMDA" title="LaMDA">LaMDA</a> and <a href="./PaLM" title="PaLM">PaLM 2</a> language models and sought to challenge OpenAI's <a href="./GPT-4" title="GPT-4">GPT-4</a>. Gemini comes in 3 sizes: Nano, Pro, and Ultra. Gemini is also the name of the chatbot that integrates Gemini (and which was previously called <a href="./Google_Bard" title="Google Bard">Bard</a>).</p>
+<p>On 12 December 2024, Google released Gemini 2.0 Flash, the first model in the Gemini 2.0 series. It notably features expanded multimodality, with the ability to also generate images and audio, and is part of Google's broader plans to integrate advanced AI into <a href="./Autonomous_agent" title="Autonomous agent">autonomous agents</a>.</p>
+<p>On 25 March 2025, Google released Gemini 2.5, a reasoning model that stops to "think" before giving a response. Google announced that all future models will also have reasoning ability. On 30 March 2025, Google released Gemini 2.5 to all free users.</p>
+<p>On 18 November 2025, Google released Gemini 3 Pro, a reasoning model which is fully multimodal. It was fully integrated with Google Search and AI Mode the same day.</p>
+<h4>Gemma</h4>
+<p>Main article: <a href="./Gemma_(language_model)" title="Gemma (language model)">Gemma (language model)</a></p>
+<p>Gemma is a collection of open-weight large language models. The first ones were released on 21 February 2024 and are available in two distinct sizes: a 7 billion parameter model optimized for GPU and TPU usage, and a 2 billion parameter model designed for CPU and on-device applications. Gemma models were trained on up to 6 trillion tokens of text, employing similar architectures, datasets, and training methodologies as the Gemini model set.</p>
+<p>In June 2024, Google started releasing Gemma 2 models. In December 2024, Google introduced <em>PaliGemma 2</em>, an upgraded vision-language model. In February 2025, they launched <em>PaliGemma 2 Mix</em>, a version fine-tuned for multiple tasks. It is available in 3B, 10B, and 28B parameters with 224px and 448px resolutions.</p>
+<p>In March 2025, Google released Gemma 3, calling it the most capable model that can be run on a single GPU. It has four available sizes: 1B, 4B, 12B, and 27B. In March 2025, Google introduced TxGemma, an open-source model designed to improve the efficiency of therapeutics development.</p>
+<p>In April 2025, Google introduced DolphinGemma, a research artificial intelligence model designed to hopefully decode dolphin communication. They want to train a foundation model that can learn the structure of dolphin vocalizations and generate novel dolphin-like sound sequences.</p>
+<h4>SIMA</h4>
+<p>In March 2024, DeepMind introduced Scalable Instructable Multiword Agent, or SIMA, an AI agent capable of understanding and following natural language instructions to complete tasks across various 3D virtual environments. Trained on nine video games from eight studios and four research environments, SIMA demonstrated adaptability to new tasks and settings without requiring access to game source code or APIs. The agent comprises pre-trained computer vision and language models fine-tuned on gaming data, with language being crucial for understanding and completing given tasks as instructed. DeepMind's research aimed to develop more helpful AI agents by translating advanced AI capabilities into real-world actions through a language interface.</p>
+<h4>Habermas machine</h4>
+<p>See also: <a href="./Pol.is" title="Pol.is">Pol.is</a> and <a href="./Deliberative_opinion_poll" title="Deliberative opinion poll">Deliberative opinion poll</a></p>
+<p>In 2024, Google Deepmind published the results of an experiment where they trained two <a href="./Large_language_model" title="Large language model">large language models</a> to help identify and present areas of overlap among a few thousand group members they had recruited online using techniques like <a href="./Sortition" title="Sortition">sortition</a> to get a representative sample of participants. The project is named in honor of <a href="./Jürgen_Habermas" title="Jürgen Habermas">Jürgen Habermas</a>. In one experiment, the participants rated the summaries by the AI higher than the human moderator 56% of the time.</p>
+<h3>Generative AI</h3>
+<h4>Video generation</h4>
+<p>Main article: <a href="./Veo_(text-to-video_model)" title="Veo (text-to-video model)">Veo (text-to-video model)</a></p>
+<p>In May 2024, a <a href="./Multimodality" title="Multimodality">multimodal</a> <a href="./Text-to-video_model" title="Text-to-video model">video generation model</a> called Veo was announced at <a href="./Google_I/O" title="Google I/O">Google I/O</a> 2024. Google claimed that it could generate <a href="./1080p" title="1080p">1080p</a> videos beyond a minute long. In December 2024, <a href="./Google" title="Google">Google</a> released Veo 2, available via VideoFX. It supports <a href="./4K_resolution" title="4K resolution">4K resolution</a> video generation, and has an improved understanding of physics. In April 2025, Google announced that Veo 2 became available for advanced users on Gemini App.</p>
+<p>In May 2025, Google released Veo 3, which not only generates videos but also creates synchronized audio — including dialogue, sound effects, and ambient noise — to match the visuals.</p>
+<p>Google also announced Flow, a video-creation tool powered by Veo and <a href="./Imagen_(text-to-image_model)" title="Imagen (text-to-image model)">Imagen</a>.</p>
+<h4>Music generation</h4>
+<p>Google DeepMind developed Lyria, a text-to-music model. As of August 2025, it is available on Vertex AI and the Gemini API. On February 18, 2026, DeepMind released Lyria 3. On March 25, 2026, DeepMind released Lyria 3 Pro which allows users to create longer tracks with more structural awareness.</p>
+<h4>Environment generation</h4>
+<p>Main article: <a href="./Genie_(AI_model)" title="Genie (AI model)">Genie (AI model)</a></p>
+<p>In March 2024, DeepMind introduced "<a href="./Genie_(text-to-video_model)" title="Genie (text-to-video model)">Genie</a>" (Generative Interactive Environments), an AI model that can generate game-like, action-controllable virtual worlds based on textual descriptions, images, or sketches. Built as an autoregressive <a href="./Latent_diffusion_model" title="Latent diffusion model">latent diffusion model</a>, Genie enables frame-by-frame interactivity without requiring labeled action data for training. Its successor, Genie 2, released in December 2024, expanded these capabilities to generate diverse and interactive 3D environments. Genie 3 was released in August 2025, with higher-resolution world generations and multiple minutes of visual consistency. On January 29, 2026, DeepMind released Project Genie to AI Ultra subscribers.</p>
+<h3>Robotics</h3>
+<p>Released in June 2023, RoboCat is an AI model that can control robotic arms. The model can adapt to new models of robotic arms, and to new types of tasks. In March 2025, DeepMind launched two AI models, Gemini Robotics and Gemini Robotics-ER, aimed at improving how robots interact with the physical world and released Gemini Robotics 1.5 in September 2025.</p>
+<h3>Others</h3>
+<h4>Football</h4>
+<p>DeepMind researchers have applied machine learning models to the sport of <a href="./Association_football" title="Association football">football</a>, often referred to as soccer in North America, modelling the behaviour of football players, including the goalkeeper, defenders, and strikers during different scenarios such as penalty kicks. The researchers used heat maps and cluster analysis to organize players based on their tendency to behave a certain way during the game when confronted with a decision on how to score or prevent the other team from scoring.</p>
+<p>The researchers mention that machine learning models could be used to democratize the football industry by automatically selecting interesting video clips of the game that serve as highlights. This can be done by searching videos for certain events, which is possible because video analysis is an established field of machine learning. This is also possible because of extensive sports analytics based on data including annotated passes or shots, sensors that capture data about the players movements many times over the course of a game, and game theory models.</p>
+<h4>Archaeology</h4>
+<p>Google has unveiled a new archaeology document program, named Ithaca after <a href="./Homer's_Ithaca" title="Homer's Ithaca">the Greek island</a> in Homer's <a href="./Odyssey" title="Odyssey">Odyssey</a>. This deep neural network helps researchers restore the empty text of damaged Greek documents, and to identify their date and geographical origin. The work builds on another text analysis network that DeepMind released in 2019, named Pythia. Ithaca achieves 62% accuracy in restoring damaged texts and 71% location accuracy, and has a dating precision of 30 years. The authors claimed that the use of Ithaca by "expert historians" raised the accuracy of their work from 25 to 72 percent. However, <a href="./Eleanor_Dickey" title="Eleanor Dickey">Eleanor Dickey</a> noted that this test was actually only made of students, saying that it wasn't clear how helpful Ithaca would be to "genuinely qualified editors".</p>
+<p>The team is working on extending the model to other ancient languages, including <a href="./Demotic_Egyptian_language" title="Demotic Egyptian language">Demotic</a>, <a href="./Akkadian_language" title="Akkadian language">Akkadian</a>, <a href="./Hebrew_language" title="Hebrew language">Hebrew</a>, and <a href="./Mayan_languages" title="Mayan languages">Mayan</a>.</p>
+<h4>Materials science</h4>
+<p>In November 2023, Google DeepMind announced an Open Source Graph Network for Materials Exploration (GNoME). The tool proposes millions of materials previously unknown to chemistry, including several hundred thousand stable crystalline structures, of which 736 had been experimentally produced by the Massachusetts Institute of Technology, at the time of the release. However, according to <a href="./Anthony_Cheetham" title="Anthony Cheetham">Anthony Cheetham</a>, GNoME did not make "a useful, practical contribution to the experimental materials scientists." A review article by Cheetham and Ram Seshadri were unable to identify any "strikingly novel" materials found by GNoME, with most being minor variants of already-known materials.</p>
+<h3>Mathematics</h3>
+<h4>AlphaTensor</h4>
+<p>In October 2022, DeepMind released <a href="./AlphaTensor" title="AlphaTensor">AlphaTensor</a>, which used reinforcement learning techniques similar to those in AlphaGo, to find novel <a href="./Matrix_multiplication_algorithm" title="Matrix multiplication algorithm">algorithms for matrix multiplication</a>. In the special case of multiplying two 4×4 matrices with <a href="./Integer" title="Integer">integer</a> entries, where only the evenness or oddness of the entries is recorded, AlphaTensor found an algorithm requiring only 47 distinct multiplications; the previous optimum, known since 1969, was the more general <a href="./Strassen_algorithm" title="Strassen algorithm">Strassen algorithm</a>, using 49 multiplications. Computer scientist Josh Alman described AlphaTensor as "a proof of concept for something that could become a breakthrough", while <a href="./Virginia_Vassilevska_Williams" title="Virginia Vassilevska Williams">Vassilevska Williams</a> called it "a little overhyped" despite also acknowledging its basis in reinforcement learning as "something completely different" from previous approaches.</p>
+<h4>AlphaGeometry</h4>
+<p>Main article: <a href="./AlphaGeometry" title="AlphaGeometry">AlphaGeometry</a></p>
+<p>AlphaGeometry is a <a href="./Neuro-symbolic_AI" title="Neuro-symbolic AI">neuro-symbolic AI</a> that was able to solve 25 out of 30 geometry problems of the <a href="./International_Mathematical_Olympiad" title="International Mathematical Olympiad">International Mathematical Olympiad</a>, a performance comparable to that of a gold medalist.</p>
+<p>Traditional geometry programs are <a href="./Symbolic_artificial_intelligence" title="Symbolic artificial intelligence">symbolic engines</a> that rely exclusively on human-coded <a href="./Rule-based_system" title="Rule-based system">rules</a> to generate rigorous proofs, which makes them lack flexibility in unusual situations. AlphaGeometry combines such a symbolic engine with a specialized <a href="./Large_language_model" title="Large language model">large language model</a> trained on <a href="./Synthetic_data" title="Synthetic data">synthetic data</a> of geometrical proofs. When the symbolic engine doesn't manage to find a formal and rigorous proof on its own, it solicits the large language model, which suggests a geometrical construct to move forward. However, it is unclear how applicable this method is to other domains of mathematics or reasoning, because symbolic engines rely on domain-specific rules and because of the need for synthetic data.</p>
+<h4>AlphaProof</h4>
+<p>AlphaProof is an AI model, which couples a pre-trained language model with the AlphaZero reinforcement learning algorithm. AlphaZero has previously taught itself how to master games. The pre-trained language model used in this combination is the <a href="./Fine-tuning_(deep_learning)" title="Fine-tuning (deep learning)">fine-tuning</a> of a <a href="./Gemini_(language_model)" title="Gemini (language model)">Gemini</a> model to automatically translate natural language problem statements into formal statements, creating a large library of formal problems of varying difficulty. For this purpose, mathematical statements are defined in the formal language <a href="./Lean_(proof_assistant)" title="Lean (proof assistant)">Lean</a>. At the 2024 International Mathematical Olympiad, AlphaProof together with an adapted version of AlphaGeometry have reached the same level of solving problems in the combined categories as a silver medalist in that competition for the first time.</p>
+<h3>AlphaDev</h3>
+<p>Main article: <a href="./AlphaDev" title="AlphaDev">AlphaDev</a></p>
+<p>In June 2023, Deepmind announced that <a href="./AlphaDev" title="AlphaDev">AlphaDev</a>, which searches for improved computer science algorithms using <a href="./Reinforcement_learning" title="Reinforcement learning">reinforcement learning</a>, discovered a more efficient way of coding a sorting algorithm and a hashing algorithm. The new sorting algorithm was 70% faster for shorter sequences and 1.7% faster for sequences exceeding 250,000 elements, and the new hashing algorithm was 30% faster in some cases. The sorting algorithm was accepted into the <a href="./C++_Standard_Library" title="C++ Standard Library">C++ Standard Library</a> <a href="./Sorting_algorithm" title="Sorting algorithm">sorting algorithms</a>, and was the first change to those algorithms in more than a decade and the first update to involve an algorithm discovered using AI. The hashing algorithm was released to an opensource library. Google estimates that these two algorithms are used trillions of times every day.</p>
+<h3>AlphaEvolve</h3>
+<p>Main article: <a href="./AlphaEvolve" title="AlphaEvolve">AlphaEvolve</a></p>
+<p>In May 2025, Google DeepMind unveiled <a href="./AlphaEvolve" title="AlphaEvolve">AlphaEvolve</a>, an <a href="./Evolutionary_computation" title="Evolutionary computation">evolutionary</a> coding agent using LLMs like Gemini to design optimized algorithms. AlphaEvolve begins each optimization process with an initial algorithm and metrics to evaluate the quality of a solution. At each step, it uses the LLM to generate variations of the algorithms or combine them, and selects the best candidates for further iterations.</p>
+<p>AlphaEvolve has made several algorithmic discoveries, including in matrix multiplication. According to Google, when tested on 50 open <a href="./Mathematical_problems" title="Mathematical problems">mathematical problems</a>, AlphaEvolve was able to match the efficiency of state-of-the-art algorithms in 75% of cases, and discovered improved solutions 20% of the time, such as with the <a href="./Kissing_number_problem" title="Kissing number problem">kissing number problem</a> in 11 dimensions. It also developed a new heuristic for data centre scheduling, recovering on average 0.7% of Google's worldwide compute resources.</p>
+<h3>Chip design</h3>
+<p>Main article: <a href="./AlphaChip_(controversy)" title="AlphaChip (controversy)">AlphaChip (controversy)</a></p>
+<p>AlphaChip is a <a href="./Reinforcement_learning" title="Reinforcement learning">reinforcement learning</a>-based neural architecture that guides the task of chip <a href="./Placement_(electronic_design_automation)" title="Placement (electronic design automation)">placement</a>. DeepMind claimed that the technique reduced the time needed to create chip layouts from weeks to hours. According to the company, its chip designs were used in every <a href="./Tensor_Processing_Unit" title="Tensor Processing Unit">Tensor Processing Unit</a> (TPU) iteration since 2020. Multiple independent researchers remained unconvinced, citing a lack of direct public benchmarks and independent proof of its claimed superiority over existing commercial chip design tools. The TPU chips were co-designed with <a href="./Broadcom" title="Broadcom">Broadcom</a>. <a href="./Communications_of_the_ACM" title="Communications of the ACM">Communications of the ACM</a> noted that despite substantial publicity, DeepMind had not provided the comparative benchmarks long requested by experts, leaving some skepticism in the field. Similarly, <a href="./New_Scientist" title="New Scientist">New Scientist</a> reported that while Google claims AlphaChip has produced “superhuman” chip layouts now used in production, external specialists called for transparent performance data to substantiate these assertions and enable fair comparisons with current state-of-the-art methods.</p>
+<h3>Safety</h3>
+<p>Google Research released a paper in 2016 regarding <a href="./AI_safety" title="AI safety">AI safety</a> and avoiding undesirable behaviour during the AI learning process. In 2017 DeepMind released GridWorld, an open-source testbed for evaluating whether an algorithm learns to disable its <a href="./Kill_switch" title="Kill switch">kill switch</a> or otherwise exhibits certain undesirable behaviours.</p>
+<p>The Robot Constitution is a security ruleset part of AutoRT set by DeepMind in January 2024 for its AI products. The rules are inspired by <a href="./Asimov" title="Asimov">Asimov</a>'s <a href="./Three_Laws_of_Robotics" title="Three Laws of Robotics">Three Laws of Robotics</a>. The rules are applied to the underlying <a href="./Large_language_model" title="Large language model">large language models</a> of the helper robots.<br>
+Rule number 1 is a robot “may not injure a human being”.</p>
+<h3>Weather prediction</h3>
+<p>Google DeepMind developed an AI-based weather prediction system called Weather Lab, which significantly improved tropical cyclone forecasting. Launched in mid-2025, this model utilized stochastic neural networks trained on 45 years of global weather and cyclone data, enabling it to predict cyclone formation, track, intensity, and structure with multiple probabilistic forecasts up to 15 days in advance. During the 2025 Atlantic hurricane season, DeepMind's Weather Lab outperformed traditional physics-based models, including the <a href="./US_National_Weather_Service" title="US National Weather Service">US National Weather Service</a>'s Global Forecast System, in both track and intensity predictions, earning notable recognition from meteorologists and aiding hurricane forecasting efforts by the <a href="./US_National_Hurricane_Center" title="US National Hurricane Center">US National Hurricane Center</a>. This marked a substantial advancement in weather modeling, demonstrating the potential for AI to enhance the speed and accuracy of severe weather forecasts.</p>
+<h3>Miscellaneous contributions to Google</h3>
+<p>DeepMind (alongside other Alphabet AI researchers) assists <a href="./Google_Play" title="Google Play">Google Play</a>'s personalized app recommendations. DeepMind has also collaborated with the <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> team at <a href="./Google" title="Google">Google</a> for the creation of two new features which were made available to people with devices running Android Pie, the ninth installment of Google's mobile operating system. These features, Adaptive Battery and Adaptive Brightness, use machine learning to conserve energy and make devices running the operating system easier to use. It is the first time DeepMind has used these techniques on such a small scale, with typical machine learning applications requiring orders of magnitude more computing power.</p>
+<h2>DeepMind Health</h2>
+<p>In July 2016, a collaboration between DeepMind and <a href="./Moorfields_Eye_Hospital" title="Moorfields Eye Hospital">Moorfields Eye Hospital</a> was announced to develop <a href="./Artificial_intelligence_in_healthcare" title="Artificial intelligence in healthcare">AI applications for healthcare</a>. DeepMind would be applied to the analysis of <a href="./Data_anonymization" title="Data anonymization">anonymised</a> eye scans, searching for early signs of diseases leading to <a href="./Blindness" title="Blindness">blindness</a>.</p>
+<p>In August 2016, a research programme with <a href="./University_College_Hospital" title="University College Hospital">University College London Hospital</a> was announced with the aim of developing an algorithm that can automatically differentiate between healthy and cancerous tissues in head and neck areas.</p>
+<p>There are also projects with the <a href="./Royal_Free_London_NHS_Foundation_Trust" title="Royal Free London NHS Foundation Trust">Royal Free London NHS Foundation Trust</a> and <a href="./Imperial_College_Healthcare_NHS_Trust" title="Imperial College Healthcare NHS Trust">Imperial College Healthcare NHS Trust</a> to develop new clinical mobile apps linked to <a href="./Electronic_patient_record" title="Electronic patient record">electronic patient records</a>. Staff at the <a href="./Royal_Free_Hospital" title="Royal Free Hospital">Royal Free Hospital</a> were reported as saying in December 2017 that access to patient data through the app had saved a 'huge amount of time' and made a 'phenomenal' difference to the management of patients with acute kidney injury. Test result data is sent to staff's mobile phones and alerts them to changes in the patient's condition. It also enables staff to see if someone else has responded, and to show patients their results in visual form.</p>
+<p>In November 2017, DeepMind announced a research partnership with the <a href="./Cancer_Research_UK" title="Cancer Research UK">Cancer Research UK</a> Centre at Imperial College London with the goal of improving breast cancer detection by applying machine learning to mammography. Additionally, in February 2018, DeepMind announced it was working with the <a href="./United_States_Department_of_Veterans_Affairs" title="United States Department of Veterans Affairs">U.S. Department of Veterans Affairs</a> in an attempt to use machine learning to predict the onset of acute kidney injury in patients, and also more broadly the general deterioration of patients during a hospital stay so that doctors and nurses can more quickly treat patients in need.</p>
+<p>DeepMind developed an app called Streams, which sends alerts to doctors about patients at risk of acute kidney injury. On 13 November 2018, DeepMind announced that its health division and the Streams app would be absorbed into <a href="./Google_Health" title="Google Health">Google Health</a>. Privacy advocates said the announcement betrayed patient trust and appeared to contradict previous statements by DeepMind that patient data would not be connected to Google accounts or services. A spokesman for DeepMind said that patient data would still be kept separate from Google services or projects.</p>
+<h3>NHS data-sharing controversy</h3>
+<p>In April 2016, <em><a href="./New_Scientist" title="New Scientist">New Scientist</a></em> obtained a copy of a <a href="./Data_sharing" title="Data sharing">data sharing</a> agreement between DeepMind and the <a href="./Royal_Free_London_NHS_Foundation_Trust" title="Royal Free London NHS Foundation Trust">Royal Free London NHS Foundation Trust</a>. The latter operates three London hospitals where an estimated 1.6 million patients are treated annually. The agreement shows DeepMind Health had access to admissions, discharge and transfer data, accident and emergency, pathology and radiology, and critical care at these hospitals. This included personal details such as whether patients had been diagnosed with <a href="./HIV/AIDS" title="HIV/AIDS">HIV</a>, suffered from <a href="./Major_depressive_disorder" title="Major depressive disorder">depression</a> or had ever undergone an <a href="./Abortion" title="Abortion">abortion</a> in order to conduct research to seek better outcomes in various health conditions.</p>
+<p>A complaint was filed to the <a href="./Information_Commissioner's_Office" title="Information Commissioner's Office">Information Commissioner's Office</a> (ICO), arguing that the data should be pseudonymised and encrypted. In May 2016, <em>New Scientist</em> published a further article claiming that the project had failed to secure approval from the Confidentiality Advisory Group of the <a href="./Medicines_and_Healthcare_products_Regulatory_Agency" title="Medicines and Healthcare products Regulatory Agency">Medicines and Healthcare products Regulatory Agency</a>.</p>
+<p>In 2017, the ICO concluded a year-long investigation that focused on how the Royal Free NHS Foundation Trust tested the app, Streams, in late 2015 and 2016. The ICO found that the Royal Free failed to comply with the Data Protection Act when it provided patient details to DeepMind, and found several shortcomings in how the data was handled, including that patients were not adequately informed that their data would be used as part of the test. DeepMind published its thoughts on the investigation in July 2017, saying "we need to do better" and highlighting several activities and initiatives they had initiated for transparency, oversight and engagement. This included developing a patient and public involvement strategy and being transparent in its partnerships.</p>
+<p>In May 2017, <em>Sky News</em> published a leaked letter from the National Data Guardian, Dame <a href="./Fiona_Caldicott" title="Fiona Caldicott">Fiona Caldicott</a>, revealing that in her "considered opinion" the data-sharing agreement between DeepMind and the Royal Free took place on an "inappropriate legal basis". The Information Commissioner's Office ruled in July 2017 that the Royal Free hospital failed to comply with the Data Protection Act when it handed over personal data of 1.6 million patients to DeepMind.</p>
+<h2>DeepMind Ethics and Society</h2>
+<p>In October 2017, DeepMind announced a new research unit, DeepMind Ethics &amp; Society. Their goal is to fund external research of the following themes: privacy, transparency, and fairness; economic impacts; governance and accountability; managing AI risk; AI morality and values; and how AI can address the world's challenges. As a result, the team hopes to further understand the ethical implications of AI and aid society to seeing AI can be beneficial.</p>
+<p>This new subdivision of DeepMind is a completely separate unit from the partnership of leading companies using AI, academia, civil society organizations and nonprofits of the name <a href="./Partnership_on_AI" title="Partnership on AI">Partnership on Artificial Intelligence to Benefit People and Society</a> of which DeepMind is also a part. The DeepMind Ethics and Society board is also distinct from the mooted AI Ethics Board that <a href="./Google" title="Google">Google</a> originally agreed to form when acquiring DeepMind.</p>
+<h2>DeepMind Professors of machine learning</h2>
+<p>DeepMind sponsors three <a href="./Academic_ranks_in_the_United_Kingdom" title="Academic ranks in the United Kingdom">chairs</a> of machine learning:</p>
+<ol>
+<li>At the <a href="./University_of_Cambridge" title="University of Cambridge">University of Cambridge</a>, held by <a href="./Neil_Lawrence" title="Neil Lawrence">Neil Lawrence</a>, in the <a href="./Department_of_Computer_Science_and_Technology,_University_of_Cambridge" title="Department of Computer Science and Technology, University of Cambridge">Department of Computer Science and Technology</a>,</li>
+<li>At the <a href="./University_of_Oxford" title="University of Oxford">University of Oxford</a>, held by <a href="./Michael_Bronstein" title="Michael Bronstein">Michael Bronstein</a>, in the <a href="./Department_of_Computer_Science,_University_of_Oxford" title="Department of Computer Science, University of Oxford">Department of Computer Science</a>, and</li>
+<li>At the <a href="./University_College_London" title="University College London">University College London</a>, held by Marc Deisenroth, in the Department of Computer Science.</li>
+</ol>
+<h2>See also</h2>
+<ul>
+<li><a href="./Anthropic" title="Anthropic">Anthropic</a></li>
+<li><a href="./Cohere" title="Cohere">Cohere</a></li>
+<li><a href="./Glossary_of_artificial_intelligence" title="Glossary of artificial intelligence">Glossary of artificial intelligence</a></li>
+<li><a href="./Imagen_(text-to-image_model)" title="Imagen (text-to-image model)">Imagen</a></li>
+<li><a href="./Model_Context_Protocol" title="Model Context Protocol">Model Context Protocol</a></li>
+<li><a href="./Robot_Constitution" title="Robot Constitution">Robot Constitution</a></li>
+</ul>
+<h2>References</h2>
+<h2>External links</h2>
+<ul>
+<li><a href="https://deepmind.google/">Official website</a> <a href="https://www.wikidata.org/wiki/Q15733006#P856" title="Edit this at Wikidata"><img alt="Edit this at Wikidata" src="//upload.wikimedia.org/wikipedia/en/thumb/8/8a/OOjs_UI_icon_edit-ltr-progressive.svg/20px-OOjs_UI_icon_edit-ltr-progressive.svg.png"></a></li>
+<li><a href="https://github.com/google-deepmind">GitHub Repositories</a> <a href="https://web.archive.org/web/20231214172233/https://github.com/google-deepmind">Archived</a> 14 December 2023 at the <a href="./Wayback_Machine" title="Wayback Machine">Wayback Machine</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_AI" title="Template:Google AI">v</a> - <a href="./Template_talk:Google_AI" title="Template talk:Google AI">t</a> - <a href="./Special:EditPage/Template:Google_AI" title="Special:EditPage/Template:Google AI">e</a>  <a href="./Google_AI" title="Google AI">Google AI</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>- <a href="./Google" title="Google">Google</a> - <a href="./Google_Brain" title="Google Brain">Google Brain</a> - <a href="./Google_DeepMind">Google DeepMind</a></td>
+<td></td>
+</tr>
+<tr>
+<td>Computer  programs</td>
+<td></td>
+</tr>
+<tr>
+<td>Machine  learning</td>
+<td></td>
+</tr>
+<tr>
+<td>Generative  AI</td>
+<td></td>
+</tr>
+<tr>
+<td>See also</td>
+<td>- "<a href="./Attention_Is_All_You_Need" title="Attention Is All You Need">Attention Is All You Need</a>" - <a href="./Future_of_Go_Summit" title="Future of Go Summit">Future of Go Summit</a> - <a href="./Generative_pre-trained_transformer" title="Generative pre-trained transformer">Generative pre-trained transformer</a> - <a href="./Google_Labs" title="Google Labs">Google Labs</a> - <a href="./Google_Pixel" title="Google Pixel">Google Pixel</a> - <a href="./Google_Workspace" title="Google Workspace">Google Workspace</a> - <a href="./Robot_Constitution" title="Robot Constitution">Robot Constitution</a></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Google_DeepMind" title="Category:Google DeepMind">Category</a> - <a href="https://commons.wikimedia.org/wiki/Category:DeepMind" title="commons:Category:DeepMind">Commons</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products" title="List of Google products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Generative_AI" title="Template:Generative AI">v</a> - <a href="./Template_talk:Generative_AI" title="Template talk:Generative AI">t</a> - <a href="./Special:EditPage/Template:Generative_AI" title="Special:EditPage/Template:Generative AI">e</a>  <a href="./Generative_AI" title="Generative AI">Generative AI</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Concepts</td>
+<td>- <a href="./Autoencoder" title="Autoencoder">Autoencoder</a> - <a href="./Deep_learning" title="Deep learning">Deep learning</a> - <a href="./Fine-tuning_(deep_learning)" title="Fine-tuning (deep learning)">Fine-tuning</a> - <a href="./Foundation_model" title="Foundation model">Foundation model</a> - <a href="./Generative_adversarial_network" title="Generative adversarial network">Generative adversarial network</a> - <a href="./Generative_pre-trained_transformer" title="Generative pre-trained transformer">Generative pre-trained transformer</a> - <a href="./Large_language_model" title="Large language model">Large language model</a> - <a href="./Model_Context_Protocol" title="Model Context Protocol">Model Context Protocol</a> - <a href="./Neural_network_(machine_learning)" title="Neural network (machine learning)">Neural network</a> - <a href="./Prompt_engineering" title="Prompt engineering">Prompt engineering</a> - <a href="./Reinforcement_learning_from_human_feedback" title="Reinforcement learning from human feedback">Reinforcement learning from human feedback</a> - <a href="./Retrieval-augmented_generation" title="Retrieval-augmented generation">Retrieval-augmented generation</a> - <a href="./Self-supervised_learning" title="Self-supervised learning">Self-supervised learning</a> - <a href="./AI_slop" title="AI slop">Slop</a> - <a href="./Stochastic_parrot" title="Stochastic parrot">Stochastic parrot</a> - <a href="./Synthetic_data" title="Synthetic data">Synthetic data</a> - <a href="./Top-p_sampling" title="Top-p sampling">Top-p sampling</a> - <a href="./Transformer_(deep_learning_architecture)" title="Transformer (deep learning architecture)">Transformer</a> - <a href="./Variational_autoencoder" title="Variational autoencoder">Variational autoencoder</a> - <a href="./Vibe_coding" title="Vibe coding">Vibe coding</a> - <a href="./Vision_transformer" title="Vision transformer">Vision transformer</a> - <a href="./Word_embedding" title="Word embedding">Word embedding</a></td>
+</tr>
+<tr>
+<td>Models</td>
+<td></td>
+</tr>
+<tr>
+<td>Products</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./List_of_artificial_intelligence_companies" title="List of artificial intelligence companies">Companies</a></td>
+<td>- <a href="./Adobe_Inc." title="Adobe Inc.">Adobe</a> - <a href="./Aleph_Alpha" title="Aleph Alpha">Aleph Alpha</a> - <a href="./Anthropic" title="Anthropic">Anthropic</a> - <a href="./Anysphere" title="Anysphere">Anysphere</a> - <a href="./Baichuan" title="Baichuan">Baichuan</a> - <a href="./Canva" title="Canva">Canva</a> - <a href="./Cognition_AI" title="Cognition AI">Cognition AI</a> - <a href="./Cohere" title="Cohere">Cohere</a> - <a href="./Contextual_AI" title="Contextual AI">Contextual AI</a> - <a href="./DeepSeek" title="DeepSeek">DeepSeek</a> - <a href="./DeepL_Translator" title="DeepL Translator">DeepL</a> - <a href="./EleutherAI" title="EleutherAI">EleutherAI</a> - <a href="./ElevenLabs" title="ElevenLabs">ElevenLabs</a> - <a href="./Google_DeepMind">Google DeepMind</a> - <a href="./HeyGen" title="HeyGen">HeyGen</a> - <a href="./Hugging_Face" title="Hugging Face">Hugging Face</a> - <a href="./Inflection_AI" title="Inflection AI">Inflection AI</a> - <a href="./Kuaishou" title="Kuaishou">Kuaishou</a> - <a href="./Lightricks" title="Lightricks">Lightricks</a> - <a href="./Lovable_(company)" title="Lovable (company)">Lovable</a> - <a href="./Luma_Labs" title="Luma Labs">Luma Labs</a> - <a href="./Meta_AI" title="Meta AI">Meta AI</a> - <a href="./MiniMax_(company)" title="MiniMax (company)">MiniMax</a> - <a href="./Mistral_AI" title="Mistral AI">Mistral AI</a> - <a href="./Moonshot_AI" title="Moonshot AI">Moonshot AI</a> - <a href="./OpenAI" title="OpenAI">OpenAI</a> - <a href="./Perplexity_AI" title="Perplexity AI">Perplexity AI</a> - <a href="./Runway_(company)" title="Runway (company)">Runway</a> - <a href="./Safe_Superintelligence_Inc." title="Safe Superintelligence Inc.">Safe Superintelligence</a> - <a href="./Sakana_AI" title="Sakana AI">Sakana AI</a> - <a href="./Salesforce" title="Salesforce">Salesforce</a> - <a href="./Scale_AI" title="Scale AI">Scale AI</a> - <a href="./ServiceNow" title="ServiceNow">ServiceNow</a> - <a href="./SoundHound" title="SoundHound">SoundHound</a> - <a href="./Stability_AI" title="Stability AI">Stability AI</a> - <a href="./StepFun" title="StepFun">StepFun</a> - <a href="./Synthesia_(company)" title="Synthesia (company)">Synthesia</a> - <a href="./Thinking_Machines_Lab" title="Thinking Machines Lab">Thinking Machines Lab</a> - <a href="./Upstage_(company)" title="Upstage (company)">Upstage</a> - <a href="./XAI_(company)" title="XAI (company)">xAI</a> - <a href="./Xiaomi" title="Xiaomi">Xiaomi</a> - <a href="./Z.ai" title="Z.ai">Z.ai</a></td>
+</tr>
+<tr>
+<td><a href="./Artificial_intelligence_controversies" title="Artificial intelligence controversies">Controversies</a></td>
+<td>- <a href="./Generative_AI_pornography" title="Generative AI pornography">Generative AI pornography</a>   - <a href="./Deepfake_pornography" title="Deepfake pornography">Deepfake pornography</a>     - <a href="./Grok_sexual_deepfake_scandal" title="Grok sexual deepfake scandal">on Grok</a>     - <a href="./Taylor_Swift_deepfake_pornography_controversy" title="Taylor Swift deepfake pornography controversy">of Taylor Swift</a> - <a href="./Google_Gemini_image_generation_controversy" title="Google Gemini image generation controversy">Google Gemini image generation</a> - <a href="./Pause_Giant_AI_Experiments:_An_Open_Letter" title="Pause Giant AI Experiments: An Open Letter">Pause Giant AI Experiments</a> - <a href="./Removal_of_Sam_Altman_from_OpenAI" title="Removal of Sam Altman from OpenAI">Removal of Sam Altman from OpenAI</a> - <a href="./Statement_on_AI_Risk" title="Statement on AI Risk">Statement on AI Risk</a> - <a href="./Tay_(chatbot)" title="Tay (chatbot)">Tay (chatbot)</a> - <em><a href="./Théâtre_D'opéra_Spatial" title="Théâtre D'opéra Spatial">Théâtre D'opéra Spatial</a></em> - <a href="./Voiceverse_NFT_plagiarism_scandal" title="Voiceverse NFT plagiarism scandal">Voiceverse NFT plagiarism</a></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Generative_AI" title="Category:Generative AI">Category</a> - <a href="https://commons.wikimedia.org/wiki/Category:Generative%20artificial%20intelligence" title="commons:Category:Generative artificial intelligence">Commons</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Existential_risk_from_artificial_intelligence" title="Template:Existential risk from artificial intelligence">v</a> - <a href="./Template_talk:Existential_risk_from_artificial_intelligence" title="Template talk:Existential risk from artificial intelligence">t</a> - <a href="./Special:EditPage/Template:Existential_risk_from_artificial_intelligence" title="Special:EditPage/Template:Existential risk from artificial intelligence">e</a>  <a href="./Existential_risk_from_artificial_intelligence" title="Existential risk from artificial intelligence">Existential risk from artificial intelligence</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Concepts</td>
+<td>- <a href="./Artificial_general_intelligence" title="Artificial general intelligence">AGI</a> - <a href="./AI_alignment" title="AI alignment">AI alignment</a> - <a href="./AI_boom" title="AI boom">AI boom</a> - <a href="./AI_capability_control" title="AI capability control">AI capability control</a> - <a href="./AI_safety" title="AI safety">AI safety</a> - <a href="./AI_takeover" title="AI takeover">AI takeover</a> - <a href="./Deceptive_alignment" title="Deceptive alignment">Deceptive alignment</a> - <a href="./Effective_accelerationism" title="Effective accelerationism">Effective accelerationism</a> - <a href="./Ethics_of_artificial_intelligence" title="Ethics of artificial intelligence">Ethics of artificial intelligence</a> - <a href="./Existential_risk_from_artificial_intelligence" title="Existential risk from artificial intelligence">Existential risk from artificial intelligence</a> - <a href="./Friendly_artificial_intelligence" title="Friendly artificial intelligence">Friendly artificial intelligence</a> - <a href="./Instrumental_convergence" title="Instrumental convergence">Instrumental convergence</a> - <a href="./Intelligence_explosion" title="Intelligence explosion">Intelligence explosion</a> - <a href="./Longtermism" title="Longtermism">Longtermism</a> - <a href="./Machine_ethics" title="Machine ethics">Machine ethics</a> - <a href="./Risk_of_astronomical_suffering" title="Risk of astronomical suffering">Suffering risks</a> - <a href="./Superintelligence" title="Superintelligence">Superintelligence</a> - <a href="./Technological_singularity" title="Technological singularity">Technological singularity</a> - <a href="./Vulnerable_world_hypothesis" title="Vulnerable world hypothesis">Vulnerable world hypothesis</a></td>
+</tr>
+<tr>
+<td>Organizations</td>
+<td>- <a href="./AI_Futures_Project" title="AI Futures Project">AI Futures Project</a> - <a href="./Alignment_Research_Center" title="Alignment Research Center">Alignment Research Center</a> - <a href="./Center_for_AI_Safety" title="Center for AI Safety">Center for AI Safety</a> - <a href="./Center_for_Applied_Rationality" title="Center for Applied Rationality">Center for Applied Rationality</a> - <a href="./Center_for_Human-Compatible_Artificial_Intelligence" title="Center for Human-Compatible Artificial Intelligence">Center for Human-Compatible Artificial Intelligence</a> - <a href="./Centre_for_the_Study_of_Existential_Risk" title="Centre for the Study of Existential Risk">Centre for the Study of Existential Risk</a> - <a href="./Future_of_Humanity_Institute" title="Future of Humanity Institute">Future of Humanity Institute</a> - <a href="./Future_of_Life_Institute" title="Future of Life Institute">Future of Life Institute</a> - <a href="./Google_DeepMind">Google DeepMind</a> - <a href="./Humanity+" title="Humanity+">Humanity+</a> - <a href="./Institute_for_Ethics_and_Emerging_Technologies" title="Institute for Ethics and Emerging Technologies">Institute for Ethics and Emerging Technologies</a> - <a href="./Leverhulme_Centre_for_the_Future_of_Intelligence" title="Leverhulme Centre for the Future of Intelligence">Leverhulme Centre for the Future of Intelligence</a> - <a href="./Machine_Intelligence_Research_Institute" title="Machine Intelligence Research Institute">Machine Intelligence Research Institute</a> - <a href="./METR" title="METR">METR</a> - <a href="./OpenAI" title="OpenAI">OpenAI</a> - <a href="./PauseAI" title="PauseAI">PauseAI</a> - <a href="./Safe_Superintelligence_Inc." title="Safe Superintelligence Inc.">Safe Superintelligence</a> - <a href="./Stop_AI" title="Stop AI">Stop AI</a></td>
+</tr>
+<tr>
+<td>People</td>
+<td>- <a href="./Slate_Star_Codex" title="Slate Star Codex">Scott Alexander</a> - <a href="./Sam_Altman" title="Sam Altman">Sam Altman</a> - <a href="./Dario_Amodei" title="Dario Amodei">Dario Amodei</a> - <a href="./Yoshua_Bengio" title="Yoshua Bengio">Yoshua Bengio</a> - <a href="./Nick_Bostrom" title="Nick Bostrom">Nick Bostrom</a> - <a href="./Paul_Christiano" title="Paul Christiano">Paul Christiano</a> - <a href="./K._Eric_Drexler" title="K. Eric Drexler">Eric Drexler</a> - <a href="./Owain_Evans" title="Owain Evans">Owain Evans</a> - <a href="./Sam_Harris" title="Sam Harris">Sam Harris</a> - <a href="./Stephen_Hawking" title="Stephen Hawking">Stephen Hawking</a> - <a href="./Dan_Hendrycks" title="Dan Hendrycks">Dan Hendrycks</a> - <a href="./Geoffrey_Hinton" title="Geoffrey Hinton">Geoffrey Hinton</a> - <a href="./Bill_Joy" title="Bill Joy">Bill Joy</a> - <a href="./Daniel_Kokotajlo_(researcher)" title="Daniel Kokotajlo (researcher)">Daniel Kokotajlo</a> - <a href="./Shane_Legg" title="Shane Legg">Shane Legg</a> - <a href="./Jan_Leike" title="Jan Leike">Jan Leike</a> - <a href="./Elon_Musk" title="Elon Musk">Elon Musk</a> - <a href="./Steve_Omohundro" title="Steve Omohundro">Steve Omohundro</a> - <a href="./Toby_Ord" title="Toby Ord">Toby Ord</a> - <a href="./Huw_Price" title="Huw Price">Huw Price</a> - <a href="./Martin_Rees" title="Martin Rees">Martin Rees</a> - <a href="./Stuart_J._Russell" title="Stuart J. Russell">Stuart J. Russell</a> - <a href="./Nate_Soares" title="Nate Soares">Nate Soares</a> - <a href="./Ilya_Sutskever" title="Ilya Sutskever">Ilya Sutskever</a> - <a href="./Jaan_Tallinn" title="Jaan Tallinn">Jaan Tallinn</a> - <a href="./Max_Tegmark" title="Max Tegmark">Max Tegmark</a> - <a href="./Alan_Turing" title="Alan Turing">Alan Turing</a> - <a href="./Frank_Wilczek" title="Frank Wilczek">Frank Wilczek</a> - <a href="./Roman_Yampolskiy" title="Roman Yampolskiy">Roman Yampolskiy</a> - <a href="./Eliezer_Yudkowsky" title="Eliezer Yudkowsky">Eliezer Yudkowsky</a></td>
+</tr>
+<tr>
+<td>Books</td>
+<td>- <em><a href="./Do_You_Trust_This_Computer%3F" title="Do You Trust This Computer?">Do You Trust This Computer?</a></em> - <em><a href="./Human_Compatible" title="Human Compatible">Human Compatible</a></em> - <em><a href="./If_Anyone_Builds_It,_Everyone_Dies" title="If Anyone Builds It, Everyone Dies">If Anyone Builds It, Everyone Dies</a></em> - <em><a href="./Our_Final_Invention" title="Our Final Invention">Our Final Invention</a></em> - <em><a href="./Superintelligence:_Paths,_Dangers,_Strategies" title="Superintelligence: Paths, Dangers, Strategies">Superintelligence: Paths, Dangers, Strategies</a></em> - <em><a href="./The_Precipice:_Existential_Risk_and_the_Future_of_Humanity" title="The Precipice: Existential Risk and the Future of Humanity">The Precipice: Existential Risk and the Future of Humanity</a></em></td>
+</tr>
+<tr>
+<td>Other</td>
+<td>- <a href="./Artificial_Intelligence_Act" title="Artificial Intelligence Act">Artificial Intelligence Act</a> - <a href="./Open_letter_on_artificial_intelligence" title="Open letter on artificial intelligence">Open letter on artificial intelligence</a> - <a href="./Regulation_of_artificial_intelligence" title="Regulation of artificial intelligence">Regulation of artificial intelligence</a>   - <a href="./Regulation_of_artificial_intelligence_in_the_United_States" title="Regulation of artificial intelligence in the United States">US</a> - <a href="./Statement_on_AI_Risk" title="Statement on AI Risk">Statement on AI Risk</a></td>
+</tr>
+<tr>
+<td><a href="./Category:Existential_risk_from_artificial_intelligence" title="Category:Existential risk from artificial intelligence">Category</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><a href="./Help:Authority_control" title="Help:Authority control">Authority control databases</a> <a href="https://www.wikidata.org/wiki/Q15733006#identifiers" title="Edit this at Wikidata">Edit this at Wikidata</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>International</td>
+<td>- <a href="https://isni.org/isni/0000000459991726">ISNI</a> - <a href="https://viaf.org/viaf/53171591740103232757">VIAF</a></td>
+</tr>
+<tr>
+<td>National</td>
+<td>- <a href="https://id.loc.gov/authorities/n2024028469">United States</a> - <a href="https://aleph.nkp.cz/F/?func=find-c&amp;local_base=aut&amp;ccl_term=ica=osa20241247559&amp;CON_LNG=ENG">Czech Republic</a> - <a href="https://dbn.bn.org.pl/descriptor-details/9813998230905606">Poland</a> - <a href="https://www.nli.org.il/en/authorities/987013324279805171">Israel</a></td>
+</tr>
+<tr>
+<td>Other</td>
+<td>- <a href="https://lux.collections.yale.edu/view/group/752ca4a5-3731-4245-836a-8c1544d35128">Yale LUX</a></td>
+</tr>
+</tbody>
+</table>
+<p><a href="./Wikipedia:Contents/Portals" title="Wikipedia:Contents/Portals">Portals</a>:</p>
+<ul>
+<li><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Industry5.svg/20px-Industry5.svg.png"> <a href="./Portal:Companies" title="Portal:Companies">Companies</a></li>
+<li><a href="./File:Noun-technology.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Noun-technology.svg/20px-Noun-technology.svg.png"></a> <a href="./Portal:Technology" title="Portal:Technology">Technology</a></li>
+</ul>
+<p><strong>Google DeepMind</strong> at Wikipedia's <a href="./Wikipedia:Wikimedia_sister_projects" title="Wikipedia:Wikimedia sister projects">sister projects</a>:</p>
+<ul>
+<li><a href="./File:Commons-logo.svg"><img alt="Wikimedia Commons logo" src="//upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/20px-Commons-logo.svg.png"></a><a href="https://commons.wikimedia.org/wiki/Category:DeepMind" title="c:Category:DeepMind"><strong>Media</strong></a> from Commons</li>
+</ul></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

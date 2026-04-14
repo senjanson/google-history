@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sundar Pichai</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link active" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Sundar Pichai</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Sundar_Pichai<br>
+Category: founders_and_leaders<br>
+Depth: 1</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Pichai Sundararajan, better known as Sundar Pichai, is an Indian–American business executive who has been the CEO of Google since 2015 and the CEO of its parent company Alphabet Inc. since 2019.</p>
+<h2>Images</h2>
+<p><img alt="Sundar_Pichai_-_2023__28cropped_29" src="../images/Sundar_Pichai_-_2023__28cropped_29.jpg"><br>
+<img alt="330px-Sundar_Pichai_-_2023__28cropped_29" src="../images/330px-Sundar_Pichai_-_2023__28cropped_29.jpg"><br>
+<img alt="250px-Sundar_Pichai_-_2023__28cropped_29" src="../images/250px-Sundar_Pichai_-_2023__28cropped_29.jpg"><br>
+<img alt="250px-Sundarpichaisignature.svg" src="../images/250px-Sundarpichaisignature.svg.png"><br>
+<img alt="250px-Sundar_Pichai_-_SVP_2C_Android_2C_Chrome_and_Apps_2C_Google" src="../images/250px-Sundar_Pichai_-_SVP_2C_Android_2C_Chrome_and_Apps_2C_Google.jpg"></p>
+<h2>Full Article</h2>
+<p>CEO of Alphabet Inc. and Google</p>
+<p><strong>Pichai Sundararajan</strong> (born June 10, 1972), better known as <strong>Sundar Pichai</strong> (pronounced: <a href="./Help:IPA/English" title="Help:IPA/English">/ˈsʊndɜːr pɪˈtʃeɪ/</a>), is an Indian–American business executive who has been the <a href="./CEO" title="CEO">CEO</a> of <a href="./Google" title="Google">Google</a> since 2015 and the CEO of its parent company <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc.</a> since 2019.</p>
+<p>Pichai began his career as a <a href="./Materials_engineer" title="Materials engineer">materials engineer</a>. Following a short stint at the management consulting firm <a href="./McKinsey_&amp;_Co." title="McKinsey &amp; Co.">McKinsey &amp; Co.</a>, Pichai joined Google in 2004, where he led the product management and innovation efforts for a suite of Google's client software products, including <a href="./Google_Chrome" title="Google Chrome">Google Chrome</a> and <a href="./ChromeOS" title="ChromeOS">ChromeOS</a>, as well as being largely responsible for <a href="./Google_Drive" title="Google Drive">Google Drive</a>. In addition, he went on to oversee the development of other applications such as <a href="./Gmail" title="Gmail">Gmail</a> and <a href="./Google_Maps" title="Google Maps">Google Maps</a>.</p>
+<p>As of February 2026, his net worth is estimated at US$1.6 billion.</p>
+<h2>Early life and education</h2>
+<p>Pichai was born on June 10, 1972 in <a href="./Madurai" title="Madurai">Madurai</a>, Tamil Nadu, to a <a href="./Tamil_Hindu" title="Tamil Hindu">Tamil Hindu</a> family. His mother, Lakshmi, was a <a href="./Stenographer" title="Stenographer">stenographer</a>, and his father, Regunatha Pichai, was an <a href="./Electrical_engineer" title="Electrical engineer">electrical engineer</a> at <a href="./General_Electric_Company" title="General Electric Company">GEC</a>, the British <a href="./Conglomerate_(company)" title="Conglomerate (company)">conglomerate</a>.</p>
+<p>Pichai completed schooling in Jawahar Vidyalaya Senior Secondary School in <a href="./Ashok_Nagar,_Chennai" title="Ashok Nagar, Chennai">Ashok Nagar, Chennai</a> and completed the <a href="./Twelfth_grade" title="Twelfth grade">Class XII</a> from <a href="./Vanavani_Matriculation_Higher_Secondary_School" title="Vanavani Matriculation Higher Secondary School">Vana Vani school</a> at <a href="./IIT_Madras" title="IIT Madras">IIT Madras</a>. He earned a <a href="./Bachelor_of_Technology" title="Bachelor of Technology">B.Tech</a> in metallurgical engineering from <a href="./IIT_Kharagpur" title="IIT Kharagpur">IIT Kharagpur</a>. He holds an <a href="./Master_of_Science" title="Master of Science">MS</a> from <a href="./Stanford_University_School_of_Engineering" title="Stanford University School of Engineering">Stanford University School of Engineering</a> in materials science and engineering and an <a href="./Master_of_Business_Administration" title="Master of Business Administration">MBA</a> from the <a href="./Wharton_School" title="Wharton School">Wharton School</a>, where he was named a Siebel Scholar and a Palmer Scholar, respectively.</p>
+<h2>Career</h2>
+<p>Pichai worked in engineering and <a href="./Product_management" title="Product management">product management</a> at <a href="./Applied_Materials" title="Applied Materials">Applied Materials</a> and in <a href="./Management_consulting" title="Management consulting">management consulting</a> at <a href="./McKinsey_&amp;_Company" title="McKinsey &amp; Company">McKinsey &amp; Company</a>. Pichai joined <a href="./Google" title="Google">Google</a> in 2004, where he led the product management and innovation efforts for a suite of Google's client software products, including <a href="./Google_Chrome" title="Google Chrome">Google Chrome</a> and <a href="./ChromeOS" title="ChromeOS">ChromeOS</a>, as well as being largely responsible for <a href="./Google_Drive" title="Google Drive">Google Drive</a>. He went on to oversee the development of other applications such as <a href="./Gmail" title="Gmail">Gmail</a> and <a href="./Google_Maps" title="Google Maps">Google Maps</a>. On November 19, 2009, Pichai gave a demonstration of ChromeOS; the <a href="./Chromebook" title="Chromebook">Chromebook</a> was released for trial and testing in 2011, and released to the public in 2012. On May 20, 2010, he announced the open-sourcing of the new video codec <a href="./VP8" title="VP8">VP8</a> by Google and introduced the new video format, <a href="./WebM" title="WebM">WebM</a>. Pichai served on <a href="./Jive_Software" title="Jive Software">Jive Software</a>'s board of directors from April 2011 to July 2013.</p>
+<p>On March 13, 2013, Pichai added <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> to the list of Google products that he oversaw. Android was formerly managed by <a href="./Andy_Rubin" title="Andy Rubin">Andy Rubin</a>. Pichai was selected to become the next CEO of Google on August 10, 2015, after previously being appointed Product Chief by CEO, <a href="./Larry_Page" title="Larry Page">Larry Page</a>. On October 24, 2015, he stepped into the new position at the completion of the formation of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc.</a>, the new <a href="./Holding_company" title="Holding company">holding company</a> for the Google company family.</p>
+<p>Pichai had been suggested as a contender for <a href="./Microsoft" title="Microsoft">Microsoft</a>'s CEO in 2014, a position that was eventually given to <a href="./Satya_Nadella" title="Satya Nadella">Satya Nadella</a>. In August 2017, Pichai drew publicity for firing a Google employee who wrote <a href="./Google's_Ideological_Echo_Chamber" title="Google's Ideological Echo Chamber">a ten-page manifesto</a> criticizing the company's pro-diversity policies.</p>
+<p>Pichai was appointed to the Alphabet Board of Directors in 2017.</p>
+<p>On December 11, 2018, Sundar Pichai was questioned by the <a href="./United_States_House_Judiciary_Committee" title="United States House Judiciary Committee">United States House Judiciary Committee</a> on a range of Google-related issues such as possible political bias on Google's platforms, the company's alleged plans for a "censored search app" in China, and its privacy practices. In response, Pichai told the committee that Google employees cannot influence search results. He also stated that Google users can opt out of having their data collected and that "there are no current plans for a censored search engine" in <a href="./China" title="China">China</a>.</p>
+<p>In December 2019, Pichai became the CEO of Alphabet Inc. His compensation from the company topped $200 million in 2022, which many employees criticized in light of large scale layoffs that Google undertook in 2023.</p>
+<p>In April 2024, after 28 Google employees were fired for protesting against <a href="./Project_Nimbus" title="Project Nimbus">Project Nimbus</a>, Pichai stated that the office is not a place "to fight over disruptive issues or debate politics", and warned against using the company "as a personal platform".</p>
+<h2>Awards and recognition</h2>
+<p>Pichai was included in <em><a href="./Time_(magazine)" title="Time (magazine)">Time</a></em>'s <a href="./Time_100" title="Time 100">annual list of the 100 most influential people</a> in 2016 and 2020. He was also included in the Time 100 AI list in 2024. He was awarded the 2021 <a href="./Asia_Game_Changer_Awards" title="Asia Game Changer Awards">Asia Game Changer Award</a> by the <a href="./Asia_Society" title="Asia Society">Asia Society</a>.</p>
+<p>In 2022, Pichai received the <a href="./Padma_Bhushan" title="Padma Bhushan">Padma Bhushan</a> in the category of Trade and Industry from the <a href="./Government_of_India" title="Government of India">Government of India</a>, the country's third-highest civilian award.</p>
+<h2>Personal life</h2>
+<p>Pichai is married to Anjali Pichai (née Haryani) and has two children. Anjali is originally from <a href="./Kota,_Rajasthan" title="Kota, Rajasthan">Kota</a>, India. They became close while studying together at <a href="./IIT_Kharagpur" title="IIT Kharagpur">IIT Kharagpur</a>. His recreational interests include <a href="./Cricket" title="Cricket">cricket</a> and <a href="./Association_football" title="Association football">soccer</a>. He lives in <a href="./Los_Altos_Hills,_California" title="Los Altos Hills, California">Los Altos Hills, California</a>.</p>
+<h2>References</h2>
+<h2>Further reading</h2>
+<ul>
+<li>Mok, Aaron (September 30, 2023). <a href="https://www.businessinsider.com/sundar-pichai-google-alphabet-ceo-career-life">"Inside the career rise of Sundar Pichai, the Google CEO being paid hundreds of millions to pave the way towards an 'AI-first' company"</a>. <em><a href="./Business_Insider" title="Business Insider">Business Insider</a></em>. <a href="https://web.archive.org/web/20230930100925/https://www.businessinsider.com/sundar-pichai-google-alphabet-ceo-career-life">Archived</a> from the original on September 30, 2023. Retrieved October 16, 2023.</li>
+</ul>
+<h2>External links</h2>
+<p><a href="./File:Commons-logo.svg"><img alt="Wikimedia Commons logo" src="//upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/40px-Commons-logo.svg.png"></a></p>
+<p>Wikimedia Commons has media related to <a href="https://commons.wikimedia.org/wiki/Category:Sundar%20Pichai" title="commons:Category:Sundar Pichai">Sundar Pichai</a>.</p>
+<ul>
+<li><a href="https://x.com/sundarpichai">Sundar Pichai</a> on <a href="./X_(social_network)" title="X (social network)">X</a> <a href="https://www.wikidata.org/wiki/Q3503829#P2002" title="Edit this at Wikidata"><img alt="Edit this at Wikidata" src="//upload.wikimedia.org/wikipedia/en/thumb/8/8a/OOjs_UI_icon_edit-ltr-progressive.svg/20px-OOjs_UI_icon_edit-ltr-progressive.svg.png"></a></li>
+<li><a href="https://www.youtube.com/watch?v=IzGdClb7wFo">"Sundar Pichai's rise to fame in 90 seconds"</a>, Tech Gurus, <em><a href="./The_Daily_Telegraph" title="The Daily Telegraph">The Daily Telegraph</a></em></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Business positions</th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Preceded by <a href="./Larry_Page" title="Larry Page">Larry Page</a></td>
+<td><strong>CEO of <a href="./Google" title="Google">Google</a></strong>  2015–present</td>
+<td><strong>Incumbent</strong></td>
+</tr>
+<tr>
+<td>Preceded by <a href="./Larry_Page" title="Larry Page">Larry Page</a></td>
+<td><strong>CEO of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc.</a></strong>  2019–present</td>
+<td><strong>Incumbent</strong></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Padma_Bhushan_Award_Recipients_2020–2029" title="Template:Padma Bhushan Award Recipients 2020–2029">v</a> - <a href="./Template_talk:Padma_Bhushan_Award_Recipients_2020–2029" title="Template talk:Padma Bhushan Award Recipients 2020–2029">t</a> - <a href="./Special:EditPage/Template:Padma_Bhushan_Award_Recipients_2020–2029" title="Special:EditPage/Template:Padma Bhushan Award Recipients 2020–2029">e</a>  <a href="./Padma_Bhushan" title="Padma Bhushan">Padma Bhushan</a> award recipients (<a href="./List_of_Padma_Bhushan_award_recipients_(2020–2029)" title="List of Padma Bhushan award recipients (2020–2029)">2020–2029</a>)</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2020</td>
+<td>- <a href="./Syed_Muazzem_Ali" title="Syed Muazzem Ali">Syed Muazzem Ali</a># - <a href="./Muzaffar_Hussain_Baig" title="Muzaffar Hussain Baig">Muzaffar Hussain Baig</a> - <a href="./Ajoy_Chakrabarty" title="Ajoy Chakrabarty">Ajoy Chakrabarty</a> - <a href="./Manoj_Das" title="Manoj Das">Manoj Das</a> - <a href="./B._V._Doshi" title="B. V. Doshi">B. V. Doshi</a> - <a href="./Krishnammal_Jagannathan" title="Krishnammal Jagannathan">Krishnammal Jagannathan</a> - <a href="./S._C._Jamir" title="S. C. Jamir">S. C. Jamir</a> - <a href="./Anil_Prakash_Joshi" title="Anil Prakash Joshi">Anil Prakash Joshi</a> - <a href="./Tsering_Landol" title="Tsering Landol">Tsering Landol</a> - <a href="./Anand_Mahindra" title="Anand Mahindra">Anand Mahindra</a> - <a href="./N._R._Madhava_Menon" title="N. R. Madhava Menon">N. R. Madhava Menon</a># - <a href="./Sri_Madhukarnath" title="Sri Madhukarnath">Sri Madhukarnath</a> - <a href="./Manohar_Parrikar" title="Manohar Parrikar">Manohar Parrikar</a># - <a href="./Jagdish_Sheth" title="Jagdish Sheth">Jagdish Sheth</a> - <a href="./P._V._Sindhu" title="P. V. Sindhu">P. V. Sindhu</a> - <a href="./Venu_Srinivasan" title="Venu Srinivasan">Venu Srinivasan</a></td>
+</tr>
+<tr>
+<td>2021</td>
+<td>- <a href="./K._S._Chithra" title="K. S. Chithra">K. S. Chithra</a> - <a href="./Tarun_Gogoi" title="Tarun Gogoi">Tarun Gogoi</a> - <a href="./Chandrashekhara_Kambara" title="Chandrashekhara Kambara">Chandrashekhara Kambara</a> - <a href="./Sumitra_Mahajan" title="Sumitra Mahajan">Sumitra Mahajan</a> - <a href="./Nripendra_Misra" title="Nripendra Misra">Nripendra Misra</a> - <a href="./Ram_Vilas_Paswan" title="Ram Vilas Paswan">Ram Vilas Paswan</a> - <a href="./Keshubhai_Patel" title="Keshubhai Patel">Keshubhai Patel</a> - <a href="./Kalbe_Sadiq" title="Kalbe Sadiq">Kalbe Sadiq</a> - <a href="./Rajnikant_Shroff" title="Rajnikant Shroff">Rajnikant Devidas Shroff</a> - <a href="./Tarlochan_Singh" title="Tarlochan Singh">Tarlochan Singh</a></td>
+</tr>
+<tr>
+<td>2022</td>
+<td>- <a href="./Ghulam_Nabi_Azad" title="Ghulam Nabi Azad">Ghulam Nabi Azad</a> - <a href="./Victor_Banerjee" title="Victor Banerjee">Victor Banerjee</a> - <a href="./Gurmeet_Bawa" title="Gurmeet Bawa">Gurmeet Bawa</a># - <a href="./Buddhadeb_Bhattacharjee" title="Buddhadeb Bhattacharjee">Buddhadeb Bhattacharjee</a> - <a href="./Natarajan_Chandrasekaran" title="Natarajan Chandrasekaran">Natarajan Chandrasekaran</a> - <a href="./Krishna_Ella" title="Krishna Ella">Krishna Ella</a> - Suchitra Ella - <a href="./Madhur_Jaffrey" title="Madhur Jaffrey">Madhur Jaffrey</a> - <a href="./Devendra_Jhajharia" title="Devendra Jhajharia">Devendra Jhajharia</a> - <a href="./Rashid_Khan_(musician)" title="Rashid Khan (musician)">Rashid Khan</a> - <a href="./Rajiv_Mehrishi" title="Rajiv Mehrishi">Rajiv Mehrishi</a> - <a href="./Satya_Nadella" title="Satya Nadella">Satya Nadella</a> - <a href="./Sundar_Pichai">Sundar Pichai</a> - <a href="./Cyrus_S._Poonawalla" title="Cyrus S. Poonawalla">Cyrus Poonawalla</a> - <a href="./Sanjaya_Rajaram" title="Sanjaya Rajaram">Sanjaya Rajaram</a># - <a href="./Pratibha_Ray" title="Pratibha Ray">Pratibha Ray</a> - <a href="./Swami_Sachchidanand" title="Swami Sachchidanand">Swami Sachchidanand</a> - <a href="./Vashishth_Tripathi" title="Vashishth Tripathi">Vashishth Tripathi</a></td>
+</tr>
+<tr>
+<td>2023</td>
+<td>- <a href="./Kumar_Mangalam_Birla" title="Kumar Mangalam Birla">Kumar Mangalam Birla</a> - <a href="./S._L._Bhyrappa" title="S. L. Bhyrappa">S. L. Bhyrappa</a> - <a href="./Deepak_Dhar" title="Deepak Dhar">Deepak Dhar</a> - <a href="./Vani_Jairam" title="Vani Jairam">Vani Jairam</a> - <a href="./Chinna_Jeeyar" title="Chinna Jeeyar">Chinna Jeeyar</a> - <a href="./Suman_Kalyanpur" title="Suman Kalyanpur">Suman Kalyanpur</a> - <a href="./Kapil_Kapoor" title="Kapil Kapoor">Kapil Kapoor</a> - <a href="./Sudha_Murty" title="Sudha Murty">Sudha Murty</a> - <a href="./Kamlesh_Patel_(Daaji)" title="Kamlesh Patel (Daaji)">Kamlesh D Patel</a></td>
+</tr>
+<tr>
+<td>2024</td>
+<td>- <a href="./Fathima_Beevi" title="Fathima Beevi">Fathima Beevi</a># - Hormusji N. Cama - <a href="./Mithun_Chakraborty" title="Mithun Chakraborty">Mithun Chakraborty</a> - Sitaram Jindal - Young Liu# - <a href="./Ashwin_Balachand_Mehta" title="Ashwin Balachand Mehta">Ashwin Balachand Mehta</a> - <a href="./Satyabrata_Mookherjee" title="Satyabrata Mookherjee">Satyabrata Mookherjee</a># - <a href="./Ram_Naik" title="Ram Naik">Ram Naik</a> - <a href="./Tejas_Patel" title="Tejas Patel">Tejas Patel</a> - <a href="./O._Rajagopal" title="O. Rajagopal">O. Rajagopal</a> - <a href="./Rajdutt" title="Rajdutt">Rajdutt</a> - <a href="./Togdan_Rinpoche" title="Togdan Rinpoche">Togdan Rinpoche</a># - <a href="./Laxmikant–Pyarelal" title="Laxmikant–Pyarelal">Pyarelal Sharma</a> - <a href="./C._P._Thakur" title="C. P. Thakur">C. P. Thakur</a> - <a href="./Usha_Uthup" title="Usha Uthup">Usha Uthup</a> - <a href="./Vijayakant" title="Vijayakant">Vijayakant</a># - <a href="./Kundan_Vyas" title="Kundan Vyas">Kundan Vyas</a></td>
+</tr>
+<tr>
+<td>2025</td>
+<td>- <a href="./A._Surya_Prakash" title="A. Surya Prakash">A. Surya Prakash</a> - <a href="./Anant_Nag" title="Anant Nag">Anant Nag</a> - <a href="./Bibek_Debroy" title="Bibek Debroy">Bibek Debroy</a># - <a href="./Jatin_Goswami" title="Jatin Goswami">Jatin Goswami</a> - <a href="./Jose_Chacko_Periappuram" title="Jose Chacko Periappuram">Jose Chacko Periappuram</a> - Kailash Nath Dikshit - <a href="./Manohar_Joshi" title="Manohar Joshi">Manohar Joshi</a># - <a href="./Nalli_Kuppuswami_Chetti" title="Nalli Kuppuswami Chetti">Nalli Kuppuswami Chetti</a> - <a href="./Nandamuri_Balakrishna" title="Nandamuri Balakrishna">Nandamuri Balakrishna</a> - <a href="./P._R._Sreejesh" title="P. R. Sreejesh">P. R. Sreejesh</a> - <a href="./Pankaj_Patel" title="Pankaj Patel">Pankaj Patel</a> - <a href="./Pankaj_Udhas" title="Pankaj Udhas">Pankaj Udhas</a># - <a href="./Ram_Bahadur_Rai" title="Ram Bahadur Rai">Ram Bahadur Rai</a> - <a href="./Sadhvi_Ritambhara" title="Sadhvi Ritambhara">Sadhvi Ritambhara</a> - <a href="./Ajith_Kumar" title="Ajith Kumar">Ajith Kumar</a> - <a href="./Shobana" title="Shobana">Shobana</a> - <a href="./Sushil_Kumar_Modi" title="Sushil Kumar Modi">Sushil Kumar Modi</a># - <a href="./Vinod_Dham" title="Vinod Dham">Vinod Dham</a></td>
+</tr>
+<tr>
+<td>2026</td>
+<td>- <a href="./Alka_Yagnik" title="Alka Yagnik">Alka Yagnik</a> - <a href="./Bhagat_Singh_Koshyari" title="Bhagat Singh Koshyari">Bhagat Singh Koshyari</a> - <a href="./K._R._Palaniswamy" title="K. R. Palaniswamy">K. R. Palaniswamy</a> - <a href="./Mammootty" title="Mammootty">Mammootty</a> - <a href="./Dattatreyudu_Nori" title="Dattatreyudu Nori">Dattatreyudu Nori</a> - <a href="./Piyush_Pandey" title="Piyush Pandey">Piyush Pandey</a># - <a href="./S._K._M._Maeilanandhan" title="S. K. M. Maeilanandhan">S. K. M. Maeilanandhan</a> - <a href="./Shatavadhani_Ganesh" title="Shatavadhani Ganesh">Shatavadhani R. Ganesh</a> - <a href="./Shibu_Soren" title="Shibu Soren">Shibu Soren</a># - <a href="./Uday_Kotak" title="Uday Kotak">Uday Kotak</a> - <a href="./Vijay_Kumar_Malhotra" title="Vijay Kumar Malhotra">Vijay Kumar Malhotra</a># - <a href="./Vellappally_Natesan" title="Vellappally Natesan">Vellappally Natesan</a> - <a href="./Vijay_Amritraj" title="Vijay Amritraj">Vijay Amritraj</a></td>
+</tr>
+<tr>
+<td># Posthumous conferral  - <a href="./List_of_Padma_Bhushan_award_recipients_(1954–1959)" title="List of Padma Bhushan award recipients (1954–1959)">1954–1959</a> - <a href="./List_of_Padma_Bhushan_award_recipients_(1960–1969)" title="List of Padma Bhushan award recipients (1960–1969)">1960–1969</a> - <a href="./List_of_Padma_Bhushan_award_recipients_(1970–1979)" title="List of Padma Bhushan award recipients (1970–1979)">1970–1979</a> - <a href="./List_of_Padma_Bhushan_award_recipients_(1980–1989)" title="List of Padma Bhushan award recipients (1980–1989)">1980–1989</a> - <a href="./List_of_Padma_Bhushan_award_recipients_(1990–1999)" title="List of Padma Bhushan award recipients (1990–1999)">1990–1999</a> - <a href="./List_of_Padma_Bhushan_award_recipients_(2000–2009)" title="List of Padma Bhushan award recipients (2000–2009)">2000–2009</a> - <a href="./List_of_Padma_Bhushan_award_recipients_(2010–2019)" title="List of Padma Bhushan award recipients (2010–2019)">2010–2019</a> - <a href="./List_of_Padma_Bhushan_award_recipients_(2020–2029)" title="List of Padma Bhushan award recipients (2020–2029)">2020–2029</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Alphabet_Inc." title="Template:Alphabet Inc.">v</a> - <a href="./Template_talk:Alphabet_Inc." title="Template talk:Alphabet Inc.">t</a> - <a href="./Special:EditPage/Template:Alphabet_Inc." title="Special:EditPage/Template:Alphabet Inc.">e</a>  <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet Inc.</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Subsidiaries</td>
+<td></td>
+</tr>
+<tr>
+<td>People</td>
+<td></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Alphabet_Inc." title="Category:Alphabet Inc.">Category</a> - <a href="./Portal:Companies" title="Portal:Companies">Companies portal</a> - <a href="./File:Crystal_Clear_app_linneighborhood.svg">icon</a> <a href="./Portal:Internet" title="Portal:Internet">Internet portal</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products" title="List of Google products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><a href="./Help:Authority_control" title="Help:Authority control">Authority control databases</a> <a href="https://www.wikidata.org/wiki/Q3503829#identifiers" title="Edit this at Wikidata">Edit this at Wikidata</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>International</td>
+<td>- <a href="https://isni.org/isni/0000000495701482">ISNI</a> - <a href="https://viaf.org/viaf/143147118228326341516">VIAF</a> - <a href="https://id.oclc.org/worldcat/entity/E39PBJvMDyG68h3BmMWcTX6VG3">WorldCat</a></td>
+</tr>
+<tr>
+<td>National</td>
+<td>- <a href="https://id.loc.gov/authorities/n2016246310">United States</a> - <a href="https://dbn.bn.org.pl/descriptor-details/9810608863405606">Poland</a></td>
+</tr>
+<tr>
+<td>Other</td>
+<td>- <a href="https://lux.collections.yale.edu/view/person/14945358-5282-4a83-bb09-a3a87f717a35">Yale LUX</a></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

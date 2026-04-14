@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Google Assistant</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link active" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Google Assistant</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Google_Assistant<br>
+Category: products_cloud_and_ai<br>
+Depth: 1</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Google Assistant is an outgoing virtual assistant software application developed by Google that is primarily available on home automation and mobile devices. Based on artificial intelligence, Google Assistant can engage in two-way conversations, unlike the company's previous virtual assistant, Google Now.</p>
+<h2>Images</h2>
+<p><img alt="Google_Assistant_Pixel" src="../images/Google_Assistant_Pixel.png"><br>
+<img alt="Google_Assistant_Pixel" src="../images/Google_Assistant_Pixel.png"><br>
+<img alt="120px-Google_Assistant_logo.svg" src="../images/120px-Google_Assistant_logo.svg.png"><br>
+<img alt="Google_Assistant_Pixel" src="../images/Google_Assistant_Pixel.png"><br>
+<img alt="250px-Android_Assistant_on_the_Google_Pixel_XL_smartphone__2829526761674_29" src="../images/250px-Android_Assistant_on_the_Google_Pixel_XL_smartphone__2829526761674_29.jpg"></p>
+<h2>Full Article</h2>
+<p>AI-powered digital assistant from Google</p>
+<p><strong>Google Assistant</strong> is an outgoing <a href="./Virtual_assistant" title="Virtual assistant">virtual assistant</a> software application developed by <a href="./Google" title="Google">Google</a> that is primarily available on <a href="./Home_automation" title="Home automation">home automation</a> and <a href="./Mobile_device" title="Mobile device">mobile</a> devices. Based on <a href="./Artificial_intelligence" title="Artificial intelligence">artificial intelligence</a>, Google Assistant can engage in two-way conversations, unlike the company's previous virtual assistant, <a href="./Google_Now" title="Google Now">Google Now</a>.</p>
+<p>Google Assistant debuted in 2016 as part of Google's messaging app <a href="./Google_Allo" title="Google Allo">Allo</a>, and its voice-activated speaker <a href="./Google_Nest_(smart_speakers)" title="Google Nest (smart speakers)">Google Nest</a>. After a period of exclusivity on the <a href="./Google_Pixel" title="Google Pixel">Google Pixel</a> smartphones, it was deployed on other <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> devices starting in February 2017, including third-party smartphones and Android Wear (now <a href="./Wear_OS" title="Wear OS">Wear OS</a>), and was released as a standalone app on the <a href="./IOS" title="IOS">iOS</a> operating system in May 2017. Alongside the announcement of a <a href="./Software_development_kit" title="Software development kit">software development kit</a> in April 2017, Assistant has been further extended to support a large variety of devices, including cars and third-party smart home appliances. The functionality of Assistant can also be enhanced by third-party developers. At <a href="./Consumer_Electronics_Show" title="Consumer Electronics Show">CES 2018</a>, the first Assistant-powered smart displays (<a href="./Smart_speaker" title="Smart speaker">smart speakers</a> with video screens) were announced, with the first one being released in July 2018. In 2020, Google Assistant was already available on more than 1 billion devices.</p>
+<p>Users primarily interact with Google Assistant through <a href="./Natural_language_processing" title="Natural language processing">natural voice</a>, though keyboard input is also supported. Assistant is able to answer questions, schedule events and alarms, adjust hardware settings on the user's device, show information from the user's Google account, play games, and more. Google has also announced that Assistant will be able to identify objects and gather visual information through the device's camera, and support purchasing products as well as sending money. Google Assistant is available in more than 90 countries and over 30 languages, and is used by more than 500 million users monthly.</p>
+<p>In October 2023, a mobile version of the <a href="./Gemini_(chatbot)" title="Gemini (chatbot)">Gemini</a> chatbot, originally titled Assistant with Bard and simply just Bard, was unveiled during the <a href="./Pixel_8" title="Pixel 8">Pixel 8</a> event. It is set to replace Assistant as the main assistant on Android devices, although the original Assistant will remain optional. The chatbot was released on February 8, 2024, in the United States.</p>
+<p>On March 14, 2025, it was announced that Assistant would stop working on Android devices using <a href="./Android_9" title="Android 9">Android 9</a> and higher, <a href="./IOS" title="IOS">iOS</a> and other devices such as the Google Nest, being mostly replaced by Gemini. Assistant would remain for low-range phones or phones running <a href="./Android_Oreo" title="Android Oreo">Android 8.1 "Oreo"</a> and lower.</p>
+<h2>History</h2>
+<p>Google Assistant was unveiled during Google's <a href="./Google_I/O" title="Google I/O">developer conference</a> on May 18, 2016, as part of the unveiling of the <a href="./Google_Nest_(smart_speakers)" title="Google Nest (smart speakers)">Google Nest</a> smart speaker and new messaging app Allo; Google CEO <a href="./Sundar_Pichai" title="Sundar Pichai">Sundar Pichai</a> explained that the Assistant was designed to be a conversational and <a href="https://en.wiktionary.org/wiki/two-way" title="wikt:two-way">two-way</a> experience, and "an ambient experience that extends across devices". Later that month, Google assigned <a href="./Google_Doodle" title="Google Doodle">Google Doodle</a> leader Ryan Germick and hired former <a href="./Pixar" title="Pixar">Pixar</a> animator Emma Coats to develop "a little more of a personality".</p>
+<h3>Platform expansion</h3>
+<p>For system-level integration outside of the <a href="./Google_Allo" title="Google Allo">Allo app</a> and <a href="./Google_Nest_(smart_speakers)" title="Google Nest (smart speakers)">Google Nest</a>, the Google Assistant was initially exclusive to the <a href="./Google_Pixel" title="Google Pixel">Google Pixel</a> smartphones. In February 2017, Google announced that it had begun to enable access to the Assistant on Android smartphones running <a href="./Android_Marshmallow" title="Android Marshmallow">Android 6.0.1</a> or <a href="./Android_Nougat" title="Android Nougat">7.0</a>, beginning in select English-speaking markets. Android tablets did not receive the Assistant as part of this rollout. The Assistant is also integrated in <a href="./Wear_OS" title="Wear OS">Wear OS</a> 2.0, and will be included in future versions of <a href="./Android_TV" title="Android TV">Android TV</a> and <a href="./Android_Auto" title="Android Auto">Android Auto</a>. In October 2017, the <a href="./Pixelbook" title="Pixelbook">Google Pixelbook</a> became the first laptop to include Google Assistant. Google Assistant later came to the <a href="./Pixel_Buds" title="Pixel Buds">Google Pixel Buds</a>. In December 2017, Google announced that the Assistant would be released for phones running <a href="./Android_Lollipop" title="Android Lollipop">Android 5.0</a> through an update to <a href="./Google_Play_Services" title="Google Play Services">Google Play Services</a>, as well as tablets running 6.0 Marshmallow and 7.0 Nougat. In February 2019, Google reportedly began testing ads in Google Assistant results.</p>
+<p>On May 15, 2017, <em>Android Police</em> reported that the Google Assistant would be coming to the <a href="./IOS" title="IOS">iOS</a> operating system as a separate app. The information was confirmed two days later at Google's developer conference.</p>
+<h4>Smart displays</h4>
+<p>In January 2018 at the <a href="./Consumer_Electronics_Show" title="Consumer Electronics Show">Consumer Electronics Show</a>, the first Assistant-powered "smart displays" were released. Smart displays were shown at the event from <a href="./Lenovo" title="Lenovo">Lenovo</a>, <a href="./Sony" title="Sony">Sony</a>, <a href="./JBL" title="JBL">JBL</a> and <a href="./LG_Corporation" title="LG Corporation">LG</a>. These devices have support for <a href="./Google_Duo" title="Google Duo">Google Duo</a> video calls, YouTube videos, <a href="./Google_Maps" title="Google Maps">GMaps</a> directions, a <a href="./Google_Calendar" title="Google Calendar">GCalendar</a> agenda, viewing of smart camera footage, in addition to services which work with Google Home devices.</p>
+<p>These devices are based on <a href="./Android_Things" title="Android Things">Android Things</a> and Google-developed software. Google unveiled its own smart display, <a href="./Google_Nest_(smart_speakers)" title="Google Nest (smart speakers)">Google Nest Hub</a> in October 2018, and later <a href="./Google_Nest_(smart_speakers)" title="Google Nest (smart speakers)">Google Nest Hub Max</a>, which utilizes a different system platform.</p>
+<h3>Developer support</h3>
+<p>In December 2016, Google launched "<a href="./Actions_on_Google" title="Actions on Google">Actions on Google</a>", a developer platform for the Google Assistant. Actions on Google allows 3rd party developers to build apps for Google Assistant. In March 2017, Google added new tools for developing on Actions on Google to support the creation of games for Google Assistant. Originally limited to the <a href="./Google_Nest_(smart_speakers)" title="Google Nest (smart speakers)">Google Nest</a> smart speaker, Actions on Google was made available to Android and iOS devices in May 2017, at which time Google also introduced an app directory or <a href="./Application_directory" title="Application directory">application directory</a> for overview of compatible products and services. To incentivize developers to build Actions, Google announced a competition, in which first place won tickets to Google's 2018 <a href="./Google_I/O" title="Google I/O">developer conference</a>, $10,000, and a walk-through of Google's campus, while second place and third place received $7,500 and $5,000, respectively, and a Google Home.</p>
+<p>In April 2017, a software development kit (SDK) was released, allowing third-party developers to build their own hardware that can run the Google Assistant. It has been integrated into <a href="./Raspberry_Pi" title="Raspberry Pi">Raspberry Pi</a>, cars from <a href="./Audi" title="Audi">Audi</a> and <a href="./Volvo" title="Volvo">Volvo</a>, and <a href="./Home_automation" title="Home automation">Home automation</a> appliances, including fridges, washers, and ovens, from companies including <a href="./IRobot" title="IRobot">iRobot</a>, <a href="./LG_Corporation" title="LG Corporation">LG</a>, <a href="./General_Electric" title="General Electric">General Electric</a>, and <a href="./D-Link" title="D-Link">D-Link</a>. Google updated the SDK in December 2017 to add several features that only the Google Home smart speakers and Google Assistant smartphone apps had previously supported.</p>
+<p>The features include:</p>
+<ul>
+<li>Third-party device makers can incorporate their own "Actions on Google" commands for their respective products</li>
+<li>Text-based interactions and many languages</li>
+<li>Users can set a precise geographic location for the device to enable improved location-specific queries.</li>
+</ul>
+<p>On May 2, 2018, Google announced a new program that focuses on investing in the future of Google Assistant through early-stage startups. Their focus was to build an environment where developers could build richer experiences for their users. This includes startups that broaden Assistant's features, are building new hardware devices, or simply differentiating in different industries.</p>
+<h3>Voices</h3>
+<p>Google Assistant launched using the voice of <a href="./Kiki_Baessell?action=edit&amp;redlink=1" title="Kiki Baessell">Kiki Baessell</a> for the American female voice, the same actress for the Google Voice voicemail system since 2010.</p>
+<p>On October 11, 2019, Google announced that <a href="./Issa_Rae" title="Issa Rae">Issa Rae</a> had been added to Google Assistant as an optional voice, which could be enabled by the user by saying "Okay, Google, talk like Issa". Although, as of April 2022, Google Assistant response with "Sorry, that voice isn't available anymore, but you can try out another by asking me to change voices." if the command is given.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>]</p>
+<h2>Interaction</h2>
+<p>Google Assistant, in the nature and manner of <a href="./Google_Now" title="Google Now">Google Now</a>, can search the Internet, schedule events and alarms, adjust hardware settings on the user's device, and show information from the user's Google account. Unlike Google Now, however, the Assistant can engage in a two-way conversation, using Google's <a href="./Natural_language_processing" title="Natural language processing">natural language processing</a> algorithm. Search results are presented in a card format that users can tap to open the page. In February 2017, Google announced that users of Google Home would be able to shop entirely by voice for products through its <a href="./Google_Express" title="Google Express">Google Express</a> shopping service, with products available from <a href="./Whole_Foods_Market" title="Whole Foods Market">Whole Foods Market</a>, <a href="./Costco" title="Costco">Costco</a>, <a href="./Walgreens" title="Walgreens">Walgreens</a>, <a href="./PetSmart" title="PetSmart">PetSmart</a>, and <a href="./Bed_Bath_&amp;_Beyond_Inc." title="Bed Bath &amp; Beyond Inc.">Bed Bath &amp; Beyond</a> at launch, and other retailers added in the following months as new partnerships were formed. Google Assistant can maintain a <a href="./Shopping_list" title="Shopping list">shopping list</a>; this was previously done within the notetaking service <a href="./Google_Keep" title="Google Keep">GKeep</a>, but the feature was moved to <a href="./Google_Express" title="Google Express">Google Express</a> and the Google Home app in April 2017, resulting in a severe loss of functionality.</p>
+<p>In May 2017, Google announced that the Assistant would support a keyboard for typed input and visual responses, support identifying objects and gather visual information through the device's camera, and support purchasing products and sending money. Through the use of the keyboard, users can see a history of queries made to the Google Assistant, and edit or delete previous inputs. The Assistant warns against deleting, however, due to its use of previous inputs to generate better answers in the future. In November 2017, it became possible to identify songs currently playing by asking the Assistant.</p>
+<p>The Google Assistant allows users to activate and modify vocal <a href="./Shortcut_(computing)" title="Shortcut (computing)">shortcut</a> commands in order to perform actions on their device (both Android and iPad/iPhone) or configure it as a hub for <a href="./Home_automation#Applications_and_technologies" title="Home automation">home automation</a>.</p>
+<p>This feature of the <a href="./Speech_recognition" title="Speech recognition">speech recognition</a> is available in English, among other languages. In July 2018, the Google Home version of Assistant gained support for multiple actions triggered by a single vocal shortcut command.</p>
+<p>At the annual <a href="./Google_I/O" title="Google I/O">I/O developers conference</a> on May 8, 2018, Google's <a href="./Search_engine_optimization" title="Search engine optimization">SEO</a> announced the addition of six new voice options for the Google Assistant, one of which being <a href="./John_Legend" title="John Legend">John Legend</a>'s. This was made possible by WaveNet, a voice synthesizer developed by DeepMind, which significantly reduced the amount of audio samples that a voice actor was required to produce for creating a voice model. However, John Legend's Google Assistant cameo voice was discontinued on March 23, 2020.</p>
+<p>In August 2018, Google added bilingual capabilities to the Google Assistant for existing supported languages on devices. Recent reports say that it may support multilingual support by setting a third default language on Android Phone.</p>
+<p>Speech-to-Text can recognize commas, question marks, and periods in transcription requests.</p>
+<p>In April 2019, the most popular <a href="./Audio_game" title="Audio game">audio games</a> in the Assistant, Crystal Ball, and Lucky Trivia, have had the biggest voice changes in the application's history. The voice in the assistant has been able to add expression to the games. For instance, in the Crystal Ball game, the voice would speak slowly and softly during the intro and before the answer is revealed to make the game more exciting, and in the Lucky Trivia game, the voice would become excitable like a game show host. In the British accent voice of Crystal Ball, the voice would say the word 'probably' in a downward slide like she's not too sure. The games used the text-to-speech voice which makes the voice more robotic. In May 2019 however, it turned out to be a bug in the speech API that caused the games to lose the studio-quality voices. These audio games were fixed in May 2019.</p>
+<h3>Interpreter Mode</h3>
+<p>On December 12, 2019, Google debuted an interpreter mode in Google Assistant smartphone apps for Android and iOS. It provides translation of conversations in real-time and was previously only available on Google Home smart speakers and displays. Google Assistant won the <a href="./2020_Webby_Awards" title="2020 Webby Awards">2020 Webby Award</a> for Best User Experience in the category: Apps, Mobile &amp; Voice.</p>
+<p>On March 5, 2020, Google introduced a feature on Google Assistant that read webpages aloud in 42 languages.</p>
+<p>On October 15, 2020, Google announced a new 'hum to search' function to find a song by simply humming, whistling, or singing the song.</p>
+<h3>Google Duplex</h3>
+<p>This section is about Duplex for Google Assistant. For the number, see <a href="./Googolplex" title="Googolplex">googolplex</a>.</p>
+<p>In May 2018, Google revealed Duplex, an extension of the Google Assistant that allows it to carry out natural conversations by mimicking human voice, in a manner not dissimilar to <a href="./Robocall" title="Robocall">robocalling</a>. The assistant can autonomously complete tasks such as calling a hair salon to book an appointment, scheduling a restaurant reservation, or calling businesses to verify holiday store hours. While Duplex can complete most of its tasks fully autonomously, it is able to recognize situations that it is unable to complete and can signal a human operator to finish the task. Duplex was created to speak in a more natural voice and language by incorporating <a href="./Speech_disfluency" title="Speech disfluency">speech disfluencies</a> such as <a href="./Filler_(linguistics)" title="Filler (linguistics)">filler words</a> like "hmm" and "uh" and using common phrases such as "mhm" and "gotcha", along with more human-like <a href="./Intonation_(linguistics)" title="Intonation (linguistics)">intonation</a> and response latency. Duplex is currently in development and had a limited release in late 2018 for Google Pixel users. During the limited release, Pixel phone users in Atlanta, New York, Phoenix, and San Francisco were only able to use Duplex to make restaurant reservations. As of October 2020, Google has expanded Duplex to businesses in eight countries.</p>
+<h4>Criticism</h4>
+<p>After the announcement, concerns were made over the ethical and societal questions that <a href="./Artificial_intelligence" title="Artificial intelligence">artificial intelligence</a> technology such as Duplex raises. For instance, human operators may not notice that they are speaking with a digital robot when conversing with Duplex, which some critics view as unethical or deceitful. Concerns over privacy were also identified, as conversations with Duplex are recorded in order for the virtual assistant to analyze and respond. Privacy advocates have also raised concerns around how the millions of vocal samples gathered from consumers are fed back into the algorithms of virtual assistants, making these forms of AI smarter with each use. Though these features individualize the user experience, critics are unsure about the long term implications of giving "the company unprecedented access to human patterns and preferences that are crucial to the next phase of artificial intelligence".</p>
+<p>While transparency was referred to as a key part to the experience when the technology was revealed, Google later further clarified in a statement saying, "We are designing this feature with disclosure built-in, and we'll make sure the system is appropriately identified." Google further added that, in certain jurisdictions, the assistant would inform those on the other end of the phone that the call is being recorded.</p>
+<h2>Reception</h2>
+<p><em><a href="./PC_World" title="PC World">PC World</a></em>'s Mark Hachman gave a favorable review of the Google Assistant, saying that it was a "step up on <a href="./Cortana_(virtual_assistant)" title="Cortana (virtual assistant)">Cortana</a> and <a href="./Siri" title="Siri">Siri</a>." <a href="./Digital_Trends" title="Digital Trends">Digital Trends</a> called it "smarter than <a href="./Google_Now" title="Google Now">Google Now</a> ever was".</p>
+<h2>Criticism</h2>
+<p>In July 2019, Belgian public broadcaster <a href="./VRT_(broadcaster)" title="VRT (broadcaster)">VRT NWS</a> published an article revealing that third-party contractors paid to transcribe audio clips collected by Google Assistant listened to sensitive information about users. Sensitive data collected from Google Home devices and Android phones included names, addresses, and other private conversations after mistaken hot word triggering, such as business calls or bedroom conversations. From more than 1,000 recordings analyzed, 153 were recorded without the "OK Google" command. Google officially acknowledged that 0.2% of recordings are being listened to by language experts to improve Google's services. On August 1, 2019, Germany's Hamburg Commissioner for Data Protection and Freedom of Information initiated an administrative procedure to prohibit Google from carrying out corresponding evaluations by employees or third parties for the period of three months to provisionally protect the rights of privacy of data subjects for the time being, citing <a href="./General_Data_Protection_Regulation" title="General Data Protection Regulation">GDPR</a>. A Google spokesperson stated that Google paused "language reviews" in all European countries while it investigated recent media leaks.</p>
+<h2>See also</h2>
+<ul>
+<li><a href="./Amazon_Alexa" title="Amazon Alexa">Amazon Alexa</a></li>
+<li><a href="./Bixby_(software)" title="Bixby (software)">Bixby</a></li>
+<li><a href="./Cortana_(virtual_assistant)" title="Cortana (virtual assistant)">Cortana</a></li>
+<li><a href="./Google_Gemini" title="Google Gemini">Google Gemini</a></li>
+<li><a href="./Home_automation" title="Home automation">Home automation</a> (Smart Home)</li>
+<li><a href="./Internet_of_things" title="Internet of things">Internet of things</a> (IoT)</li>
+<li><a href="./Mycroft_(software)" title="Mycroft (software)">Mycroft (software)</a></li>
+<li><a href="./Siri" title="Siri">Siri</a></li>
+<li><a href="./Smart_device" title="Smart device">Smart devices</a></li>
+<li><a href="./Speech_recognition" title="Speech recognition">Speech recognition</a></li>
+<li><a href="./Voice_user_interface" title="Voice user interface">Voice user interface</a></li>
+</ul>
+<h2>References</h2>
+<h2>External links</h2>
+<ul>
+<li><a href="https://assistant.google.com/">Official website</a></li>
+<li><a href="https://support.google.com/assistant/answer/7394513?hl=en&amp;ref_topic=7391797">Google Assistant supported languages</a></li>
+<li><a href="https://developers.google.com/actions/">Google Assistant for Developers</a></li>
+<li><a href="https://play.google.com/store/apps/details?id=com.google.android.apps.googleassistant">Google Assistant</a> on <a href="./Google_Play" title="Google Play">Google Play</a></li>
+<li><a href="https://apps.apple.com/app/id1220976145">Google Assistant</a> on the <a href="./App_Store_(Apple)" title="App Store (Apple)">App Store</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_AI" title="Template:Google AI">v</a> - <a href="./Template_talk:Google_AI" title="Template talk:Google AI">t</a> - <a href="./Special:EditPage/Template:Google_AI" title="Special:EditPage/Template:Google AI">e</a>  <a href="./Google_AI" title="Google AI">Google AI</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>- <a href="./Google" title="Google">Google</a> - <a href="./Google_Brain" title="Google Brain">Google Brain</a> - <a href="./Google_DeepMind" title="Google DeepMind">Google DeepMind</a></td>
+<td></td>
+</tr>
+<tr>
+<td>Computer  programs</td>
+<td></td>
+</tr>
+<tr>
+<td>Machine  learning</td>
+<td></td>
+</tr>
+<tr>
+<td>Generative  AI</td>
+<td></td>
+</tr>
+<tr>
+<td>See also</td>
+<td>- "<a href="./Attention_Is_All_You_Need" title="Attention Is All You Need">Attention Is All You Need</a>" - <a href="./Future_of_Go_Summit" title="Future of Go Summit">Future of Go Summit</a> - <a href="./Generative_pre-trained_transformer" title="Generative pre-trained transformer">Generative pre-trained transformer</a> - <a href="./Google_Labs" title="Google Labs">Google Labs</a> - <a href="./Google_Pixel" title="Google Pixel">Google Pixel</a> - <a href="./Google_Workspace" title="Google Workspace">Google Workspace</a> - <a href="./Robot_Constitution" title="Robot Constitution">Robot Constitution</a></td>
+</tr>
+<tr>
+<td>- <a href="./Category:Google_DeepMind" title="Category:Google DeepMind">Category</a> - <a href="https://commons.wikimedia.org/wiki/Category:DeepMind" title="commons:Category:DeepMind">Commons</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products" title="List of Google products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Ambient_intelligence" title="Template:Ambient intelligence">v</a> - <a href="./Template_talk:Ambient_intelligence" title="Template talk:Ambient intelligence">t</a> - <a href="./Special:EditPage/Template:Ambient_intelligence" title="Special:EditPage/Template:Ambient intelligence">e</a>  <a href="./Ambient_intelligence" title="Ambient intelligence">Ambient intelligence</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Concepts</td>
+<td>- <a href="./Ambient_IoT" title="Ambient IoT">Ambient IoT</a> - <a href="./Context_awareness" title="Context awareness">Context awareness</a> - <a href="./Device_ecology" title="Device ecology">Device ecology</a> - <a href="./Spatial_computing" title="Spatial computing">Spatial computing</a> - <a href="./Internet_of_things" title="Internet of things">Internet of things</a> - <a href="./Object_hyperlinking" title="Object hyperlinking">Object hyperlinking</a> - <a href="./Profiling_(information_science)" title="Profiling (information science)">Profiling</a> - <a href="./Spime" title="Spime">Spime</a> - <a href="./Ubiquitous_computing" title="Ubiquitous computing">Ubiquitous computing</a> - <a href="./Web_of_Things" title="Web of Things">Web of Things</a> - <a href="./Wireless_sensor_network" title="Wireless sensor network">Wireless sensor networks</a></td>
+</tr>
+<tr>
+<td>Technologies</td>
+<td>- <a href="./6LoWPAN" title="6LoWPAN">6LoWPAN</a> - <a href="./ANT+" title="ANT+">ANT+</a> - <a href="./DASH7" title="DASH7">DASH7</a> - <a href="./IEEE_802.15.4" title="IEEE 802.15.4">IEEE 802.15.4</a> - <a href="./Internet_0" title="Internet 0">Internet 0</a> - <a href="./Machine_to_machine" title="Machine to machine">Machine to machine</a> - <a href="./Radio-frequency_identification" title="Radio-frequency identification">Radio-frequency identification</a> - <a href="./Smartdust" title="Smartdust">Smartdust</a> - <a href="./XBee" title="XBee">XBee</a></td>
+</tr>
+<tr>
+<td>Platforms</td>
+<td>- <a href="./Arduino" title="Arduino">Arduino</a> - <a href="./Contiki" title="Contiki">Contiki</a> - <a href="./.NET_Gadgeteer" title=".NET Gadgeteer">Gadgeteer</a> - <a href="./IoBridge" title="IoBridge">ioBridge</a> - <a href="./Netduino" title="Netduino">Netduino</a> - <a href="./Raspberry_Pi" title="Raspberry Pi">Raspberry Pi</a> - <a href="./TinyOS" title="TinyOS">TinyOS</a> - <a href="./Wiring_(development_platform)" title="Wiring (development platform)">Wiring</a> - <a href="./Xively" title="Xively">Xively</a> - <a href="./NodeMCU" title="NodeMCU">NodeMCU</a></td>
+</tr>
+<tr>
+<td>Applications</td>
+<td>- <a href="./Ambient_device" title="Ambient device">Ambient device</a> - <a href="./CeNSE" title="CeNSE">CeNSE</a> - <a href="./Connected_car" title="Connected car">Connected car</a> - <a href="./Home_automation" title="Home automation">Home automation</a> - <a href="./HomeOS" title="HomeOS">HomeOS</a> - <a href="./Internet_refrigerator" title="Internet refrigerator">Internet refrigerator</a> - <a href="./Nabaztag" title="Nabaztag">Nabaztag</a> - <a href="./Smart_city" title="Smart city">Smart city</a> - <a href="./Smart_TV" title="Smart TV">Smart TV</a> - <a href="./Smarter_Planet" title="Smarter Planet">Smarter Planet</a></td>
+</tr>
+<tr>
+<td>Pioneers</td>
+<td>- <a href="./Kevin_Ashton" title="Kevin Ashton">Kevin Ashton</a> - <a href="./Gaetano_Borriello" title="Gaetano Borriello">Gaetano Borriello</a> - <a href="./Adam_Dunkels" title="Adam Dunkels">Adam Dunkels</a> - <a href="./Stefano_Marzano" title="Stefano Marzano">Stefano Marzano</a> - <a href="./Don_Norman" title="Don Norman">Don Norman</a> - <a href="./Roel_Pieper" title="Roel Pieper">Roel Pieper</a> - <a href="./Josef_Preishuber-Pflügl" title="Josef Preishuber-Pflügl">Josef Preishuber-Pflügl</a> - <a href="./John_Seely_Brown" title="John Seely Brown">John Seely Brown</a> - <a href="./Bruce_Sterling" title="Bruce Sterling">Bruce Sterling</a> - <a href="./Mark_Weiser" title="Mark Weiser">Mark Weiser</a></td>
+</tr>
+<tr>
+<td>Other</td>
+<td>- <a href="./Ambient_Devices" title="Ambient Devices">Ambient Devices</a> - <a href="./AmbieSense" title="AmbieSense">AmbieSense</a> - <a href="./Framework_Programmes_for_Research_and_Technological_Development" title="Framework Programmes for Research and Technological Development">Ebbits project</a> - <a href="./IPSO_Alliance" title="IPSO Alliance">IPSO Alliance</a></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Embedded_systems" title="Template:Embedded systems">v</a> - <a href="./Template_talk:Embedded_systems" title="Template talk:Embedded systems">t</a> - <a href="./Special:EditPage/Template:Embedded_systems" title="Special:EditPage/Template:Embedded systems">e</a>  <a href="./Embedded_system" title="Embedded system">Embedded systems</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>General terms</td>
+<td>- <a href="./Application-specific_integrated_circuit" title="Application-specific integrated circuit">ASIC</a> - <a href="./Board_support_package" title="Board support package">Board support package</a> - <a href="./Bootloader" title="Bootloader">Bootloader</a> - <a href="./Consumer_electronics" title="Consumer electronics">Consumer electronics</a> - <a href="./Cross_compiler" title="Cross compiler">Cross compiler</a> - <a href="./Embedded_database" title="Embedded database">Embedded database</a> - <a href="./Embedded_hypervisor" title="Embedded hypervisor">Embedded hypervisor</a> - <a href="./Embedded_operating_system" title="Embedded operating system">Embedded OS</a> - <a href="./Embedded_software" title="Embedded software">Embedded software</a> - <a href="./Field-programmable_gate_array" title="Field-programmable gate array">FPGA</a> - <a href="./Internet_of_things" title="Internet of things">IoT</a> - <a href="./Memory_footprint" title="Memory footprint">Memory footprint</a> - <a href="./Microcontroller" title="Microcontroller">Microcontroller</a> - <a href="./Single-board_computer" title="Single-board computer">Single-board computer</a>   - <a href="./Raspberry_Pi" title="Raspberry Pi">Raspberry Pi</a> - <a href="./System_on_a_chip" title="System on a chip">SoC</a></td>
+</tr>
+<tr>
+<td><a href="./Firmware" title="Firmware">Firmware</a> and controls</td>
+<td>- <a href="./Firmware" title="Firmware">Firmware</a>   - <a href="./Custom_firmware" title="Custom firmware">Custom firmware</a>   - <a href="./Proprietary_firmware" title="Proprietary firmware">Proprietary firmware</a> - <a href="./Closed_platform" title="Closed platform">Closed platform</a> - <a href="./Crippleware" title="Crippleware">Crippleware</a> - <a href="./Defective_by_Design" title="Defective by Design">Defective by Design</a> - <a href="./Hacking_of_consumer_electronics" title="Hacking of consumer electronics">Hacking of consumer electronics</a> - <a href="./Homebrew_(video_games)" title="Homebrew (video games)">Homebrew (video games)</a> - <a href="./IOS_jailbreaking" title="IOS jailbreaking">iOS jailbreaking</a> - <a href="./PlayStation_3_Jailbreak" title="PlayStation 3 Jailbreak">PlayStation 3 Jailbreak</a> - <a href="./Rooting_(Android)" title="Rooting (Android)">Rooting (Android)</a> - <a href="./UEFI" title="UEFI">UEFI</a> - <a href="./Vendor_lock-in" title="Vendor lock-in">Vendor lock-in</a></td>
+</tr>
+<tr>
+<td><a href="./Booting" title="Booting">Boot loaders</a></td>
+<td>- <a href="./Das_U-Boot" title="Das U-Boot">U-Boot</a> - <a href="./Barebox" title="Barebox">Barebox</a></td>
+</tr>
+<tr>
+<td><a href="./Library_(computing)" title="Library (computing)">Software libraries</a></td>
+<td>- <a href="./UClibc" title="UClibc">uClibc</a> - <a href="./Dietlibc" title="Dietlibc">dietlibc</a> - <a href="./Embedded_GLIBC" title="Embedded GLIBC">Embedded GLIBC</a> - <a href="./LwIP" title="LwIP">lwIP</a> - <a href="./Musl" title="Musl">musl</a></td>
+</tr>
+<tr>
+<td><a href="./Programming_tool" title="Programming tool">Programming tools</a></td>
+<td>- <a href="./Almquist_shell" title="Almquist shell">Almquist shell</a> - <a href="./BitBake" title="BitBake">BitBake</a> - <a href="./Buildroot" title="Buildroot">Buildroot</a> - <a href="./BusyBox" title="BusyBox">BusyBox</a> - <a href="./OpenEmbedded" title="OpenEmbedded">OpenEmbedded</a> - <a href="./Stand-alone_shell" title="Stand-alone shell">Stand-alone shell</a> - <a href="./Toybox" title="Toybox">Toybox</a> - <a href="./Yocto_Project" title="Yocto Project">Yocto Project</a></td>
+</tr>
+<tr>
+<td><a href="./Embedded_operating_system" title="Embedded operating system">Operating systems</a></td>
+<td>- <a href="./Linux_on_embedded_systems" title="Linux on embedded systems">Linux on embedded systems</a> - <a href="./Linux_for_mobile_devices" title="Linux for mobile devices">Linux for mobile devices</a> - <a href="./Light-weight_Linux_distribution" title="Light-weight Linux distribution">Light-weight Linux distribution</a> - <a href="./Real-time_operating_system" title="Real-time operating system">Real-time operating system</a> - <a href="./Windows_IoT" title="Windows IoT">Windows IoT</a>   - <a href="./Windows_Embedded_Compact" title="Windows Embedded Compact">Win CE</a></td>
+</tr>
+<tr>
+<td><a href="./Programming_language" title="Programming language">Programming languages</a></td>
+<td>- <a href="./Ada_(programming_language)" title="Ada (programming language)">Ada</a> - <a href="./Assembly_language" title="Assembly language">Assembly language</a> - <a href="./Communication_Access_Programming_Language?action=edit&amp;redlink=1" title="Communication Access Programming Language">CAPL</a> - <a href="./Embedded_C" title="Embedded C">Embedded C</a> - <a href="./Embedded_C++" title="Embedded C++">Embedded C++</a> - <a href="./Embedded_Java" title="Embedded Java">Embedded Java</a> - <a href="./MISRA_C" title="MISRA C">MISRA C</a> - <a href="./MicroPython" title="MicroPython">MicroPython</a></td>
+</tr>
+<tr>
+<td>- <a href="./Comparison_of_lightweight_web_browsers" title="Comparison of lightweight web browsers">Lightweight browsers</a> - <a href="./List_of_open-source_hardware" title="List of open-source hardware">List of open-source hardware</a> - <a href="./Open-source_robotics" title="Open-source robotics">Open-source robotics</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Virtual_assistants" title="Template:Virtual assistants">v</a> - <a href="./Template_talk:Virtual_assistants" title="Template talk:Virtual assistants">t</a> - <a href="./Special:EditPage/Template:Virtual_assistants" title="Special:EditPage/Template:Virtual assistants">e</a>  <a href="./Virtual_assistant" title="Virtual assistant">Virtual assistants</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Active</td>
+<td>- <a href="./AliGenie" title="AliGenie">AliGenie</a> - <a href="./Amazon_Alexa" title="Amazon Alexa">Alexa</a> - <a href="./Alice_(virtual_assistant)" title="Alice (virtual assistant)">Alice</a> - <a href="./Bixby_(software)" title="Bixby (software)">Bixby</a>   - <a href="./Viv_(software)" title="Viv (software)">Viv</a> - <a href="./Braina" title="Braina">Braina</a> - <a href="./Celia_(virtual_assistant)" title="Celia (virtual assistant)">Celia</a> - <a href="./Clova_(virtual_assistant)" title="Clova (virtual assistant)">Clova</a> - <a href="./Google_Assistant">Google Assistant</a> - <a href="./Huawei_HiCar" title="Huawei HiCar">Huawei HiCar</a> - <a href="./Maluuba" title="Maluuba">Maluuba</a> - <a href="./Siri" title="Siri">Siri</a> - <a href="./Voice_Mate" title="Voice Mate">Voice Mate</a> - <a href="./IBM_Watson" title="IBM Watson">Watson</a> - <a href="./WolframAlpha" title="WolframAlpha">WolframAlpha</a> - <a href="./Xiaoice" title="Xiaoice">Xiaoice</a></td>
+</tr>
+<tr>
+<td>Discontinued</td>
+<td>- <a href="./BlackBerry_10" title="BlackBerry 10">BlackBerry Assistant</a> - <a href="./Cortana_(virtual_assistant)" title="Cortana (virtual assistant)">Cortana</a> - <a href="./Google_Now" title="Google Now">Google Now</a> - <a href="./M_(virtual_assistant)" title="M (virtual assistant)">M</a> - <a href="./Microsoft_Agent" title="Microsoft Agent">Microsoft Agent</a> - <a href="./Microsoft_Bob" title="Microsoft Bob">Microsoft Bob</a> - <a href="./Microsoft_Voice_Command" title="Microsoft Voice Command">Microsoft Voice Command</a> - <a href="./Ms._Dewey" title="Ms. Dewey">Ms. Dewey</a> - <a href="./Mya_(program)" title="Mya (program)">Mya</a> - <a href="./Mycroft_(software)" title="Mycroft (software)">Mycroft</a> - <a href="./Office_Assistant" title="Office Assistant">Office Assistant</a> (Clippy) - <a href="./S_Voice" title="S Voice">S Voice</a> - <a href="./Assistant_(by_Speaktoit)" title="Assistant (by Speaktoit)">Speaktoit Assistant</a> - <a href="./Tafiti" title="Tafiti">Tafiti</a> - <a href="./Vlingo" title="Vlingo">Vlingo</a></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

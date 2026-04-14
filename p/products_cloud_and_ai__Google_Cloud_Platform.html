@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Google Cloud Platform</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link active" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Google Cloud Platform</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Google_Cloud_Platform<br>
+Category: products_cloud_and_ai<br>
+Depth: 1</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Google Cloud Platform (GCP) is a suite of cloud computing services offered by Google that provides a series of modular cloud services including computing, data storage, data analytics, and machine learning, alongside a set of management tools. It runs on the same infrastructure that Google uses internally for its end-user products, such as Google Search, Gmail, and Google Docs, according to Verma et al. Registration requires a credit card or bank account details.</p>
+<h2>Images</h2>
+<p><img alt="250px-Kubernetes_talk_at_Google_Cloud_Summit" src="../images/250px-Kubernetes_talk_at_Google_Cloud_Summit.jpg"><br>
+<img alt="250px-GoogleCloudSummitKeynote" src="../images/250px-GoogleCloudSummitKeynote.jpg"></p>
+<h2>Full Article</h2>
+<p>Cloud-based service and infrastructure</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./File:Question_book-new.svg">icon</a></td>
+<td>This article <strong>relies excessively on <a href="./Wikipedia:Verifiability" title="Wikipedia:Verifiability">references</a> to <a href="./Wikipedia:No_original_research#Primary,_secondary_and_tertiary_sources" title="Wikipedia:No original research">primary sources</a></strong>. Please improve this article by adding <a href="./Wikipedia:No_original_research#Primary,_secondary_and_tertiary_sources" title="Wikipedia:No original research">secondary or tertiary sources</a>.  <em>Find sources:</em> <a href="https://www.google.com/search?as_eq=wikipedia&amp;q=%22Google+Cloud+Platform%22">"Google Cloud Platform"</a> – <a href="https://www.google.com/search?tbm=nws&amp;q=%22Google+Cloud+Platform%22+-wikipedia&amp;tbs=ar:1">news</a> <strong>·</strong> <a href="https://www.google.com/search?&amp;q=%22Google+Cloud+Platform%22&amp;tbs=bkt:s&amp;tbm=bks">newspapers</a> <strong>·</strong> <a href="https://www.google.com/search?tbs=bks:1&amp;q=%22Google+Cloud+Platform%22+-wikipedia">books</a> <strong>·</strong> <a href="https://scholar.google.com/scholar?q=%22Google+Cloud+Platform%22">scholar</a> <strong>·</strong> <a href="https://www.jstor.org/action/doBasicSearch?Query=%22Google+Cloud+Platform%22&amp;acc=on&amp;wc=on">JSTOR</a> <em>(March 2022)</em> <em>(<a href="./Help:Maintenance_template_removal" title="Help:Maintenance template removal">Learn how and when to remove this message</a>)</em></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Google Cloud Platform</strong> (<strong>GCP</strong>) is a suite of <a href="./Cloud_computing" title="Cloud computing">cloud computing</a> services offered by <a href="./Google" title="Google">Google</a> that provides a series of modular cloud services including computing, <a href="./Computer_data_storage" title="Computer data storage">data storage</a>, <a href="./Data_analysis" title="Data analysis">data analytics</a>, and <a href="./Machine_learning" title="Machine learning">machine learning</a>, alongside a set of management tools. It runs on the same infrastructure that Google uses internally for its end-user products, such as <a href="./Google_Search" title="Google Search">Google Search</a>, <a href="./Gmail" title="Gmail">Gmail</a>, and <a href="./Google_Docs" title="Google Docs">Google Docs</a>, according to Verma et al. Registration requires a credit card or bank account details.</p>
+<p>Google Cloud Platform provides <a href="./Infrastructure_as_a_service" title="Infrastructure as a service">infrastructure as a service</a>, <a href="./Platform_as_a_service" title="Platform as a service">platform as a service</a>, and <a href="./Serverless_computing" title="Serverless computing">serverless computing</a> environments.</p>
+<p>In April 2008, Google announced <a href="./Google_App_Engine" title="Google App Engine">App Engine</a>, a platform for developing and hosting web applications in Google-managed <a href="./Data_center" title="Data center">data centers</a>, which was the first cloud computing service from the company. The service became generally available in November 2011. Since the announcement of App Engine, Google added multiple cloud services to the platform.</p>
+<p>Google Cloud Platform is a part of <strong>Google Cloud</strong>, which includes the Google Cloud Platform public cloud infrastructure, as well as <a href="./Google_Workspace" title="Google Workspace">Google Workspace</a> (G Suite), enterprise versions of <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> and <a href="./ChromeOS" title="ChromeOS">ChromeOS</a>, and <a href="./Application_programming_interface" title="Application programming interface">application programming interfaces</a> (APIs) for machine learning and enterprise mapping services. Since at least 2022, Google's official materials have stated that "Google Cloud" is the new name for "Google Cloud Platform," which may cause naming confusion.</p>
+<h2>Products</h2>
+<p>Google lists over 100 products under the Google Cloud brand. Some of the key services are listed below.</p>
+<h3>Compute</h3>
+<ul>
+<li><a href="./Google_App_Engine" title="Google App Engine">App Engine</a> – <a href="./Platform_as_a_service" title="Platform as a service">Platform as a Service</a> to deploy applications developed with <a href="./Java_(programming_language)" title="Java (programming language)">Java</a>, <a href="./PHP" title="PHP">PHP</a>, <a href="./Node.js" title="Node.js">Node.js</a>, <a href="./Python_(programming_language)" title="Python (programming language)">Python</a>, <a href="./C_Sharp_(programming_language)" title="C Sharp (programming language)">C#</a>, <a href="./.NET_Framework" title=".NET Framework">.Net</a>, <a href="./Ruby_(programming_language)" title="Ruby (programming language)">Ruby</a> and <a href="./Go_(programming_language)" title="Go (programming language)">Go</a> programming languages</li>
+<li><a href="./Google_Compute_Engine" title="Google Compute Engine">Compute Engine</a> – <a href="./Infrastructure_as_a_service" title="Infrastructure as a service">Infrastructure as a Service</a> to run <a href="./Microsoft_Windows" title="Microsoft Windows">Microsoft Windows</a> and <a href="./Linux" title="Linux">Linux</a> virtual machines.</li>
+<li>Google Kubernetes Engine (GKE) or GKE <a href="./On-premises_software" title="On-premises software">on-prem</a> offered as part of Anthos platform – Containers as a Service based on <a href="./Kubernetes" title="Kubernetes">Kubernetes</a></li>
+<li>Cloud Functions – <a href="./Function_as_a_service" title="Function as a service">Functions as a Service</a> to run event-driven code written in Node.js, Java, Python, or Go</li>
+<li>Cloud Run – Compute execution environment based on Knative Offered as Cloud Run (fully managed) or as Cloud Run for Anthos. It currently supports GCP, AWS and VMware management.</li>
+</ul>
+<h3>Storage and databases</h3>
+<ul>
+<li><a href="./Google_Cloud_Storage" title="Google Cloud Storage">Cloud Storage</a> – <a href="./Object_storage" title="Object storage">Object storage</a> with integrated edge caching to store <a href="./Unstructured_data" title="Unstructured data">unstructured data</a></li>
+<li><a href="./Google_Cloud_SQL?action=edit&amp;redlink=1" title="Google Cloud SQL">Cloud SQL</a> – <a href="./Cloud_database" title="Cloud database">Database as a Service</a> based on <a href="./MySQL" title="MySQL">MySQL</a>, <a href="./PostgreSQL" title="PostgreSQL">PostgreSQL</a> and <a href="./Microsoft_SQL_Server" title="Microsoft SQL Server">Microsoft SQL Server</a></li>
+<li><a href="./Bigtable" title="Bigtable">Cloud Bigtable</a> – Managed <a href="./NoSQL" title="NoSQL">NoSQL</a> database service</li>
+<li><a href="./Spanner_(database)" title="Spanner (database)">Cloud Spanner</a> – Horizontally scalable, strongly consistent, <a href="./Relational_database_management_system" title="Relational database management system">relational database service</a></li>
+<li><a href="./Google_Cloud_Datastore" title="Google Cloud Datastore">Cloud Datastore</a> – NoSQL database for web and mobile applications</li>
+<li>Persistent Disk – <a href="./Block_(data_storage)" title="Block (data storage)">Block storage</a> for Compute Engine virtual machines</li>
+<li>Cloud Memorystore – Managed in-memory data store based on <a href="./Redis" title="Redis">Redis</a> and <a href="./Memcached" title="Memcached">Memcached</a></li>
+<li>Local <a href="./Solid-state_drive" title="Solid-state drive">SSD</a> – High-performance, transient, local block storage</li>
+<li>Filestore – High-performance file storage for Google Cloud users</li>
+<li>AlloyDB – Fully managed PostgreSQL database service</li>
+</ul>
+<h3>Networking</h3>
+<ul>
+<li>VPC – <a href="./Virtual_private_cloud" title="Virtual private cloud">Virtual Private Cloud</a> for managing the <a href="./Software-defined_networking" title="Software-defined networking">software defined network</a> of cloud resources</li>
+<li>Cloud Load Balancing – Software-defined, managed service for <a href="./Cloud_load_balancing" title="Cloud load balancing">load balancing</a> the traffic</li>
+<li>Cloud Armor – <a href="./Web_application_firewall" title="Web application firewall">Web application firewall</a> to protect workloads from <a href="./Denial-of-service_attack" title="Denial-of-service attack">DDoS</a> attacks</li>
+<li>Cloud CDN – <a href="./Content_delivery_network" title="Content delivery network">Content Delivery Network</a> based on Google's globally distributed edge points of presence</li>
+<li>Cloud Interconnect – Service to connect a data center with Google Cloud Platform</li>
+<li>Cloud DNS – Managed, authoritative <a href="./DNS_hosting" title="DNS hosting">DNS hosting</a> service running on the same infrastructure as Google</li>
+<li>Network Service Tiers – Option to choose Premium vs Standard network tier for higher-performing network</li>
+</ul>
+<h3>Big data</h3>
+<ul>
+<li><a href="./BigQuery" title="BigQuery">BigQuery</a> – Scalable, managed enterprise <a href="./Data_warehouse" title="Data warehouse">data warehouse</a> for analytics</li>
+<li><a href="./Google_Cloud_Dataflow" title="Google Cloud Dataflow">Cloud Dataflow</a> – Managed service based on <a href="./Apache_Beam" title="Apache Beam">Apache Beam</a> for stream and batch data processing</li>
+<li>Cloud Data Fusion – A managed <a href="./Extract,_transform,_load" title="Extract, transform, load">ETL</a> service based on the Open Source Cask Data Application Platform</li>
+<li>Dataproc – <a href="./Big_data" title="Big data">Big data</a> platform for running <a href="./Apache_Hadoop" title="Apache Hadoop">Apache Hadoop</a> and <a href="./Apache_Spark" title="Apache Spark">Apache Spark</a> jobs</li>
+<li>Cloud Composer – Managed workflow orchestration service built on <a href="./Apache_Airflow" title="Apache Airflow">Apache Airflow</a></li>
+<li>Cloud Datalab – Tool for <a href="./Data_exploration" title="Data exploration">data exploration</a>, <a href="./Analysis" title="Analysis">analysis</a>, visualization and machine learning. It is a fully managed Jupyter Notebook service.</li>
+<li>Cloud Dataprep – Data service based on <a href="./Trifacta" title="Trifacta">Trifacta</a> to visually explore, clean, and prepare data for analysis</li>
+<li>Cloud Pub/Sub – Scalable event ingestion service based on <a href="./Message_queue" title="Message queue">message queues</a></li>
+<li><a href="./Looker_Studio" title="Looker Studio">Looker Studio</a> – <a href="./Business_intelligence" title="Business intelligence">Business intelligence</a> tool to visualize data through dashboards and reports</li>
+<li><a href="./Looker_(company)" title="Looker (company)">Looker</a> – Business intelligence platform</li>
+</ul>
+<h3>Cloud AI</h3>
+<ul>
+<li>Cloud AutoML – Service to train and deploy custom machine learning models. As of September 2018,<a href="https://en.wikipedia.org/w/index.php?title=Google_Cloud_Platform&amp;action=edit">[update]</a> the service is in Beta.</li>
+<li>Cloud <a href="./Tensor_processing_unit" title="Tensor processing unit">TPU</a> – Accelerators used by Google to train machine learning models</li>
+<li>Cloud Machine Learning Engine – Managed service for training and building machine learning models based on mainstream frameworks</li>
+<li>Cloud Talent Solution (formerly Cloud Job Discovery) – Service based on Google's search and machine learning capabilities for the recruiting ecosystem</li>
+<li>Dialogflow Enterprise – Development environment based on Google's machine learning for building <a href="./Natural-language_user_interface" title="Natural-language user interface">conversational interfaces</a></li>
+<li>Cloud Natural Language – Text analysis service based on Google <a href="./Deep_learning" title="Deep learning">Deep Learning</a> models</li>
+<li>Cloud Speech-to-Text – <a href="./Speech_recognition" title="Speech recognition">Speech to text</a> conversion service based on machine learning</li>
+<li>Cloud Text-to-Speech – <a href="./Speech_synthesis" title="Speech synthesis">Text to speech</a> conversion service based on machine learning</li>
+<li>Cloud Translation API – Service to dynamically translate between thousands of available language pairs</li>
+<li>Cloud Vision API – <a href="./Image_analysis" title="Image analysis">Image analysis</a> service based on machine learning</li>
+<li>Cloud Video Intelligence – <a href="./Video_content_analysis" title="Video content analysis">Video analysis</a> service based on machine learning</li>
+</ul>
+<h3>Management tools</h3>
+<ul>
+<li>Operations suite (formerly <a href="./Stackdriver" title="Stackdriver">Stackdriver</a> ) – Monitoring, logging, tracing, and diagnostics for applications on Google Cloud Platform</li>
+<li>Cloud Deployment Manager – Tool to deploy Google Cloud Platform resources defined in templates created in <a href="./YAML" title="YAML">YAML</a>, <a href="./Python_(programming_language)" title="Python (programming language)">Python</a> or <a href="./Jinja_(template_engine)" title="Jinja (template engine)">Jinja2</a></li>
+<li>Cloud Console – Web interface to manage Google Cloud Platform resources</li>
+<li><a href="./Google_cloud_shell" title="Google cloud shell">Cloud Shell</a> – Browser-based shell command-line access to manage Google Cloud Platform resources</li>
+<li>Cloud Console Mobile App – <a href="./Android_(operating_system)" title="Android (operating system)">Android</a> and <a href="./IOS" title="IOS">iOS</a> application to manage Google Cloud Platform resources</li>
+<li>Cloud APIs – <a href="./API" title="API">APIs</a> to programmatically access Google Cloud Platform resources</li>
+</ul>
+<h3>Identity and security</h3>
+<ul>
+<li>Cloud Identity – <a href="./Single_sign-on" title="Single sign-on">Single sign-on</a> (SSO) service based on <a href="./SAML_2.0" title="SAML 2.0">SAML 2.0</a> and <a href="./OpenID" title="OpenID">OpenID</a></li>
+<li>Cloud IAM – <a href="./Identity_management" title="Identity management">Identity &amp; Access Management</a> (IAM) service for defining policies based on <a href="./Role-based_access_control" title="Role-based access control">role-based access control</a></li>
+<li>Cloud Identity-Aware Proxy – Service to control access to cloud applications running on Google Cloud Platform without using a <a href="./Virtual_private_network" title="Virtual private network">VPN</a></li>
+<li>Cloud Data Loss Prevention API – Service to automatically discover, classify, and redact sensitive data</li>
+<li>Security Key Enforcement – <a href="./Multi-factor_authentication" title="Multi-factor authentication">Two-step verification</a> service based on a security key</li>
+<li>Cloud Key Management Service – Cloud-hosted key management service integrated with IAM and audit logging</li>
+<li>Cloud Resource Manager – Service to manage resources by project, folder, and organization based on the hierarchy</li>
+<li>Cloud Security Command Center – Security and data risk platform for data and services running in Google Cloud Platform</li>
+<li>Cloud Security Scanner – Automated <a href="./Vulnerability_(computing)" title="Vulnerability (computing)">vulnerability scanning</a> service for applications deployed in App Engine</li>
+<li>Access Transparency – Near real-time audit logs providing visibility to Google Cloud Platform administrators</li>
+<li>VPC Service Controls – Service to manage security perimeters for sensitive data in Google Cloud Platform services</li>
+</ul>
+<h3>Internet of things (IoT)</h3>
+<ul>
+<li>Cloud IoT Core – Secure device connection and management service for <a href="./Internet_of_things" title="Internet of things">Internet of Things</a></li>
+<li>Edge TPU – Purpose-built ASIC designed to run inference at the edge. As of 2018,<a href="https://en.wikipedia.org/w/index.php?title=Google_Cloud_Platform&amp;action=edit">[update]</a> this product is in private beta.</li>
+<li>Cloud IoT Edge – Brings AI to the <a href="./Edge_computing" title="Edge computing">edge computing</a> layer</li>
+</ul>
+<h3>API platform</h3>
+<ul>
+<li>Maps Platform – APIs for maps, routes, and places based on Google Maps</li>
+<li>Apigee API Platform – Lifecycle management platform to design, secure, deploy, monitor, and scale APIs</li>
+<li>API Monetization – Tool for API providers to create revenue models, reports, <a href="./Payment_gateway" title="Payment gateway">payment gateways</a>, and developer portal integrations</li>
+<li>Developer Portal – Self-service platform for developers to publish and manage APIs</li>
+<li>API Analytics – Service to analyze API-driven programs through monitoring, measuring, and managing APIs</li>
+<li>Apigee Sense – Enables API security by identifying and alerting administrators to suspicious API behaviors</li>
+<li>Cloud Endpoints – An <a href="./Nginx" title="Nginx">NGINX</a>-based proxy to deploy and manage APIs</li>
+<li>Service Infrastructure – A set of foundational services for building Google Cloud products</li>
+</ul>
+<h2>Regions and zones</h2>
+<p>A region is a specific geographical location where users can deploy cloud resources. Each region is an independent geographic area that consists of zones.</p>
+<p>A zone is a deployment area for Google Cloud Platform resources within a region. Zones should be considered a single failure domain within a region. Most regions have three zones.</p>
+<p>As of Q1 2024<a href="https://en.wikipedia.org/w/index.php?title=Google_Cloud_Platform&amp;action=edit">[update]</a>, Google Cloud Platform is available in 40 regions and 121 zones. This is a list of those regions and zones:</p>
+<p>GCP Regions &amp; Zones</p>
+<table>
+<thead>
+<tr>
+<th>Region Name</th>
+<th>Launch Date</th>
+<th>Location</th>
+<th>Zones</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>us-west1</td>
+<td>2016-Q3</td>
+<td>The Dalles, Oregon, United States</td>
+<td>- us-west1-a - us-west1-b - us-west1-c</td>
+</tr>
+<tr>
+<td>us-west2</td>
+<td>2018-Q3</td>
+<td>Los Angeles, California, United States</td>
+<td>- us-west2-a - us-west2-b - us-west2-c</td>
+</tr>
+<tr>
+<td>us-west3</td>
+<td>2020-Q1</td>
+<td>Salt Lake City, Utah, United States</td>
+<td>- us-west3-a - us-west3-b - us-west3-c</td>
+</tr>
+<tr>
+<td>us-west4</td>
+<td>2020-Q2</td>
+<td>Las Vegas, Nevada, United States</td>
+<td>- us-west4-a - us-west4-b - us-west4-c</td>
+</tr>
+<tr>
+<td>us-central1</td>
+<td>2009</td>
+<td>Council Bluffs, Iowa, United States</td>
+<td>- us-central1-a - us-central1-b - us-central1-c - us-central1-f</td>
+</tr>
+<tr>
+<td>us-east1</td>
+<td>2015-Q4</td>
+<td>Moncks Corner, South Carolina, United States</td>
+<td>- us-east1-b - us-east1-c - us-east1-d</td>
+</tr>
+<tr>
+<td>us-east4</td>
+<td>2017-Q2</td>
+<td>Ashburn, Virginia, United States</td>
+<td>- us-east4-a - us-east4-b - us-east4-c</td>
+</tr>
+<tr>
+<td>us-east5</td>
+<td>2022-Q2</td>
+<td>Columbus, Ohio, United States</td>
+<td>- us-east5-a - us-east5-b - us-east5-c</td>
+</tr>
+<tr>
+<td>us-south1</td>
+<td>2022-Q2</td>
+<td>Dallas, Texas, United States</td>
+<td>- us-south1-a - us-south1-b - us-south1-c</td>
+</tr>
+<tr>
+<td>northamerica-northeast1</td>
+<td>2018-Q1</td>
+<td>Montréal, Canada</td>
+<td>- northamerica-northeast1-a - northamerica-northeast1-b - northamerica-northeast1-c</td>
+</tr>
+<tr>
+<td>northamerica-northeast2</td>
+<td>2021-Q3</td>
+<td>Toronto, Canada</td>
+<td>- northamerica-northeast2-a - northamerica-northeast2-b - northamerica-northeast2-c</td>
+</tr>
+<tr>
+<td>southamerica-east1</td>
+<td>2017-Q3</td>
+<td>São Paulo, Brazil</td>
+<td>- southamerica-east1-a - southamerica-east1-b - southamerica-east1-c</td>
+</tr>
+<tr>
+<td>southamerica-west1</td>
+<td>2021-Q3</td>
+<td>Santiago, Chile</td>
+<td>- southamerica-west1-a - southamerica-west1-b - southamerica-west1-c</td>
+</tr>
+<tr>
+<td>europe-west1</td>
+<td>2013-Q4</td>
+<td>St. Ghislain, Belgium</td>
+<td>- europe-west1-b - europe-west1-c - europe-west1-d</td>
+</tr>
+<tr>
+<td>europe-west2</td>
+<td>2017-Q2</td>
+<td>London, UK</td>
+<td>- europe-west2-a - europe-west2-b - europe-west2-c</td>
+</tr>
+<tr>
+<td>europe-west3</td>
+<td>2017-Q3</td>
+<td>Frankfurt, Germany</td>
+<td>- europe-west3-a - europe-west3-b - europe-west3-c</td>
+</tr>
+<tr>
+<td>europe-west4</td>
+<td>2018-Q1</td>
+<td>Eemshaven, Netherlands</td>
+<td>- europe-west4-a - europe-west4-b - europe-west4-c</td>
+</tr>
+<tr>
+<td>europe-west6</td>
+<td>2019-Q1</td>
+<td>Zurich, Switzerland</td>
+<td>- europe-west6-a - europe-west6-b - europe-west6-c</td>
+</tr>
+<tr>
+<td>europe-west8</td>
+<td>2022-Q2</td>
+<td>Milan, Italy</td>
+<td>- europe-west8-a - europe-west8-b - europe-west8-c</td>
+</tr>
+<tr>
+<td>europe-west9</td>
+<td>2022-Q2</td>
+<td>Paris, France</td>
+<td>- europe-west9-a - europe-west9-b - europe-west9-c</td>
+</tr>
+<tr>
+<td>europe-west10</td>
+<td>2023-Q3</td>
+<td>Berlin, Germany</td>
+<td>- europe-west10-a - europe-west10-b - europe-west10-c</td>
+</tr>
+<tr>
+<td>europe-west12</td>
+<td>2023-Q1</td>
+<td>Turin, Italy</td>
+<td>- europe-west12-a - europe-west12-b - europe-west12-c</td>
+</tr>
+<tr>
+<td>europe-central2</td>
+<td>2021-Q2</td>
+<td>Warsaw, Poland</td>
+<td>- europe-central2-a - europe-central2-b - europe-central2-c</td>
+</tr>
+<tr>
+<td>europe-north1</td>
+<td>2018-Q2</td>
+<td>Hamina, Finland</td>
+<td>- europe-north1-a - europe-north1-b - europe-north1-c</td>
+</tr>
+<tr>
+<td>europe-southwest1</td>
+<td>2022-Q2</td>
+<td>Madrid, Spain</td>
+<td>- europe-southwest1-a - europe-southwest1-b - europe-southwest1-c</td>
+</tr>
+<tr>
+<td>me-west1</td>
+<td>2022-Q4</td>
+<td>Tel Aviv, Israel</td>
+<td>- me-west1-a - me-west1-b - me-west1-c</td>
+</tr>
+<tr>
+<td>me-central1</td>
+<td>2023-Q2</td>
+<td>Doha, Qatar</td>
+<td>- me-central1-a - me-central1-b - me-central1-c</td>
+</tr>
+<tr>
+<td>me-central2</td>
+<td>2023-Q4</td>
+<td>Dammam, Saudi Arabia</td>
+<td>- me-central2-a - me-central2-b - me-central2-c</td>
+</tr>
+<tr>
+<td>asia-south1</td>
+<td>2017-Q4</td>
+<td>Mumbai, India</td>
+<td>- asia-south1-a - asia-south1-b - asia-south1-c</td>
+</tr>
+<tr>
+<td>asia-south2</td>
+<td>2021-Q2</td>
+<td>Delhi, India</td>
+<td>- asia-south2-a - asia-south2-b - asia-south2-c</td>
+</tr>
+<tr>
+<td>asia-southeast1</td>
+<td>2017-Q2</td>
+<td>Jurong West, Singapore</td>
+<td>- asia-southeast1-a - asia-southeast1-b - asia-southeast1-c</td>
+</tr>
+<tr>
+<td>asia-southeast2</td>
+<td>2020-Q2</td>
+<td>Jakarta, Indonesia</td>
+<td>- asia-southeast2-a - asia-southeast2-b - asia-southeast2-c</td>
+</tr>
+<tr>
+<td>asia-east1</td>
+<td>2013-Q4</td>
+<td>Changhua County, Taiwan</td>
+<td>- asia-east1-a - asia-east1-b - asia-east1-c</td>
+</tr>
+<tr>
+<td>asia-east2</td>
+<td>2018-Q3</td>
+<td>Hong Kong</td>
+<td>- asia-east2-a - asia-east2-b - asia-east2-c</td>
+</tr>
+<tr>
+<td>asia-northeast1</td>
+<td>2016-Q4</td>
+<td>Tokyo, Japan</td>
+<td>- asia-northeast1-a - asia-northeast1-b - asia-northeast1-c</td>
+</tr>
+<tr>
+<td>asia-northeast2</td>
+<td>2019-Q2</td>
+<td>Osaka, Japan</td>
+<td>- asia-northeast2-a - asia-northeast2-b - asia-northeast2-c</td>
+</tr>
+<tr>
+<td>asia-northeast3</td>
+<td>2020-Q1</td>
+<td>Seoul, Korea</td>
+<td>- asia-northeast3-a - asia-northeast3-b - asia-northeast3-c</td>
+</tr>
+<tr>
+<td>australia-southeast1</td>
+<td>2017-Q3</td>
+<td>Sydney, Australia</td>
+<td>- australia-southeast1-a - australia-southeast1-b - australia-southeast1-c</td>
+</tr>
+<tr>
+<td>australia-southeast2</td>
+<td>2021-Q2</td>
+<td>Melbourne, Australia</td>
+<td>- australia-southeast2-a - australia-southeast2-b - australia-southeast2-c</td>
+</tr>
+<tr>
+<td>africa-south1</td>
+<td>2024-Q1</td>
+<td>Johannesburg, South Africa</td>
+<td>- africa-south1-a - africa-south1-b - africa-south1-c</td>
+</tr>
+</tbody>
+</table>
+<h2>Similarity to services by other cloud service providers</h2>
+<p>Main article: <a href="./Cloud-computing_comparison" title="Cloud-computing comparison">Cloud-computing comparison</a></p>
+<p>For those familiar with other notable cloud service providers, a comparison of similar services may be helpful in understanding Google Cloud Platform's offerings.</p>
+<table>
+<thead>
+<tr>
+<th>Google Cloud Platform</th>
+<th><a href="./Amazon_Web_Services" title="Amazon Web Services">Amazon Web Services</a></th>
+<th><a href="./Microsoft_Azure" title="Microsoft Azure">Microsoft Azure</a></th>
+<th><a href="./Oracle_Cloud" title="Oracle Cloud">Oracle Cloud</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Google Compute Engine</td>
+<td><a href="./Amazon_EC2" title="Amazon EC2">Amazon EC2</a></td>
+<td><a href="./Microsoft_Azure#Computer_services" title="Microsoft Azure">Azure Virtual Machines</a></td>
+<td>Oracle Cloud Infra OCI</td>
+</tr>
+<tr>
+<td>Google App Engine</td>
+<td><a href="./AWS_Elastic_Beanstalk" title="AWS Elastic Beanstalk">AWS Elastic Beanstalk</a></td>
+<td>Azure App Services</td>
+<td>Oracle Application Container</td>
+</tr>
+<tr>
+<td>Google Kubernetes Engine</td>
+<td>Amazon Elastic Kubernetes Service</td>
+<td>Azure Kubernetes Service</td>
+<td>Oracle Kubernetes Service</td>
+</tr>
+<tr>
+<td>Google Cloud Bigtable</td>
+<td><a href="./Amazon_DynamoDB" title="Amazon DynamoDB">Amazon DynamoDB</a></td>
+<td><a href="./Azure_Cosmos_DB" title="Azure Cosmos DB">Azure Cosmos DB</a></td>
+<td><a href="./Oracle_NoSQL_Database" title="Oracle NoSQL Database">Oracle NoSQL Database</a></td>
+</tr>
+<tr>
+<td>Google BigQuery</td>
+<td><a href="./Amazon_Redshift" title="Amazon Redshift">Amazon Redshift</a></td>
+<td>Azure Synapse Analytics</td>
+<td>Oracle Autonomous Data Warehouse</td>
+</tr>
+<tr>
+<td>Google Cloud Functions</td>
+<td><a href="./AWS_Lambda" title="AWS Lambda">AWS Lambda</a></td>
+<td>Azure Functions</td>
+<td>Oracle Cloud Fn</td>
+</tr>
+<tr>
+<td>Google Cloud Datastore</td>
+<td><a href="./Amazon_DynamoDB" title="Amazon DynamoDB">Amazon DynamoDB</a></td>
+<td><a href="./Azure_Cosmos_DB" title="Azure Cosmos DB">Azure Cosmos DB</a></td>
+<td><a href="./Oracle_NoSQL_Database" title="Oracle NoSQL Database">Oracle NoSQL Database</a></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Google Cloud Storage</td>
+<td><a href="./Amazon_S3" title="Amazon S3">Amazon S3</a></td>
+<td>Azure Blob Storage</td>
+<td>Oracle Cloud Storage OCI</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2>Timeline</h2>
+<ul>
+<li><strong>April 2008</strong> – Google App Engine announced in preview</li>
+<li><strong>May 2010</strong> – Google Cloud Storage launched</li>
+<li><strong>May 2010</strong> – Google BigQuery and Prediction API announced in preview</li>
+<li><strong>October 2011</strong> – Google Cloud SQL is announced in preview</li>
+<li><strong>June 2012</strong> – Google Compute Engine is launched in preview</li>
+<li><strong>May 2013</strong> – Google Compute Engine is released to GA</li>
+<li><strong>August 2013</strong> – Cloud Storage begins automatically encrypting each Storage object's data and <a href="./Metadata" title="Metadata">metadata</a> under the 128-bit <a href="./Advanced_Encryption_Standard" title="Advanced Encryption Standard">Advanced Encryption Standard</a> (AES-128), and each encryption key is itself encrypted with a regularly rotated set of master keys</li>
+<li><strong>February 2014</strong> – Google Cloud SQL becomes GA</li>
+<li><strong>May 2014</strong> – Stackdriver is acquired by Google</li>
+<li><strong>June 2014</strong> – Kubernetes is announced as an open source container manager</li>
+<li><strong>June 2014</strong> – Cloud Dataflow is announced in preview</li>
+<li><strong>October 2014</strong> – Google acquires Firebase</li>
+<li><strong>November 2014</strong> – Alpha release Google Kubernetes Engine (formerly Container Engine) is announced</li>
+<li><strong>January 2015</strong> – Google Cloud Monitoring based on Stackdriver goes into Beta</li>
+<li><strong>March 2015</strong> – Google Cloud Pub/Sub becomes available in Beta</li>
+<li><strong>April 2015</strong> – Google Cloud DNS becomes generally available</li>
+<li><strong>April 2015</strong> – Google Dataflow launched in beta</li>
+<li><strong>July 2015</strong> – Google releases v1 of Kubernetes; Hands it over to The Cloud Native Computing Foundation</li>
+<li><strong>August 2015</strong> – Google Cloud Dataflow, Google Cloud Pub/Sub, Google Kubernetes Engine, and Deployment Manager graduate to GA</li>
+<li><strong>November 2015</strong> – Bebop is acquired, and Diane Greene joins Google</li>
+<li><strong>February 2016</strong> – Google Cloud Functions becomes available in Alpha</li>
+<li><strong>September 2016</strong> – Apigee, a provider of application programming interface (API) management company, is acquired by Google</li>
+<li><strong>September 2016</strong> – Stackdriver becomes generally available</li>
+<li><strong>November 2016</strong> – Qwiklabs, an EdTech company is acquired by Google</li>
+<li><strong>February 2017</strong> – Cloud Spanner, highly available, globally-distributed database is released into Beta</li>
+<li><strong>March 2017</strong> – Google acquires Kaggle, world's largest community of data scientists and machine learning enthusiasts</li>
+<li><strong>April 2017</strong> – MIT professor <a href="./Andrew_Sutherland_(mathematician)" title="Andrew Sutherland (mathematician)">Andrew Sutherland</a> breaks the record for the largest ever Compute Engine cluster with 220,000 cores on Preemptible VMs.</li>
+<li><strong>May 2017</strong> – Google Cloud IoT Core is launched in Beta</li>
+<li><strong>November 2017</strong> – Google Kubernetes Engine gets certified by the CNCF</li>
+<li><strong>February 2018</strong> – Google Cloud IoT Core becomes generally available</li>
+<li><strong>February 2018</strong> – Google announces its intent to acquire Xively</li>
+<li><strong>February 2018</strong> – Cloud TPUs, ML accelerators for Tensorflow, become available in Beta</li>
+<li><strong>May 2018</strong> – Google Cloud Memorystore becomes available in Beta</li>
+<li><strong>April 2019</strong> – Google Cloud Run (fully managed) Beta release</li>
+<li><strong>April 2019</strong> – Google Anthos announced</li>
+<li><strong>November 2019</strong> – Google Cloud Run (fully managed) General availability release</li>
+<li><strong>March 2020</strong> – Due to the <a href="./COVID-19_pandemic" title="COVID-19 pandemic">COVID-19 pandemic</a>, Google Cloud postponed the online streaming version of its Google Cloud Next mega-conference, two weeks after it canceled the in-person version.</li>
+<li><strong>October 2020</strong> – Google Cloud announced that it will become a block producer candidate for the EOS network and <a href="./EOS.IO" title="EOS.IO">EOS.IO</a> protocol. Currently the top block producers are <a href="./Cryptocurrency" title="Cryptocurrency">cryptocurrency</a> exchanges like <a href="./OKEx" title="OKEx">OKEx</a> and Binance.</li>
+<li><strong>February 2021</strong> – Google Kubernetes Engine Autopilot is introduced.</li>
+<li><strong>May 2021</strong> – Vertex AI announced at Google.io</li>
+<li><strong>June 2021</strong> – In 2021, Apple was Google Cloud's biggest customer.</li>
+<li><strong>April 2022</strong> – MobiledgeX acquired and joins Google Cloud.</li>
+<li><strong>March 2023</strong> – Google brings <a href="./Generative_AI" title="Generative AI">generative AI</a> capabilities to Google Cloud.</li>
+<li><strong>May 2024</strong> Google Cloud partnered with <a href="./Airtel" title="Airtel">Airtel</a>.</li>
+</ul>
+<h2>Public customers</h2>
+<p>Customers announced in 2023 include <a href="./Kingfisher_plc" title="Kingfisher plc">Kingfisher plc</a>, the <a href="./Government_of_Kuwait" title="Government of Kuwait">Government of Kuwait</a>, <a href="./Deutsche_Börse_Group" title="Deutsche Börse Group">Deutsche Börse Group</a>, <a href="./Unity_Technologies" title="Unity Technologies">Unity Technologies</a>, <a href="./Uber" title="Uber">Uber</a>, <a href="./FanCode" title="FanCode">FanCode</a>, <a href="./Mercedes-Benz" title="Mercedes-Benz">Daimler</a>, and <a href="./Wix.com" title="Wix.com">Wix.com</a>.</p>
+<h2>See also</h2>
+<ul>
+<li><a href="./Cloud_database" title="Cloud database">Cloud database</a></li>
+<li><a href="./Infrastructure_as_a_service" title="Infrastructure as a service">Infrastructure as a service</a></li>
+<li><a href="./Platform_as_a_service" title="Platform as a service">Platform as a service</a></li>
+</ul>
+<h2>Notes</h2>
+<h2>References</h2>
+<h2>External links</h2>
+<p><a href="./File:Commons-logo.svg"><img alt="Wikimedia Commons logo" src="//upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/40px-Commons-logo.svg.png"></a></p>
+<p>Wikimedia Commons has media related to <a href="https://commons.wikimedia.org/wiki/Category:Google%20Cloud%20Platform" title="commons:Category:Google Cloud Platform">Google Cloud Platform</a>.</p>
+<ul>
+<li><a href="https://cloud.google.com">Official website</a> <a href="https://www.wikidata.org/wiki/Q17054505#P856" title="Edit this at Wikidata"><img alt="Edit this at Wikidata" src="//upload.wikimedia.org/wikipedia/en/thumb/8/8a/OOjs_UI_icon_edit-ltr-progressive.svg/20px-OOjs_UI_icon_edit-ltr-progressive.svg.png"></a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Cloud_computing" title="Template:Cloud computing">v</a> - <a href="./Template_talk:Cloud_computing" title="Template talk:Cloud computing">t</a> - <a href="./Special:EditPage/Template:Cloud_computing" title="Special:EditPage/Template:Cloud computing">e</a>  <a href="./Cloud_computing" title="Cloud computing">Cloud computing</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Business models</td>
+<td>- <a href="./Content_as_a_service" title="Content as a service">Content as a service</a> - <a href="./Data_as_a_service" title="Data as a service">Data as a service</a> - <a href="./Desktop_as_a_service" title="Desktop as a service">Desktop as a service</a> - <a href="./Function_as_a_service" title="Function as a service">Function as a service</a> - <a href="./Infrastructure_as_a_service" title="Infrastructure as a service">Infrastructure as a service</a> - <a href="./Cloud-based_integration" title="Cloud-based integration">Integration platform as a service</a> - <a href="./Backend_as_a_service" title="Backend as a service">Backend as a service</a> - <a href="./Network_as_a_service" title="Network as a service">Network as a service</a> - <a href="./Platform_as_a_service" title="Platform as a service">Platform as a service</a> - <a href="./Security_as_a_service" title="Security as a service">Security as a service</a> - <a href="./Software_as_a_service" title="Software as a service">Software as a service</a></td>
+</tr>
+<tr>
+<td>Technologies</td>
+<td>- <a href="./Cloud_database" title="Cloud database">Cloud database</a> - <a href="./Cloud-native_computing" title="Cloud-native computing">Cloud-native computing</a> - <a href="./Cloud_storage" title="Cloud storage">Cloud storage</a> - <a href="./Cloud_storage_gateway" title="Cloud storage gateway">Cloud storage gateways</a> - <a href="./Data_center" title="Data center">Data centers</a> - <a href="./Dew_computing" title="Dew computing">Dew computing</a> - <a href="./Distributed_file_system_for_cloud" title="Distributed file system for cloud">Distributed file system for cloud</a> - <a href="./Hardware_virtualization" title="Hardware virtualization">Hardware virtualization</a> - <a href="./Internet" title="Internet">Internet</a> - <a href="./Mobile_cloud_computing" title="Mobile cloud computing">Mobile cloud computing</a> - <a href="./Native_cloud_application" title="Native cloud application">Native cloud application</a> - <a href="./Computer_network" title="Computer network">Networking</a> - <a href="./Personal_cloud" title="Personal cloud">Personal cloud</a> - <a href="./Cloud_computing_security" title="Cloud computing security">Security</a> - <a href="./Serverless_computing" title="Serverless computing">Serverless computing</a> - <a href="./Comparison_of_structured_storage_software" title="Comparison of structured storage software">Structured storage</a> - <a href="./Virtual_appliance" title="Virtual appliance">Virtual appliance</a> - <a href="./Web_API" title="Web API">Web APIs</a> - <a href="./Virtual_private_cloud" title="Virtual private cloud">Virtual private cloud</a></td>
+</tr>
+<tr>
+<td><a href="./Software_as_a_service" title="Software as a service">Applications</a></td>
+<td>- <a href="./Box_(company)" title="Box (company)">Box</a> - <a href="./Dropbox" title="Dropbox">Dropbox</a> - <a href="./Google" title="Google">Google</a>   - <a href="./Google_Workspace" title="Google Workspace">Workspace</a>   - <a href="./Google_Drive" title="Google Drive">Drive</a> - <a href="./HP_Cloud" title="HP Cloud">HP Cloud</a> (closed) - <a href="./IBM_Cloud" title="IBM Cloud">IBM Cloud</a> - <a href="./Lark_(software)" title="Lark (software)">Lark</a> - <a href="./Microsoft" title="Microsoft">Microsoft</a>   - <a href="./Microsoft_365" title="Microsoft 365">Office 365</a>   - <a href="./OneDrive" title="OneDrive">OneDrive</a> - <a href="./Nextcloud" title="Nextcloud">Nextcloud</a> - <a href="./OpenDesk" title="OpenDesk">OpenDesk</a> - <a href="./Oracle_Cloud" title="Oracle Cloud">Oracle Cloud</a> - <a href="./Owncloud" title="Owncloud">Owncloud</a> - <a href="./Proton_Drive" title="Proton Drive">Proton Drive</a> - <a href="./Rackspace_Technology" title="Rackspace Technology">Rackspace</a> - <a href="./Salesforce" title="Salesforce">Salesforce</a> - <a href="./Seafile" title="Seafile">Seafile</a> - <a href="./PlateSpin" title="PlateSpin">PlateSpin</a> - <a href="./Workday,_Inc." title="Workday, Inc.">Workday</a> - <a href="./Zoho_Corporation" title="Zoho Corporation">Zoho</a></td>
+</tr>
+<tr>
+<td><a href="./Platform_as_a_service" title="Platform as a service">Platforms</a></td>
+<td>- <a href="./Alibaba_Cloud" title="Alibaba Cloud">Alibaba Cloud</a> - <a href="./Amazon_Web_Services" title="Amazon Web Services">Amazon Web Services</a> - <a href="./AppScale" title="AppScale">AppScale</a> - <a href="./Box_(company)" title="Box (company)">Box</a> - <a href="./CloudBolt" title="CloudBolt">CloudBolt</a> - <a href="./Cloud_Foundry" title="Cloud Foundry">Cloud Foundry</a> - <a href="./Cocaine_(PaaS)" title="Cocaine (PaaS)">Cocaine (PaaS)</a> - <a href="./Engine_Yard" title="Engine Yard">Engine Yard</a> - <a href="./HPE_Helion" title="HPE Helion">Helion</a> - <a href="./Predix_(software)" title="Predix (software)">GE Predix</a> - <a href="./Google_App_Engine" title="Google App Engine">Google App Engine</a> - <a href="./GreenQloud" title="GreenQloud">GreenQloud</a> - <a href="./Heroku" title="Heroku">Heroku</a> - <a href="./IBM_Cloud" title="IBM Cloud">IBM Cloud</a> - <a href="./Inktank_Storage" title="Inktank Storage">Inktank</a> - <a href="./Jelastic" title="Jelastic">Jelastic</a> - <a href="./Microsoft_Azure" title="Microsoft Azure">Microsoft Azure</a> - <a href="./MindSphere" title="MindSphere">MindSphere</a> - <a href="./Netlify" title="Netlify">Netlify</a> - <a href="./Oracle_Cloud" title="Oracle Cloud">Oracle Cloud</a> - <a href="./OutSystems" title="OutSystems">OutSystems</a> - <a href="./OpenQRM" title="OpenQRM">openQRM</a> - <a href="./OpenShift" title="OpenShift">OpenShift</a> - <a href="./PythonAnywhere" title="PythonAnywhere">PythonAnywhere</a> - <a href="./RightScale" title="RightScale">RightScale</a> - <a href="./Scalr" title="Scalr">Scalr</a> - <a href="./Salesforce#Force.com" title="Salesforce">Force.com</a> - <a href="./SAP_BTP" title="SAP BTP">SAP Business Technology Platform</a> - <a href="./Splunk" title="Splunk">Splunk</a> - <a href="./Vercel" title="Vercel">Vercel</a> - <a href="./VCloud_Air" title="VCloud Air">vCloud Air</a> - <a href="./WaveMaker" title="WaveMaker">WaveMaker</a></td>
+</tr>
+<tr>
+<td><a href="./Infrastructure_as_a_service" title="Infrastructure as a service">Infrastructure</a></td>
+<td>- <a href="./Alibaba_Cloud" title="Alibaba Cloud">Alibaba Cloud</a> - <a href="./Amazon_Web_Services" title="Amazon Web Services">Amazon Web Services</a> - <a href="./Abiquo_Enterprise_Edition" title="Abiquo Enterprise Edition">Abiquo Enterprise Edition</a> - <a href="./Apache_CloudStack" title="Apache CloudStack">CloudStack</a> - <a href="./Citrix_Cloud" title="Citrix Cloud">Citrix Cloud</a> - <a href="./Deft_(company)" title="Deft (company)">Deft</a> - <a href="./DigitalOcean" title="DigitalOcean">DigitalOcean</a> - <a href="./EMC_Atmos" title="EMC Atmos">EMC Atmos</a> - <a href="./Eucalyptus_(software)" title="Eucalyptus (software)">Eucalyptus</a> - <a href="./FUJITSU_Cloud_IaaS_Trusted_Public_S5" title="FUJITSU Cloud IaaS Trusted Public S5">Fujitsu</a> - <a href="./Google_Cloud_Platform">Google Cloud</a> - <a href="./GreenButton" title="GreenButton">GreenButton</a> - <a href="./GreenQloud" title="GreenQloud">GreenQloud</a> - <a href="./IBM_Cloud" title="IBM Cloud">IBM Cloud</a> - <a href="./Iland" title="Iland">iland</a> - <a href="./Joyent" title="Joyent">Joyent</a> - <a href="./Linode" title="Linode">Linode</a> - <a href="./Lunacloud" title="Lunacloud">Lunacloud</a> - <a href="./Microsoft_Azure" title="Microsoft Azure">Microsoft Azure</a> - <a href="./Mirantis" title="Mirantis">Mirantis</a> - <a href="./Netlify" title="Netlify">Netlify</a> - <a href="./Nimbula" title="Nimbula">Nimbula</a> - <a href="./Nimbus_(cloud_computing)" title="Nimbus (cloud computing)">Nimbus</a> - <a href="./OpenIO" title="OpenIO">OpenIO</a> - <a href="./OpenNebula" title="OpenNebula">OpenNebula</a> - <a href="./OpenStack" title="OpenStack">OpenStack</a> - <a href="./Oracle_Cloud" title="Oracle Cloud">Oracle Cloud</a> - <a href="./OrionVM" title="OrionVM">OrionVM</a> - <a href="./Rackspace_Cloud" title="Rackspace Cloud">Rackspace Cloud</a> - <a href="./Safe_Swiss_Cloud" title="Safe Swiss Cloud">Safe Swiss Cloud</a> - <a href="./Zadara" title="Zadara">Zadara</a> - <a href="./Libvirt" title="Libvirt">libvirt</a> - <a href="./Libguestfs" title="Libguestfs">libguestfs</a> - <a href="./OVirt" title="OVirt">OVirt</a> - <a href="./Virt-manager" title="Virt-manager">Virtual Machine Manager</a> - <a href="./Wakame-vdc" title="Wakame-vdc">Wakame-vdc</a> - <a href="./Vercel" title="Vercel">Vercel</a> - <a href="./Virtual_Private_Cloud_OnDemand" title="Virtual Private Cloud OnDemand">Virtual Private Cloud OnDemand</a></td>
+</tr>
+<tr>
+<td>- <strong><a href="./Category:Cloud_computing" title="Category:Cloud computing">Category</a></strong> - <a href="https://commons.wikimedia.org/wiki/Category:Cloud%20computing" title="commons:Category:Cloud computing"><strong>Commons</strong></a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_Cloud" title="Template:Google Cloud">v</a> - <a href="./Template_talk:Google_Cloud" title="Template talk:Google Cloud">t</a> - <a href="./Special:EditPage/Template:Google_Cloud" title="Special:EditPage/Template:Google Cloud">e</a>  <a href="./Google_Cloud_Platform">Google Cloud Platform</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cloud</td>
+<td>- <a href="./Google_App_Engine" title="Google App Engine">App Engine</a> - <a href="./BigQuery" title="BigQuery">BigQuery</a> - <a href="./Bigtable" title="Bigtable">Bigtable</a> - <a href="./Google_Compute_Engine" title="Google Compute Engine">Compute Engine</a> - <a href="./Google_Cloud_Dataflow" title="Google Cloud Dataflow">Dataflow</a> - <a href="./Google_Cloud_Datastore" title="Google Cloud Datastore">Datastore</a> - <a href="./Google_Cloud_Shell" title="Google Cloud Shell">Shell</a> - <a href="./Google_Cloud_Storage" title="Google Cloud Storage">Storage</a> - <a href="./Vertex_AI" title="Vertex AI">Vertex AI</a></td>
+</tr>
+<tr>
+<td>Subsidiaries</td>
+<td>- <a href="./Apigee" title="Apigee">Apigee</a> - <a href="./Bitium" title="Bitium">Bitium</a> - <a href="./Chronicle_Security" title="Chronicle Security">Chronicle</a>   - <a href="./VirusTotal" title="VirusTotal">VirusTotal</a> - <a href="./Kaggle" title="Kaggle">Kaggle</a> - <a href="./Looker_(company)" title="Looker (company)">Looker</a> - <a href="./Mandiant" title="Mandiant">Mandiant</a> - <a href="./Orbitera" title="Orbitera">Orbitera</a></td>
+</tr>
+<tr>
+<td><a href="./Google_Workspace" title="Google Workspace">Google Workspace</a></td>
+<td>- <a href="./Google_Chat" title="Google Chat">Chat</a> - <a href="./Google_Classroom" title="Google Classroom">Classroom</a> - <a href="./Google_Cloud_Search" title="Google Cloud Search">Cloud Search</a> - <a href="./Google_Meet" title="Google Meet">Meet</a> - <a href="./Google_Voice" title="Google Voice">Voice</a> - <a href="./Google_Workspace_Marketplace" title="Google Workspace Marketplace">Workspace Marketplace</a></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products" title="List of Google products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

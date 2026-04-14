@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Google Chrome</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+       background: #f7f8fa; color: #222; display: flex; min-height: 100vh; }
+
+#sidebar {
+    width: 270px; min-height: 100vh; background: #1a1a2e;
+    color: #ccd6f6; overflow-y: auto; flex-shrink: 0;
+    position: sticky; top: 0; max-height: 100vh; }
+#sidebar header { padding: 20px 16px 10px; font-size: 15px; font-weight: 700;
+    color: #e0e0ff; border-bottom: 1px solid #2a2a4a; }
+#sidebar header small { display: block; font-weight: 400; font-size: 12px;
+    color: #8888aa; margin-top: 4px; }
+#search-box { width: 100%; padding: 8px 12px; background: #12122a;
+    border: none; border-bottom: 1px solid #2a2a4a; color: #ccd6f6;
+    font-size: 13px; outline: none; }
+#search-box::placeholder { color: #555577; }
+.cat-label { padding: 12px 16px 4px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; color: #6688aa; }
+.sidebar-link { display: block; padding: 5px 16px; font-size: 13px; color: #bbc8e6;
+    text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-link:hover { background: #2a2a4a; color: #fff; }
+.sidebar-link.active { background: #0f3460; color: #e0e8ff; font-weight: 600; }
+
+#content { flex: 1; padding: 36px 48px; max-width: 920px; }
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-height: auto; max-height: 260px; position: static; }
+    #content { padding: 20px 16px; }
+}
+
+.page-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+.page-meta { font-size: 13px; color: #888; margin-bottom: 24px; }
+.page-meta a { color: #4a90d9; }
+
+.index-intro { font-size: 15px; color: #555; margin-bottom: 28px; line-height: 1.6; }
+.cat-section { margin-bottom: 32px; }
+.cat-section h2 { font-size: 15px; color: #444; border-bottom: 2px solid #e0e4ef;
+    padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.page-card { background: #fff; border: 1px solid #e5e8f0; border-radius: 8px;
+    padding: 14px 16px; text-decoration: none; display: block; transition: box-shadow .15s; }
+.page-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: #c5cee0; }
+.page-card h3 { font-size: 14px; color: #1a1a3e; margin-bottom: 6px; }
+.page-card p { font-size: 12px; color: #666; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.back-btn { display: inline-block; margin-bottom: 20px; padding: 6px 14px;
+    background: #f0f2f8; border-radius: 20px; text-decoration: none;
+    font-size: 13px; color: #444; }
+.back-btn:hover { background: #e0e4ef; }
+.article { background: #fff; border: 1px solid #e5e8f0; border-radius: 10px; padding: 36px 40px; }
+@media (max-width: 768px) { .article { padding: 20px 16px; } }
+.article h1 { font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 18px; }
+.article h2 { font-size: 19px; margin: 26px 0 10px; color: #1a1a3e; }
+.article h3 { font-size: 16px; margin: 18px 0 8px; color: #333; }
+.article p { line-height: 1.8; margin-bottom: 14px; font-size: 15px; }
+.article ul, .article ol { margin: 0 0 14px 24px; }
+.article li { line-height: 1.7; font-size: 15px; }
+.article blockquote { border-left: 3px solid #4a90d9; padding: 8px 16px;
+    color: #555; background: #f0f5ff; margin: 16px 0; border-radius: 0 4px 4px 0; }
+.article a { color: #4a90d9; text-decoration: none; }
+.article a:hover { text-decoration: underline; }
+.article img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
+.article table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+.article th, .article td { border: 1px solid #ddd; padding: 8px 12px; }
+.article th { background: #f5f7fa; font-weight: 600; }
+.article code { background: #f0f2f8; padding: 2px 5px; border-radius: 3px;
+    font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+.article pre { background: #1a1a2e; color: #ccd6f6; padding: 16px; border-radius: 6px;
+    overflow-x: auto; margin: 16px 0; }
+.article pre code { background: none; color: inherit; padding: 0; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+<input type="text" id="search-box" placeholder="搜索页面..." autocomplete="off">
+<header>Google 发展故事<small>89 个页面</small></header>
+<a class="sidebar-link" href="../index.html" style="border-bottom:1px solid #2a2a4a;padding:10px 16px;color:#e8eaff;">🏠 返回首页</a>
+<div class="cat-label">公司与历史</div>
+<a class="sidebar-link" href="../p/company__Alphabet_Inc..html" title="Alphabet Inc.">Alphabet Inc.</a>
+<a class="sidebar-link" href="../p/company__Google.html" title="Google">Google</a>
+<a class="sidebar-link" href="../p/company__Googleplex.html" title="Googleplex">Googleplex</a>
+<a class="sidebar-link" href="../p/company__History_of_Google.html" title="History of Google">History of Google</a>
+<div class="cat-label">扩展话题（二级）</div>
+<a class="sidebar-link" href="../p/company__depth2__2020_Google_services_outages.html" title="2020 Google services outages">2020 Google services outages</a>
+<a class="sidebar-link" href="../p/company__depth2__AdSense_for_Mobile.html" title="AdSense for Mobile">AdSense for Mobile</a>
+<a class="sidebar-link" href="../p/company__depth2__Alphabet_Workers_Union.html" title="Alphabet Workers Union">Alphabet Workers Union</a>
+<a class="sidebar-link" href="../p/company__depth2__Censorship_by_Google.html" title="Censorship by Google">Censorship by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__ChromeOS.html" title="ChromeOS">ChromeOS</a>
+<a class="sidebar-link" href="../p/company__depth2__Criticism_of_Google.html" title="Criticism of Google">Criticism of Google</a>
+<a class="sidebar-link" href="../p/company__depth2__DeepMind_Technologies.html" title="DeepMind Technologies">DeepMind Technologies</a>
+<a class="sidebar-link" href="../p/company__depth2__Gemini_(chatbot).html" title="Gemini (chatbot)">Gemini (chatbot)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google's_Ideological_Echo_Chamber.html" title="Google&#x27;s Ideological Echo Chamber">Google&#x27;s Ideological Echo Chamber</a>
+<a class="sidebar-link" href="../p/company__depth2__Google+.html" title="Google+">Google+</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(disambiguation).html" title="Google (disambiguation)">Google (disambiguation)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_(verb).html" title="Google (verb)">Google (verb)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Analytics.html" title="Google Analytics">Google Analytics</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Books.html" title="Google Books">Google Books</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Calendar.html" title="Google Calendar">Google Calendar</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Classroom.html" title="Google Classroom">Google Classroom</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Colab.html" title="Google Colab">Google Colab</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_DeepMind.html" title="Google DeepMind">Google DeepMind</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Docs_Editors.html" title="Google Docs Editors">Google Docs Editors</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Duo.html" title="Google Duo">Google Duo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Finance.html" title="Google Finance">Google Finance</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Flights.html" title="Google Flights">Google Flights</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Hangouts.html" title="Google Hangouts">Google Hangouts</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Images.html" title="Google Images">Google Images</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Keep.html" title="Google Keep">Google Keep</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Meet.html" title="Google Meet">Google Meet</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_My_Business.html" title="Google My Business">Google My Business</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Nexus.html" title="Google Nexus">Google Nexus</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pay_(2018–2022).html" title="Google Pay (2018–2022)">Google Pay (2018–2022)</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Pixel.html" title="Google Pixel">Google Pixel</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Play_Music.html" title="Google Play Music">Google Play Music</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Quantum_AI.html" title="Google Quantum AI">Google Quantum AI</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Reader.html" title="Google Reader">Google Reader</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Search_Console.html" title="Google Search Console">Google Search Console</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Sheets.html" title="Google Sheets">Google Sheets</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Shopping.html" title="Google Shopping">Google Shopping</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Slides.html" title="Google Slides">Google Slides</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Stadia.html" title="Google Stadia">Google Stadia</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_Workspace.html" title="Google Workspace">Google Workspace</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_logo.html" title="Google logo">Google logo</a>
+<a class="sidebar-link" href="../p/company__depth2__Google_worker_organization.html" title="Google worker organization">Google worker organization</a>
+<a class="sidebar-link" href="../p/company__depth2__Inbox_by_Gmail.html" title="Inbox by Gmail">Inbox by Gmail</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_products.html" title="List of Google products">List of Google products</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_Google_services.html" title="List of Google services">List of Google services</a>
+<a class="sidebar-link" href="../p/company__depth2__List_of_mergers_and_acquisitions_by_Alphabet.html" title="List of mergers and acquisitions by Alphabet">List of mergers and acquisitions by Alphabet</a>
+<a class="sidebar-link" href="../p/company__depth2__Pixel_Watch.html" title="Pixel Watch">Pixel Watch</a>
+<a class="sidebar-link" href="../p/company__depth2__Privacy_concerns_with_Google.html" title="Privacy concerns with Google">Privacy concerns with Google</a>
+<a class="sidebar-link" href="../p/company__depth2__Tax_avoidance_by_Google.html" title="Tax avoidance by Google">Tax avoidance by Google</a>
+<a class="sidebar-link" href="../p/company__depth2__United_States_v._Google_LLC_(2020).html" title="United States v. Google LLC (2020)">United States v. Google LLC (2020)</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_Music.html" title="YouTube Music">YouTube Music</a>
+<a class="sidebar-link" href="../p/company__depth2__YouTube_TV.html" title="YouTube TV">YouTube TV</a>
+<div class="cat-label">创始人与领导者</div>
+<a class="sidebar-link" href="../p/founders_and_leaders__Eric_Schmidt.html" title="Eric Schmidt">Eric Schmidt</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Larry_Page.html" title="Larry Page">Larry Page</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sergey_Brin.html" title="Sergey Brin">Sergey Brin</a>
+<a class="sidebar-link" href="../p/founders_and_leaders__Sundar_Pichai.html" title="Sundar Pichai">Sundar Pichai</a>
+<div class="cat-label">云与 AI</div>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Bard_(chatbot).html" title="Bard (chatbot)">Bard (chatbot)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__DeepMind.html" title="DeepMind">DeepMind</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Gemini_(language_model).html" title="Gemini (language model)">Gemini (language model)</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Assistant.html" title="Google Assistant">Google Assistant</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Brain.html" title="Google Brain">Google Brain</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__Google_Cloud_Platform.html" title="Google Cloud Platform">Google Cloud Platform</a>
+<a class="sidebar-link" href="../p/products_cloud_and_ai__TensorFlow.html" title="TensorFlow">TensorFlow</a>
+<div class="cat-label">消费者产品</div>
+<a class="sidebar-link" href="../p/products_consumer__Chrome_OS.html" title="Chrome OS">Chrome OS</a>
+<a class="sidebar-link" href="../p/products_consumer__Gmail.html" title="Gmail">Gmail</a>
+<a class="sidebar-link active" href="../p/products_consumer__Google_Chrome.html" title="Google Chrome">Google Chrome</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Docs.html" title="Google Docs">Google Docs</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Drive.html" title="Google Drive">Google Drive</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Earth.html" title="Google Earth">Google Earth</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Maps.html" title="Google Maps">Google Maps</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Photos.html" title="Google Photos">Google Photos</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Play.html" title="Google Play">Google Play</a>
+<a class="sidebar-link" href="../p/products_consumer__Google_Translate.html" title="Google Translate">Google Translate</a>
+<div class="cat-label">硬件</div>
+<a class="sidebar-link" href="../p/products_hardware__Google_Fiber.html" title="Google Fiber">Google Fiber</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Glass.html" title="Google Glass">Google Glass</a>
+<a class="sidebar-link" href="../p/products_hardware__Google_Nest.html" title="Google Nest">Google Nest</a>
+<a class="sidebar-link" href="../p/products_hardware__Waymo.html" title="Waymo">Waymo</a>
+<div class="cat-label">媒体产品</div>
+<a class="sidebar-link" href="../p/products_media__Google_News.html" title="Google News">Google News</a>
+<a class="sidebar-link" href="../p/products_media__YouTube.html" title="YouTube">YouTube</a>
+<div class="cat-label">移动与操作系统</div>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Android_(operating_system).html" title="Android (operating system)">Android (operating system)</a>
+<a class="sidebar-link" href="../p/products_mobile_and_os__Pixel_(smartphone).html" title="Pixel (smartphone)">Pixel (smartphone)</a>
+<div class="cat-label">搜索与广告</div>
+<a class="sidebar-link" href="../p/products_search_and_ads__AdSense.html" title="AdSense">AdSense</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__DoubleClick.html" title="DoubleClick">DoubleClick</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Ads.html" title="Google Ads">Google Ads</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__Google_Search.html" title="Google Search">Google Search</a>
+<a class="sidebar-link" href="../p/products_search_and_ads__PageRank.html" title="PageRank">PageRank</a>
+</div>
+<main id="content"><a class="back-btn" href="../index.html">← 返回首页</a><div class="article"><h1>Google Chrome</h1>
+<blockquote>
+<p>Source: https://en.wikipedia.org/wiki/Google_Chrome<br>
+Category: products_consumer<br>
+Depth: 1</p>
+</blockquote>
+<h2>Summary</h2>
+<p>Google Chrome is a cross-platform web browser developed by Google. It was launched in 2008 for Microsoft Windows and was built with free software components from Apple WebKit and Mozilla Firefox. Versions were later released for Linux, macOS, iOS, iPadOS, and Android, where it is currently the default browser. The browser is also the main component of ChromeOS, on which it serves as the platform for web applications.</p>
+<h2>Images</h2>
+<p><img alt="60px-Google_Chrome_icon__28February_2022_29.svg" src="../images/60px-Google_Chrome_icon__28February_2022_29.svg.png"><br>
+<img alt="330px-Google_Chrome_icon__28February_2022_29.svg" src="../images/330px-Google_Chrome_icon__28February_2022_29.svg.png"><br>
+<img alt="120px-Google_Chrome_icon__28February_2022_29.svg" src="../images/120px-Google_Chrome_icon__28February_2022_29.svg.png"><br>
+<img alt="250px-Google_Chrome_on_Windows_10_screenshot" src="../images/250px-Google_Chrome_on_Windows_10_screenshot.png"><br>
+<img alt="250px-Google_Chrome_Announcement_Comic" src="../images/250px-Google_Chrome_Announcement_Comic.png"><br>
+<img alt="250px-File-Chromium-Linux-Alpha" src="../images/250px-File-Chromium-Linux-Alpha.png"><br>
+<img alt="250px-Google_Chrome_icon__28March_2011_29.svg" src="../images/250px-Google_Chrome_icon__28March_2011_29.svg.png"><br>
+<img alt="250px-Google_Chrome_icon__28September_2014_29.svg" src="../images/250px-Google_Chrome_icon__28September_2014_29.svg.png"><br>
+<img alt="250px-Google_Chrome_icon__28February_2022_29.svg" src="../images/250px-Google_Chrome_icon__28February_2022_29.svg.png"><br>
+<img alt="250px-Google_Chrome_Split_View_feature" src="../images/250px-Google_Chrome_Split_View_feature.png"><br>
+<img alt="250px-Google_Chrome_Incognito" src="../images/250px-Google_Chrome_Incognito.png"><br>
+<img alt="250px-Chrome-crash" src="../images/250px-Chrome-crash.png"><br>
+<img alt="250px-Chrome-canary-logo.svg" src="../images/250px-Chrome-canary-logo.svg.png"><br>
+<img alt="330px-Google_Chrome_on_Android" src="../images/330px-Google_Chrome_on_Android.png"><br>
+<img alt="250px-Web_browser_usage_share_StatCounter.svg" src="../images/250px-Web_browser_usage_share_StatCounter.svg.png"></p>
+<h2>Full Article</h2>
+<p>Web browser developed by Google</p>
+<p>This article is about the web browser. For the operating system, see <a href="./ChromeOS" title="ChromeOS">ChromeOS</a>. For other uses, see <a href="./Chrome_(disambiguation)" title="Chrome (disambiguation)">Chrome (disambiguation)</a>.</p>
+<p><strong>Google Chrome</strong> is a <a href="./Cross-platform_software" title="Cross-platform software">cross-platform</a> <a href="./Web_browser" title="Web browser">web browser</a> developed by <a href="./Google" title="Google">Google</a>. It was launched in 2008 for <a href="./Microsoft_Windows" title="Microsoft Windows">Microsoft Windows</a> and was built with <a href="./Free_software" title="Free software">free software</a> components from <a href="./Apple_WebKit" title="Apple WebKit">Apple WebKit</a> and <a href="./Mozilla" title="Mozilla">Mozilla</a> <a href="./Firefox" title="Firefox">Firefox</a>. Versions were later released for <a href="./Linux" title="Linux">Linux</a>, <a href="./MacOS" title="MacOS">macOS</a>, <a href="./IOS" title="IOS">iOS</a>, <a href="./IPadOS" title="IPadOS">iPadOS</a>, and <a href="./Android_(operating_system)" title="Android (operating system)">Android</a>, where it is currently the default browser. The browser is also the main component of <a href="./ChromeOS" title="ChromeOS">ChromeOS</a>, on which it serves as the platform for <a href="./Web_application" title="Web application">web applications</a>.</p>
+<p>Most of Chrome's <a href="./Source_code" title="Source code">source code</a> comes from Google's <a href="./Free_and_open-source_software" title="Free and open-source software">free and open-source software</a> project known as <a href="./Chromium_(web_browser)" title="Chromium (web browser)">Chromium</a>, but Chrome is licensed as <a href="./Proprietary_software" title="Proprietary software">proprietary</a> <a href="./Freeware" title="Freeware">freeware</a>. <a href="./WebKit" title="WebKit">WebKit</a> was the original <a href="./Browser_engine" title="Browser engine">rendering engine</a>, but Google eventually <a href="./Fork_(software_development)" title="Fork (software development)">forked</a> it to create the <a href="./Blink_(browser_engine)" title="Blink (browser engine)">Blink</a> engine; every Chrome variant except <a href="./IOS" title="IOS">iOS</a> used Blink as of 2017.</p>
+<p>As of March 2026,<a href="https://en.wikipedia.org/w/index.php?title=Google_Chrome&amp;action=edit">[update]</a> <a href="./StatCounter" title="StatCounter">StatCounter</a> estimates that Chrome has a 75.23% worldwide <a href="./Usage_share_of_web_browsers" title="Usage share of web browsers">browser market share</a> on <a href="./Personal_computer" title="Personal computer">personal computers</a>. It is the most-used browser on tablets (having far surpassed <a href="./Safari_(web_browser)" title="Safari (web browser)">Safari</a>), and is also dominant on <a href="./Phones" title="Phones">smartphones</a>. With a market share of 71.22% across all platforms combined as of December 2025<a href="https://en.wikipedia.org/w/index.php?title=Google_Chrome&amp;action=edit">[update]</a>, Chrome is the most used web browser in the world. Chrome has approximately 3.62 billion users as of March 2026.</p>
+<p>Google chief executive <a href="./Eric_Schmidt" title="Eric Schmidt">Eric Schmidt</a> was previously involved in the "<a href="./Browser_wars" title="Browser wars">browser wars</a>" (a part of U.S. <a href="./Corporation" title="Corporation">corporate history</a>) and was against the expansion of the company into such a new area. However, Google co-founders, <a href="./Sergey_Brin" title="Sergey Brin">Sergey Brin</a> and <a href="./Larry_Page" title="Larry Page">Larry Page</a>, spearheaded a software demonstration that pushed Schmidt into making Chrome a core business priority, which resulted in it becoming a commercial success. Because of the proliferation of Chrome, Google has expanded the "Chrome" brand name to other products. This includes <a href="./ChromeOS" title="ChromeOS">ChromeOS</a>, <a href="./Chromecast" title="Chromecast">Chromecast</a>, <a href="./Chromebook" title="Chromebook">Chromebook</a>, <a href="./Chromebit" title="Chromebit">Chromebit</a>, <a href="./Chromebox" title="Chromebox">Chromebox</a>, and <a href="./Chromebase" title="Chromebase">Chromebase</a>.</p>
+<h2>History</h2>
+<p>See also: <a href="./History_of_Google" title="History of Google">History of Google</a></p>
+<p>Google chief executive Eric Schmidt opposed the development of an independent web browser for six years. He stated that "at the time, Google was a small company", and he did not want to go through "bruising browser wars". Company co-founders Sergey Brin and Larry Page hired several <a href="./Firefox" title="Firefox">Mozilla Firefox</a> developers and built a demonstration of Chrome. Afterward, Schmidt said, "It was so good that it essentially forced me to change my mind."</p>
+<p>In September 2004, rumors of Google building a web browser first appeared. Online journals and U.S. newspapers stated at the time that Google was hiring former Microsoft web developers, among others. It also came shortly after the release of Mozilla Firefox 1.0, which was surging in popularity and taking market share from <a href="./Internet_Explorer" title="Internet Explorer">Internet Explorer</a>, which had noted security problems.</p>
+<p>Chrome is based on the open-source code of the <a href="./Chromium_(web_browser)" title="Chromium (web browser)">Chromium</a> project. Development of the browser began in 2006, spearheaded by <a href="./Sundar_Pichai" title="Sundar Pichai">Sundar Pichai</a>.</p>
+<p>Google has since become the world's most popular search engine. 90% of searches on search engines come from Google users.</p>
+<h3>Announcement</h3>
+<p>The release announcement was originally scheduled for September 3, 2008, and a comic by <a href="./Scott_McCloud" title="Scott McCloud">Scott McCloud</a> was to be sent to journalists and bloggers explaining the features within the new browser. Copies intended for Europe were shipped early, and <a href="./Germany" title="Germany">German</a> blogger Philipp Lenssen of Google Blogoscoped made a scanned copy of the 38-page comic available on his website after receiving it on September 1, 2008. Google subsequently made the comic available on <a href="./Google_Books" title="Google Books">Google Books</a>, and mentioned it on their official blog along with an explanation for the early release. The product was named "Chrome" as an initial development project <a href="./Code_name" title="Code name">code name</a>, because it is associated with fast cars and speed. Google kept the development project name as the final release name, as a "cheeky" or ironic moniker, as one of the main aims was to minimize the <a href="./User_interface_chrome" title="User interface chrome">user interface chrome</a>.</p>
+<h3>Public release</h3>
+<p>The browser was first publicly released, officially as a <a href="./Beta_version" title="Beta version">beta version</a>, on September 2, 2008, for <a href="./Windows_XP" title="Windows XP">Windows XP</a> and newer, and with support for 43 languages, and later as a "stable" public release on December 11, 2008. On that same day, a <a href="./CNET" title="CNET">CNET</a> news item drew attention to a passage in the Terms of Service statement for the initial beta release, which seemed to grant Google a license to all content transferred via the Chrome browser. This passage was inherited from the general Google terms of service. Google responded to this criticism immediately by stating that the language used was borrowed from other products, and removed this passage from the <a href="./Terms_of_service" title="Terms of service">Terms of Service</a>.</p>
+<p>Chrome quickly gained about 1% usage share. After the initial surge, usage share dropped until it hit a low of 0.69% in October 2008. It then started rising again and by December 2008, Chrome again passed the 1% threshold. In early January 2009, CNET reported that Google planned to release versions of Chrome for macOS and Linux in the first half of the year. The first official macOS and Linux developer previews of Chrome were announced on June 4, 2009, with a blog post saying they were missing many features and were intended for early feedback rather than general use. In December 2009, Google released beta versions of Chrome for macOS and Linux. Google Chrome 5.0, announced on May 25, 2010, was the first stable release to support all three platforms.</p>
+<p>Chrome was one of the twelve browsers offered on <a href="./BrowserChoice.eu" title="BrowserChoice.eu">BrowserChoice.eu</a> to <a href="./European_Economic_Area" title="European Economic Area">European Economic Area</a> users of Microsoft Windows in 2010.</p>
+<h3>Development</h3>
+<p>Chrome was assembled from 25 different code libraries from Google and third parties such as <a href="./Mozilla" title="Mozilla">Mozilla</a>'s <a href="./Netscape_Portable_Runtime" title="Netscape Portable Runtime">Netscape Portable Runtime</a>, <a href="./Network_Security_Services" title="Network Security Services">Network Security Services</a>, <a href="./NPAPI" title="NPAPI">NPAPI</a> (dropped as of version 45), <a href="./Skia_Graphics_Engine" title="Skia Graphics Engine">Skia Graphics Engine</a>, <a href="./SQLite" title="SQLite">SQLite</a>, and several other open-source projects. The <a href="./V8_(JavaScript_engine)" title="V8 (JavaScript engine)">V8</a> <a href="./JavaScript" title="JavaScript">JavaScript</a> <a href="./Virtual_machine" title="Virtual machine">virtual machine</a> was considered a sufficiently important project to be split off (as was <a href="./Adobe_Systems" title="Adobe Systems">Adobe</a>/Mozilla's <a href="./Tamarin_(software)" title="Tamarin (software)">Tamarin</a>) and handled by a separate team in Denmark coordinated by <a href="./Lars_Bak_(computer_programmer)" title="Lars Bak (computer programmer)">Lars Bak</a>. According to Google, existing implementations were designed "for small programs, where the performance and interactivity of the system weren't that important", but web applications such as <a href="./Gmail" title="Gmail">Gmail</a> "are using the web browser to the fullest when it comes to <a href="./Document_Object_Model" title="Document Object Model">DOM</a> manipulations and JavaScript", and therefore would significantly benefit from a JavaScript engine that could work faster.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>]</p>
+<p>Chrome initially used the WebKit rendering engine to display web pages. In 2013, they forked the WebCore component to create their own layout engine, Blink. Based on <a href="./WebKit" title="WebKit">WebKit</a>, Blink only uses WebKit's "WebCore" components, while substituting other components, such as its own multi-process architecture, in place of WebKit's native implementation. Chrome is internally tested with <a href="./Unit_testing" title="Unit testing">unit testing</a>, automated testing of scripted user actions, <a href="./Fuzz_testing" title="Fuzz testing">fuzz testing</a>, as well as WebKit's layout tests (99% of which Chrome is claimed to have passed), and against commonly accessed websites inside the Google index within 20–30 minutes. Google created <a href="./Gears_(software)" title="Gears (software)">Gears</a> for Chrome, which added features for <a href="./Web_developer" title="Web developer">web developers</a> typically relating to the building of web applications, including offline support. Google phased out Gears as the same functionality became available in the <a href="./HTML5" title="HTML5">HTML5</a> standards.</p>
+<p>In March 2011, Google introduced a new simplified logo to replace the previous 3D logo that had been used since the project's inception. Google designer Steve Rura explained the company's reasoning for the change: "Since Chrome is all about making your web experience as easy and clutter-free as possible, we refreshed the Chrome icon to better represent these sentiments. A simpler icon embodies the Chrome spirit – to make the web quicker, lighter, and easier for all."</p>
+<p>On January 11, 2011, the Chrome product manager, Mike Jazayeri, announced that Chrome would remove <a href="./Advanced_Video_Coding" title="Advanced Video Coding">H.264 video codec</a> support for its HTML5 player, citing the desire to bring Google Chrome more in line with the currently available open codecs available in the Chromium project, which Chrome is based on. Despite this, on November 6, 2012, Google released a version of Chrome on Windows which added <a href="./Hardware_acceleration" title="Hardware acceleration">hardware-accelerated</a> H.264 video decoding. In October 2013, <a href="./Cisco" title="Cisco">Cisco</a> announced that it was open-sourcing its H.264 codecs, and it would cover all fees required.</p>
+<p>On February 7, 2012, Google launched <em>Google Chrome Beta</em> for <a href="./Android_4.0" title="Android 4.0">Android 4.0</a> devices. On many new devices with <a href="./Android_4.1" title="Android 4.1">Android 4.1</a> or later preinstalled, Chrome is the default browser. In May 2017, Google announced a version of Chrome for <a href="./Augmented_reality" title="Augmented reality">augmented reality</a> and <a href="./Virtual_reality" title="Virtual reality">virtual reality</a> devices.</p>
+<h2>Features</h2>
+<p>Google Chrome features a minimalistic user interface, with its user-interface principles later being implemented in other browsers. For example, the merging of the <a href="./Address_bar" title="Address bar">address bar</a> and search bar into the <em>omnibox</em> or <em>omnibar</em>.</p>
+<h3>Web standards support</h3>
+<p>The first release of Google Chrome passed both the <a href="./Acid1" title="Acid1">Acid1</a> and <a href="./Acid2" title="Acid2">Acid2</a> web standards compliance tests. Beginning with version 4.0, Chrome passed all aspects of the <a href="./Acid3" title="Acid3">Acid3</a> test, However, as of April 2017 Chrome no longer passes Acid3 due to changing consensus on Web standards.</p>
+<p>As of May 2011,<a href="https://en.wikipedia.org/w/index.php?title=Google_Chrome&amp;action=edit">[update]</a> Chrome has very good support for JavaScript/<a href="./ECMAScript" title="ECMAScript">ECMAScript</a> according to <a href="./Ecma_International" title="Ecma International">Ecma International</a>'s ECMAScript standards conformance Test 262 (version ES5.1 May 18, 2012). This test reports as the final score the number of tests a browser failed; hence, lower scores are better. In this test, Chrome version 37 scored 10 failed / 11,578 passed. For comparison, Firefox 19 scored 193 failed / 11,752 passed, and Internet Explorer 9 had a score of 600+ failed, while Internet Explorer 10 had a score of 7 failed.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>]</p>
+<p>In 2011, on the official CSS 2.1 test suite by the standardization organization <a href="./W3C" title="W3C">W3C</a>, WebKit, the Chrome rendering engine, passed 89.75% (89.38% out of 99.59% covered) CSS 2.1 tests.</p>
+<p>On the HTML5 web standards test, Chrome 41 scored 518 out of 555 points, placing it ahead of the five most popular desktop browsers. Chrome 41 on Android scored 510 out of 555 points. Chrome 44 scored 526, only 29 points less than the maximum score.</p>
+<h3>User interface</h3>
+<p>By default, the main <a href="./User_interface" title="User interface">user interface</a> includes back, forward, refresh/cancel, and menu buttons. A home button is not shown by default, but can be added through the Settings page to take the user to the new tab page or a custom home page.</p>
+<p><a href="./Tab_(interface)" title="Tab (interface)">Tabs</a> are the main component of Chrome's user interface and have been moved to the top of the window rather than below the controls. This subtle change contrasts with many existing tabbed browsers, which are based on <a href="./Window_(computing)" title="Window (computing)">windows</a> and contain tabs. Tabs, with their state, can be transferred between window containers by dragging. Each tab has its own set of controls, including the <em>Omnibox</em>.</p>
+<p>The <em>Omnibox</em> is a URL box that combines the functions of both the address bar and search box. If a user enters the URL of a site previously searched from, Chrome allows pressing <em>Tab</em> to search the site again directly from the Omnibox. When a user starts typing in the Omnibox, Chrome provides suggestions for previously visited sites (based on the URL or in-page text), popular websites (not necessarily visited before – powered by <a href="./Google_Instant" title="Google Instant">Google Instant</a>), and popular searches. Although Instant can be turned off, suggestions based on previously visited sites cannot be turned off. Chrome will also <a href="./Autocomplete" title="Autocomplete">autocomplete</a> the URLs of sites visited often. If a user types keywords into the Omnibox that do not match any previously visited websites and presses enter, Chrome will conduct the search using the default search engine.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>]</p>
+<p>One of Chrome's differentiating features is the <em>New Tab Page</em>, which can replace the <a href="./Web_browser" title="Web browser">browser</a> <a href="./Home_page" title="Home page">home page</a> and is displayed when a new tab is created. Originally, this showed thumbnails of the nine most visited websites, along with frequent searches, recent bookmarks, and recently closed tabs; similar to Internet Explorer and Firefox with <a href="./Google_Toolbar" title="Google Toolbar">Google Toolbar</a>, or <a href="./Opera_(web_browser)" title="Opera (web browser)">Opera's</a> <a href="./Opera_(web_browser)#Features" title="Opera (web browser)">Speed Dial</a>. In Google Chrome 2.0, the New Tab Page was updated to allow users to hide thumbnails they did not want to appear.</p>
+<p>Starting in version 3.0, the New Tab Page was revamped to display thumbnails of the eight most visited websites. The thumbnails could be rearranged, pinned, and removed. Alternatively, a list of text links could be displayed instead of thumbnails. It also features a "Recently closed" bar that shows recently closed tabs and a "tips" section that displays hints and tricks for using the browser. Starting with Google Chrome 3.0, users can install themes to alter the appearance of the browser. Many free third-party themes are provided in an online gallery, accessible through a "Get themes" button in Chrome's options.</p>
+<p>Chrome includes a <em>bookmarks</em> submenu that lists the user's bookmarks, provides easy access to Chrome's <em>Bookmark Manager,</em> and allows the user to toggle a <em>bookmarks bar</em> on or off.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>]</p>
+<p>On January 2, 2019, Google introduced Native Dark Theme for Chrome on <a href="./Windows_10" title="Windows 10">Windows 10</a>.</p>
+<p>In 2023, it was announced that Chrome would be completely revamped, using Google's <a href="./Material_You" title="Material You">Material You</a> design language, the revamp would include more rounded corners, Chrome colors being swapped out for a similar dynamic color system introduced in <a href="./Android_12" title="Android 12">Android 12</a>, a revamped address bar, new icons, and tabs, and a more simplified 3 dot menu.</p>
+<h3>Built-in tools</h3>
+<p>Starting with Google Chrome 4.1, the application added a built-in translation bar using <a href="./Google_Translate" title="Google Translate">Google Translate</a>. Language translation is currently available for 52 languages. When Chrome detects a foreign language other than the user's preferred language set during the installation time, it asks the user whether or not to translate.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>]</p>
+<p>Chrome allows users to synchronize their bookmarks, history, and settings across all devices with the browser installed by sending and receiving data through a chosen Google Account, which in turn updates all signed-in instances of Chrome. This can be authenticated either through Google credentials or a sync passphrase.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>]</p>
+<p>For web developers, Chrome has an element inspector that allows users to look inside any web page's <a href="./Document_Object_Model" title="Document Object Model">Document Object Model (DOM)</a> structure and examine the code elements that make up the webpage.</p>
+<p>Chrome has special URLs that load application-specific pages instead of websites or files on disk. Chrome also has a built-in ability to enable experimental features. Originally called <code>about:labs</code>, the address was changed to <code>about:flags</code> to make it less obvious to casual users.</p>
+<p>The desktop edition of Chrome can save pages as HTML with assets in a "_files" subfolder, or as an unprocessed HTML-only document. It also offers an option to save in the <a href="./MHTML" title="MHTML">MHTML</a> format.</p>
+<h3>Desktop shortcuts and apps</h3>
+<p>Chrome allows users to make local desktop <a href="./Shortcut_(computing)" title="Shortcut (computing)">shortcuts</a> that open web applications in the browser. The browser, when opened in this way, contains none of the regular interface except for the title bar, so as not to "interrupt anything the user is trying to do". This allows web applications to run alongside local software (similar to <a href="./Mozilla_Prism" title="Mozilla Prism">Mozilla Prism</a> and <a href="./Fluid_(web_browser)" title="Fluid (web browser)">Fluid</a>).</p>
+<p>This feature, according to Google, would be enhanced with the <a href="./Chrome_Web_Store" title="Chrome Web Store">Chrome Web Store</a>, a one-stop web-based web applications directory which opened in December 2010.</p>
+<p>In September 2013, Google started making Chrome apps "For your desktop". This meant offline access, desktop shortcuts, and less dependence on Chrome—apps launch in a window separate from Chrome, and look more like native applications.</p>
+<h4>Chrome Web Store</h4>
+<p>Main article: <a href="./Chrome_Web_Store" title="Chrome Web Store">Chrome Web Store</a></p>
+<p>Announced on December 7, 2010, the Chrome Web Store allows users to install web applications as extensions to the browser, although most of these extensions function simply as links to popular web pages or games, some of the apps, like <a href="./Springpad" title="Springpad">Springpad</a>, do provide extra features like offline access. The themes and extensions have also been tightly integrated into the new store, allowing users to search the entire catalog of Chrome extras.</p>
+<p>The Chrome Web Store was opened on February 3, 2011, with the release of Google Chrome 9.0.</p>
+<h3>Extensions</h3>
+<p><a href="./Browser_extension" title="Browser extension">Browser extensions</a> can modify Google Chrome. They are supported by the browser's desktop edition, but not on mobile. These extensions are written using web technologies like <a href="./HTML" title="HTML">HTML</a>, JavaScript, and <a href="./CSS" title="CSS">CSS</a>. They are distributed through Chrome Web Store, initially known as the Google Chrome Extensions Gallery. Some extensions focus on providing accessibility features. Google Tone is an extension developed by Google that when enabled, can use a computer's speakers to exchange <a href="./URLs" title="URLs">URLs</a> with nearby computers with an Internet connection that have the extension enabled as well.</p>
+<p>On September 9, 2009, Google enabled extensions by default on Chrome's developer channel and provided several sample extensions for testing. In December, the Google Chrome Extensions Gallery beta began with approximately 300 extensions. It was launched on January 25, 2010, along with Google Chrome 4.0, containing approximately 1500 extensions.</p>
+<p>In 2014, Google started preventing some Windows users from installing extensions not hosted on the Chrome Web Store. The following year Google reported a "75% drop in customer support help requests for uninstalling unwanted extensions" which led them to expand this restriction to all Windows and Mac users.</p>
+<h4>Manifest V3</h4>
+<p>See also: <a href="./Google_Chrome#Manifest_V3_2">§ Advertising: [Criticism of] Manifest V3</a></p>
+<p>In October 2018, Google announced a major future update to Chrome's extension <a href="./API" title="API">API</a>, known as "Manifest V3" (in reference to the <a href="./Manifest_file" title="Manifest file">manifest file</a> contained within extensions). Manifest V3 is intended to modernize the extension architecture and improve the security and performance of the browser; it adopts declarative APIs to "decrease the need for overly-broad access and enable more performant implementation by the browser", replaces background pages with feature-limited "Service Workers" to reduce resource usage, and prohibits remotely-hosted code.</p>
+<p>Google faced criticism for this change since it limits the number of rules and types of expressions that may be checked by ad blockers. Additionally, the prohibition of remotely-hosted code will restrict the ability for ad-blocking filter lists to be updated independently of the extension itself.</p>
+<h4>Notable examples</h4>
+<p>See also: <a href="./Category:Google_Chrome_extensions" title="Category:Google Chrome extensions">Category:Google Chrome extensions</a></p>
+<ul>
+<li><a href="./Adblock_Plus" title="Adblock Plus">Adblock Plus</a></li>
+<li><a href="./AdBlock" title="AdBlock">Adblock for Chrome</a></li>
+<li><a href="./Cut_the_Rope" title="Cut the Rope">Cut the Rope</a></li>
+<li><a href="./Dropbox" title="Dropbox">Dropbox</a></li>
+<li><a href="./Evernote" title="Evernote">Evernote</a> Web</li>
+<li><a href="./Facebook_Messenger" title="Facebook Messenger">Facebook Messenger</a></li>
+<li><a href="./Ghostery" title="Ghostery">Ghostery</a></li>
+<li><a href="./Google_Maps" title="Google Maps">Google Maps</a></li>
+<li><a href="./HTTPS_Everywhere" title="HTTPS Everywhere">HTTPS Everywhere</a> (discontinued)</li>
+<li><a href="./Pandora_(service)" title="Pandora (service)">Pandora Radio</a></li>
+<li><a href="./Pixlr" title="Pixlr">Pixlr</a> Express</li>
+<li><a href="./Privacy_Badger" title="Privacy Badger">Privacy Badger</a></li>
+<li><a href="./Streamus" title="Streamus">Streamus</a> (discontinued)</li>
+<li><a href="./TweetDeck" title="TweetDeck">TweetDeck</a></li>
+<li><a href="./Stop_Tony_Meow" title="Stop Tony Meow">Stop Tony Meow</a> (discontinued)</li>
+<li><a href="./UBlock_Origin" title="UBlock Origin">uBlock Origin</a> (no longer available due to terms of use change on Chrome)</li>
+</ul>
+<h3>Speed</h3>
+<p>The JavaScript virtual machine used by Chrome, the V8 JavaScript engine, has features such as <em><a href="./Just-in-time_compilation" title="Just-in-time compilation">dynamic code generation</a></em>, <em>hidden class transitions</em>, and <em><a href="./Tracing_garbage_collection" title="Tracing garbage collection">precise garbage collection</a></em>.</p>
+<p>In 2008, several websites performed benchmark tests using the <a href="./SunSpider_JavaScript_Benchmark" title="SunSpider JavaScript Benchmark">SunSpider JavaScript Benchmark</a> tool as well as Google's own set of computationally intense benchmarks, which include <a href="./Ray_tracing_(graphics)" title="Ray tracing (graphics)">ray tracing</a> and <a href="./Constraint_solving" title="Constraint solving">constraint solving</a>. They unanimously reported that Chrome performed much faster than all competitors against which it had been tested, including <a href="./Safari_(web_browser)" title="Safari (web browser)">Safari</a> (for Windows), <a href="./Firefox_3.0" title="Firefox 3.0">Firefox 3.0</a>, <a href="./Internet_Explorer_7" title="Internet Explorer 7">Internet Explorer 7</a>, Opera, and <a href="./Internet_Explorer_8" title="Internet Explorer 8">Internet Explorer 8</a>. However, on October 11, 2010, independent tests of JavaScript performance, Chrome has been scoring just behind Opera's <a href="./Presto_(browser_engine)" title="Presto (browser engine)">Presto</a> engine since it was updated in version 10.5.</p>
+<p>On September 3, 2008, Mozilla responded by stating that their own <a href="./TraceMonkey" title="TraceMonkey">TraceMonkey</a> JavaScript engine (then in beta), was faster than Chrome's V8 engine in some tests. <a href="./John_Resig" title="John Resig">John Resig</a>, Mozilla's JavaScript evangelist, further commented on the performance of different browsers on Google's own suite, commenting on Chrome's "decimating" of the other browsers, but he questioned whether Google's suite was representative of real programs. He stated that Firefox 3.0 performed poorly on <a href="./Recursion" title="Recursion">recursion</a>-intensive benchmarks, such as those of Google, because the Mozilla team had not implemented recursion-tracing yet.</p>
+<p>Two weeks after Chrome's launch in 2008, the WebKit team announced a new JavaScript engine, <a href="./WebKit#Further_development" title="WebKit">SquirrelFish Extreme</a>, citing a 36% speed improvement over Chrome's V8 engine.</p>
+<p>Like most major web browsers, Chrome uses <a href="./Domain_Name_System" title="Domain Name System">DNS</a> prefetching to speed up website lookups, as do other browsers like Firefox, Safari, Internet Explorer (called DNS Pre-resolution), and in Opera as a UserScript (not built-in).</p>
+<p>Chrome formerly used their now-deprecated <a href="./SPDY" title="SPDY">SPDY</a> protocol instead of only <a href="./HTTP" title="HTTP">HTTP</a> when communicating with servers that support it, such as Google services, Facebook, and Twitter. SPDY support was removed in Chrome version 51. This was due to SPDY being replaced by <a href="./HTTP/2" title="HTTP/2">HTTP/2</a>, a standard that was based upon it.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>]</p>
+<p>In November 2019, Google said it was working on several "speed badging" systems that let visitors know why a page is taking time to show up. The variations include simple text warnings and more subtle signs that indicate a site is slow. No date has been given for when the badging system will be included with the Chrome browser.</p>
+<p>Chrome formerly supported a Data Saver feature for making pages load faster called Lite Mode. Previously, Chrome engineers Addy Osmani and Scott Little announced Lite Mode would automatically lazy-load images and iframes for faster page loads. Lite Mode was switched off in Chrome 100, citing a decrease in mobile data costs for many countries.</p>
+<h3>Security</h3>
+<p>See also: <a href="./Browser_security" title="Browser security">Browser security</a></p>
+<p>Chrome periodically retrieves updates of two <a href="./Blacklist_(computing)" title="Blacklist (computing)">blacklists</a> (one for <a href="./Phishing" title="Phishing">phishing</a> and one for <a href="./Malware" title="Malware">malware</a>), and warns users when they attempt to visit a site flagged as potentially harmful. This service is also made available for use by others via a free public API called "<a href="./Google_Safe_Browsing" title="Google Safe Browsing">Google Safe Browsing</a> API".</p>
+<p>Chrome uses a process-allocation model to <a href="./Sandbox_(computer_security)" title="Sandbox (computer security)">sandbox</a> tabs. Using the <a href="./Principle_of_least_privilege" title="Principle of least privilege">principle of least privilege</a>, each tab process cannot interact with critical memory functions (e.g. OS memory, user files) or other tab processes – similar to Microsoft's "Protected Mode" used by <a href="./Internet_Explorer_9" title="Internet Explorer 9">Internet Explorer 9</a> or greater. The <em>Sandbox Team</em> is said to have "taken this existing process boundary and made it into a <a href="./OS-level_virtualization" title="OS-level virtualization">jail</a>". This enforces a <a href="./Computer_security_model" title="Computer security model">computer security model</a> whereby there are two levels of <a href="./Multilevel_security" title="Multilevel security">multilevel security</a> (<em>user</em> and <em>sandbox</em>) and the <em>sandbox</em> can only respond to communication requests initiated by the <em>user</em>. On Linux sandboxing uses the <a href="./Seccomp" title="Seccomp">seccomp</a> mode.</p>
+<p>In January 2015, <a href="./TorrentFreak" title="TorrentFreak">TorrentFreak</a> reported that using Chrome when connected to the internet using a VPN can be a serious security issue due to the browser's support for <a href="./WebRTC#Concerns" title="WebRTC">WebRTC</a>.</p>
+<p>On September 9, 2016, it was reported that starting with Chrome 56, users will be warned when they visit insecure HTTP websites to encourage more sites to make the transition to HTTPS.</p>
+<p>On December 4, 2018, Google announced its Chrome 71 release with new security features, including a built-in ad-blocking system. In addition, Google also announced its plan to crack down on websites that make people involuntarily subscribe to mobile subscription plans.</p>
+<p>On September 2, 2020, with the release of Chrome 85, Google extended support for Secure DNS in Chrome for Android. DNS-over-HTTPS (DoH) was designed to improve safety and privacy while browsing the web. Under the update, Chrome automatically switches to DNS-over-HTTPS (DoH) if the current DNS provider supports the feature.</p>
+<h4>Password management</h4>
+<h5>Windows</h5>
+<p>Since 2008, Chrome has been faulted for not including a master password to prevent casual access to a user's passwords. Chrome developers have indicated that a master password does not provide real security against determined hackers and have refused to implement one. Bugs filed on this issue have been marked "WontFix". As of February 2014,<a href="https://en.wikipedia.org/w/index.php?title=Google_Chrome&amp;action=edit">[update]</a> Google Chrome asks the user to enter their Windows account password before showing saved passwords.</p>
+<h5>Linux</h5>
+<p>On Linux, Google Chrome/Chromium can store passwords in three ways: <a href="./GNOME_Keyring" title="GNOME Keyring">GNOME Keyring</a>, <a href="./KWallet" title="KWallet">KWallet</a>, or <a href="./Plain_text" title="Plain text">plain text</a>. Google Chrome/Chromium chooses which store to use automatically, based on the <a href="./Desktop_environment" title="Desktop environment">desktop environment</a> in use. Passwords stored in GNOME Keyring or KWallet are encrypted on disk, and access to them is controlled by dedicated daemon software. Passwords stored in plain text are not encrypted. Because of this, when either GNOME Keyring or KWallet is in use, any unencrypted passwords that have been stored previously are automatically moved into the encrypted store. Support for using GNOME Keyring and KWallet was added in version 6, but using these (when available) was not made the default mode until version 12.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>]</p>
+<h5>macOS</h5>
+<p>As of version 45, the Google Chrome password manager is no longer integrated with <a href="./Keychain_(software)" title="Keychain (software)">Keychain</a>, since the <a href="./Interoperability" title="Interoperability">interoperability</a> goal is no longer possible.</p>
+<h4>Security vulnerabilities</h4>
+<p>No security vulnerabilities in Chrome were exploited in the three years of <a href="./Pwn2Own" title="Pwn2Own">Pwn2Own</a> from 2009 to 2011. At Pwn2Own 2012, Chrome was defeated by a <a href="./France" title="France">French</a> team who used <a href="./Zero-day_exploit" title="Zero-day exploit">zero-day exploits</a> in the version of Flash shipped with Chrome to take complete control of a fully patched <a href="./64-bit_computing" title="64-bit computing">64-bit</a> Windows 7 PC using a booby-trapped website that overcame Chrome's sandboxing.</p>
+<p>Chrome was compromised twice at the 2012 CanSecWest <a href="./Pwnium" title="Pwnium">Pwnium</a>. Google's official response to the exploits was delivered by Jason Kersey, who congratulated the researchers, noting "We also believe that both submissions are works of art and deserve wider sharing and recognition." Fixes for these vulnerabilities were deployed within 10 hours of the submission.</p>
+<p>A significant number of security vulnerabilities in Chrome occurred in the <a href="./Adobe_Flash_Player" title="Adobe Flash Player">Adobe Flash Player</a>. For example, the 2016 Pwn2Own successful attack on Chrome relied on four security vulnerabilities. Two of the vulnerabilities were in Flash, one was in Chrome, and one was in the Windows kernel. In 2016, Google announced that it was planning to phase out Flash Player in Chrome, starting in version 53. The first phase of the plan was to disable Flash for ads and "background analytics", with the ultimate goal of disabling it completely by the end of the year, except on specific sites that Google has deemed to be broken without it. Flash would then be re-enabled with the exclusion of ads and background analytics on a site-by-site basis.</p>
+<p>Leaked documents from 2013 to 2016 codenamed <a href="./Vault_7" title="Vault 7">Vault 7</a> detail the capabilities of the United States <a href="./Central_Intelligence_Agency" title="Central Intelligence Agency">Central Intelligence Agency</a>, such as the ability to compromise web browsers (including Google Chrome).</p>
+<h4>Malware blocking and ad blocking</h4>
+<p>Google introduced download scanning protection in Chrome 17. In February 2018, Google introduced an ad blocking feature based on recommendations from the <a href="./Interactive_Advertising_Bureau" title="Interactive Advertising Bureau">Interactive Advertising Bureau</a>. Sites that employ invasive ads are given a 30-day warning, after which their ads will be blocked. <em><a href="./Consumer_Reports" title="Consumer Reports">Consumer Reports</a></em> recommended users install dedicated ad-blocking tools instead, which offer increased security against malware and tracking.</p>
+<h4>Plugins</h4>
+<ul>
+<li>Chrome supported, up to version 45, <a href="./Plug-in_(computing)" title="Plug-in (computing)">plug-ins</a> with the Netscape Plugin Application Programming Interface (<a href="./NPAPI" title="NPAPI">NPAPI</a>), so that plug-ins (for example <a href="./Adobe_Flash_Player" title="Adobe Flash Player">Adobe Flash Player</a>) run as unrestricted separate processes outside the browser and cannot be sandboxed as tabs are. <a href="./ActiveX" title="ActiveX">ActiveX</a> is not supported. Since 2010, Adobe Flash has been integral to Chrome and does not need be installed separately. Flash is kept up to date as part of Chrome's own updates. <a href="./Java_applet" title="Java applet">Java applet</a> support was available in Chrome with Java 6 update 12 and above. Support for Java under macOS was provided by a Java Update released on May 18, 2010.</li>
+<li>On August 12, 2009, Google introduced a replacement for <a href="./NPAPI" title="NPAPI">NPAPI</a> that is more portable and more secure called Pepper Plugin API (<a href="./Google_Native_Client#Pepper" title="Google Native Client">PPAPI</a>). The default bundled PPAPI Flash Player (or Pepper-based Flash Player) was available on <a href="./ChromeOS" title="ChromeOS">ChromeOS</a> first, then replaced the NPAPI Flash Player on Linux from Chrome version 20, on Windows from version 21 (which also reduced Flash crashes by 20%), and eventually came to macOS at version 23.</li>
+<li>On September 23, 2013, Google announced that it would be deprecating and then removing NPAPI support. NPAPI support was removed from Linux in Chrome release 35. NPAPI plugins like Java can no longer work in Chrome (but there are workarounds for Flash by using PPAPI Flash Player on Linux including for Chromium).</li>
+<li>On April 14, 2015, Google released Chrome v42, disabling the NPAPI by default. This makes plugins that do not have a PPAPI plugin counterpart incompatible with Chrome, such as <a href="./Java_(programming_language)" title="Java (programming language)">Java</a>, <a href="./Microsoft_Silverlight" title="Microsoft Silverlight">Silverlight</a>, and <a href="./Unity_(game_engine)" title="Unity (game engine)">Unity</a>. However, NPAPI support could be enabled through the chrome://flags menu until the release of version 45 on September 1, 2015, which removed NPAPI support entirely.</li>
+</ul>
+<h3>Privacy</h3>
+<h4>Do Not Track</h4>
+<p>In February 2012, Google announced that Chrome would implement the <a href="./Do_Not_Track" title="Do Not Track">Do Not Track</a> (DNT) standard to inform websites of the user's desire not to be tracked. The protocol was implemented in version 23. In line with the W3's draft standard for DNT, it is turned off by default in Chrome.</p>
+<h4>Privacy benchmarks</h4>
+<p>A study from 2020 depicts that there are two tiers of browsers in terms of privacy: the privacy-focused ones (<a href="./Brave_(web_browser)" title="Brave (web browser)">Brave</a>, <a href="./DuckDuckGo_Private_Browser" title="DuckDuckGo Private Browser">DuckDuckGo</a> and <a href="./Firefox_Focus" title="Firefox Focus">Firefox-Focus</a>) perform better than popular ones (Chrome, <a href="./Firefox" title="Firefox">Firefox</a>, and <a href="./Safari_(web_browser)" title="Safari (web browser)">Safari</a>). It was shown that Chrome collects 20 types of data (<a href="./Fingerprint_(computing)" title="Fingerprint (computing)">fingerprinting</a>, cookies, <a href="./Web_tracking" title="Web tracking">tracking</a> scripts, browser history, purchase history, ads, etc) as compared with 6 of the average competitor — which seems to explain that difference in the benchmark. This led some experts in privacy and cybersecurity to recommend the use of other more <a href="./Privacy_by_design" title="Privacy by design">privacy-friendly</a> browsers instead of Chrome.</p>
+<h3>Incognito mode</h3>
+<p>"Incognito mode" redirects here. For the general term, see <a href="./Private_browsing" title="Private browsing">Private browsing</a>. For other uses, see <a href="./Incognito_(disambiguation)" title="Incognito (disambiguation)">Incognito (disambiguation)</a>.</p>
+<p>The <a href="./Private_browsing" title="Private browsing">private browsing</a> feature called <em>Incognito</em> mode prevents the browser from locally storing any <a href="./Web_browsing_history" title="Web browsing history">history</a> information, <a href="./HTTP_cookie" title="HTTP cookie">cookies</a>, site data, or form inputs. Downloaded files and bookmarks will be stored. In addition, user activity is not hidden from visited websites or the Internet service provider. Incognito mode is similar to the private browsing feature in other web browsers.</p>
+<p>The iOS version of Chrome also supports the optional ability to lock incognito tabs with Face ID, Touch ID, or the device's passcode. In 2022, Google began to implement this feature into Android versions of Chrome. From 2023, this feature is available for <a href="./Android_12" title="Android 12">Android 12</a> devices and above, when the hardware allows it.</p>
+<p>In 2024, Google agreed to destroy billions of records to settle a lawsuit claiming it secretly tracked the internet use of people who thought they were browsing privately in incognito mode.</p>
+<h3>Stability</h3>
+<p>A multi-process architecture is implemented in Chrome where, by default, a separate process is allocated to each site instance and plugin. This procedure is termed <a href="./Process_isolation" title="Process isolation">process isolation</a>, and raises security and stability by preventing tasks from interfering with each other. An attacker successfully gaining access to one application gains access to no others, and failure in one instance results in a <em>Sad Tab</em> <a href="./Screen_of_death" title="Screen of death">screen of death</a>, similar to the well-known <em><a href="./Sad_Mac" title="Sad Mac">Sad Mac</a></em>, but only one tab crashes instead of the whole application. This strategy exacts a fixed per-process cost up front, but results in less memory bloat over time as fragmentation is confined to each instance and no longer needs further memory allocations. This architecture was later adopted in Safari and Firefox.</p>
+<p>Chrome includes a <a href="./Process_management_(computing)" title="Process management (computing)">process management</a> utility called <em>Task Manager</em> which lets users see what sites and plugins are using the most <a href="./Random-access_memory" title="Random-access memory">memory</a>, <a href="./Download" title="Download">downloading</a> the most <a href="./Byte" title="Byte">bytes</a>, and overusing the <a href="./Central_processing_unit" title="Central processing unit">CPU</a> and provides the ability to terminate them. Chrome Version 23 ensures its users an improved battery life for the systems supporting Chrome's GPU accelerated video decoding.</p>
+<h3>Release channels, cycles, and updates</h3>
+<p>The first production release on December 11, 2008, marked the end of the initial Beta test period and the beginning of production. Shortly thereafter, on January 8, 2009, Google announced an updated release system with three channels: Stable (corresponding to the traditional production), Beta, and Developer preview (also called the "Dev" channel). Where there were before only two channels: Beta and Developer, now there are three. Concurrently, all Developer channel users were moved to the Beta channel along with the promoted Developer release. Google explained that now the Developer channel builds would be less stable and polished than those from the initial Google Chrome Beta period. Beta users could opt back to the Developer channel as desired.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>]</p>
+<p>Each channel has its own release cycle and stability level. The Stable channel is updated roughly quarterly, with features and fixes that passed "thorough" testing in the Beta channel. Beta is updated roughly monthly, with "stable and complete" features migrated from the Developer channel. The Developer channel is updated once or twice per week and was where ideas and features were first publicly exposed, "(and sometimes fail) and can be very unstable at times". [Quoted remarks from Google's policy announcements.]</p>
+<p>On July 22, 2010, Google announced it would ramp up the speed at which it releases new stable versions; the release cycles were shortened from quarterly to six weeks for major Stable updates. Beta channel releases now come roughly at the same rate as Stable releases, though approximately one month in advance, while Dev channel releases appear roughly once or twice weekly, allowing time for basic release-critical testing. This faster release cycle also brought a fourth channel: the "Canary" channel, updated daily from a build produced at 09:00 UTC from the most stable of the last 40 <a href="./Version_control" title="Version control">revisions</a>. The name refers to the practice of <a href="./Sentinel_species" title="Sentinel species">using canaries in coal mines</a>, so if a change "kills" Chrome Canary, it will be blocked from migrating down to the Developer channel, at least until fixed in a subsequent Canary build. Canary is "the most bleeding-edge official version of Chrome and somewhat of a mix between Chrome dev and the Chromium snapshot builds". Canary releases run side by side with any other channel; it is not linked to the other Google Chrome installation and can therefore run different synchronization profiles, themes, and browser preferences. This ensures that fallback functionality remains even when some Canary updates may contain release-breaking bugs. It does not natively include the option to be the default browser, although on Windows and macOS it can be set through System Preferences. Canary was Windows-only at first; a macOS version was released on May 3, 2011.</p>
+<p>The Chrome beta channel for Android was launched on January 10, 2013; like Canary, it runs side by side with the stable channel for Android. Chrome Dev for Android was launched on April 29, 2015.</p>
+<p>All Chrome channels are automatically distributed according to their respective release cycles. The mechanism differs by platform. On Windows, it uses Google Update, and auto-update can be controlled via <a href="./Group_Policy" title="Group Policy">Group Policy</a>. Alternatively, users may download a standalone installer of a version of Chrome that does not auto-update. On macOS, it uses Google Update Service, and auto-update can be controlled via the macOS "defaults" system. On Linux, it lets the system's normal <a href="./Package_management_system" title="Package management system">package management system</a> supply the updates. This auto-updating behavior is a key difference from Chromium, the non-branded <a href="./Open-source_software" title="Open-source software">open-source</a> browser which forms the core of Google Chrome. Because Chromium also serves as the <a href="./Software_release_life_cycle#Pre-alpha" title="Software release life cycle">pre-release</a> <a href="./Trunk_(software)" title="Trunk (software)">development trunk</a> for Chrome, its revisions are provided as source code, and buildable snapshots are produced continuously with each new <a href="./Commit_(data_management)" title="Commit (data management)">commit</a>, requiring users to manage their own browser updates.</p>
+<p>In March 2021, Google announced that starting with Chrome 94 in the third quarter of 2021, Google Chrome Stable releases will be made every four weeks, instead of six weeks as they have been since 2010. Also, Google announced a new release channel for system administrators and browser embedders with releases every eight weeks.</p>
+<h4>Release version numbers</h4>
+<dl>
+<dt>Releases are identified by a four-part version number, e.g., 42.0.2311.90 (Windows Stable release April 14, 2015). The components are major.minor.build.patch.</dt>
+<dd>
+<p><em>Major.minor</em> reflects scheduling policy[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>]</p>
+</dd>
+<dd>
+<p><em>Build.patch</em> identifies content progression[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>]</p>
+</dd>
+</dl>
+<ul>
+<li><em>Major</em> represents a product release. These are scheduled 7–8 per year, unlike other software systems where the <em>major</em> version number updates only with substantial new content.</li>
+<li><em>Minor</em> is usually 0. References to version 'x' or 'x.0', e.g., 42.0, refer to this <em>major.minor</em> designation.</li>
+<li><em>Build</em> is ever-increasing. For a release cycle, e.g., 42.0, there are several builds in the Canary and Developer periods. The last <em>build</em> number from Developer is kept throughout Beta and Stable and is locked with the <em>major.minor</em> for that release.</li>
+<li><em>Patch</em> resets with each <em>build</em>, incrementing with each <em>patch</em>. The first <em>patch</em> is 0, but usually the first publicly released <em>patch</em> is somewhat higher. In Beta and Stable, only <em>patch</em> increments.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>]</li>
+</ul>
+<p>Chromium and Chrome release schedules are linked through Chromium (<em>Major</em>) version <a href="./Branching_(version_control)" title="Branching (version control)">Branch Point</a> dates, published annually. The Branch Points precede the final Chrome Developer build (initial) release by 4 days (nearly always) and the Chrome Stable initial release by roughly 53 days.</p>
+<p>Example: The version 42 Branch Point was February 20, 2015. Developer builds stopped advancing at <em>build</em> 2311 with release 42.0.2311.4 on February 24, 4 days later. The first Stable release, 42.0.2311.90, was April 14, 2015, 53 days after the Branch Point.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>]</p>
+<h3>Color management</h3>
+<p>Main article: <a href="./Color_management" title="Color management">Color management</a></p>
+<p>Chrome supports <a href="./Color_management" title="Color management">color management</a> by using the system-provided ICC v2 and v4 support on macOS, and from version 22 supports ICC v2 profiles by default on other platforms.</p>
+<h3><em>Dinosaur Game</em></h3>
+<p>Main article: <a href="./Dinosaur_Game" title="Dinosaur Game">Dinosaur Game</a></p>
+<p>In Chrome, when not connected to the Internet and an error message displaying "No internet" is shown, on the top, an "<a href="./Third_generation_of_video_game_consoles" title="Third generation of video game consoles">8-bit</a>" <em><a href="./Tyrannosaurus" title="Tyrannosaurus">Tyrannosaurus rex</a></em> is shown, but when pressing the space bar on a keyboard, mouse-clicking on it or tapping it on touch devices, the T-Rex instantly jumps once and starts dashing across a <a href="./Cactus" title="Cactus">cactus</a>-ridden desert, revealing it to be an <a href="./Easter_egg_(media)" title="Easter egg (media)">Easter egg</a> in the form of a <a href="./Platform_game" title="Platform game">platform game</a>. The game itself is an <a href="./Endless_runner" title="Endless runner">infinite runner</a>, and there is no time limit in the game as it progresses faster and periodically tints to a black background. A school or enterprise manager can disable the game.</p>
+<h2>Platforms</h2>
+<p>The current version of Chrome runs on:</p>
+<ul>
+<li><a href="./Windows_10" title="Windows 10">Windows 10</a> or later</li>
+<li><a href="./Windows_Server_2016" title="Windows Server 2016">Windows Server 2016</a> or later</li>
+<li><a href="./MacOS_Monterey" title="MacOS Monterey">macOS Monterey</a> or later</li>
+<li><a href="./64-bit_computing" title="64-bit computing">64-bit</a> versions of <a href="./Ubuntu" title="Ubuntu">Ubuntu</a> 18.04+, <a href="./Debian" title="Debian">Debian</a> 10+, <a href="./OpenSUSE" title="OpenSUSE">openSUSE</a> 15.5+, and <a href="./Fedora_Linux" title="Fedora Linux">Fedora</a> 39+</li>
+<li><a href="./Android_10" title="Android 10">Android 10</a> or later</li>
+<li><a href="./IOS_17" title="IOS 17">iOS 17</a> or later</li>
+<li><a href="./IPadOS_17" title="IPadOS 17">iPadOS 17</a> or later</li>
+</ul>
+<p>As of April 2016,<a href="https://en.wikipedia.org/w/index.php?title=Google_Chrome&amp;action=edit">[update]</a> stable 32-bit and 64-bit builds are available for Windows, with only 64-bit stable builds available for Linux and macOS. 64-bit Windows builds became available in the developer channel and as canary builds on June 3, 2014, in the beta channel on July 30, 2014, and in the stable channel on August 26, 2014. 64-bit macOS builds became available as canary builds on November 7, 2013, in the beta channel on October 9, 2014, and in the stable channel on November 18, 2014.</p>
+<p>Starting with the release of version 89, Chrome will only be supported on <a href="./List_of_Intel_processors" title="List of Intel processors">Intel</a>/<a href="./X86" title="X86">Intel x86</a> and <a href="./List_of_AMD_processors" title="List of AMD processors">AMD</a> processors with the <a href="./SSE3" title="SSE3">SSE3</a> instruction set.</p>
+<ul>
+<li><a href="./Template:Google_Chrome_release_compatibility" title="Template:Google Chrome release compatibility">view</a></li>
+<li><a href="./Template_talk:Google_Chrome_release_compatibility" title="Template talk:Google Chrome release compatibility">talk</a></li>
+<li><a href="./Special:EditPage/Template:Google_Chrome_release_compatibility" title="Special:EditPage/Template:Google Chrome release compatibility">edit</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th><a href="./Operating_system" title="Operating system">Operating system</a></th>
+<th></th>
+<th>Latest version</th>
+<th>Support status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./Windows" title="Windows">Windows</a></td>
+<td><a href="./Windows_10" title="Windows 10">10</a> or later, <a href="./Windows_Server_2016" title="Windows Server 2016">Server 2016</a> or later</td>
+<td>147</td>
+<td>2015–</td>
+</tr>
+<tr>
+<td><a href="./Windows_7" title="Windows 7">7</a>, <a href="./Windows_Server_2008_R2" title="Windows Server 2008 R2">Server 2008 R2</a>, <a href="./Windows_8" title="Windows 8">8</a>, <a href="./Windows_Server_2012" title="Windows Server 2012">Server 2012</a>,  <a href="./Windows_8.1" title="Windows 8.1">8.1</a> and <a href="./Windows_Server_2012_R2" title="Windows Server 2012 R2">Server 2012 R2</a></td>
+<td>109</td>
+<td>2009–2023</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Windows_XP" title="Windows XP">XP</a>, <a href="./Windows_Server_2003" title="Windows Server 2003">Server 2003</a>,  <a href="./Windows_Vista" title="Windows Vista">Vista</a> and <a href="./Windows_Server_2008" title="Windows Server 2008">Server 2008</a></td>
+<td>49 (IA-32)</td>
+<td>2008–2016</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./MacOS" title="MacOS">macOS</a></td>
+<td><a href="./MacOS_Ventura" title="MacOS Ventura">Ventura</a> or later</td>
+<td>147</td>
+<td>2022–</td>
+</tr>
+<tr>
+<td><a href="./MacOS_Monterey" title="MacOS Monterey">Monterey</a></td>
+<td>147</td>
+<td>2021–2026</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./MacOS_Big_Sur" title="MacOS Big Sur">Big Sur</a></td>
+<td>138</td>
+<td>2020–2025</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./MacOS_Catalina" title="MacOS Catalina">Catalina</a></td>
+<td>128</td>
+<td>2019–2024</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./MacOS_High_Sierra" title="MacOS High Sierra">High Sierra</a> and <a href="./MacOS_Mojave" title="MacOS Mojave">Mojave</a></td>
+<td>116</td>
+<td>2017–2023</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./OS_X_El_Capitan" title="OS X El Capitan">El Capitan</a> and <a href="./MacOS_Sierra" title="MacOS Sierra">Sierra</a></td>
+<td>103</td>
+<td>2015–2022</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./OS_X_Yosemite" title="OS X Yosemite">Yosemite</a></td>
+<td>87</td>
+<td>2014–2021</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./OS_X_Mavericks" title="OS X Mavericks">Mavericks</a></td>
+<td>67</td>
+<td>2013–2018</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Mac_OS_X_Snow_Leopard" title="Mac OS X Snow Leopard">Snow Leopard</a>–<a href="./OS_X_Mountain_Lion" title="OS X Mountain Lion">Mountain Lion</a> (x64)</td>
+<td>49</td>
+<td>2009–2016</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Mac_OS_X_Snow_Leopard" title="Mac OS X Snow Leopard">Snow Leopard</a> (IA-32)</td>
+<td>38</td>
+<td>2009–2014</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Mac_OS_X_Leopard" title="Mac OS X Leopard">Leopard</a> (IA-32, x64)</td>
+<td>21</td>
+<td>2008–2012</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Linux" title="Linux">Linux</a> (<a href="./X_Window_System" title="X Window System">X11</a>/<a href="./Wayland_(protocol)" title="Wayland (protocol)">Wayland</a>)</td>
+<td><a href="./X64" title="X64">x64</a></td>
+<td>147</td>
+<td>2008–</td>
+</tr>
+<tr>
+<td><a href="./IA-32" title="IA-32">IA-32</a></td>
+<td>48</td>
+<td>2008–2016</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Android_(operating_system)" title="Android (operating system)">Android</a></td>
+<td><a href="./Android_10" title="Android 10">10</a> or later</td>
+<td>147</td>
+<td>2019–</td>
+</tr>
+<tr>
+<td><a href="./Android_Oreo" title="Android Oreo">Oreo</a> and <a href="./Android_Pie" title="Android Pie">Pie</a></td>
+<td>138</td>
+<td>2017–2025</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Android_Nougat" title="Android Nougat">Nougat</a></td>
+<td>119</td>
+<td>2016–2023</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Android_Marshmallow" title="Android Marshmallow">Marshmallow</a></td>
+<td>106</td>
+<td>2015–2022</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Android_Lollipop" title="Android Lollipop">Lollipop</a></td>
+<td>95</td>
+<td>2014–2021</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Android_KitKat" title="Android KitKat">KitKat</a></td>
+<td>81</td>
+<td>2013–2020</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Android_Jelly_Bean" title="Android Jelly Bean">Jelly Bean</a> (ARMv7,IA-32,x64)</td>
+<td>71</td>
+<td>2012–2019</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Android_Ice_Cream_Sandwich" title="Android Ice Cream Sandwich">Ice Cream Sandwich</a> (ARMv7,IA-32)</td>
+<td>42</td>
+<td>2012–2015</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./IOS" title="IOS">iOS</a></td>
+<td><a href="./IOS_17" title="IOS 17">17.0</a> or later</td>
+<td>147</td>
+<td>2023–</td>
+</tr>
+<tr>
+<td><a href="./IOS_16" title="IOS 16">16.x</a></td>
+<td>137</td>
+<td>2022–2025</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./IOS_15" title="IOS 15">15.x</a></td>
+<td>125</td>
+<td>2021–2024</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./IOS_14" title="IOS 14">14.x</a></td>
+<td>113</td>
+<td>2020–2023</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./IOS_13" title="IOS 13">13.x</a></td>
+<td>93</td>
+<td>2019–2021</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./IOS_12" title="IOS 12">12.x</a></td>
+<td>92</td>
+<td>2018–2021</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./IOS_11" title="IOS 11">11.x</a></td>
+<td>76</td>
+<td>2017–2019</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./IOS_10" title="IOS 10">10.x</a></td>
+<td>71</td>
+<td>2016–2019</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./IOS_9" title="IOS 9">9.x</a></td>
+<td>63</td>
+<td>2015–2018</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./IOS_7" title="IOS 7">7.0</a>-<a href="./IOS_8" title="IOS 8">8.4</a></td>
+<td>47</td>
+<td>2013–2016</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./IOS_6" title="IOS 6">6.x</a></td>
+<td>37</td>
+<td>2012–2014</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./IOS_4" title="IOS 4">4.3</a>-<a href="./IOS_5" title="IOS 5">5.1</a></td>
+<td>29</td>
+<td>2011–2013</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./IPhone_OS_3" title="IPhone OS 3">3.0</a>-<a href="./IOS_4" title="IOS 4">4.2</a></td>
+<td>23</td>
+<td>2009–2012</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./IPadOS" title="IPadOS">iPadOS</a></td>
+<td><a href="./IPadOS_17" title="IPadOS 17">17.0</a> or later</td>
+<td>147</td>
+<td>2023–</td>
+</tr>
+<tr>
+<td><a href="./IPadOS_16" title="IPadOS 16">16.x</a></td>
+<td>137</td>
+<td>2022–2025</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./IPadOS_15" title="IPadOS 15">15.x</a></td>
+<td>125</td>
+<td>2021–2024</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./IPadOS_14" title="IPadOS 14">14.x</a></td>
+<td>113</td>
+<td>2020–2023</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./IPadOS_13" title="IPadOS 13">13.x</a></td>
+<td>93</td>
+<td>2019–2021</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3>Android</h3>
+<p>A beta version for Android 4.0 devices was launched on February 7, 2012, available for a limited number of countries from <a href="./Google_Play" title="Google Play">Google Play</a>.</p>
+<p>Notable features: synchronization with desktop Chrome to provide the same bookmarks and view the same browser tabs, page pre-rendering, hardware acceleration.</p>
+<p>Many of the latest HTML5 features: almost all of the Web Platform's features: GPU-accelerated canvas, including CSS 3D Transforms, CSS animations, SVG, <a href="./WebSocket" title="WebSocket">WebSocket</a> (including binary messages), Dedicated Workers; it has overflow scroll support, strong HTML5 video support, and new capabilities such as IndexedDB, WebWorkers, Application Cache and the File APIs, date- and time-pickers, parts of the Media Capture API. Also supports mobile oriented features such as Device Orientation and Geolocation.</p>
+<p>Mobile customizations: swipe gesture tab switching, link preview allows zooming in on (multiple) links to ensure the desired one is clicked, font size boosting to ensure readability regardless of the zoom level.</p>
+<p>Features missing in the mobile version include sandboxed tabs, Safe Browsing, apps or extensions, Adobe Flash (now and in the future), <a href="./Native_Client" title="Native Client">Native Client</a>, and the ability to <a href="./Import_and_export_of_data" title="Import and export of data">export</a> user data such a list of their opened tabs or their browsing history into <a href="./Data_portability" title="Data portability">portable</a> local files.</p>
+<p>Development changes: remote debugging, part of the browser layer has been implemented in Java, communicating with the rest of the Chromium and WebKit code through Java Native Bindings. The code of Chrome for Android is a fork of the Chromium project. It is a priority to upstream most new and modified code to Chromium and WebKit to resolve the fork.</p>
+<p>The April 17, 2012, update included availability in 31 additional languages and in all countries where Google Play is available. A desktop version of a website can also be requested, as opposed to a mobile version. In addition, Android users can now add bookmarks to their Android home screens if they choose and decide which apps should handle links opened in Chrome.</p>
+<p>On June 27, 2012, Google Chrome for Android exited beta and became stable.</p>
+<p>Chrome 18.0.1026311, released on September 26, 2012, was the first version of Chrome for Android to support mobile devices based on Intel x86.</p>
+<p>Starting from version 25, the Chrome version for Android is aligned with the desktop version, and usually new stable releases are available at the same time for both the Android and the desktop versions. Google released a separate Chrome for Android beta channel on January 10, 2013, with version 25. As of 2013<a href="https://en.wikipedia.org/w/index.php?title=Google_Chrome&amp;action=edit">[update]</a> a separate beta version of Chrome is available in the Google Play Store – it can run side by side with the stable release.</p>
+<h3>iOS and iPadOS</h3>
+<p>Chrome is available on <a href="./Apple_Inc." title="Apple Inc.">Apple</a>'s mobile iOS and iPadOS operating systems. Released in the <a href="./App_Store_(Apple)" title="App Store (Apple)">Apple App Store</a> on June 26, 2012, it supports the <a href="./IPad" title="IPad">iPad</a>, <a href="./IPhone" title="IPhone">iPhone</a>, and formerly the <a href="./IPod_touch" title="IPod touch">iPod touch</a>; the current version requires that the device has iOS 17.0 or greater or iPadOS 17.0 or greater installed. In accordance with Apple's requirements for browsers released through their App Store, this version of Chrome uses the <em>iOS WebKit</em> – which is Apple's own mobile rendering engine and components, developed for their <em>Safari</em> browser – therefore it is restricted from using Google's own V8 JavaScript engine. Chrome is the default web browser for the iOS and iPadOS <em>Gmail</em> application.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>]</p>
+<p>In a review by <a href="./Chitika" title="Chitika">Chitika</a>, Chrome was noted as having 1.5% of the iOS web browser market as of July 18, 2012.<a href="https://en.wikipedia.org/w/index.php?title=Google_Chrome&amp;action=edit">[update]</a> In October 2013, Chrome had 3% of the iOS browser market.[<em><a href="./Wikipedia:Manual_of_Style/Dates_and_numbers#Chronological_items" title="Wikipedia:Manual of Style/Dates and numbers">needs update</a></em>]</p>
+<h3>Linux</h3>
+<p>On <a href="./Linux_distribution" title="Linux distribution">Linux distributions</a>, support for 32-bit Intel processors ended in March 2016, although Chromium is still supported. As of Chrome version 26, Linux installations of the browser may be updated only on systems that support <a href="./GNU_Compiler_Collection" title="GNU Compiler Collection">GCC</a> v4.6 and <a href="./GTK" title="GTK">GTK</a> v2.24 or later. Thus deprecated systems include (for example) Debian 6's 2.20, and <a href="./Red_Hat_Enterprise_Linux" title="Red Hat Enterprise Linux">RHEL</a> 6's 2.18.</p>
+<h3>Windows</h3>
+<p>Support for Google Chrome on Windows XP and <a href="./Windows_Vista" title="Windows Vista">Windows Vista</a> ended in April 2016. The last release of Google Chrome that can be run on Windows XP and Vista was version 49.0.2623.112, released on April 7, 2016, then re-released on April 11, 2016.</p>
+<p>Support for Google Chrome on <a href="./Windows_7" title="Windows 7">Windows 7</a> was originally supposed to end on July 15, 2021. However, the date was moved back to January 15, 2022, due to the ongoing COVID-19 pandemic. Since enterprises took more time to migrate to <a href="./Windows_10" title="Windows 10">Windows 10</a> or <a href="./Windows_11" title="Windows 11">11</a>, the end of support date was pushed back again until January 15, 2023. Support for not only Windows 7, but also Windows 8 and 8.1 ended on this date. The last version to support these versions of Windows is Chrome 109.</p>
+<p>"Windows 8 mode" was introduced in 2012 and has since been discontinued. It was provided to the developer channel, which enabled <a href="./Windows_8" title="Windows 8">Windows 8</a> and <a href="./Windows_8.1" title="Windows 8.1">8.1</a> users to run Chrome with a full-screen, tablet-optimized interface, with access to snapping, sharing, and search functionalities. In October 2013, Windows 8 mode on the developer channel changed to use a desktop environment mimicking the interface of ChromeOS with a dedicated windowing system and taskbar for web apps. This was removed on version 49 and users that have upgraded to Windows 10 will lose this feature.</p>
+<h3>macOS</h3>
+<p>Google dropped support for <a href="./Mac_OS_X_10.5" title="Mac OS X 10.5">Mac OS X 10.5</a> with the release of Chrome 22. Support for <a href="./32-bit" title="32-bit">32-bit</a> versions of Chrome ended in November 2014 with the release of Chrome 39. Support for <a href="./Mac_OS_X_10.6" title="Mac OS X 10.6">Mac OS X 10.6</a>, <a href="./OS_X_10.7" title="OS X 10.7">OS X 10.7</a>, and <a href="./OS_X_10.8" title="OS X 10.8">OS X 10.8</a> ended in April 2016 with the release of Chrome 50. Support for <a href="./OS_X_10.9" title="OS X 10.9">OS X 10.9</a> ended in April 2018 with the release of Chrome 66. Support for <a href="./OS_X_10.10" title="OS X 10.10">OS X 10.10</a> ended in January 2021 with the release of Chrome 88. Support for <a href="./OS_X_10.11" title="OS X 10.11">OS X 10.11</a> and <a href="./MacOS_10.12" title="MacOS 10.12">macOS 10.12</a> ended in August 2022 with the release of Chrome 104. Support for <a href="./MacOS_10.13" title="MacOS 10.13">macOS 10.13</a> and <a href="./MacOS_10.14" title="MacOS 10.14">macOS 10.14</a> ended in September 2023 with the release of Chrome 117. Support for <a href="./MacOS_10.15" title="MacOS 10.15">macOS 10.15</a> ended in September 2024 with the release of Chrome 129. Support for <a href="./MacOS_11" title="MacOS 11">macOS 11</a> ended in August 2025 with the release of Chrome 139.</p>
+<h3>ChromeOS</h3>
+<p>Main article: <a href="./ChromeOS" title="ChromeOS">ChromeOS</a></p>
+<p>Google Chrome is the basis of Google's ChromeOS operating system that ships on specific hardware from Google's manufacturing partners. The user interface has a <a href="./Minimalism_(computing)" title="Minimalism (computing)">minimalist design</a> resembling the Google Chrome browser. ChromeOS is aimed at users who spend most of their computer time on the Web; the only applications on the devices are a browser incorporating a media player and a <a href="./File_manager" title="File manager">file manager</a>.</p>
+<p>Google announced ChromeOS on July 7, 2009.</p>
+<h2>Reception</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>This section needs to be <strong>updated</strong>. Please help update this article to reflect recent events or newly available information. <em>(June 2019)</em></td>
+</tr>
+</tbody>
+</table>
+<p>Google Chrome was met with acclaim upon release. In 2008, Matthew Moore of <em><a href="./The_Daily_Telegraph" title="The Daily Telegraph">The Daily Telegraph</a></em> summarized the verdict of early reviewers: "Google Chrome is attractive, fast and has some impressive new features..."</p>
+<p>Initially, Microsoft reportedly played down the threat from Chrome and predicted that most people would embrace Internet Explorer 8. <a href="./Opera_Software" title="Opera Software">Opera Software</a> said that "Chrome will strengthen the Web as the biggest application platform in the world". But by February 25, 2010, <em>BusinessWeek</em> had reported that "For the first time in years, energy and resources are being poured into browsers, the ubiquitous programs for accessing content on the Web. Credit for this trend – a boon to consumers – goes to two parties. The first is Google, whose big plans for the Chrome browser have shaken Microsoft out of its competitive torpor and forced the software giant to pay fresh attention to its own browser, Internet Explorer. Microsoft all but ceased efforts to enhance IE after it triumphed in the last browser war, sending Netscape to its doom. Now it's back in gear." Mozilla said that Chrome's introduction into the web browser market comes as "no real surprise", that "Chrome is not aimed at competing with Firefox", and furthermore that it would not affect <a href="./Mozilla_Foundation#Financing" title="Mozilla Foundation">Google's revenue relationship with Mozilla</a>.</p>
+<blockquote>
+<p>Chrome's design bridges the gap between desktop and so-called "cloud computing". At the touch of a button, Chrome lets you make a desktop, Start menu, or QuickLaunch shortcut to any Web page or Web application, blurring the line between what's online and what's inside your PC. For example, I created a desktop shortcut for Google Maps. When you create a shortcut for a Web application, Chrome strips away all of the toolbars and tabs from the window, leaving you with something that feels much more like a desktop application than like a Web application or page.</p>
+</blockquote>
+<p>— <em><a href="./PC_World" title="PC World">PC World</a></em></p>
+<p>With its dominance in the web browser market, Google has been accused of using Chrome and Blink development to push new web standards that are proposed in-house by Google and subsequently implemented by its services first and foremost. These have led to performance disadvantages and compatibility issues with competing browsers, and in some cases, developers intentionally refusing to test their websites on any other browser than Chrome. Tom Warren of <em><a href="./The_Verge" title="The Verge">The Verge</a></em> went as far as comparing Chrome to <a href="./Internet_Explorer_6" title="Internet Explorer 6">Internet Explorer 6</a>, the default browser of Windows XP that was often targeted by competitors due to its similar ubiquity in the early 2000s. In 2021, computer scientist and lawyer <a href="./Jonathan_Mayer" title="Jonathan Mayer">Jonathan Mayer</a> stated that Chrome has increasingly become an agent for <a href="./Google_LLC" title="Google LLC">Google LLC</a> than a <a href="./User_agent" title="User agent">user agent</a>, as it is "the only major web browser that lacks meaningful privacy protections by default, shoves users toward linking activity with a Google Account, and implements invasive new advertising capabilities."</p>
+<h2>Criticism</h2>
+<h3>Privacy</h3>
+<h4>Incognito mode</h4>
+<p>A <a href="./Class-action" title="Class-action">class-action</a> lawsuit seeking $5 billion in damages was filed against Google in 2020 because it misled consumers into thinking it would not <a href="./Web_tracking" title="Web tracking">track</a> them when using incognito mode, despite using various means to do so. In December 2023, a settlement was reportedly agreed to, and a proposed settlement agreement was filed in federal court on April 1, 2024. It stated that Google would delete billions of browsing-data records, revise disclosures about data collection in Incognito mode, and allow users to block third-party cookies in Incognito for five years. However, the agreement did not include monetary damages and remained subject to court approval.</p>
+<h4>Listening capabilities</h4>
+<p>In June 2015, the <a href="./Debian" title="Debian">Debian</a> developer community discovered that Chromium 43 and Chrome 43 were programmed to download the <em>Hotword Shared Module</em>, which could enable the <a href="./OK_Google" title="OK Google">OK Google</a> voice recognition extension, although by default it was "off". This raised privacy concerns in the media. The module was removed in Chrome 45, which was released on September 1, 2015, and was only present in Chrome 43 and 44.</p>
+<h4>User tracking concerns</h4>
+<p>Chrome sends details about its users and their activities to Google through both optional and non-optional user tracking mechanisms.</p>
+<p>Some of the tracking mechanisms can be optionally enabled and disabled through the installation interface and through the browser's options dialog. Unofficial builds, such as <a href="./SRWare_Iron" title="SRWare Iron">SRWare Iron</a>, seek to remove these features from the browser altogether. The RLZ library, which is used to measure the success of marketing promotions, is not included in the Chromium browser either.</p>
+<p>In March 2010, Google devised a new method to collect installation statistics: the unique ID token included with Chrome is now used for only the first connection that Google Update makes to its server.</p>
+<p>The optional suggestion service included in Google Chrome has been criticized because it provides the information typed into the Omnibox to the search provider before the user even hits return. This allows the search engine to provide URL suggestions, but also provides them with web use information tied to an <a href="./IP_address" title="IP address">IP address</a>.</p>
+<p>Chrome previously was able to suggest similar pages when a page could not be found. For this, in some cases, Google servers were contacted. The feature has since been removed.</p>
+<p>A 2019 review by <em><a href="./Washington_Post" title="Washington Post">Washington Post</a></em> technology columnist Geoffrey A. Fowler found that in a typical week of browsing, Chrome allowed thousands more cookies to be stored than Mozilla Firefox. Fowler pointed out that because of its advertising businesses, despite the privacy controls it offers users, Google is a major producer of third-party cookies and has a financial interest in collecting user data; he recommended switching to Firefox, Apple Safari, or Chromium-based <a href="./Brave_(web_browser)" title="Brave (web browser)">Brave</a>.</p>
+<p>Tracking methods</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Information sent</th>
+<th>When</th>
+<th>Optional?</th>
+<th><a href="https://en.wiktionary.org/wiki/opt-in" title="wiktionary:opt-in">Opt-in?</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Installation</strong></td>
+<td>Randomly generated token included in an installer; used to measure the success rate of Google Chrome once at installation</td>
+<td>On installation</td>
+<td>No</td>
+<td>—N/a</td>
+</tr>
+<tr>
+<td><strong>RLZ identifier</strong></td>
+<td><a href="./Code" title="Code">Encoded</a> string, according to Google, contains non-identifying information on where Chrome was downloaded from and its installation week; it is used to measure promotional campaigns; Google provides source code to decode this string Can be disabled in ChromeOS. For Chrome browsers running in all other operating systems:   - Desktop versions of Chrome can avoid it by downloading the browser directly from Google. - Mobile versions of Chrome always send the RLZ identifier on first launch.</td>
+<td>- On Google search query - On first launch and first use of address bar</td>
+<td>Partial</td>
+<td>No</td>
+</tr>
+<tr>
+<td><strong>clientID</strong></td>
+<td>Unique identifier along with user preferences, logs of use metrics, and crashes</td>
+<td>Unknown</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><strong>Omnibox predictions</strong></td>
+<td>Text typed into the <a href="./Address_bar" title="Address bar">address bar</a> is sent to the user's search engine when not in incognito mode. When in incognito mode, the suggestions are created on-device instead.</td>
+<td>While typing</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td><strong>Google Update</strong></td>
+<td>Information about how often Chrome is used, details about the OS, and the Chrome version</td>
+<td>Periodically</td>
+<td>Partial</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<h4>IP Protection</h4>
+<p>In 2023, Google proposed a technology that claims to "hide the IP and traffic of its users" by routing Chrome traffic to Google servers. This has drawn criticism as all traffic is readily available for Google to use.</p>
+<h3>Advertising</h3>
+<p>Also tied with Google is its advertising business, which, given the vast market share of Chrome, sought to introduce features that protect this revenue stream, mainly the introduction of a cookie-tracking alternative named Federated Learning of Cohorts (<a href="./Federated_Learning_of_Cohorts" title="Federated Learning of Cohorts">FLoC</a>), which evolved into Topics, and Manifest V3 API changes for extensions.</p>
+<h4>FLoC</h4>
+<p>Main articles: <a href="./Federated_Learning_of_Cohorts" title="Federated Learning of Cohorts">Federated Learning of Cohorts</a> and <a href="./Privacy_Sandbox#Criticism" title="Privacy Sandbox">Privacy Sandbox § Criticism</a></p>
+<p>In January 2021, Google stated it was making progress on developing privacy-friendly alternatives that would replace third-party cookies currently being used by advertisers and companies to track browsing habits. Google then promised to phase out the use of cookies in its web browser in 2022, implementing its FLoC technology instead. The announcement triggered <a href="./Competition_law" title="Competition law">antitrust</a> concerns from multiple countries for abusing the Chrome browser's market <a href="./Monopoly" title="Monopoly">monopoly</a>, with the <a href="./Competition_and_Markets_Authority" title="Competition and Markets Authority">U.K.'s Competition and Markets Authority</a> and the <a href="./European_Commission" title="European Commission">European Commission</a> both opening formal probes. The FLoC proposal also drew criticism from <a href="./DuckDuckGo" title="DuckDuckGo">DuckDuckGo</a>, Brave, and the Electronic Frontier Foundation for underestimating the ability of the API to track users online.</p>
+<p>On January 25, 2022, Google announced it had killed off development of its FLoC technologies and proposed the new Topics API to replace it. Topics is similarly intended to replace cookies, using one's weekly web activity to determine a set of five interests. Topics are supposed to refresh every three weeks, changing the type of ads served to the user and not retaining the gathered data.</p>
+<h4>Manifest V3</h4>
+<p>Manifest V3 has faced criticism for changes to the WebRequest API used by <a href="./Ad_blocking" title="Ad blocking">ad blocking</a> and privacy extensions to block and modify network connections. The declarative version of WebRequest uses rules processed by the browser, rather than sending all network traffic through the extension, which Google stated would improve performance. However, DeclarativeWebRequest is limited in the number of rules that may be set, and the types of <a href="./Regular_expression" title="Regular expression">expressions</a> that may be used. Additionally, the prohibition of remotely-hosted code will restrict the ability for filter lists to be updated independently of the extension itself. As the Chrome Web Store review process has an invariable length, filter lists may not be updated in a timely fashion.</p>
+<p>Google has been accused of using Manifest V3 to inhibit ad-blocking software due to its vested interest in the online advertising market. Google cited performance issues associated with WebRequest, as well as its use in malicious extensions. In June 2019, it announced that it would increase the aforementioned cap from 30,000 to 150,000 entries to help quell concerns about limitations to filtering rules. In 2021, the <a href="./Electronic_Frontier_Foundation" title="Electronic Frontier Foundation">Electronic Frontier Foundation</a> (EFF) issued a statement that Manifest V3 was "outright harmful to privacy efforts", as it would greatly limit the functionality of ad blocking extensions.</p>
+<p>In December 2022, Google announced the transition would be paused "to address developer feedback and deliver better solutions to migration issues". In November 2023, Google announced it would resume the transition to Manifest V3; support for Manifest V2 extensions would be removed entirely from non-stable builds of Chrome beginning June 2024. Google removed the extensions using MV2 from their Chrome Web Store in June 2025.</p>
+<p>The changes also affected other Chromium-based web browsers, including <a href="./Microsoft_Edge" title="Microsoft Edge">Microsoft Edge</a>, <a href="./Brave_(web_browser)" title="Brave (web browser)">Brave</a>, <a href="./Opera_(web_browser)" title="Opera (web browser)">Opera</a>, and <a href="./Vivaldi_(web_browser)" title="Vivaldi (web browser)">Vivaldi</a>. However, Microsoft announced that it would support MV2 adblockers. Brave announced that it would support MV2 extensions as long as possible, but the lack of its own extension website made this difficult (Brave uses the Chrome Web Store). Ultimately, Microsoft retained some MV2 extensions in its store, while Brave created a separate section allowing downloads of AdGuard MV2, uBlock Origin (uBO), uMatrix MV2, and NoScript MV2. Mozilla stated that Manifest V3 support is being added to Mozilla Firefox's implementation of Chrome's extension API (<a href="./Web_Extensions" title="Web Extensions">WebExtensions</a>) for compatibility reasons, but Mozilla has also stated that its implementation would not contain limitations that affect privacy and content-blocking extensions, and that its implementation of V2 would not be deprecated.</p>
+<p>Some extension developers have released separate editions of their extensions for MV3, of which some are significantly restricted or rewritten. For example, <a href="./UBlock_Origin" title="UBlock Origin">uBO</a> was released as uBlock Origin Lite (uBOL). It has a static filter list, which means a slower response to threats and not including some filters for smaller or regional websites, does not use so-called cosmetic filters by default (hiding elements on the page), and generally contains significantly fewer filters. Restrictions were also introduced in Ghostry for MV3, Adblock Plus MV3, AdGuard MV3, and Stands MV3.</p>
+<p>Researchers from <a href="./Goethe_University_Frankfurt" title="Goethe University Frankfurt">Goethe University Frankfurt</a>, examining request blocking in popular MV3 extensions, found that the providers of the tested extensions managed to bypass most of Google's restrictions. Current versions of the tested MV3 extensions were found blocking as many or even more requests to trackers and ads then their MV2 counterparts (quantitative study). However, the researchers also found that cosmetic filters were over 20% less effective in the tested sample (visual study).</p>
+<h3>Anti-competition</h3>
+<p>In August 2024, a federal judge in <a href="./Washington,_D.C." title="Washington, D.C.">Washington, D.C.</a> ruled that Google maintained an illegal monopoly over search services. In November 2024, the US Department of Justice (DOJ) demanded that <a href="./Google" title="Google">Google</a> sell Chrome to stop Google from maintaining its monopoly in online search.</p>
+<p>On August 12, 2025, artificial intelligence company <a href="./Perplexity_AI" title="Perplexity AI">Perplexity AI</a> made a bid to buy the browser from Google for $34.5 billion. Perplexity stated that the sale could remedy anti-trust litigation against Google, in which a judge was considering compelling the sale of Chrome.</p>
+<h2>Usage</h2>
+<h3>Market share</h3>
+<p>Further information: <a href="./Usage_share_of_web_browsers" title="Usage share of web browsers">Usage share of web browsers</a> and <a href="./Browser_wars" title="Browser wars">Browser wars</a></p>
+<p>Chrome overtook Firefox in November 2011 in worldwide usage. As of January 2026,<a href="https://en.wikipedia.org/w/index.php?title=Google_Chrome&amp;action=edit">[update]</a> according to StatCounter, Google Chrome had 71% worldwide global usage share, and, according to Cloudflare, it was 68%, making it the most widely used web browser.[<em><a href="./Wikipedia:Citation_needed" title="Wikipedia:Citation needed">citation needed</a></em>]</p>
+<p>It was reported by StatCounter, a web analytics company, that for the single day of Sunday, March 18, 2012, Chrome was the most used web browser in the world for the first time. Chrome secured 32.7% of the global web browsing on that day, while Internet Explorer followed closely behind with 32.5%.</p>
+<p>From May 14–21, 2012, Google Chrome was for the first time responsible for more Internet traffic than Microsoft's Internet Explorer, which had long held its spot as the most used web browser in the world. According to StatCounter, 31.88% of web traffic was generated by Chrome for a sustained period of one week and 31.47% by Internet Explorer. Though Chrome had topped Internet Explorer for a single day's usage in the past, this was the first time it had led for one full week.</p>
+<p>At the 2012 Google I/O developers' conference, Google claimed that there were 310 million active users of Chrome, almost double the number in 2011, which was stated as 160 million active users.</p>
+<p>In June 2013, according to StatCounter, Chrome overtook Internet Explorer for the first time in the US.</p>
+<p>In August 2013, Chrome was used by 43% of internet users worldwide. This study was done by Statista, which also noted that in North America, 36% of people use Chrome, the lowest in the world.</p>
+<p>Desktop/laptop browser statistics </p>
+<ul>
+<li><a href="./Template:Desktop_browser_usage_share" title="Template:Desktop browser usage share">v</a></li>
+<li><a href="./Template_talk:Desktop_browser_usage_share?action=edit&amp;redlink=1" title="Template talk:Desktop browser usage share">t</a></li>
+<li><a href="./Special:EditPage/Template:Desktop_browser_usage_share" title="Special:EditPage/Template:Desktop browser usage share">e</a></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Google_Chrome">Google Chrome</a></td>
+<td></td>
+<td></td>
+<td>69.37%</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Microsoft_Edge" title="Microsoft Edge">Microsoft Edge</a></td>
+<td></td>
+<td></td>
+<td>12.75%</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Safari_(web_browser)" title="Safari (web browser)">Safari</a></td>
+<td></td>
+<td></td>
+<td>7.13%</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Mozilla_Firefox" title="Mozilla Firefox">Mozilla Firefox</a></td>
+<td></td>
+<td></td>
+<td>4.58%</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="./Opera_(web_browser)" title="Opera (web browser)">Opera</a></td>
+<td></td>
+<td></td>
+<td>2.58%</td>
+<td></td>
+</tr>
+<tr>
+<td>Other</td>
+<td></td>
+<td></td>
+<td>3.59%</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Desktop web browser market share according to <a href="./StatCounter" title="StatCounter">StatCounter</a> for March 2026</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3>Enterprise deployment</h3>
+<p>In December 2010, Google announced that to make it easier for businesses to use Chrome, they would provide an official Chrome <a href="./Windows_Installer" title="Windows Installer">MSI package</a>. For business use, it is helpful to have full-fledged MSI packages that can be customized via transform files (.mst) – , but the MSI provided with Chrome is only a very limited <a href="./MSI_wrapper" title="MSI wrapper">MSI wrapper</a> fitted around the normal installer, and many businesses find that this arrangement does not meet their needs. The normal downloaded Chrome installer puts the browser in the user's local app data directory and provides invisible background updates, but the MSI package will allow installation at the system level, providing system administrators control over the update process – it was formerly possible only when Chrome was installed using <a href="./Google_Pack" title="Google Pack">Google Pack</a>. Google also created group policy objects to fine-tune the behavior of Chrome in the business environment, for example, by setting automatic update intervals, disabling auto-updates, and configuring a home page. Until version 24 the software is known not to be ready for enterprise deployments with roaming profiles or Terminal Server/Citrix environments.</p>
+<p>In 2010, Google first started supporting Chrome in enterprise environments by providing an MSI wrapper around the Chrome installer. Google starting providing group policy objects, with more added each release, and today there are more than 500 policies available to control Chrome's behavior in enterprise environments.</p>
+<p>In 2016, Google launched Chrome Browser Enterprise Support, a paid service enabling IT admins to access Google experts to support their browser deployment. In 2019, Google launched <em>Chrome Browser Cloud Management</em>, a dashboard that gives business IT managers the ability to control content accessibility, app usage, and browser extensions installed on its deployed computers.</p>
+<h3>Chromium</h3>
+<p>Main article: <a href="./Chromium_(web_browser)" title="Chromium (web browser)">Chromium (web browser)</a></p>
+<p>In September 2008, Google released a large portion of Chrome's source code as an open-source project called Chromium. This move enabled third-party developers to study the underlying source code and to help port the browser to the macOS and Linux operating systems. The Google-authored portion of Chromium is released under the permissive <a href="./BSD_license" title="BSD license">BSD license</a>. Other portions of the source code are subject to a variety of open-source licenses. Chromium is similar to Chrome, but lacks built-in automatic updates and a built-in Flash player, as well as Google branding and has a blue-colored logo instead of the multicolored Google logo. Chromium does not implement user RLZ tracking. Initially, the Google Chrome PDF viewer, PDFium, was excluded from Chromium, but was later made open-source in May 2014. PDFium can be used to fill PDF forms.</p>
+<h2>Developing for Chrome</h2>
+<p>It is possible to develop applications, extensions, and themes for Chrome. They are zipped in a .crx file and contain a manifest.json file that specifies basic information (such as version, name, description, privileges, etc.), and other files for the user interface (icons, popups, etc.). Google has an official developer's guide on how to create, develop, and publish projects. Chrome has its own web store where users and developers can upload and download these applications and extensions.</p>
+<h2>Impersonation by malware</h2>
+<p>As with <a href="./Internet_Explorer#Impersonation_by_malware" title="Internet Explorer">Microsoft Internet Explorer</a>, the popularity of Google Chrome has led to the appearance of <a href="./Malware" title="Malware">malware</a> abusing its name. In late 2015, an <a href="./Adware#Malware" title="Adware">adware</a> replica of Chrome named "eFast" appeared, which would usurp the Google Chrome installation, hijack file type associations to make shortcuts for common file types and <a href="./Communication_protocol" title="Communication protocol">communication protocols</a> link to itself, and inject advertisements into web pages. Its similar-looking icon was intended to deceive users.</p>
+<h2>See also</h2>
+<ul>
+<li>
+<p><a href="./File:Crystal_Clear_app_linneighborhood.svg"><img alt="icon" src="//upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Crystal_Clear_app_linneighborhood.svg/40px-Crystal_Clear_app_linneighborhood.svg.png"></a><a href="./Portal:Internet" title="Portal:Internet">Internet portal</a></p>
+</li>
+<li>
+<p><a href="./Browser_wars" title="Browser wars">Browser wars</a> – Competition between web browsing applications for share of worldwide usage</p>
+</li>
+<li><a href="./Google_Chrome_Experiments" title="Google Chrome Experiments">Google Chrome Experiments</a> – Online showroom of web browser based experiments</li>
+<li><a href="./Google_Chrome_Frame" title="Google Chrome Frame">Google Chrome Frame</a> – Plug-in designed for Internet Explorer based on the open-source Chromium project</li>
+<li><a href="./Google_Workspace" title="Google Workspace">Google Workspace</a> – Productivity and collaboration software</li>
+<li><a href="./History_of_the_web_browser" title="History of the web browser">History of web browsers</a></li>
+<li><a href="./List_of_Google_products" title="List of Google products">List of Google products</a></li>
+<li><a href="./List_of_Google_Easter_eggs" title="List of Google Easter eggs">List of Google Easter eggs</a></li>
+<li><a href="./List_of_web_browsers" title="List of web browsers">List of web browsers</a></li>
+<li><a href="./Widevine" title="Widevine">Widevine</a> – Digital rights management technology</li>
+</ul>
+<h2>Notes</h2>
+<h2>References</h2>
+<h2>External links</h2>
+<p><a href="./File:Commons-logo.svg"><img alt="Wikimedia Commons logo" src="//upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/40px-Commons-logo.svg.png"></a></p>
+<p>Wikimedia Commons has media related to <a href="https://commons.wikimedia.org/wiki/Category:Google%20Chrome" title="commons:Category:Google Chrome">Google Chrome</a>.</p>
+<ul>
+<li><a href="https://www.google.com/chrome/">Official website</a> <a href="https://www.wikidata.org/wiki/Q777#P856" title="Edit this at Wikidata"><img alt="Edit this at Wikidata" src="//upload.wikimedia.org/wikipedia/en/thumb/8/8a/OOjs_UI_icon_edit-ltr-progressive.svg/20px-OOjs_UI_icon_edit-ltr-progressive.svg.png"></a></li>
+<li><a href="https://www.youtube.com/watch?v=Naol_TPPPL0">Google I/O 2009 - Exploring Chrome Internals</a> on <a href="./YouTube_video_(identifier)" title="YouTube video (identifier)">YouTube</a>, presented by Darin Fisher, a member of the Chrome team</li>
+<li><a href="https://developers.googleblog.com/en/google-chrome-at-google-io-2010/"><strong>Google I/O 2010</strong> - <em>Chrome at Google I/O 2010</em></a> (recap / Chrome team sessions &amp; demos from that year).</li>
+<li><a href="https://www.youtube.com/watch?v=MiYND_zvIc0"><strong>Google I/O 2011</strong> -Chrome-focused day</a> / keynote segments and Chrome sessions are in the 2011 video uploads</li>
+<li><a href="https://developers.google.com/events/io/2012/sessions"><strong>Google I/O 2012</strong> - Official I/O sessions listings</a> (includes web/Chrome sessions).</li>
+<li><a href="https://developers.google.com/events/io/2013/"><strong>Google I/O 2013</strong> - Sessions page and Chrome team deep dives</a></li>
+<li><a href="https://developers.googleblog.com/en/google-io-2014/"><strong>Google I/O 2014</strong> - I/O 2014</a> host page + specific Chrome/web talks</li>
+<li><a href="https://developers.googleblog.com/en/get-ready-for-google-io-2015/"><strong>Google I/O 2015</strong> - I/O 2015</a> site and videos include Polymer / modern web API sessions</li>
+<li><a href="https://www.youtube.com/playlist?list=PLNYkxOF6rcIDz1TzmmMRBC-kd8zPRTQIP"><strong>Google I/O 2016</strong> - Web and Chrome at Google I/O 2016</a> — dedicated playlist and many Chrome/web sessions</li>
+<li><a href="https://www.youtube.com/playlist?list=PLOU2XLYxmsIKC8eODk_RNCWv3fBcLvMMy"><strong>Google I/O 2017</strong> - I/O 2017 all-sessions playlist + many Chrome/web technical talks</a>.</li>
+<li><strong>Google I/O 2018</strong> - <strong><a href="https://www.youtube.com/playlist?list=PLNYkxOF6rcIC4NQeXpdAy0RbOACI66Hvf">Chrome &amp; Web at Google I/O 2018</a></strong> playlist (DevTools, performance, web platform features).</li>
+<li><a href="https://www.youtube.com/playlist?list=PLOU2XLYxmsILw2VmhxUWyd_imCrJef_iz"><strong>Google I/O 2022</strong> — <strong>All Google I/O 2022 Sessions</strong></a> and playlists include Web/Chrome updates - see the I/O 2022 sessions playlist and the "Web" track.</li>
+<li><a href="https://www.youtube.com/playlist?list=PLNYkxOF6rcICFB5ejR8ezf2pglcfA6HAo"><strong>Google I/O 2023</strong> — ChromeOS and Web playlists</a> (dedicated ChromeOS playlist and Web sessions for I/O 2023).</li>
+<li><a href="https://www.youtube.com/playlist?list=PLOU2XLYxmsIJQPs-2nnII-n59vYoxKsmq"><strong>Google I/O 2024</strong> — All sessions</a> (I/O 2024) and a "Web at I/O 2024" playlist highlighting Chrome and web platform updates.</li>
+<li><a href="https://io.google/2025/"><strong>Google I/O 2025</strong> — I/O 2025</a> explore page and the <strong>All Sessions (2025)</strong> playlist — includes the Web track and Chrome/ChromeOS sessions (privacy, performance, DevTools, AI features in the browser).</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Timeline_of_web_browsers" title="Template:Timeline of web browsers">v</a> - <a href="./Template_talk:Timeline_of_web_browsers" title="Template talk:Timeline of web browsers">t</a> - <a href="./Special:EditPage/Template:Timeline_of_web_browsers" title="Special:EditPage/Template:Timeline of web browsers">e</a>  <a href="./Timeline_of_web_browsers" title="Timeline of web browsers">Timeline</a> of <a href="./Web_browser" title="Web browser">web browsers</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>General</td>
+</tr>
+<tr>
+<td></td>
+<td>1990s</td>
+</tr>
+<tr>
+<td></td>
+<td>2000s</td>
+</tr>
+<tr>
+<td></td>
+<td>2010s</td>
+</tr>
+<tr>
+<td></td>
+<td>2020s</td>
+</tr>
+<tr>
+<td></td>
+<td>Related topics</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Web_browsers" title="Template:Web browsers">v</a> - <a href="./Template_talk:Web_browsers" title="Template talk:Web browsers">t</a> - <a href="./Special:EditPage/Template:Web_browsers" title="Special:EditPage/Template:Web browsers">e</a>  <a href="./Web_browser" title="Web browser">Web browsers</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>Features, standards &amp; protocols</td>
+</tr>
+<tr>
+<td></td>
+<td>Active</td>
+</tr>
+<tr>
+<td></td>
+<td>Discontinued</td>
+</tr>
+<tr>
+<td>- <a href="./List_of_web_browsers" title="List of web browsers">List</a> - <a href="./Comparison_of_web_browsers" title="Comparison of web browsers">Comparison</a> - <a href="./Category:Web_browsers" title="Category:Web browsers">Category</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Google_LLC" title="Template:Google LLC">v</a> - <a href="./Template_talk:Google_LLC" title="Template talk:Google LLC">t</a> - <a href="./Special:EditPage/Template:Google_LLC" title="Special:EditPage/Template:Google LLC">e</a>  <a href="./Google" title="Google">Google</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a subsidiary of <a href="./Alphabet_Inc." title="Alphabet Inc.">Alphabet</a></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td>Company</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./Google_Developers" title="Google Developers">Development</a></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="./List_of_Google_products" title="List of Google products">Software</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Hardware</td>
+</tr>
+<tr>
+<td></td>
+<td>- <a href="./Template:Google_litigation" title="Template:Google litigation">v</a> - <a href="./Template_talk:Google_litigation" title="Template talk:Google litigation">t</a> - <a href="./Special:EditPage/Template:Google_litigation" title="Special:EditPage/Template:Google litigation">e</a>  <a href="./Google_litigation" title="Google litigation">Litigation</a></td>
+</tr>
+<tr>
+<td></td>
+<td>Related</td>
+</tr>
+<tr>
+<td><em>Italics</em> denote <a href="./List_of_Google_products#Discontinued_products_and_services" title="List of Google products">discontinued products</a>.  - <a href="./Category:Google" title="Category:Google">Category</a> - <a href="./Outline_of_Google" title="Outline of Google">Outline</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>- <a href="./Template:Rich_Internet_Applications" title="Template:Rich Internet Applications">v</a> - <a href="./Template_talk:Rich_Internet_Applications" title="Template talk:Rich Internet Applications">t</a> - <a href="./Special:EditPage/Template:Rich_Internet_Applications" title="Special:EditPage/Template:Rich Internet Applications">e</a>  <a href="./Rich_Internet_Application" title="Rich Internet Application">Rich Internet Applications</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Basic frameworks</td>
+<td>- <a href="./Adobe_Flash" title="Adobe Flash">Adobe Flash</a> - <a href="./Apache_Flex" title="Apache Flex">Apache Flex</a> - <a href="./Apache_Pivot" title="Apache Pivot">Apache Pivot</a> - Cappuccino - <a href="./Curl_(programming_language)" title="Curl (programming language)">Curl</a> - <a href="./Google_Web_Toolkit" title="Google Web Toolkit">Google Web Toolkit</a> - <a href="./JavaFX" title="JavaFX">JavaFX</a> - <a href="./Lively_Kernel" title="Lively Kernel">Lively Kernel</a> - <a href="./Moonlight_(runtime)" title="Moonlight (runtime)">Moonlight</a> - <a href="./Microsoft_Silverlight" title="Microsoft Silverlight">Silverlight</a> - <a href="./OpenLaszlo" title="OpenLaszlo">OpenLaszlo</a> - <a href="./Qt_Quick" title="Qt Quick">Qt Quick</a> - <a href="./SproutCore" title="SproutCore">SproutCore</a> - <a href="./XULRunner" title="XULRunner">XULRunner</a></td>
+</tr>
+<tr>
+<td><a href="./Site-specific_browser" title="Site-specific browser">Site-specific browsers</a></td>
+<td>- <a href="./Adobe_AIR" title="Adobe AIR">AIR</a> - <a href="./Curl_(programming_language)" title="Curl (programming language)">Curl</a> - <a href="./Fluid_(web_browser)" title="Fluid (web browser)">Fluid</a> - <a href="./Gollum_browser" title="Gollum browser">Gollum</a> - <a href="./Google_Chrome">Google Chrome</a>   - <a href="./Gears_(software)" title="Gears (software)">Gears</a> - <a href="./Mozilla_Prism" title="Mozilla Prism">Mozilla Prism</a></td>
+</tr>
+<tr>
+<td>- <strong><a href="./Category:Rich_Internet_Applications" title="Category:Rich Internet Applications">Category</a></strong> - <strong><a href="./List_of_rich_web_application_frameworks" title="List of rich web application frameworks">List of frameworks</a></strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><a href="./Help:Authority_control" title="Help:Authority control">Authority control databases</a> <a href="https://www.wikidata.org/wiki/Q777#identifiers" title="Edit this at Wikidata">Edit this at Wikidata</a></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>International</td>
+<td>- <a href="https://viaf.org/viaf/175276668">VIAF</a> - <a href="https://d-nb.info/gnd/7631519-8">GND</a> - <a href="https://id.worldcat.org/fast/1783177">FAST</a></td>
+</tr>
+<tr>
+<td>National</td>
+<td>- <a href="https://id.loc.gov/authorities/no2009043824">United States</a> - <a href="https://www.nli.org.il/en/authorities/987009950817405171">Israel</a></td>
+</tr>
+</tbody>
+</table></div></main>
+<script>
+(function() {
+  var box = document.getElementById('search-box');
+  if (!box) return;
+  box.addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    var links = document.querySelectorAll('.sidebar-link');
+    links.forEach(function(el) {
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+    document.querySelectorAll('.cat-label').forEach(function(label) {
+      var sib = label.nextElementSibling;
+      var any = false;
+      while (sib && !sib.classList.contains('cat-label')) {
+        if (sib.style.display !== 'none') any = true;
+        sib = sib.nextElementSibling;
+      }
+      label.style.display = any ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>
